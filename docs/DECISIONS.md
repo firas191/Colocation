@@ -95,7 +95,7 @@ In n8n 2.41.3 a webhook path with a parameter (`listings/:id/analyze`) is regist
 
 ### D-025 Ollama in a container by default
 
-Hardware (reports/env-check.txt, 2026-09-29): Windows 11 Pro, Intel i7-11800H (8 cores, 16 threads), 23.7 GB RAM of which Docker Desktop gets 12.4 GB, NVIDIA GeForce GTX 1650 Max-Q with 4 GB VRAM (driver 610.88, compute capability 7.5), visible inside Docker. Disk: D: 130.6 GB free, C: 13.9 GB free (Docker Desktop keeps its images on C: by default). Ollama is not installed on Windows. Consequences: bge-m3 runs on the GPU; local LLMs are limited to models that fit in 4 GB VRAM (quantised models of a few billion parameters), larger ones would run on CPU; the choice is benchmarked in phase 3. 3D reconstruction on 4 GB VRAM is doubtful and stays last (phase 10).
+Hardware (reports/env-check.txt, 2026-09-29): Windows 11 Pro, Intel i7-11800H (8 cores, 16 threads), 23.7 GB RAM of which Docker Desktop gets 12.4 GB, NVIDIA GeForce GTX 1650 Max-Q with 4 GB VRAM (driver 610.88, compute capability 7.5), visible inside Docker. Disk: D: 130.6 GB free, C: 13.9 GB free (Docker Desktop keeps its images on C: by default). Ollama is not installed on Windows. Consequences: bge-m3 is meant to run on the GPU (whether Ollama actually placed it there was not measured in T-13); local LLMs are limited to models that fit in 4 GB VRAM (quantised models of a few billion parameters), larger ones would run on CPU; the choice is benchmarked in phase 3. 3D reconstruction on 4 GB VRAM is doubtful and stays last (phase 10).
 
 
 The compose stack runs `ollama/ollama:0.34.4`; `docker-compose.gpu.yml` adds the NVIDIA GPU when `docker run --gpus all ... nvidia-smi` works (verify.ps1 checks this and chooses). An Ollama already installed on Windows can be used instead with `OLLAMA_BASE_URL=http://host.docker.internal:11434`. Model choices beyond the embedding model are made in phase 3 with benchmarks on this GPU.
@@ -119,6 +119,10 @@ Scope is `<key id>:<user id or anon>`. Same key + same method, route and body ha
 ### D-030 The connected n8n Cloud workspace is not the runtime
 
 The session has access to an n8n Cloud workspace. It is not used to run these workflows: it cannot reach the local database, storage or models, and personal data would leave the owner's machine, which the routing policy (spec 13.3) and the Tunisian transfer rules listed as leads in spec 3.1 argue against. The runtime is the self-hosted n8n in the compose stack.
+
+### D-031 Which environment values the secret scan treats as secrets
+
+A variable is a secret when its name ends in `PASSWORD`, `SECRET`, `SECRET_KEY`, `SECRET_ACCESS_KEY`, `TOKEN`, `API_KEY` or `ENCRYPTION_KEY`. Other variables (database names, bucket name, URLs, ports, model name, key ids) are configuration whose defaults are in the repository on purpose; scanning them made the check fail on every correct setup (FAILURES F-019). Key ids (`FLATSHARE_*_KEY_ID`, `S3_ACCESS_KEY_ID`) travel in request headers and are not secret on their own. To keep a new secret from slipping through under an unusual name, `tests/unit/test_secret_scan.py` requires every variable in `.env.example` to be either secret by name or listed as configuration in the test.
 
 ## Spec observations scheduled for later phases
 

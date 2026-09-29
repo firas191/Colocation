@@ -44,6 +44,32 @@ Different from the compose stack because the sandbox cannot pull images (FAILURE
 
 ## Recorded at run time
 
-To be filled from the first `reports/verify-<timestamp>/verify.log` on the owner's machine:
-image ids and digests, PostgreSQL minor version, pgvector/PostGIS/pgTAP versions as reported by
-`pg_extension`, `bge-m3` model id, GPU model and memory if any.
+From `reports/verify-20260929-225540/verify.log` on the owner's PC (2026-09-30T00:05+01:00),
+steps "component versions", "build images" and "GPU visible to Docker".
+
+| Item | Recorded value |
+|---|---|
+| Host | Windows 11 Pro, Docker client/server 29.7.2, Docker Compose v5.4.0 |
+| GPU seen by Docker | `GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design` (`nvidia-smi -L`); 4 GB VRAM per env-check (D-025). GPU use by Ollama: not measured |
+| PostgreSQL | 18.6 (Debian 18.6-1.pgdg13+2) |
+| Extensions (`pg_extension`, app database) | citext 1.8, pg_trgm 1.6, pgcrypto 1.4, plpgsql 1.0, postgis 3.6.4, unaccent 1.1, vector 0.8.6 |
+| Packages installed in the image build | postgresql-18-pgvector 0.8.6-1.pgdg13+2, postgresql-18-pgtap 1.3.4-1.pgdg13+1, libtap-parser-sourcehandler-pgtap-perl 3.37-1.pgdg130+1 |
+| Migrations applied | 0001 to 0006 |
+| n8n | 2.41.3 (`n8n --version` in fs-n8n) |
+| Ollama | 0.34.4 (`ollama --version`) |
+| Embedding model | `bge-m3:latest`, id `790764642607`, 1.2 GB (`ollama list`) |
+| dbmate base image | `amacneil/dbmate:2.36.0@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb` |
+
+Image ids (`docker image inspect`; for pulled images the RepoDigest has the same value):
+
+| Image | Id |
+|---|---|
+| flatshare/postgres:18-3.6-pgvector0.8 (built locally) | sha256:5cfca21ba04b4ea3c9f2e80194992b5c55768947f7942586ab6f93999cff15b5 |
+| dxflrs/garage:v2.4.1 | sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020 |
+| ollama/ollama:0.34.4 | sha256:8262851b2846b87c649eddf3e76beb270c52f4d1bc94559f47efde16b0841551 |
+| n8nio/n8n:2.41.3 | sha256:fdce8f852ac7abbb2f31a53170bc3c2eeec45c37c0692a99f2d6c11b3822cd98 |
+| n8nio/runners:2.41.3 | sha256:1522f8179b76adcdb7900864c18b2ec57d63af472baeed874ed220bab3e66ecc |
+| caddy:2.11.4-alpine | sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b |
+| flatshare/tests:py3.12.14 (built locally) | sha256:863ce4f4c938f51cf9b064476dd2b671b688d4df296c3a16bec1e6d13236f635 |
+
+Tags stay the pin in `docker-compose.yml`; pinning by digest is part of the phase 9 hardening.

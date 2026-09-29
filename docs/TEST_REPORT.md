@@ -3,12 +3,13 @@
 One entry per run: date, where, versions, exact command, real output (trimmed; the full
 output is in the file named under "Evidence"), result. Failed runs stay in the report.
 
-**Where the runs happened.** All runs below are in the cloud sandbox (Ubuntu 24.04.4, 2 vCPU,
+**Where the runs happened.** T-1 to T-9 ran in the cloud sandbox (Ubuntu 24.04.4, 2 vCPU,
 7.8 GB RAM, no GPU) on a native stack: PostgreSQL 16.13, pgvector 0.6.0, PostGIS 3.4.2,
 pgTAP 1.3.2, dbmate 2.36.0, n8n 2.41.3 on Node 24.21.0 (internal task runner), Caddy 2.6.2.
 The compose stack (PostgreSQL 18, PostGIS 3.6, pgvector 0.8, Garage 2.4.1, Ollama 0.34.4,
-n8n image with external runners, Caddy 2.11.4) has **not been run yet** (see "Not run").
-Ollama and object storage are **mocks** in these runs (`tests/mocks/deps_mock.py`).
+n8n image with external runners, Caddy 2.11.4) ran on the owner's PC: T-10 to T-12 failed,
+T-13 passed every test step. Ollama and object storage are **mocks** in the sandbox runs
+(`tests/mocks/deps_mock.py`) and real services in T-13.
 
 ---
 
@@ -271,14 +272,100 @@ answer "Forbidden" in the sandbox because Docker Hub is blocked there, F-002.)
 
 ---
 
+## T-13 Fourth compose run on the owner's PC (2026-09-29T22:55+01:00 to 2026-09-30T00:07+01:00) - all tests PASS, secret scan FAILED (false positive)
+
+Where: owner's PC (Windows 11 Pro, Docker 29.7.2, Compose v5.4.0, GTX 1650 Max-Q visible to
+Docker, so `docker-compose.gpu.yml` was added). Versions as recorded in docs/VERSIONS.md
+"Recorded at run time". Command: `powershell -ExecutionPolicy Bypass -File scripts\windows\verify.ps1`.
+Evidence: `reports/verify-20260929-225540/summary.txt` and `verify.log` (3.2 MB) on the owner's PC.
+
+```
+PASS  sync git history with flatshare.bundle  (exit 0, 0.3 s)
+PASS  GPU visible to Docker (docker run --gpus all ... nvidia-smi)  (exit 0, 1.5 s)
+PASS  docker and compose versions  (exit 0, 0.2 s)
+PASS  free disk space (...)  (exit 0, 0.2 s)
+PASS  compose config is valid  (exit 0, 0.1 s)
+PASS  every pinned image tag exists in its registry  (exit 0, 94.4 s)
+PASS  pull service images (largest download: Ollama, n8n)  (exit 0, 3023.4 s)
+PASS  build images  (exit 0, 177.9 s)
+PASS  start stack  (exit 0, 62.8 s)
+PASS  wait for n8n, proxy and model pull (max 20 min)  (exit 0, 806.3 s)
+PASS  one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)  (exit 0, 2.4 s)
+PASS  component versions  (exit 0, 1.5 s)
+PASS  PHASE 0: embedding call returns 1024 numbers (bge-m3 via Ollama)  (exit 0, 31.5 s)
+PASS  PHASE 1: database tests (pgTAP on the compose PostgreSQL)  (exit 0, 1.4 s)
+PASS  unit tests, JavaScript (Code-node helpers)  (exit 0, 0.8 s)
+PASS  workflow JSON matches n8n/build.py  (exit 0, 0.8 s)
+PASS  PHASE 1: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)  (exit 0, 99.9 s)
+FAIL  export workflows from n8n and scan for secrets  (exit 1, 7.3 s)
+PASS  final state  (exit 0, 0.2 s)
+```
+
+**Phase 0 acceptance (embedding).** Four texts: French, Arabic, English, transliterated Tunisian.
+
+```
+status 200 model bge-m3 dims [1024, 1024, 1024, 1024] l2_norms [1.0, 1.0, 1.0, 1.0] seconds_for_4_texts 30.52
+```
+
+The 30.5 s is the first call after the model pull and includes loading the model; steady-state
+embedding latency and whether Ollama ran it on the GPU were **not measured** (phase 2 measures
+latency on the knowledge-base load).
+
+**Database suite on PostgreSQL 18.6 / PostGIS 3.6.4 / pgvector 0.8.6** (`scripts/db-test.sh`, fresh
+`flatshare_test` database, all six migrations):
+
+```
+All tests successful.
+Files=6, Tests=156,  1 wallclock secs ( 0.01 usr  0.02 sys +  0.08 cusr  0.05 csys =  0.16 CPU)
+Result: PASS
+```
+
+**JavaScript unit tests** (node --test inside the n8n 2.41.3 image): 12 pass, 0 fail.
+**Workflow JSON** matches `n8n/build.py`: `workflow JSON is up to date`.
+
+**Python unit and contract tests through Caddy 2.11.4 → n8n 2.41.3** (real Garage, real Ollama,
+external task runners), outage tests included (`docker stop`/`start` of Ollama, Garage and
+PostgreSQL; `nologin` on the application role):
+
+```
+collected 53 items
+...
+tests/contract/test_health_and_failures.py::test_health_when_dependency_down[OLLAMA-ollama] PASSED [ 94%]
+tests/contract/test_health_and_failures.py::test_health_when_dependency_down[STORAGE-object_storage] PASSED [ 96%]
+tests/contract/test_health_and_failures.py::test_database_server_down PASSED [ 98%]
+tests/contract/test_health_and_failures.py::test_app_database_unreachable_gives_503_envelope PASSED [100%]
+SKIPPED [1] tests/contract/test_health_and_failures.py:161: checks raw n8n behaviour without the proxy
+=================== 52 passed, 1 skipped in 98.19s (0:01:38) ===================
+```
+
+This includes the oversize-body test through Caddy 2.11.4 (413 `PAYLOAD_TOO_LARGE`), which the
+sandbox could only run on Caddy 2.6.2 (F-009).
+
+Note on the test file used: the owner's copy of `tests/contract/test_health_and_failures.py`
+was the version before commit e72b61d (after an outage it slept 2 s and asserted 200 instead of
+polling until healthy); the git history was restored with `reset --mixed`, which keeps working-tree
+files. It passed with that version. The current version is delivered again.
+
+**Secret scan.** detect-secrets: `no new findings`. The exact-match step failed on five files;
+the cause is a false positive, FAILURES F-019, fixed in T-14.
+
+```
+== exact-match scan of deployment secrets
+.env.example
+db/migrations/0004_settings.sql
+docker-compose.yml
+scripts/db-bootstrap.sh
+scripts/windows/verify.ps1
+FAIL: a deployment secret appears in the files above
+```
+
+---
+
 ## Not run (phase 0 and 1)
 
 | Item | Why | How it will be run |
 |---|---|---|
-| Compose stack build and start (all services, pinned images) | sandbox cannot pull images (F-002) | `scripts/windows/verify.ps1` on the owner's PC |
-| **Phase 0 acceptance: embedding call returns 1024 numbers** | no Ollama or model download in the sandbox | step "PHASE 0: embedding call" in verify.ps1 |
-| Database suite on PostgreSQL 18 / PostGIS 3.6 / pgvector 0.8 | same | verify.ps1 |
-| Contract suite against the compose stack (real Garage and Ollama, external n8n runners, Caddy 2.11.4, outage tests via `docker stop`) | same | verify.ps1 |
-| GPU detection and GPU-in-Docker | owner's hardware unreadable (F-001) | `env-check.ps1`, and verify.ps1's first step |
-| Reproduction from a clean machine using README only | needs the owner's machine | first verify.ps1 run on a fresh clone is that test |
+| Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | phase 2, on the knowledge-base load (`ollama ps` shows the processor) |
+| Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
+| Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |
