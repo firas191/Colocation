@@ -74,8 +74,7 @@ def test_health_when_dependency_down(client, name, check):
         assert elapsed < 10, f"health took {elapsed:.1f}s with {name} down"
     finally:
         run(start)
-        time.sleep(2)
-    assert client.call("GET", "/v1/health").status_code == 200
+        _wait_healthy(client)   # a real container takes longer to come back than the sandbox mock
 
 
 def test_database_server_down(client, idem):
