@@ -1,0 +1,16 @@
+$ python3 -m pytest -v tests/unit
+# 2026-09-29T20:16:16Z
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/flatshare
+plugins: anyio-4.13.0
+collecting ... collected 4 items
+
+tests/unit/test_openapi.py::test_openapi_is_valid PASSED                 [ 25%]
+tests/unit/test_openapi.py::test_every_error_code_has_a_status PASSED    [ 50%]
+tests/unit/test_signing_vectors.py::test_vectors PASSED                  [ 75%]
+tests/unit/test_signing_vectors.py::test_query_encoding_matches_encodeURIComponent PASSED [100%]
+
+============================== 4 passed in 0.41s ===============================
+# exit=0

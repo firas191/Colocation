@@ -1,8 +1,10 @@
-NOTICE:  database "flatshare_pre" does not exist, skipping
+# Defect proof: security regression tests run on migrations 0001 + 0002 only (without the fixes in 0003).
+# 2026-09-29T20:22:18Z, sandbox PostgreSQL 16.13
+$ psql -qc 'drop database if exists flatshare_pre with (force)' -d postgres; psql -qc 'create database flatshare_pre' -d postgres; dbmate --url 'postgres://postgres@/flatshare_pre?socket=/var/run/postgresql&sslmode=disable' --migrations-dir /tmp/mig_pre --no-dump-schema up; psql -d flatshare_pre -qc 'create extension pgtap'; pg_prove -d flatshare_pre --verbose db/tests/020_security_fixes.sql
 Applying: 0001_baseline_schema.sql
-Applied: 0001_baseline_schema.sql in 449.245422ms
+Applied: 0001_baseline_schema.sql in 448.223635ms
 Applying: 0002_gateway.sql
-Applied: 0002_gateway.sql in 13.224552ms
+Applied: 0002_gateway.sql in 13.451906ms
 psql:db/tests/020_security_fixes.sql:95: ERROR:  insert or update on table "listing_media" violates foreign key constraint "listing_media_listing_id_fkey"
 DETAIL:  Key (listing_id)=(10000000-0000-0000-0000-00000000000a) is not present in table "listings".
 db/tests/020_security_fixes.sql .. 
@@ -95,5 +97,6 @@ db/tests/020_security_fixes.sql (Wstat: 768 (exited 3) Tests: 25 Failed: 18)
   Failed tests:  1-3, 5-9, 12-13, 16-18, 20-24
   Non-zero exit status: 3
   Parse errors: Bad plan.  You planned 33 tests but ran 25.
-Files=1, Tests=25,  0 wallclock secs ( 0.01 usr  0.01 sys +  0.02 cusr  0.02 csys =  0.06 CPU)
+Files=1, Tests=25,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.02 cusr  0.02 csys =  0.05 CPU)
 Result: FAIL
+# exit=1

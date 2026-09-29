@@ -1,0 +1,15 @@
+$ . /opt/lab/lab.env; PGPASSWORD=$N8N_WORKER_DB_PASSWORD psql -h 127.0.0.1 -U n8n_worker -d flatshare -c "select workflow, count(*) as requests, percentile_disc(0.5) within group (order by latency_ms) as p50_ms, percentile_disc(0.95) within group (order by latency_ms) as p95_ms, max(latency_ms) as max_ms from ai.executions where workflow like 'wf.api.%' and latency_ms is not null group by 1 order by 1" -c "select workflow, status, left(error, 90) as error from ai.executions where workflow in ('wf.test.fail') order by started_at"
+# 2026-09-29T20:17:32Z
+     workflow      | requests | p50_ms | p95_ms | max_ms 
+-------------------+----------+--------+--------+--------
+ wf.api.health     |       76 |    115 |    155 |    318
+ wf.api.users_sync |       68 |    119 |    257 |    326
+(2 rows)
+
+   workflow   | status |                                           error                                            
+--------------+--------+--------------------------------------------------------------------------------------------
+ wf.test.fail | failed | WrappedExecutionError: deliberate failure for the error-handler test [line 1] (node: Throw
+ wf.test.fail | failed | WrappedExecutionError: deliberate failure for the error-handler test [line 1] (node: Throw
+(2 rows)
+
+# exit=0

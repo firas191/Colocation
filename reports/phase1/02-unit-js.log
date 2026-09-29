@@ -1,0 +1,23 @@
+$ /opt/n24/node_modules/node-linux-x64/bin/node --test n8n/tests/canonical.test.js
+# 2026-09-29T20:16:15Z
+✔ vector get_no_body: canonical query and signature match the Python client (1.83614ms)
+✔ vector post_json_unicode: canonical query and signature match the Python client (0.274838ms)
+✔ vector query_repeated_reserved: canonical query and signature match the Python client (0.315914ms)
+✔ vector path_param: canonical query and signature match the Python client (0.13727ms)
+✔ canonicalQuery rejects nested values (qs-style a[b]=1) (0.982922ms)
+✔ canonicalQuery of nothing is empty (0.166237ms)
+✔ canonicalQuery sorts by encoded key and keeps value order (0.200929ms)
+✔ buildPath fills and encodes parameters (0.219501ms)
+✔ header returns the first non-empty value (0.276566ms)
+✔ correlationId is a v4-shaped uuid (2.606491ms)
+✔ errorText handles strings, objects and nesting (0.257208ms)
+✔ redactPg removes values from Postgres key details (0.187764ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.272494
+# exit=0

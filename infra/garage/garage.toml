@@ -1,0 +1,20 @@
+# Garage (S3-compatible object storage), single node, development.
+# Secrets come from the environment: GARAGE_RPC_SECRET, GARAGE_ADMIN_TOKEN,
+# GARAGE_METRICS_TOKEN. With "server --single-node --default-bucket" (v2.3+)
+# Garage applies a one-node layout and creates the bucket and access key given
+# in GARAGE_DEFAULT_BUCKET / GARAGE_DEFAULT_ACCESS_KEY / GARAGE_DEFAULT_SECRET_KEY.
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "lmdb"
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.garage.localhost"
+
+[admin]
+api_bind_addr = "[::]:3903"

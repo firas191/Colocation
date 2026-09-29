@@ -1,0 +1,7 @@
+# n8n 2.41.3 start-up messages (sandbox, native npm install, PostgreSQL 16.13), 2026-09-29T20:19:56Z
+$ grep -E 'Postgres 16|N8N_RUNNERS|Internal task runner|Python task runner' /opt/lab/n8n.log
+ - N8N_RUNNERS_ENABLED -> Remove this environment variable; it is no longer needed.
+ - N8N_RUNNERS_MODE -> Internal task runner mode is deprecated and will be removed in a future version. For isolation and scaling, run the task runner launcher as a separate process, set this variable to `external` and share `N8N_RUNNERS_AUTH_TOKEN` with the launcher. See https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-task-runners
+ - N8N_RUNNERS_TASK_TIMEOUT -> The default for this variable will be reduced from 300 (5 minutes) to 60 (1 minute) in a future version. Set it explicitly to keep your current task timeout.
+Failed to start Python task runner in internal mode. because its virtual environment is missing from this system. Launching a Python runner in internal mode is intended only for debugging and is not recommended for production. Users are encouraged to deploy in external mode. See: https://docs.n8n.io/hosting/configuration/task-runners/#setting-up-external-mode
+Postgres 16 is outside the supported range and receives compatibility support only. Upgrade to Postgres 17 or newer.

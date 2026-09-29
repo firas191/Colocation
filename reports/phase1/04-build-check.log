@@ -1,0 +1,4 @@
+$ python3 n8n/build.py --check
+# 2026-09-29T20:16:16Z
+workflow JSON is up to date
+# exit=0

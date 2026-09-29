@@ -1,0 +1,285 @@
+openapi: 3.1.0
+info:
+  title: Flatshare backend API
+  version: "1.0.0-phase1"
+  description: |
+    Contract for the website server (and test clients). Browsers never call this API
+    directly: the website server signs every request (docs/API_SIGNING.md).
+    This file grows phase by phase; it lists only endpoints that exist and pass their
+    contract tests. Phase 1: /v1/health, /v1/users/sync.
+    Errors, job states and verdicts are returned as codes, never as sentences to show.
+servers:
+  - url: http://localhost:8080
+    description: Development proxy (docker compose)
+security:
+  - signedRequest: []
+paths:
+  /v1/health:
+    get:
+      operationId: getHealth
+      summary: Dependency check (database, object storage, Ollama and the embedding model)
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdOptional"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: All dependencies answered correctly
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthResponse" }
+        "503":
+          description: |
+            A dependency is down (body is a HealthResponse with status "degraded"), or the
+            gateway could not reach the database (body is an ErrorEnvelope, code UPSTREAM_UNAVAILABLE).
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HealthResponse"
+                  - $ref: "#/components/schemas/ErrorEnvelope"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /v1/users/sync:
+    post:
+      operationId: syncUser
+      summary: Create or update the platform user after the website's login
+      description: |
+        Called by the website server after authentication. Creates the app.users row on
+        first call (201) and updates the given fields afterwards (200). Omitted fields keep
+        their stored value. Returns the platform user id and consent status.
+        Idempotent per X-Idempotency-Key: a repeated request with the same key and body
+        returns the stored response unchanged (including its original request_id).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserSyncRequest" }
+      responses:
+        "201":
+          description: User created
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserSyncResponse" }
+        "200":
+          description: Existing user updated
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserSyncResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+components:
+  securitySchemes:
+    signedRequest:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: |
+        HMAC-SHA256 over the canonical request, keyed with the client secret issued by
+        scripts/db-bootstrap.sh. See docs/API_SIGNING.md for the canonical string.
+  parameters:
+    XKeyId:
+      name: X-Key-Id
+      in: header
+      required: true
+      description: Id of the calling server's key (for example "website").
+      schema: { type: string, pattern: "^[a-z0-9][a-z0-9_-]{2,39}$" }
+    XTimestamp:
+      name: X-Timestamp
+      in: header
+      required: true
+      description: Unix time in seconds. Accepted when within 300 s of the server clock.
+      schema: { type: string, pattern: "^[0-9]{1,12}$" }
+    XRequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      description: Caller-generated UUID. Each value is accepted once (replay protection).
+      schema: { type: string, format: uuid }
+    XSignature:
+      name: X-Signature
+      in: header
+      required: true
+      description: Lowercase hex HMAC-SHA256 (64 characters).
+      schema: { type: string, pattern: "^[0-9a-f]{64}$" }
+    XUserIdOptional:
+      name: X-User-Id
+      in: header
+      required: false
+      description: Platform user id the request is made for. Signed; trusted only when the signature is valid.
+      schema: { type: string, format: uuid }
+    XIdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: true
+      description: Required on state-changing calls. Same key and same request returns the stored response.
+      schema: { type: string, pattern: "^[A-Za-z0-9_.:-]{8,128}$" }
+    XClientIp:
+      name: X-Client-Ip
+      in: header
+      required: false
+      description: End user's IP as seen by the website server. Signed; used for per-IP rate limits.
+      schema: { type: string, maxLength: 45 }
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: { type: string }
+  headers:
+    XRequestId:
+      description: The request id this answer belongs to.
+      schema: { type: string, format: uuid }
+  responses:
+    Unauthenticated:
+      description: Missing, invalid, stale or replayed signature, or unknown user (code UNAUTHENTICATED)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    Forbidden:
+      description: Erased account or insufficient role (code FORBIDDEN), or missing consent (code CONSENT_REQUIRED)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    Conflict:
+      description: Idempotency key reused for another request or still in progress, or email linked to another account (code CONFLICT)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    PayloadTooLarge:
+      description: Body larger than 1 MiB (code PAYLOAD_TOO_LARGE, returned by the proxy)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    ValidationFailed:
+      description: Invalid body, header or query (code VALIDATION_FAILED); details list field and issue codes
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    RateLimited:
+      description: Too many requests (code RATE_LIMITED); Retry-After header and details[0].retry_after_s
+      headers:
+        Retry-After: { schema: { type: string } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    UpstreamUnavailable:
+      description: A backend dependency is unavailable (code UPSTREAM_UNAVAILABLE); safe to retry with the same idempotency key
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+  schemas:
+    ErrorCode:
+      type: string
+      enum: [UNAUTHENTICATED, FORBIDDEN, VALIDATION_FAILED, NOT_FOUND, CONSENT_REQUIRED, RATE_LIMITED,
+             CONFLICT, UPSTREAM_UNAVAILABLE, POLICY_BLOCKED, INTERNAL, PAYLOAD_TOO_LARGE]
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [request_id, error]
+      properties:
+        request_id: { type: string, format: uuid }
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, details]
+          properties:
+            code: { $ref: "#/components/schemas/ErrorCode" }
+            message: { type: string, description: "English text for logs and developers. Clients display text from their own catalogue keyed by code." }
+            details: { type: array, items: { type: object } }
+    Meta:
+      type: object
+      required: [latency_ms]
+      properties:
+        latency_ms: { type: integer, minimum: 0 }
+    HealthCheck:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        detail: { type: string }
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [status, checks]
+          properties:
+            status: { type: string, enum: [ok, degraded] }
+            checks:
+              type: object
+              required: [database, object_storage, ollama]
+              properties:
+                database:
+                  allOf:
+                    - $ref: "#/components/schemas/HealthCheck"
+                    - type: object
+                      properties:
+                        server_version: { type: string }
+                        migration: { type: string }
+                        extensions: { type: object, additionalProperties: { type: string } }
+                object_storage: { $ref: "#/components/schemas/HealthCheck" }
+                ollama:
+                  allOf:
+                    - $ref: "#/components/schemas/HealthCheck"
+                    - type: object
+                      properties:
+                        reachable: { type: boolean }
+                        embed_model: { type: string }
+                        embed_model_present: { type: boolean }
+    UserSyncRequest:
+      type: object
+      additionalProperties: false
+      required: [external_auth_id]
+      properties:
+        external_auth_id: { type: string, minLength: 1, maxLength: 255, description: "Subject id from the auth provider (printable ASCII)" }
+        email: { type: string, maxLength: 254, format: email }
+        display_name: { type: string, maxLength: 100 }
+        locale: { type: string, maxLength: 35, description: "BCP-47 tag" }
+        jurisdiction_code: { type: string, pattern: "^[A-Z]{2}(-[A-Z0-9]{1,3})?$" }
+    Consent:
+      type: object
+      required: [granted, policy_version, granted_at]
+      properties:
+        granted: { type: boolean }
+        policy_version: { type: string }
+        granted_at: { type: string, format: date-time }
+    UserSyncResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [user_id, created, role, locale, consents, consent_required]
+          properties:
+            user_id: { type: string, format: uuid }
+            created: { type: boolean }
+            role: { type: string, enum: [user, owner, moderator, admin] }
+            locale: { type: string }
+            jurisdiction_code: { type: [string, "null"] }
+            consents:
+              type: object
+              description: Latest decision per purpose
+              additionalProperties: { $ref: "#/components/schemas/Consent" }
+            consent_required:
+              type: array
+              description: Purposes the platform needs before use and that are not granted (terms, privacy)
+              items: { type: string, enum: [terms, privacy] }

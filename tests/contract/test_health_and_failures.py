@@ -15,7 +15,7 @@ import uuid
 import httpx
 import pytest
 
-from conftest import assert_error, assert_ok, direct_only, proxy_only
+from conftest import assert_error, assert_ok, direct_only, proxy_only, validate
 
 
 def outage(name):
@@ -30,7 +30,7 @@ def run(cmd):
 
 
 def test_health_all_up(client):
-    j = assert_ok(client.call("GET", "/v1/health"), 200)
+    j = assert_ok(client.call("GET", "/v1/health"), 200, "HealthResponse")
     d = j["data"]
     assert d["status"] == "ok"
     assert d["checks"]["database"]["ok"] and d["checks"]["database"]["migration"] >= "0006"
@@ -47,6 +47,7 @@ def test_health_reports_missing_embedding_model(client, db):
     try:
         r = client.call("GET", "/v1/health")
         assert r.status_code == 503, r.text
+        validate(r.json(), "HealthResponse")
         o = r.json()["data"]["checks"]["ollama"]
         assert o["reachable"] is True and o["embed_model_present"] is False and o["ok"] is False
         assert r.json()["data"]["status"] == "degraded"

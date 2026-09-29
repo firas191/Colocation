@@ -1,0 +1,45 @@
+$ /opt/lab/reset.sh
+# 2026-09-29T20:15:28Z
+== wait for postgres
+127.0.0.1:5432 - accepting connections
+== n8n database and role
+== application database
+Applying: 0001_baseline_schema.sql
+Applied: 0001_baseline_schema.sql in 505.39019ms
+Applying: 0002_gateway.sql
+Applied: 0002_gateway.sql in 15.269712ms
+Applying: 0003_security_fixes.sql
+Applied: 0003_security_fixes.sql in 7.185352ms
+Applying: 0004_settings.sql
+Applied: 0004_settings.sql in 4.942207ms
+Applying: 0005_gateway_check.sql
+Applied: 0005_gateway_check.sql in 3.98839ms
+Applying: 0006_api_finish.sql
+Applied: 0006_api_finish.sql in 1.995384ms
+== reference data
+== role passwords
+== deployment settings
+== API client keys
+created API client 'website' (secret written to /opt/lab/secrets/api-clients.env)
+created API client 'tests' (secret written to /opt/lab/secrets/api-clients.env)
+== done
+== import credentials
+Starting migration AddErrorColumnsToTestRuns1737715421462
+Finished migration AddErrorColumnsToTestRuns1737715421462
+Successfully imported 1 credential.
+== import workflows
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+== import test workflows
+Successfully imported 1 workflow.
+== publish
+Publishing workflow with ID: fsApiHealth00001 (current version)
+Publishing workflow with ID: fsApiUsersSync01 (current version)
+Publishing workflow with ID: fsGatewayAuth001 (current version)
+Publishing workflow with ID: fsOpsErrorHndl01 (current version)
+Publishing workflow with ID: fsTestFail000001 (current version)
+== done
+n8n ready
+# exit=0

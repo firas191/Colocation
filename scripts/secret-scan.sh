@@ -10,9 +10,21 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 EXPORT_DIR="${1:-}"; shift || true
 
+# Files to scan: tracked files, or (without .git) every file except local secrets and outputs.
+list_files() {
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then git ls-files
+  else find . -type f -not -path './.git/*' -not -path './secrets/*' -not -path './reports/*' \
+         -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -name '.env' | sed 's|^\./||'
+  fi
+}
+
 echo "== detect-secrets (baseline: .secrets.baseline)"
-git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
-echo "no new findings"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+  echo "no new findings"
+else
+  echo "SKIPPED: not a git checkout (detect-secrets-hook needs git); the exact-match scan still runs"
+fi
 
 echo "== exact-match scan of deployment secrets"
 patterns="$(mktemp)"; trap 'rm -f "$patterns"' EXIT
@@ -22,7 +34,7 @@ for f in "$@"; do
 done
 count=$(wc -l < "$patterns")
 if [ "$count" -eq 0 ]; then echo "no env files given: skipped"; exit 0; fi
-targets=$(git ls-files)
+targets=$(list_files)
 [ -n "$EXPORT_DIR" ] && targets="$targets $(find "$EXPORT_DIR" -type f)"
 if echo "$targets" | xargs grep -l -F -f "$patterns" 2>/dev/null; then
   echo "FAIL: a deployment secret appears in the files above"; exit 1

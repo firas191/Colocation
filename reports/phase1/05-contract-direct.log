@@ -1,0 +1,65 @@
+$ . /opt/lab/test-env.sh && export FS_API_BASE=http://127.0.0.1:5678/webhook FS_VIA_PROXY=0 && cd tests/contract && python3 -m pytest -v -rs -p no:cacheprovider
+# 2026-09-29T20:16:16Z
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+rootdir: /home/claude/flatshare/tests/contract
+plugins: anyio-4.13.0
+collecting ... collected 49 items
+
+test_gateway_auth.py::test_signed_request_accepted PASSED                [  2%]
+test_gateway_auth.py::test_unsigned_request_rejected PASSED              [  4%]
+test_gateway_auth.py::test_missing_single_header_rejected PASSED         [  6%]
+test_gateway_auth.py::test_wrong_signature_rejected PASSED               [  8%]
+test_gateway_auth.py::test_signature_from_other_secret_rejected PASSED   [ 10%]
+test_gateway_auth.py::test_unknown_key_rejected PASSED                   [ 12%]
+test_gateway_auth.py::test_old_timestamp_rejected_with_server_time PASSED [ 14%]
+test_gateway_auth.py::test_future_timestamp_rejected PASSED              [ 16%]
+test_gateway_auth.py::test_replayed_request_rejected PASSED              [ 18%]
+test_gateway_auth.py::test_tampered_query_rejected PASSED                [ 20%]
+test_gateway_auth.py::test_repeated_and_encoded_query_params_accepted PASSED [ 22%]
+test_gateway_auth.py::test_nested_query_rejected PASSED                  [ 24%]
+test_gateway_auth.py::test_tampered_body_rejected PASSED                 [ 26%]
+test_gateway_auth.py::test_body_whitespace_is_signed_bytes PASSED        [ 28%]
+test_gateway_auth.py::test_swapped_user_id_rejected PASSED               [ 30%]
+test_gateway_auth.py::test_swapped_idempotency_key_rejected PASSED       [ 32%]
+test_gateway_auth.py::test_signature_for_other_route_rejected PASSED     [ 34%]
+test_gateway_auth.py::test_rate_limit_per_ip PASSED                      [ 36%]
+test_gateway_auth.py::test_rate_limit_counts_bad_signatures PASSED       [ 38%]
+test_health_and_failures.py::test_health_all_up PASSED                   [ 40%]
+test_health_and_failures.py::test_health_reports_missing_embedding_model PASSED [ 42%]
+test_health_and_failures.py::test_malformed_json_body PASSED             [ 44%]
+test_health_and_failures.py::test_empty_body_on_post PASSED              [ 46%]
+test_health_and_failures.py::test_unexpected_error_recorded_by_error_handler_direct PASSED [ 48%]
+test_health_and_failures.py::test_unexpected_error_enveloped_by_proxy SKIPPED [ 51%]
+test_health_and_failures.py::test_unknown_route_enveloped_by_proxy SKIPPED [ 53%]
+test_health_and_failures.py::test_n8n_internals_not_reachable_through_proxy SKIPPED [ 55%]
+test_health_and_failures.py::test_oversized_body_rejected_by_proxy SKIPPED [ 57%]
+test_users_sync.py::test_create_then_update PASSED                       [ 59%]
+test_users_sync.py::test_consent_status_reported PASSED                  [ 61%]
+test_users_sync.py::test_idempotent_replay_returns_stored_response PASSED [ 63%]
+test_users_sync.py::test_same_key_different_body_conflicts PASSED        [ 65%]
+test_users_sync.py::test_concurrent_duplicates_create_one_user PASSED    [ 67%]
+test_users_sync.py::test_missing_idempotency_key PASSED                  [ 69%]
+test_users_sync.py::test_bad_idempotency_key PASSED                      [ 71%]
+test_users_sync.py::test_validation_errors_listed PASSED                 [ 73%]
+test_users_sync.py::test_validation_failure_is_idempotent_too PASSED     [ 75%]
+test_users_sync.py::test_wrong_content_type PASSED                       [ 77%]
+test_users_sync.py::test_json_array_body PASSED                          [ 79%]
+test_users_sync.py::test_email_taken_by_other_account PASSED             [ 81%]
+test_users_sync.py::test_unknown_jurisdiction PASSED                     [ 83%]
+test_users_sync.py::test_sql_injection_strings_stored_literally PASSED   [ 85%]
+test_users_sync.py::test_unicode_and_rtl_display_name PASSED             [ 87%]
+test_users_sync.py::test_unknown_and_malformed_user_header PASSED        [ 89%]
+test_users_sync.py::test_erased_user_is_refused PASSED                   [ 91%]
+test_health_and_failures.py::test_health_when_dependency_down[OLLAMA-ollama] PASSED [ 93%]
+test_health_and_failures.py::test_health_when_dependency_down[STORAGE-object_storage] PASSED [ 95%]
+test_health_and_failures.py::test_database_server_down PASSED            [ 97%]
+test_health_and_failures.py::test_app_database_unreachable_gives_503_envelope PASSED [100%]
+
+=========================== short test summary info ============================
+SKIPPED [1] test_health_and_failures.py:175: needs the reverse proxy
+SKIPPED [1] test_health_and_failures.py:186: needs the reverse proxy
+SKIPPED [1] test_health_and_failures.py:193: needs the reverse proxy
+SKIPPED [1] test_health_and_failures.py:200: needs the reverse proxy
+======================== 45 passed, 4 skipped in 22.99s ========================
+# exit=0

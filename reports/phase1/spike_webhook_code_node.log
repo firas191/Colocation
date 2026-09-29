@@ -1,0 +1,26 @@
+# Spike 2026-09-29, sandbox, n8n 2.41.3 (npm), internal task runner.
+# Workflow: Webhook (POST spike/:id/x, rawBody) -> Code (reads binary, $env.HOME, require('crypto')) -> Respond
+# Output copied from the session.
+$ curl -s -X POST "http://127.0.0.1:5678/webhook/0b7b6f5e-1111-4a8e-9a55-000000000001/spike/abc-123/x?b=2&a=1&a=3" -H "Content-Type: application/json" -H "X-Foo: bar" --data-binary '{"z": 1,  "é":"ü"}'
+{
+    "b64": "eyJ6IjogMSwgICLDqSI6IsO8In0=",
+    "err": null,
+    "envv": "ERR access to env vars denied",
+    "cryptoOk": "ERR Module 'crypto' is disallowed [line 5]",
+    "params": { "id": "abc-123" },
+    "query": { "b": "2", "a": [ "1", "3" ] },
+    "body": { "z": 1, "é": "ü" },
+    "headers": { "host": "127.0.0.1:5678", "user-agent": "curl/8.5.0", "accept": "*/*", "content-type": "application/json", "x-foo": "bar", "content-length": "20" },
+    "hasBinary": true, "binKeys": [ "data" ], "binMeta": { "mimeType": "application/json", "id": null, "fileSize": null }
+}
+# The same path without the webhookId prefix:
+$ curl -s -i -X POST "http://127.0.0.1:5678/webhook/spike/abc-123/x?b=2&a=1&a=3" ...
+HTTP/1.1 404 Not Found
+{"code":404,"message":"The requested webhook \"POST spike/abc-123/x\" is not registered.","hint":"...","stacktrace":"ResponseError: The requested webhook \"POST spike/abc-123/x\" is not registered.\n    at LiveWebhooks.findWebhook (/opt/n8n/node_modules/n8n/src/webhooks/live-webhooks.ts:283:10)\n ..."}
+# (started without NODE_ENV=production: stack trace in the body)
+
+# Three workflows sharing webhookId "v1", n8n restarted with NODE_ENV=production:
+POST /webhook/v1/listings/L1/analyze -> 404 {'code': 404, 'message': 'The requested webhook "POST v1/listings/L1/analyze" is not registered.', 'hint': ...}
+POST /webhook/v1/listings/L2/submit -> 404 {'code': 404, 'message': 'This webhook is not registered for POST requests. Did you mean to make a POST request?'}
+GET /webhook/v1/jobs/J9 -> 201 {'id': 'J9'}
+POST /webhook/v1/nothing/here -> 404 {'code': 404, 'message': ..., 'hint': ...}      (no stack trace with NODE_ENV=production)
