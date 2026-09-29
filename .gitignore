@@ -1,0 +1,10 @@
+.env
+*.env.local
+reports/env-check.txt
+reports/**/*.secret
+node_modules/
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+/tmp/

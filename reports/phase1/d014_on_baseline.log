@@ -1,0 +1,10 @@
+BEGIN
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+
+delete job input: {"listing_id": "10000000-0000-0000-0000-00000000000a"}
+generated_documents left: 1, inputs: {"names": ["Alice"]}
+ROLLBACK

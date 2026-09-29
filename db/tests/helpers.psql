@@ -1,0 +1,41 @@
+-- Shared helpers for pgTAP tests. Included with \ir from each test file.
+\set ON_ERROR_STOP 1
+\set QUIET 1
+\pset format unaligned
+\pset tuples_only true
+\pset pager off
+set client_min_messages = warning;
+
+-- Run one statement as another role, with app.user_id set, and return the
+-- first column of the first row as text ('ROWS n' for DML without RETURNING). Errors come back as 'ERROR <sqlstate>'
+-- so a test can assert a rejection without aborting the file.
+create or replace function pg_temp.as_user(p_role text, p_uid text, p_sql text) returns text
+language plpgsql as $$
+declare r text; n bigint;
+begin
+  perform set_config('app.user_id', coalesce(p_uid, ''), true);
+  execute format('set local role %I', p_role);
+  begin
+    if p_sql ~* '^\s*(insert|update|delete)\M' and p_sql !~* '\mreturning\M' then
+      execute p_sql;
+      get diagnostics n = row_count;
+      r := 'ROWS ' || n;
+    else
+      execute p_sql into r;
+    end if;
+  exception when others then
+    r := 'ERROR ' || sqlstate;
+  end;
+  reset role;
+  perform set_config('app.user_id', '', true);
+  return coalesce(r, 'NULL');
+end $$;
+
+-- Deterministic pseudo-embeddings (same as the baseline test file).
+create or replace function pg_temp.vec(seed int, base int) returns vector(1024) language plpgsql as $$
+declare arr float8[];
+begin
+  perform setseed((seed % 1000) / 1000.0);
+  arr := array(select case when g % 16 = base then 1.0 else 0.0 end + random()*0.05 from generate_series(1,1024) g);
+  return arr::vector;
+end $$;

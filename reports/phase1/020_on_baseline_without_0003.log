@@ -1,0 +1,99 @@
+NOTICE:  database "flatshare_pre" does not exist, skipping
+Applying: 0001_baseline_schema.sql
+Applied: 0001_baseline_schema.sql in 449.245422ms
+Applying: 0002_gateway.sql
+Applied: 0002_gateway.sql in 13.224552ms
+psql:db/tests/020_security_fixes.sql:95: ERROR:  insert or update on table "listing_media" violates foreign key constraint "listing_media_listing_id_fkey"
+DETAIL:  Key (listing_id)=(10000000-0000-0000-0000-00000000000a) is not present in table "listings".
+db/tests/020_security_fixes.sql .. 
+1..33
+not ok 1 - D-010 Bob sees only his 2 consent rows
+# Failed test 1: "D-010 Bob sees only his 2 consent rows"
+#         have: 3
+#         want: 2
+not ok 2 - D-010 Alice sees only her consent row
+# Failed test 2: "D-010 Alice sees only her consent row"
+#         have: 3
+#         want: 1
+not ok 3 - D-010 Alice cannot record consent for Bob
+# Failed test 3: "D-010 Alice cannot record consent for Bob"
+#         have: ROWS 1
+#         want: ERROR 42501
+ok 4 - D-010 Alice can record her own consent
+not ok 5 - D-010 consents cannot be updated (append-only)
+# Failed test 5: "D-010 consents cannot be updated (append-only)"
+#         have: ROWS 5
+#         want: ERROR 42501
+not ok 6 - D-010 consents cannot be deleted by api_user
+# Failed test 6: "D-010 consents cannot be deleted by api_user"
+#         have: ROWS 5
+#         want: ERROR 42501
+not ok 7 - D-011 api_user cannot insert a published listing
+# Failed test 7: "D-011 api_user cannot insert a published listing"
+#         have: ROWS 1
+#         want: ERROR 42501
+not ok 8 - D-011 api_user cannot set trust_score
+# Failed test 8: "D-011 api_user cannot set trust_score"
+#         have: ROWS 1
+#         want: ERROR 42501
+not ok 9 - D-011 api_user cannot set is_synthetic
+# Failed test 9: "D-011 api_user cannot set is_synthetic"
+#         have: ROWS 1
+#         want: ERROR 42501
+ok 10 - D-011 api_user can create its own draft
+ok 11 - D-011 api_user cannot create a listing owned by someone else
+not ok 12 - D-011 api_user cannot publish by update
+# Failed test 12: "D-011 api_user cannot publish by update"
+#         have: ROWS 1
+#         want: ERROR 42501
+not ok 13 - D-011 api_user cannot write trust fields
+# Failed test 13: "D-011 api_user cannot write trust fields"
+#         have: ROWS 1
+#         want: ERROR 42501
+ok 14 - D-011 api_user can edit its own title
+ok 15 - D-011 Bob cannot edit Alice's listing (0 rows)
+not ok 16 - D-011 api_user cannot hard-delete a listing
+# Failed test 16: "D-011 api_user cannot hard-delete a listing"
+#         have: ROWS 1
+#         want: ERROR 42501
+not ok 17 - D-012 api_user cannot write assistant messages
+# Failed test 17: "D-012 api_user cannot write assistant messages"
+#         have: ROWS 1
+#         want: ERROR 42501
+not ok 18 - D-012 api_user cannot write messages as another user
+# Failed test 18: "D-012 api_user cannot write messages as another user"
+#         have: ROWS 1
+#         want: ERROR 42501
+ok 19 - D-012 api_user can write its own user message
+not ok 20 - D-012 messages cannot be edited
+# Failed test 20: "D-012 messages cannot be edited"
+#         have: ROWS 3
+#         want: ERROR 42501
+not ok 21 - D-013 no function in app/kb/ai/eval/sec is executable by PUBLIC
+# Failed test 21: "D-013 no function in app/kb/ai/eval/sec is executable by PUBLIC"
+#         have: 6
+#         want: 0
+not ok 22 - D-013 api_user can execute exactly three functions
+# Failed test 22: "D-013 api_user can execute exactly three functions"
+#     Extra records:
+#         (app.find_similar_media)
+#         (app.touch_updated_at)
+#         (kb.search_chunks)
+not ok 23 - D-013 api_user cannot run the duplicate-photo lookup
+# Failed test 23: "D-013 api_user cannot run the duplicate-photo lookup"
+#         have: 0
+#         want: ERROR 42501
+not ok 24 - D-013 default privileges: n8n_worker can write new tables
+# Failed test 24: "D-013 default privileges: n8n_worker can write new tables"
+ok 25 - D-013 default privileges: api_user gets nothing on new tables
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 26/33 subtests 
+
+Test Summary Report
+-------------------
+db/tests/020_security_fixes.sql (Wstat: 768 (exited 3) Tests: 25 Failed: 18)
+  Failed tests:  1-3, 5-9, 12-13, 16-18, 20-24
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 33 tests but ran 25.
+Files=1, Tests=25,  0 wallclock secs ( 0.01 usr  0.01 sys +  0.02 cusr  0.02 csys =  0.06 CPU)
+Result: FAIL
