@@ -361,10 +361,54 @@ FAIL: a deployment secret appears in the files above
 
 ---
 
+## T-14 Secret-scan fix (2026-09-30)
+
+**Sandbox**, unit tests for the scan (`tests/unit/test_secret_scan.py`), first against the old
+script to show they catch F-019, then against the new one:
+
+```
+$ git show HEAD~1:scripts/secret-scan.sh > scripts/secret-scan.sh; python3 -m pytest -q tests/unit/test_secret_scan.py
+FAILED tests/unit/test_secret_scan.py::test_script_regex_matches_this_test - ...
+FAILED tests/unit/test_secret_scan.py::test_config_values_in_repo_are_not_secrets
+2 failed, 3 passed in 7.77s
+$ (new script) python3 -m pytest -q tests/unit/test_secret_scan.py
+5 passed in 0.09s
+$ python3 -m pytest -q tests/unit
+9 passed
+```
+
+**Owner's PC** (Linux shell of the desktop app, bash on the project folder), exact-match step
+with the real `.env`, the real API keys and the workflows exported in T-13; detect-secrets is
+not installed in that shell and was skipped here (it passed in T-13):
+
+```
+$ FS_SCAN_EXACT_ONLY=1 bash scripts/secret-scan.sh reports/verify-20260929-225540/n8n-export .env secrets/api-clients.env
+== exact-match scan of deployment secrets
+secret variables checked: POSTGRES_PASSWORD N8N_DB_PASSWORD N8N_WORKER_DB_PASSWORD API_USER_DB_PASSWORD N8N_ENCRYPTION_KEY N8N_RUNNERS_AUTH_TOKEN S3_SECRET_ACCESS_KEY GARAGE_RPC_SECRET GARAGE_ADMIN_TOKEN GARAGE_METRICS_TOKEN REDIS_PASSWORD FLATSHARE_WEBSITE_SECRET FLATSHARE_TESTS_SECRET
+checked 13 secret values against 94 files: none found
+exit=0
+```
+
+`CLOUD_LLM_API_KEY` and `TELEGRAM_BOT_TOKEN` are empty in `.env`, so they are not in the list.
+Negative control on the same machine: a copy of the export directory (outside the project
+folder) with one file holding the real `FLATSHARE_TESTS_SECRET`:
+
+```
+~/negctl/planted.json
+FAIL: a deployment secret appears in the files above
+exit=1
+```
+
+Not yet run: the verify.ps1 step itself (tests container, detect-secrets and export together)
+with the new script. The next `verify.ps1` run covers it.
+
+---
+
 ## Not run (phase 0 and 1)
 
 | Item | Why | How it will be run |
 |---|---|---|
+| verify.ps1 step "export workflows from n8n and scan for secrets" with the fixed script | fix made after T-13; its parts ran separately in T-14 | next verify.ps1 run |
 | Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | phase 2, on the knowledge-base load (`ollama ps` shows the processor) |
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
