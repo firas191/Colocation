@@ -11,6 +11,12 @@ This repository is at **phase 1 of 10** (environment, database, API gateway). No
 - Optional: an NVIDIA GPU visible to Docker (checked automatically).
 - Internet access for the first build (images, pgvector source, the `bge-m3` model).
 
+## Git history
+
+The folder is delivered without `.git` (the delivery tool cannot write it). The history is in
+`flatshare.bundle`; `verify.ps1` restores it automatically when git is installed, or by hand:
+`git init -b main; git fetch flatshare.bundle main; git reset --mixed FETCH_HEAD`.
+
 ## Run and verify (Windows)
 
 ```powershell

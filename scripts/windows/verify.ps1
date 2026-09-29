@@ -37,6 +37,17 @@ function Step([string]$name, [scriptblock]$block) {
 }
 
 Write-Log "verify.ps1 run $stamp on $env:COMPUTERNAME"
+
+# The repository history arrives as flatshare.bundle (remote tools cannot write .git).
+# With git installed, restore it once so the secret scan can use git.
+if (-not (Test-Path ".git") -and (Test-Path "flatshare.bundle") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+  Step "restore git history from flatshare.bundle" {
+    git init -q -b main
+    git fetch -q flatshare.bundle main
+    git reset -q --mixed FETCH_HEAD
+    git log --oneline -n 5
+  } | Out-Null
+}
 if (-not (Test-Path ".env")) { & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 | Out-Null }
 
 $files = @("-f", "docker-compose.yml")
