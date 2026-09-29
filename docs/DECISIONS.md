@@ -23,7 +23,7 @@ The owner's PC is Windows with Docker Desktop. The Linux shell that should run o
 
 ### D-006 PostgreSQL 17 in the compose stack (spec said 16)
 
-n8n 2.41.3 prints on start with PostgreSQL 16: "Postgres 16 is outside the supported range and receives compatibility support only. Upgrade to Postgres 17 or newer." (observed in the sandbox: reports/phase1/n8n_startup_warnings.log). n8n and the application share one PostgreSQL server, so the server moves to 17. PostgreSQL 17 is supported upstream until 2029-11-08 (postgresql.org/support/versioning, checked 2026-09-29). The postgis/postgis image publishes PostGIS 3.6 only for PostgreSQL 17 and 18 (Docker Hub tags API, checked 2026-09-29). 17 rather than 18: the smaller step from the tested 16, and n8n's stated minimum. The SQL is unchanged and stays valid on 16 (the sandbox suite runs on 16.13); `verify.ps1` runs the same pgTAP suite on 17.
+n8n 2.41.3 prints on start with PostgreSQL 16: "Postgres 16 is outside the supported range and receives compatibility support only. Upgrade to Postgres 17 or newer." (observed in the sandbox: reports/phase1/n8n_startup_warnings.log). n8n and the application share one PostgreSQL server, so the server moves to 17. PostgreSQL 17 is supported upstream until 2029-11-08 (postgresql.org/support/versioning, checked 2026-09-29). The Debian-based postgis/postgis images for PostgreSQL 17 stop at PostGIS 3.5 (`17-3.5`); PostGIS 3.6 exists for 17 only as an Alpine image, and as Debian only for 18 (Docker Hub tags API, rechecked 2026-09-29 after F-016). Chosen: `postgis/postgis:17-3.5` (Debian, so pgvector, pgTAP and pg_prove come from the PGDG apt repository). 17 rather than 18: the smaller step from the tested 16, n8n's stated minimum, and no change to the image's data-directory layout, which moved in the 18 images. The SQL is unchanged and stays valid on 16 (the sandbox suite runs on 16.13); `verify.ps1` runs the same pgTAP suite on 17.
 
 ### D-007 Numbered migrations with dbmate; baseline kept byte-for-byte
 
@@ -95,7 +95,10 @@ In n8n 2.41.3 a webhook path with a parameter (`listings/:id/analyze`) is regist
 
 ### D-025 Ollama in a container by default
 
-The compose stack runs `ollama/ollama:0.34.4`; `docker-compose.gpu.yml` adds the NVIDIA GPU when `docker run --gpus all ... nvidia-smi` works (verify.ps1 checks this and chooses). An Ollama already installed on Windows can be used instead with `OLLAMA_BASE_URL=http://host.docker.internal:11434`. Hardware is still unknown (F-001), so model choices beyond the embedding model wait for `reports/env-check.txt`.
+Hardware (reports/env-check.txt, 2026-09-29): Windows 11 Pro, Intel i7-11800H (8 cores, 16 threads), 23.7 GB RAM of which Docker Desktop gets 12.4 GB, NVIDIA GeForce GTX 1650 Max-Q with 4 GB VRAM (driver 610.88, compute capability 7.5), visible inside Docker. Disk: D: 130.6 GB free, C: 13.9 GB free (Docker Desktop keeps its images on C: by default). Ollama is not installed on Windows. Consequences: bge-m3 runs on the GPU; local LLMs are limited to models that fit in 4 GB VRAM (quantised models of a few billion parameters), larger ones would run on CPU; the choice is benchmarked in phase 3. 3D reconstruction on 4 GB VRAM is doubtful and stays last (phase 10).
+
+
+The compose stack runs `ollama/ollama:0.34.4`; `docker-compose.gpu.yml` adds the NVIDIA GPU when `docker run --gpus all ... nvidia-smi` works (verify.ps1 checks this and chooses). An Ollama already installed on Windows can be used instead with `OLLAMA_BASE_URL=http://host.docker.internal:11434`. Model choices beyond the embedding model are made in phase 3 with benchmarks on this GPU.
 
 ### D-026 Health endpoint
 

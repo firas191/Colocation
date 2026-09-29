@@ -40,11 +40,19 @@ Write-Log "verify.ps1 run $stamp on $env:COMPUTERNAME"
 
 # The repository history arrives as flatshare.bundle (remote tools cannot write .git).
 # With git installed, restore it once so the secret scan can use git.
-if (-not (Test-Path ".git") -and (Test-Path "flatshare.bundle") -and (Get-Command git -ErrorAction SilentlyContinue)) {
-  Step "restore git history from flatshare.bundle" {
-    git init -q -b main
+# Later deliveries update the files and the bundle; the history then fast-forwards
+# to the bundle (only if the local branch has no commits of its own).
+if ((Test-Path "flatshare.bundle") -and (Get-Command git -ErrorAction SilentlyContinue)) {
+  Step "sync git history with flatshare.bundle" {
+    if (-not (Test-Path ".git")) { git init -q -b main }
     git fetch -q flatshare.bundle main
-    git reset -q --mixed FETCH_HEAD
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
     git log --oneline -n 5
   } | Out-Null
 }
@@ -59,12 +67,36 @@ if (-not $Cpu) {
 Write-Log "gpu_override=$gpu"
 $env:N8N_IMPORT_TEST_WORKFLOWS = "1"
 
-Step "docker and compose versions" { docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version } | Out-Null
-Step "compose config is valid" { docker compose @files config -q } | Out-Null
-Step "build images" { docker compose @files --profile test build } | Out-Null
-Step "start stack" { docker compose @files up -d } | Out-Null
+function Stop-OnFail([int]$code, [string]$what) {
+  if ($code -ne 0) {
+    Write-Host ""
+    Write-Host "Stopped: '$what' failed. Nothing after it can work. Summary: $summary  Log: $log"
+    exit 1
+  }
+}
 
-Step "wait for n8n, proxy and model pull (max 20 min)" {
+Step "docker and compose versions" { docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version } | Out-Null
+Step "free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed)" {
+  Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | ForEach-Object { "{0}: {1:N1} GB free" -f $_.Name, ($_.Free / 1GB) }
+} | Out-Null
+$c = Step "compose config is valid" { docker compose @files config -q }
+Stop-OnFail $c "compose config"
+$c = Step "every pinned image tag exists in its registry" {
+  $bad = 0
+  foreach ($img in @("postgis/postgis:17-3.5", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli")) {
+    docker manifest inspect $img *> $null
+    if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
+  }
+  $global:LASTEXITCODE = $bad
+}
+Stop-OnFail $c "image tag check"
+$c = Step "build images" { docker compose @files --profile test build }
+Stop-OnFail $c "build images"
+$c = Step "start stack" { docker compose @files up -d }
+Stop-OnFail $c "start stack"
+
+$c = Step "wait for n8n, proxy and model pull (max 20 min)" {
   $deadline = (Get-Date).AddMinutes(20)
   $ok = $false
   while ((Get-Date) -lt $deadline) {
@@ -72,11 +104,17 @@ Step "wait for n8n, proxy and model pull (max 20 min)" {
     $proxy = docker inspect -f "{{.State.Status}}" fs-proxy 2>$null
     $pull = docker compose @files ps -a --format "{{.Service}} {{.State}} {{.ExitCode}}" 2>$null | Select-String "^ollama-pull "
     if ($n8n -eq "healthy" -and $proxy -eq "running" -and "$pull" -match "exited 0") { $ok = $true; break }
+    $failed = docker compose @files ps -a --format "{{.Service}} {{.State}} {{.ExitCode}}" 2>$null | Select-String "exited [1-9]"
+    if ($failed) { "one-shot service failed: $failed"; break }
     Start-Sleep -Seconds 10
   }
   docker compose @files ps -a
   if (-not $ok) { $global:LASTEXITCODE = 1 } else { $global:LASTEXITCODE = 0 }
-} | Out-Null
+}
+if ($c -ne 0) {
+  Step "logs of the failed start (last 200 lines per service)" { docker compose @files logs --no-color --tail 200 } | Out-Null
+}
+Stop-OnFail $c "wait for the stack"
 
 Step "one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)" {
   docker compose @files logs --no-color db-bootstrap n8n-setup ollama-pull
@@ -84,7 +122,7 @@ Step "one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)" {
 
 Step "component versions" {
   docker compose @files images
-  foreach ($i in @("flatshare/postgres:17-3.6-pgvector0.8.6", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14")) {
+  foreach ($i in @("flatshare/postgres:17-3.5-pgvector0.8.6", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14")) {
     docker image inspect --format "{{index .RepoTags 0}} id={{.Id}} digests={{.RepoDigests}}" $i
   }
   docker exec -u postgres fs-postgres psql -At -d flatshare -c "select version()" -c "select extname || ' ' || extversion from pg_extension order by 1" -c "select 'migration ' || max(version) from public.schema_migrations"

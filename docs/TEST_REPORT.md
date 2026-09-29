@@ -6,7 +6,7 @@ output is in the file named under "Evidence"), result. Failed runs stay in the r
 **Where the runs happened.** All runs below are in the cloud sandbox (Ubuntu 24.04.4, 2 vCPU,
 7.8 GB RAM, no GPU) on a native stack: PostgreSQL 16.13, pgvector 0.6.0, PostGIS 3.4.2,
 pgTAP 1.3.2, dbmate 2.36.0, n8n 2.41.3 on Node 24.21.0 (internal task runner), Caddy 2.6.2.
-The compose stack (PostgreSQL 17, PostGIS 3.6, pgvector 0.8.6, Garage 2.4.1, Ollama 0.34.4,
+The compose stack (PostgreSQL 17, PostGIS 3.5, pgvector 0.8.6, Garage 2.4.1, Ollama 0.34.4,
 n8n image with external runners, Caddy 2.11.4) has **not been run yet** (see "Not run").
 Ollama and object storage are **mocks** in these runs (`tests/mocks/deps_mock.py`).
 
@@ -212,6 +212,26 @@ Evidence: `reports/phase1/08-latency.log`.
 | Unregistered route, default NODE_ENV | 404 with a full stack trace in the body | `reports/phase1/spike_webhook_code_node.log`; `NODE_ENV=production` removes it |
 | Start-up warnings | PostgreSQL 16 "outside the supported range"; internal runners deprecated | `reports/phase1/n8n_startup_warnings.log` |
 
+## T-10 First compose run on the owner's PC (2026-09-29T21:35+01:00) - FAILED at build
+
+```
+PS D:\Projects\coloc\flatshare> powershell -ExecutionPolicy Bypass -File scripts\windows\verify.ps1
+== restore git history from flatshare.bundle             PASS (exit 0, 0.6 s)
+== GPU visible to Docker (docker run --gpus all ... nvidia-smi)
+GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design (UUID: GPU-ee1b4c30-...)
+                                                          PASS (exit 0, 1.6 s)
+== docker and compose versions   client 29.7.2 server 29.7.2, Docker Compose version v5.4.0   PASS
+== compose config is valid                                PASS
+== build images
+#10 [postgres internal] load metadata for docker.io/postgis/postgis:17-3.6
+#10 ERROR: docker.io/postgis/postgis:17-3.6: not found
+                                                          FAIL (exit 1, 2.2 s)
+```
+
+Cause and fix: FAILURES F-016. Base image is now `postgis/postgis:17-3.5`; verify.ps1 checks every
+pinned tag before building and stops at the first failed build, start or wait step.
+Evidence: `reports/verify-20260929-213513/verify.log` (owner's PC). Environment of that PC: `reports/env-check.txt`.
+
 ---
 
 ## Not run (phase 0 and 1)
@@ -220,7 +240,7 @@ Evidence: `reports/phase1/08-latency.log`.
 |---|---|---|
 | Compose stack build and start (all services, pinned images) | sandbox cannot pull images (F-002) | `scripts/windows/verify.ps1` on the owner's PC |
 | **Phase 0 acceptance: embedding call returns 1024 numbers** | no Ollama or model download in the sandbox | step "PHASE 0: embedding call" in verify.ps1 |
-| Database suite on PostgreSQL 17 / PostGIS 3.6 / pgvector 0.8.6 | same | verify.ps1 |
+| Database suite on PostgreSQL 17 / PostGIS 3.5 / pgvector 0.8.6 | same | verify.ps1 |
 | Contract suite against the compose stack (real Garage and Ollama, external n8n runners, Caddy 2.11.4, outage tests via `docker stop`) | same | verify.ps1 |
 | GPU detection and GPU-in-Docker | owner's hardware unreadable (F-001) | `env-check.ps1`, and verify.ps1's first step |
 | Reproduction from a clean machine using README only | needs the owner's machine | first verify.ps1 run on a fresh clone is that test |

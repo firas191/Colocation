@@ -1,8 +1,8 @@
-# PostgreSQL 17 + PostGIS 3.6 (base image) + pgvector (built from a pinned tag)
+# PostgreSQL 17 + PostGIS 3.5 (base image) + pgvector (built from a pinned tag)
 # + pgTAP and pg_prove (tests) + dbmate (migrations). See docs/VERSIONS.md.
 FROM amacneil/dbmate:2.36.0 AS dbmate
 
-FROM postgis/postgis:17-3.6
+FROM postgis/postgis:17-3.5
 ARG PGVECTOR_TAG=v0.8.6
 RUN set -eux; \
     apt-get update; \
