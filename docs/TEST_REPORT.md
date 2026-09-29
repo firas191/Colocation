@@ -6,7 +6,7 @@ output is in the file named under "Evidence"), result. Failed runs stay in the r
 **Where the runs happened.** All runs below are in the cloud sandbox (Ubuntu 24.04.4, 2 vCPU,
 7.8 GB RAM, no GPU) on a native stack: PostgreSQL 16.13, pgvector 0.6.0, PostGIS 3.4.2,
 pgTAP 1.3.2, dbmate 2.36.0, n8n 2.41.3 on Node 24.21.0 (internal task runner), Caddy 2.6.2.
-The compose stack (PostgreSQL 17, PostGIS 3.5, pgvector 0.8.6, Garage 2.4.1, Ollama 0.34.4,
+The compose stack (PostgreSQL 18, PostGIS 3.6, pgvector 0.8, Garage 2.4.1, Ollama 0.34.4,
 n8n image with external runners, Caddy 2.11.4) has **not been run yet** (see "Not run").
 Ollama and object storage are **mocks** in these runs (`tests/mocks/deps_mock.py`).
 
@@ -232,6 +232,24 @@ Cause and fix: FAILURES F-016. Base image is now `postgis/postgis:17-3.5`; verif
 pinned tag before building and stops at the first failed build, start or wait step.
 Evidence: `reports/verify-20260929-213513/verify.log` (owner's PC). Environment of that PC: `reports/env-check.txt`.
 
+## T-11 Second compose run on the owner's PC (2026-09-29T21:42+01:00) - FAILED at build
+
+```
+== sync git history with flatshare.bundle                 PASS (0.3 s)
+== GPU visible to Docker                                  PASS (1.6 s)
+== free disk space                                        PASS
+== compose config is valid                                PASS
+== every pinned image tag exists in its registry          PASS (79.1 s)
+== build images                                           FAIL (exit 1, 2625.6 s)
+#20 DONE 667.7s        (tests image: apt-get install git)
+#21 2324.7 E: Failed to fetch http://deb.debian.org/debian-security/pool/updates/main/g/glibc/libc6_2.31-13%2bdeb11u14_amd64.deb  404  Not Found
+#21 2324.7 E: Failed to fetch http://deb.debian.org/debian/pool/main/b/binutils/binutils-common_2.35.2-2_amd64.deb  Connection timed out
+#21 ERROR: process "/bin/sh -c set -eux; apt-get update; apt-get install ... postgresql-server-dev-17 ..." did not complete successfully: exit code: 100
+```
+
+Cause and fix: FAILURES F-017, DECISIONS D-006 (now PostgreSQL 18 / PostGIS 3.6 on Debian 13).
+Evidence: `reports/verify-20260929-214259/verify.log` (owner's PC).
+
 ---
 
 ## Not run (phase 0 and 1)
@@ -240,7 +258,7 @@ Evidence: `reports/verify-20260929-213513/verify.log` (owner's PC). Environment 
 |---|---|---|
 | Compose stack build and start (all services, pinned images) | sandbox cannot pull images (F-002) | `scripts/windows/verify.ps1` on the owner's PC |
 | **Phase 0 acceptance: embedding call returns 1024 numbers** | no Ollama or model download in the sandbox | step "PHASE 0: embedding call" in verify.ps1 |
-| Database suite on PostgreSQL 17 / PostGIS 3.5 / pgvector 0.8.6 | same | verify.ps1 |
+| Database suite on PostgreSQL 18 / PostGIS 3.6 / pgvector 0.8 | same | verify.ps1 |
 | Contract suite against the compose stack (real Garage and Ollama, external n8n runners, Caddy 2.11.4, outage tests via `docker stop`) | same | verify.ps1 |
 | GPU detection and GPU-in-Docker | owner's hardware unreadable (F-001) | `env-check.ps1`, and verify.ps1's first step |
 | Reproduction from a clean machine using README only | needs the owner's machine | first verify.ps1 run on a fresh clone is that test |

@@ -10,10 +10,10 @@ first `verify.ps1` run on the owner's machine (section "Recorded at run time").
 |---|---|---|---|
 | n8n | 2.41.3 | docker-compose.yml `n8nio/n8n:2.41.3` | npm dist-tags `latest` and `stable` = 2.41.3 (`npm view n8n dist-tags`); Docker Hub tag pushed 2026-09-25 |
 | n8n task runners | 2.41.3 | docker-compose.yml `n8nio/runners:2.41.3` | must equal the n8n version (n8n docs "set up task runners", fetched 2026-09-29) |
-| PostgreSQL | 17 (minor from the base image) | infra/postgres/Dockerfile `postgis/postgis:17-3.5` | 17.11 is the current 17 minor (postgresql.org/support/versioning); major chosen in DECISIONS D-006 |
-| PostGIS | 3.5 | same base image | Docker Hub tag `17-3.5` updated 2026-08-31 (no Debian `17-3.6` tag exists; FAILURES F-016) |
-| pgvector | v0.8.6 | infra/postgres/Dockerfile `ARG PGVECTOR_TAG`, built from source | pgvector CHANGELOG: 0.8.6 released 2026-07-29, 0.8.7 unreleased |
-| pgTAP, pg_prove | PGDG package for PostgreSQL 17 at build time | not pinned (test tool) | recorded at run time |
+| PostgreSQL | 18 (minor from the base image) | infra/postgres/Dockerfile `postgis/postgis:18-3.6` | 18.6 is the current 18 minor (postgresql.org/support/versioning); major chosen in DECISIONS D-006 |
+| PostGIS | 3.6 | same base image (built on `postgres:18-trixie`) | Docker Hub tag `18-3.6` updated 2026-08-10; the 17 images failed (FAILURES F-016, F-017) |
+| pgvector | 0.8.x (PGDG package `postgresql-18-pgvector`; the build fails if it is not 0.8) | infra/postgres/Dockerfile | pgvector CHANGELOG: 0.8.6 released 2026-07-29; PGDG lists 0.8.6-1.pgdg13+1 builds; exact version recorded at run time |
+| pgTAP, pg_prove | PGDG `postgresql-18-pgtap` (1.3.4-1.pgdg13+1 listed) | not pinned (test tool) | recorded at run time |
 | dbmate | 2.36.0 | infra/postgres/Dockerfile `amacneil/dbmate:2.36.0` | npm `dbmate` 2.36.0 (2026-09-19); GitHub latest release |
 | Garage | v2.4.1 | docker-compose.yml `dxflrs/garage:v2.4.1` | garagehq.deuxfleurs.fr/_releases.html: v2.4.1, 2026-09-08 |
 | Ollama | 0.34.4 | docker-compose.yml `ollama/ollama:0.34.4` | GitHub "latest release" v0.34.4 (2026-09-23); newest stable tag on Docker Hub; a third-party tracker listed 0.35.0 on 2026-09-28 that is not on Docker Hub yet |

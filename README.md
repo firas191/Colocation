@@ -9,7 +9,7 @@ This repository is at **phase 1 of 10** (environment, database, API gateway). No
 - Windows 10/11 with Docker Desktop (WSL 2 backend), or Linux/macOS with Docker Engine and Compose v2.
 - About 10 GB of free disk for images and the embedding model.
 - Optional: an NVIDIA GPU visible to Docker (checked automatically).
-- Internet access for the first build (images, pgvector source, the `bge-m3` model).
+- Internet access for the first build (images, a few PostgreSQL packages, the `bge-m3` model). On a slow connection the first run takes a long time: the Ollama image alone is several GB.
 
 ## Git history
 

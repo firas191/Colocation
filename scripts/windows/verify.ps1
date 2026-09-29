@@ -83,7 +83,7 @@ $c = Step "compose config is valid" { docker compose @files config -q }
 Stop-OnFail $c "compose config"
 $c = Step "every pinned image tag exists in its registry" {
   $bad = 0
-  foreach ($img in @("postgis/postgis:17-3.5", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+  foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
                      "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli")) {
     docker manifest inspect $img *> $null
     if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
@@ -91,6 +91,8 @@ $c = Step "every pinned image tag exists in its registry" {
   $global:LASTEXITCODE = $bad
 }
 Stop-OnFail $c "image tag check"
+$c = Step "pull service images (largest download: Ollama, n8n)" { docker compose @files pull --ignore-buildable }
+Stop-OnFail $c "pull images"
 $c = Step "build images" { docker compose @files --profile test build }
 Stop-OnFail $c "build images"
 $c = Step "start stack" { docker compose @files up -d }
@@ -122,7 +124,7 @@ Step "one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)" {
 
 Step "component versions" {
   docker compose @files images
-  foreach ($i in @("flatshare/postgres:17-3.5-pgvector0.8.6", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14")) {
+  foreach ($i in @("flatshare/postgres:18-3.6-pgvector0.8", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14")) {
     docker image inspect --format "{{index .RepoTags 0}} id={{.Id}} digests={{.RepoDigests}}" $i
   }
   docker exec -u postgres fs-postgres psql -At -d flatshare -c "select version()" -c "select extname || ' ' || extversion from pg_extension order by 1" -c "select 'migration ' || max(version) from public.schema_migrations"

@@ -32,12 +32,12 @@ x-n8n-env: &n8n-env
 services:
   postgres:
     build: ./infra/postgres
-    image: flatshare/postgres:17-3.5-pgvector0.8.6
+    image: flatshare/postgres:18-3.6-pgvector0.8
     container_name: fs-postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql          # PostgreSQL 18 images keep PGDATA under /var/lib/postgresql/18/docker
       - ./:/flatshare:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
 
   db-bootstrap:
-    image: flatshare/postgres:17-3.5-pgvector0.8.6
+    image: flatshare/postgres:18-3.6-pgvector0.8
     depends_on:
       postgres: { condition: service_healthy }
     entrypoint: ["bash", "/flatshare/scripts/db-bootstrap.sh"]
