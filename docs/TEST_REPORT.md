@@ -250,6 +250,25 @@ Evidence: `reports/verify-20260929-213513/verify.log` (owner's PC). Environment 
 Cause and fix: FAILURES F-017, DECISIONS D-006 (now PostgreSQL 18 / PostGIS 3.6 on Debian 13).
 Evidence: `reports/verify-20260929-214259/verify.log` (owner's PC).
 
+## T-12 Third compose run on the owner's PC (2026-09-29T22:51+01:00) - FAILED at image pull
+
+```
+== every pinned image tag exists in its registry          PASS (95.2 s; all 9 found)
+== pull service images                                     FAIL (exit 1, 1.1 s)
+ Image flatshare/postgres:18-3.6-pgvector0.8 Error pull access denied for flatshare/postgres, repository does not exist or may require 'docker login'
+```
+
+Cause and fix: FAILURES F-018. Sandbox check after the fix:
+
+```
+$ docker compose --dry-run pull --ignore-buildable 2>&1 | grep flatshare/postgres
+ Image flatshare/postgres:18-3.6-pgvector0.8 Skipped
+ Image flatshare/postgres:18-3.6-pgvector0.8 Skipped Image can be built
+```
+
+(Before the fix the same command printed "Pulling" and an error for that image. The other images
+answer "Forbidden" in the sandbox because Docker Hub is blocked there, F-002.)
+
 ---
 
 ## Not run (phase 0 and 1)
