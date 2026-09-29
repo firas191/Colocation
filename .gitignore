@@ -8,3 +8,5 @@ __pycache__/
 .venv/
 *.pyc
 /tmp/
+secrets/
+.secrets.local

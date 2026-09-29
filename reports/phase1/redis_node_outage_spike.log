@@ -1,0 +1,10 @@
+# Spike 2026-09-29, n8n 2.41.3, Redis node v1 (incr), node setting onError=continueErrorOutput
+# Workflow: Webhook -> Redis incr -> Respond (error output -> Respond 503)
+$ curl -s -w " %{http_code} %{time_total}s\n" http://127.0.0.1:5678/webhook/spike-redis
+{"rl:test":1} 200 0.147911s
+$ redis-cli shutdown nosave
+$ curl -s -m 60 -w " %{http_code} %{time_total}s\n" http://127.0.0.1:5678/webhook/spike-redis
+ 000 60.002166s
+curl exit 28   (client timeout after 60 s; the error branch never answered)
+# Cause (n8n-nodes-base/dist/nodes/Redis/utils.js): reconnectStrategy retries 10 times with
+# exponential backoff (2^n s + jitter), so a request waits minutes before the node fails.

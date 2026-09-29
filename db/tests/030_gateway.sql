@@ -3,7 +3,7 @@
 -- The contract tests (tests/contract) check the same thing from a Python client.
 \ir helpers.psql
 begin;
-select plan(37);
+select plan(41);
 
 create temp table t_client as select * from sec.create_api_client('test-client', 'pgTAP client');
 select ok((select secret like 'fss_%' and length(secret) = 68 from t_client), 'create_api_client returns a fss_ secret of 64 hex chars');
@@ -19,7 +19,7 @@ $$;
 -- a reusable valid request
 create temp table r as select
   (select secret from t_client) as secret,
-  extract(epoch from now())::bigint::text as ts,
+  floor(extract(epoch from now()))::bigint::text as ts,
   'POST'::text as method, '/v1/users/sync'::text as path, ''::text as query,
   '3f1c0000-0000-4000-8000-000000000001'::text as rid, ''::text as uid, 'idem-0001-abcdef'::text as idem,
   '203.0.113.7'::text as ip, '{"external_auth_id":"auth0|1"}'::text as body;
@@ -112,6 +112,17 @@ select is(pg_temp.as_user('n8n_worker', '', 'select count(*)::text from sec.api_
 select is(pg_temp.as_user('n8n_worker', '', $$select sec.create_api_client('x-client','x')::text$$), 'ERROR 42501', 'n8n_worker cannot issue keys');
 select is(pg_temp.as_user('n8n_worker', '', $$select (sec.verify_request('nobody','1','GET','/','','3f1c0000-0000-4000-8000-000000000099','','','','',repeat('0',64))->>'reason')$$),
           'unknown_key', 'n8n_worker can call verify_request');
+
+-- shared signing vectors (tests/vectors/signing.json): the database agrees with the Python and JS clients
+insert into sec.api_clients(key_id,name,secret) values ('vector-client','vectors',convert_to('fss_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef','UTF8'));
+select is(sec.verify_request('vector-client','1790000000','GET','/v1/health','','3f1c0000-0000-4000-8000-000000000001','','','',
+          encode(convert_to('','UTF8'),'base64'),'f0ec8772a5ce1e845c4725885b647a86e1ab39a90ce592d898abbcee7a6d1115', 1000000000)->>'ok', 'true', 'vector get_no_body verifies');
+select is(sec.verify_request('vector-client','1790000000','POST','/v1/users/sync','','3f1c0000-0000-4000-8000-000000000002','','idem-0001-abcdef','203.0.113.7',
+          encode(convert_to('{"external_auth_id":"auth0|1","display_name":"فراس"}','UTF8'),'base64'),'87feb7ac821459042fcd96b3ba5675e8be1844d797628a834f29cb75e07b05f7', 1000000000)->>'ok', 'true', 'vector post_json_unicode verifies');
+select is(sec.verify_request('vector-client','1790000000','GET','/v1/search','a=x%20y%26z%3D%C3%A9&a=2&b=*()!''~&z=1','3f1c0000-0000-4000-8000-000000000003','00000000-0000-0000-0000-00000000000a','','',
+          encode(convert_to('','UTF8'),'base64'),'10bdca8bbac0702c3d3020b5e762a68663c79d71403259d6b4c15bc0f91cf328', 1000000000)->>'ok', 'true', 'vector query_repeated_reserved verifies');
+select is(sec.verify_request('vector-client','1790000000','PATCH','/v1/listings/10000000-0000-0000-0000-000000000001','','3f1c0000-0000-4000-8000-000000000004','00000000-0000-0000-0000-00000000000a','patch:0001-x','',
+          encode(convert_to('{"title":"a"}','UTF8'),'base64'),'cc647784861807e1d4a8588661b8fe12cdb3a0e454b2d616a4975b314e3b9681', 1000000000)->>'ok', 'true', 'vector path_param verifies');
 
 -- idempotency
 select is(app.idempotency_begin('k:anon', 'idem-0001-abcdef', 'POST /v1/users/sync', repeat('a',64)) ->> 'state', 'new', 'idempotency: first use is new');

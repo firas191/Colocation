@@ -1,0 +1,83 @@
+{
+  "secret": "fss_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "note": "Test vectors for the FS1-HMAC-SHA256 signature. Every implementation (Python client, JS client, n8n Code node canonicalization, PostgreSQL verify) must reproduce canonical_query and signature exactly.",
+  "vectors": [
+    {
+      "name": "get_no_body",
+      "timestamp": "1790000000",
+      "method": "GET",
+      "path": "/v1/health",
+      "query_params": null,
+      "canonical_query": "",
+      "request_id": "3f1c0000-0000-4000-8000-000000000001",
+      "user_id": "",
+      "idempotency_key": "",
+      "client_ip": "",
+      "body_utf8": "",
+      "canonical_string": "FS1-HMAC-SHA256\n1790000000\nGET\n/v1/health\n\n3f1c0000-0000-4000-8000-000000000001\n\n\n\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "f0ec8772a5ce1e845c4725885b647a86e1ab39a90ce592d898abbcee7a6d1115"
+    },
+    {
+      "name": "post_json_unicode",
+      "timestamp": "1790000000",
+      "method": "POST",
+      "path": "/v1/users/sync",
+      "query_params": null,
+      "canonical_query": "",
+      "request_id": "3f1c0000-0000-4000-8000-000000000002",
+      "user_id": "",
+      "idempotency_key": "idem-0001-abcdef",
+      "client_ip": "203.0.113.7",
+      "body_utf8": "{\"external_auth_id\":\"auth0|1\",\"display_name\":\"فراس\"}",
+      "canonical_string": "FS1-HMAC-SHA256\n1790000000\nPOST\n/v1/users/sync\n\n3f1c0000-0000-4000-8000-000000000002\n\nidem-0001-abcdef\n203.0.113.7\n15c2b9134ce80fc942a52fa6dcbfdee2c65a5017c3b5dd4cbfca2f0788bcb904",
+      "signature": "87feb7ac821459042fcd96b3ba5675e8be1844d797628a834f29cb75e07b05f7"
+    },
+    {
+      "name": "query_repeated_reserved",
+      "timestamp": "1790000000",
+      "method": "GET",
+      "path": "/v1/search",
+      "query_params": [
+        [
+          "z",
+          "1"
+        ],
+        [
+          "a",
+          "x y&z=é"
+        ],
+        [
+          "a",
+          "2"
+        ],
+        [
+          "b",
+          "*()!'~"
+        ]
+      ],
+      "canonical_query": "a=x%20y%26z%3D%C3%A9&a=2&b=*()!'~&z=1",
+      "request_id": "3f1c0000-0000-4000-8000-000000000003",
+      "user_id": "00000000-0000-0000-0000-00000000000a",
+      "idempotency_key": "",
+      "client_ip": "",
+      "body_utf8": "",
+      "canonical_string": "FS1-HMAC-SHA256\n1790000000\nGET\n/v1/search\na=x%20y%26z%3D%C3%A9&a=2&b=*()!'~&z=1\n3f1c0000-0000-4000-8000-000000000003\n00000000-0000-0000-0000-00000000000a\n\n\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "10bdca8bbac0702c3d3020b5e762a68663c79d71403259d6b4c15bc0f91cf328"
+    },
+    {
+      "name": "path_param",
+      "timestamp": "1790000000",
+      "method": "PATCH",
+      "path": "/v1/listings/10000000-0000-0000-0000-000000000001",
+      "query_params": null,
+      "canonical_query": "",
+      "request_id": "3f1c0000-0000-4000-8000-000000000004",
+      "user_id": "00000000-0000-0000-0000-00000000000a",
+      "idempotency_key": "patch:0001-x",
+      "client_ip": "",
+      "body_utf8": "{\"title\":\"a\"}",
+      "canonical_string": "FS1-HMAC-SHA256\n1790000000\nPATCH\n/v1/listings/10000000-0000-0000-0000-000000000001\n\n3f1c0000-0000-4000-8000-000000000004\n00000000-0000-0000-0000-00000000000a\npatch:0001-x\n\nc66a6f9e3a6339f6c80c5fb40a9c15c11878e8aae519469861478ff8643b0f4f",
+      "signature": "cc647784861807e1d4a8588661b8fe12cdb3a0e454b2d616a4975b314e3b9681"
+    }
+  ]
+}

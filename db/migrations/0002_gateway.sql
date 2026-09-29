@@ -52,7 +52,7 @@ as $$
 declare
   v_secret    bytea;
   v_ts        bigint;
-  v_now       bigint := extract(epoch from clock_timestamp())::bigint;
+  v_now       bigint := floor(extract(epoch from clock_timestamp()))::bigint;  -- floor, not round (::bigint rounds)
   v_body      bytea;
   v_body_hash text;
   v_canonical text;
