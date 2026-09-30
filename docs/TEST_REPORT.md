@@ -404,6 +404,31 @@ with the new script. The next `verify.ps1` run covers it.
 
 ---
 
+## T-15 Fifth compose run on the owner's PC (2026-10-01T00:40+01:00) - stopped, Docker engine not running
+
+```
+== GPU visible to Docker (docker run --gpus all ... nvidia-smi)   FAIL (exit 1, 0.2 s)
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; ... The system cannot find the file specified.
+== docker and compose versions                                    PASS (exit 0, 0.3 s)
+client 29.7.2 server
+== pull service images (largest download: Ollama, n8n)            FAIL (exit 1, 0.3 s)
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; ...
+```
+
+No project code ran. Cause and script change: FAILURES F-021. Sandbox check of the new first step:
+
+```
+$ DOCKER_HOST=unix:///nonexistent.sock docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}"
+server  os
+failed to connect to the docker API at unix:///nonexistent.sock; ... no such file or directory
+exit=1
+```
+
+The PowerShell file itself was not run here (no PowerShell in the sandbox); the next run on the
+owner's PC runs it.
+
+---
+
 ## Not run (phase 0 and 1)
 
 | Item | Why | How it will be run |

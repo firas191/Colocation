@@ -58,6 +58,14 @@ if ((Test-Path "flatshare.bundle") -and (Get-Command git -ErrorAction SilentlyCo
 }
 if (-not (Test-Path ".env")) { & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 | Out-Null }
 
+# Docker Desktop must be running; without this check the GPU step silently falls back to CPU
+# and the version step passes with an empty server version (FAILURES F-021).
+$c = Step "Docker engine is running" { docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}" }
+if ($c -ne 0) {
+  Write-Host ""
+  Write-Host "Stopped: the Docker engine is not running. Start Docker Desktop, wait until it shows Engine running, then run this script again. Log: $log"
+  exit 1
+}
 $files = @("-f", "docker-compose.yml")
 $gpu = $false
 if (-not $Cpu) {
