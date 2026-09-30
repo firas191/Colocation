@@ -346,7 +346,7 @@ was the version before commit e72b61d (after an outage it slept 2 s and asserted
 polling until healthy); the git history was restored with `reset --mixed`, which keeps working-tree
 files. It passed with that version. The current version is delivered again.
 
-**Secret scan.** detect-secrets: `no new findings`. The exact-match step failed on five files;
+**Secret scan.** The detect-secrets step found nothing new. The exact-match step failed on five files;
 the cause is a false positive, FAILURES F-019, fixed in T-14.
 
 ```
@@ -426,6 +426,31 @@ exit=1
 
 The PowerShell file itself was not run here (no PowerShell in the sandbox); the next run on the
 owner's PC runs it.
+
+---
+
+## T-16 Sixth compose run on the owner's PC (2026-10-01T00:45+01:00) - all tests PASS, secret scan FAILED (my doc text)
+
+First run with the Docker engine check (F-021): it passed, GPU override on. Images, build and
+model were cached (pull 4.1 s, build 3.5 s, start 35.2 s). Evidence:
+`reports/verify-20261001-004515/verify.log` on the owner's PC.
+
+```
+status 200 model bge-m3 dims [1024, 1024, 1024, 1024] l2_norms [1.0, 1.0, 1.0, 1.0] seconds_for_4_texts 4.58
+Files=6, Tests=156 ... Result: PASS
+======================== 57 passed, 1 skipped in 56.59s ========================
+```
+
+57 = the 52 contract and unit tests of T-13 plus the 5 new tests in `tests/unit/test_secret_scan.py`.
+4.58 s is one call with the model already downloaded; it is not a latency measurement.
+
+Secret-scan step: exit 123, detect-secrets reported a "Secret Keyword" in this file (FAILURES
+F-022); the exact-match part did not run in this step. Sandbox after the fix:
+
+```
+$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline; echo exit=$?
+exit=0
+```
 
 ---
 
