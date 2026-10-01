@@ -77,6 +77,10 @@ test('structure: Arabic articles and markdown headings', () => {
   assert.equal(articleRef('الفصل ٧٢٨'), '728');
   assert.equal(articleRef('Article premier : objet'), '1');
   assert.equal(articleRef('Articles généraux du code'), null);
+  assert.equal(articleRef('Article. 5 :'), '5');                 // as printed in the 2004-63 PDF
+  assert.equal(articleRef('Article unique'), 'unique');
+  assert.equal(articleRef('Art. 24LF 2008-77 du 22/12/2008)'), null);   // an amendment note, not an article
+  assert.equal(articleRef('Art 35 LF 2015-53 du 25/12/2015 )'), null);
   const st = parseStructure('# Guide\n\nIntro texte.\n\n## Dépôt\n\nLe dépôt est rendu.\n\nSecond paragraphe.');
   assert.deepEqual(st.units.map((u) => [u.kind, u.path.map((i) => st.headings[i].label)]),
     [['para', ['Guide']], ['para', ['Guide', 'Dépôt']], ['para', ['Guide', 'Dépôt']]]);

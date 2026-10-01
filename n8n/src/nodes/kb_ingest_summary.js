@@ -13,6 +13,9 @@ const results = items.map((r) => ({
   step: r.step || null,
   action: r.action || null,
   error: r.status === 'ok' || r.status === 'skipped' ? null : (r.error || errorOf(r)),
+  reason: r.status !== 'skipped' ? null : r.step === 'robots' && r.detail && r.detail.robots
+    ? r.detail.robots.reason + (r.detail.robots.rule ? ` (${r.detail.robots.rule})` : '') + ` [robots.txt HTTP ${r.detail.robots.status}]`
+    : r.step,
   chunks: r.chunks || null,
   embeddings: r.embeddings || null,
   ms: r.ms || null,

@@ -613,6 +613,67 @@ ingest succeeded in 3 s: {"ok": 0, "failed": 0, "skipped": 1}
 
 ---
 
+## T-21 First TN ingestion on the owner's PC (2026-10-01T23:58+01:00) - 11 ok, 4 skipped, 5 failed
+
+Command: `scripts\windows\kb.ps1 -Step ingest` after `verify.ps1` (T-21a below). Evidence:
+`reports/kb-20261001-235825/kb.log` on the owner's PC. Real services: TEI (multilingual-e5-large, CPU), Ollama
+(bge-m3, GPU), sources fetched from their sites.
+
+```
+job 96476bcc-... (kb_ingest) was still marked running after 21.1 h: marked failed (abandoned)
+/v1/admin/kb/ingest: job c1289795-... accepted
+      1284.0s  job failed
+ingest failed in 1285 s: {"ok": 11, "failed": 5, "skipped": 4}
+  failed   gl-123loger-arnaques               chunk span outside the document text
+  failed   gl-gestetud-arnaques               chunk span outside the document text
+  failed   gl-twenty-campus-arnaques          chunk span outside the document text
+  ok       tn-cdet-2017                       unchanged fixed_500_50: 87 chunks, structure_aware_v1: 151 chunks
+  skipped  tn-coc-ar                          robots
+  skipped  tn-coc-fr                          robots
+  ok       tn-cyriljarnias-location           created fixed_500_50: 20 chunks, structure_aware_v1: 29 chunks
+  ok       tn-diwan-location                  created fixed_500_50: 3 chunks, structure_aware_v1: 4 chunks
+  ok       tn-dpo-consulting-loi              created fixed_500_50: 18 chunks, structure_aware_v1: 57 chunks
+  ok       tn-houni-colocation-tunis          created fixed_500_50: 3 chunks, structure_aware_v1: 9 chunks
+  skipped  tn-inpdp-procedures                robots
+  ok       tn-lapresse-arnaque-sousse         created fixed_500_50: 2 chunks, structure_aware_v1: 7 chunks
+  skipped  tn-lo-2004-63-ar                   robots
+  ok       tn-lo-2004-63-fr                   created fixed_500_50: 29 chunks, structure_aware_v1: 47 chunks
+  ok       tn-loi-76-35-recueil               created fixed_500_50: 62 chunks, structure_aware_v1: 94 chunks
+  ok       tn-mehat-logement-locatif-2014     created fixed_500_50: 72 chunks, structure_aware_v1: 90 chunks
+  ok       tn-notaire-tunisienumerique        created fixed_500_50: 5 chunks, structure_aware_v1: 21 chunks
+  ok       tn-profiscal-det-ch7-2006          created fixed_500_50: 17 chunks, structure_aware_v1: 51 chunks
+  failed   tn-web6-droits-locataire           fetch_http_404 https://web6.tn/blog/droits-devoirs-locataire-proprietaire-tunisie-2026/
+  failed   tn-web6-inpdp                      chunk span outside the document text
+```
+
+`tn-cdet-2017` was "unchanged": the job started the day before (and abandoned by the script) had processed it,
+which shows the n8n job kept running after the script was stopped (F-028). The 1284 s include all fetches,
+tokenization, and both embedding models for the 11 documents processed in this job; per-source times are in
+`kb.ingest_log` and are not broken down here. Structure found by the parser in the exported texts (a script run on
+the owner's PC): `tn-lo-2004-63-fr` 104 of 105 articles (missed "Article. 5 :", fixed), `tn-loi-76-35-recueil`
+109 articles, `tn-cdet-2017` 152 articles and 68 headings. Failures: F-030, F-031; sources: D-047.
+
+T-21a, the `verify.ps1` run before it (`reports/verify-20261001-234933`): every step passed except the contract
+tests, 73 passed and 1 failed (`test_documents_chunks_and_embeddings_stored`, F-029). The parameterised routes
+now answer through Caddy 2.11.4 (F-026 fixed on the real proxy).
+
+## T-22 Fixes for F-029 to F-031, sandbox (2026-10-02) - PASS, with mocks for TEI and Ollama
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# pass 50
+# fail 0
+$ pytest -v -rs tests/unit tests/contract
+=================== 74 passed, 1 skipped in 92.89s (0:01:32) ===================
+```
+
+One earlier sandbox run in this round failed 5 tests because two pytest processes ran at the same time and one
+left the setting `ollama.embed_model` at a test value; the setting was reset and the suite re-run alone (the
+result above, `reports/phase2/05-pytest-after-f029-f030-sandbox.log`). The extraction options were checked on the
+owner's PC against the saved raw pages; the decoding fix is checked by the next `verify.ps1`.
+
+---
+
 ## Not run
 
 | Item | Why | How it will be run |

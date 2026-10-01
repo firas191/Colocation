@@ -104,8 +104,10 @@ $c = Step "pull service images (largest download: Ollama, n8n)" { docker compose
 Stop-OnFail $c "pull images"
 $c = Step "build images" { docker compose @files --profile test build }
 Stop-OnFail $c "build images"
-# Caddy reads its config file only at start: restart it so an edited Caddyfile is used.
-$c = Step "start stack" { docker compose @files up -d; docker compose @files restart proxy }
+# n8n-setup imports the workflows from this folder, n8n loads them at start and Caddy reads
+# its config only at start: recreate the three so the code under test is the code in this folder.
+# This restarts n8n: do not run verify.ps1 while a kb.ps1 job is running.
+$c = Step "start stack" { docker compose @files up -d; docker compose @files up -d --force-recreate n8n-setup n8n proxy }
 Stop-OnFail $c "start stack"
 
 $c = Step "wait for n8n, proxy and model pull (max 20 min)" {

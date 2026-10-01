@@ -16,7 +16,7 @@ const AR_HEADING = [
   [/^الكتاب\s/, 1], [/^(العنوان|الباب)\s/, 2], [/^(القسم)\s/, 4], [/^(الفرع|الجزء)\s/, 5],
 ];
 // "Article 727", "Art. 727 bis", "ARTICLE PREMIER", "Article 2 (nouveau)", "الفصل 727", "الفصل الأول"
-const ARTICLE_FR = /^(?:article|art\.)\s*(premier|1er|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies))?(?:\s*\((?:nouveau|modifié|abrogé)\))?)\s*(?:[.:\-–—)]|$|\s)/i;
+const ARTICLE_FR = /^(?:article\.?|art\.)\s*(premier|unique|1er|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies))?(?:\s*\((?:nouveau|modifié|abrogé)\))?)\s*(?:[.:\-–—)]|$|\s)/i;
 const ARTICLE_AR = /^(?:الفصل|فصل)\s*((?:\d+|[٠-٩]+)(?:\s*(?:مكرر|ثالثا|رابعا))?|الأول|الاول|أول|اول)\s*(?:[.:\-–—)]|$|\s)/;
 
 function headingLevel(line) {
@@ -31,7 +31,7 @@ function headingLevel(line) {
 function articleRef(line) {
   let m = ARTICLE_FR.exec(line);
   if (m) {
-    const n = m[1].replace(/\s+/g, ' ').replace(/^1er$/i, '1').replace(/^premier$/i, '1');
+    const n = m[1].replace(/\s+/g, ' ').replace(/^1er$/i, '1').replace(/^premier$/i, '1').replace(/^unique$/i, 'unique');
     return n.replace(/\s*\((nouveau|modifié|abrogé)\)/i, '');
   }
   m = ARTICLE_AR.exec(line);

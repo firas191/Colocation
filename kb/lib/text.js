@@ -9,9 +9,17 @@
 
 const ZERO_WIDTH_RE = /[­​-‏‪-‮⁠-⁤﻿]/g;
 
+// Characters outside the Basic Multilingual Plane (emoji, rare symbols) are removed:
+// JavaScript counts them as two positions and PostgreSQL as one, so a single emoji
+// shifted every chunk span after it (FAILURES F-030). They carry nothing for retrieval.
+const ASTRAL_RE = /[\u{10000}-\u{10FFFF}]/gu;
+const LONE_SURROGATE_RE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+
 function normalizeText(s) {
   return String(s || '')
     .normalize('NFKC')
+    .replace(ASTRAL_RE, '')
+    .replace(LONE_SURROGATE_RE, '')
     .replace(/\r\n?/g, '\n')
     .replace(ZERO_WIDTH_RE, '')
     .replace(/[  -   　\t]/g, ' ')
@@ -33,14 +41,36 @@ function sniffCharset(contentType, headBytesLatin1) {
   return meta ? meta[1].toLowerCase() : 'utf-8';
 }
 
+// Single-byte code pages decoded without ICU: the Node build in n8n's runner image
+// cannot decode windows-1256 with TextDecoder (F-029). Bytes 0x80-0xFF, generated
+// from Python's codecs; U+FFFD marks bytes the code page leaves undefined.
+const SINGLE_BYTE = {
+  'windows-1256': '\u20ac\u067e\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0679\u2039\u0152\u0686\u0698\u0688\u06af\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u06a9\u2122\u0691\u203a\u0153\u200c\u200d\u06ba\u00a0\u060c\u00a2\u00a3\u00a4\u00a5\u00a6\u00a7\u00a8\u00a9\u06be\u00ab\u00ac\u00ad\u00ae\u00af\u00b0\u00b1\u00b2\u00b3\u00b4\u00b5\u00b6\u00b7\u00b8\u00b9\u061b\u00bb\u00bc\u00bd\u00be\u061f\u06c1\u0621\u0622\u0623\u0624\u0625\u0626\u0627\u0628\u0629\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u00d7\u0637\u0638\u0639\u063a\u0640\u0641\u0642\u0643\u00e0\u0644\u00e2\u0645\u0646\u0647\u0648\u00e7\u00e8\u00e9\u00ea\u00eb\u0649\u064a\u00ee\u00ef\u064b\u064c\u064d\u064e\u00f4\u064f\u0650\u00f7\u0651\u00f9\u0652\u00fb\u00fc\u200e\u200f\u06d2',
+  'windows-1252': '\u20ac\ufffd\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\ufffd\u017d\ufffd\ufffd\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\ufffd\u017e\u0178\u00a0\u00a1\u00a2\u00a3\u00a4\u00a5\u00a6\u00a7\u00a8\u00a9\u00aa\u00ab\u00ac\u00ad\u00ae\u00af\u00b0\u00b1\u00b2\u00b3\u00b4\u00b5\u00b6\u00b7\u00b8\u00b9\u00ba\u00bb\u00bc\u00bd\u00be\u00bf\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00c7\u00c8\u00c9\u00ca\u00cb\u00cc\u00cd\u00ce\u00cf\u00d0\u00d1\u00d2\u00d3\u00d4\u00d5\u00d6\u00d7\u00d8\u00d9\u00da\u00db\u00dc\u00dd\u00de\u00df\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u00e6\u00e7\u00e8\u00e9\u00ea\u00eb\u00ec\u00ed\u00ee\u00ef\u00f0\u00f1\u00f2\u00f3\u00f4\u00f5\u00f6\u00f7\u00f8\u00f9\u00fa\u00fb\u00fc\u00fd\u00fe\u00ff',
+  'iso-8859-6': '\u0080\u0081\u0082\u0083\u0084\u0085\u0086\u0087\u0088\u0089\u008a\u008b\u008c\u008d\u008e\u008f\u0090\u0091\u0092\u0093\u0094\u0095\u0096\u0097\u0098\u0099\u009a\u009b\u009c\u009d\u009e\u009f\u00a0\ufffd\ufffd\ufffd\u00a4\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\u060c\u00ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\u061b\ufffd\ufffd\ufffd\u061f\ufffd\u0621\u0622\u0623\u0624\u0625\u0626\u0627\u0628\u0629\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\ufffd\ufffd\ufffd\ufffd\ufffd\u0640\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u0649\u064a\u064b\u064c\u064d\u064e\u064f\u0650\u0651\u0652\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd',
+};
+const CHARSET_ALIASES = { 'cp1256': 'windows-1256', 'cp1252': 'windows-1252', 'iso-8859-1': 'windows-1252',
+  'latin1': 'windows-1252', 'us-ascii': 'windows-1252', 'ascii': 'windows-1252', 'iso_8859-6': 'iso-8859-6',
+  'arabic': 'iso-8859-6', 'utf8': 'utf-8' };
+
+function decodeSingleByte(buf, table) {
+  let s = '';
+  for (let i = 0; i < buf.length; i++) s += buf[i] < 128 ? String.fromCharCode(buf[i]) : table[buf[i] - 128];
+  return s;
+}
+
 function decodeBytes(buf, contentType) {
   const head = Buffer.from(buf.subarray(0, 4096)).toString('latin1');
   let label = sniffCharset(contentType, head);
+  label = CHARSET_ALIASES[label] || label;
+  // WHATWG treats iso-8859-1 as windows-1252; the table is used whatever ICU is present,
+  // so results do not depend on how Node was built.
+  if (SINGLE_BYTE[label]) return { text: decodeSingleByte(buf, SINGLE_BYTE[label]), charset: label };
+  if (label === 'utf-8') return { text: new TextDecoder('utf-8').decode(buf), charset: label };
   try {
     return { text: new TextDecoder(label).decode(buf), charset: label };
   } catch (e) {
-    label = 'utf-8';
-    return { text: new TextDecoder(label).decode(buf), charset: label };
+    throw new Error(`unsupported charset ${label}`);   // never guess: a wrong decoder garbles the text silently
   }
 }
 
@@ -66,7 +96,9 @@ function decodeEntities(s) {
   });
 }
 
-const DROP_ELEMENTS = ['script', 'style', 'noscript', 'svg', 'head', 'template', 'iframe', 'canvas', 'select', 'button'];
+// del / s / strike: struck-through text is repealed wording on law sites (jurisitetunisie.com)
+const DROP_ELEMENTS = ['script', 'style', 'noscript', 'svg', 'head', 'template', 'iframe', 'canvas', 'select', 'button',
+  'del', 's', 'strike'];
 const BOILERPLATE_ELEMENTS = ['nav', 'header', 'footer', 'aside', 'form'];
 const BLOCK_TAGS = new Set(['p', 'div', 'section', 'article', 'main', 'ul', 'ol', 'table', 'tr', 'tbody', 'thead',
   'blockquote', 'pre', 'dl', 'dd', 'dt', 'figure', 'figcaption', 'address', 'center', 'hr', 'body', 'html']);
@@ -138,6 +170,25 @@ function htmlToText(html, opts = {}) {
   // a heading marker left alone on its line (empty heading) is dropped
   text = text.replace(/^#{1,6}\s*$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
   return { text, selected };
+}
+
+// Keep the text from the first line starting with startAt (inclusive) to the
+// first later line starting with endAt (exclusive). Used per source to drop page
+// chrome around an article (kb/packs/*/sources.csv, column "extract").
+// A missing start marker is an error (the page changed); a missing end marker keeps
+// the rest of the text and is reported.
+function cutBetween(text, startAt, endAt) {
+  const lines = text.split('\n');
+  let a = 0, b = lines.length, ended = !endAt;
+  if (startAt) {
+    a = lines.findIndex((l) => l.trim().startsWith(startAt));
+    if (a < 0) throw new Error(`start marker not found: ${startAt}`);
+  }
+  if (endAt) {
+    const e = lines.findIndex((l, i) => i > a && l.trim().startsWith(endAt));
+    if (e >= 0) { b = e; ended = true; }
+  }
+  return { text: normalizeText(lines.slice(a, b).join('\n')), ended };
 }
 
 // ---------------------------------------------------------------------------
@@ -221,5 +272,5 @@ function sentenceStarts(text, start = 0, end = text.length) {
 
 if (typeof module !== 'undefined') {
   module.exports = { normalizeText, sniffCharset, decodeBytes, decodeEntities, extractElement, htmlToText,
-    pdfPagesToText, sentenceStarts };
+    pdfPagesToText, sentenceStarts, cutBetween };
 }

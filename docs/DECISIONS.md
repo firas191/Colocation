@@ -186,6 +186,16 @@ Ingestion tests fetch synthetic HTML and PDF files from a `fixtures` service (pr
 
 `GET /v1/health` checks what the user-facing API needs. TEI is only used by admin ingestion and evaluation in this phase; verify.ps1 and `scripts/kb.py` check it before use. It joins the health check when a user-facing route depends on it.
 
+### D-047 TN pack v1.1 after the first ingestion
+
+The first complete run on the owner's PC (T-21) skipped four sources at the robots.txt step (`tn-coc-fr`, `tn-coc-ar` on legislation.tn; `tn-lo-2004-63-ar`, `tn-inpdp-procedures` on inpdp.tn) and got a 404 for `tn-web6-droits-locataire`. The job output did not yet say whether robots.txt disallowed the path or could not be reached; it does now (reason, rule and robots.txt status per skipped source). Changes:
+- The COC articles on the lease of things (727 to 827) are added from jurisitetunisie.com, nine section pages, typed `primary_law` with reliability 3 (law text reproduced by a private site, copyright on the compilation, internal use only). The official rows stay; if legislation.tn becomes fetchable, it is preferred and the reproductions can be removed.
+- The Arabic COC is added from the CAWTAR legal database (NGO), reliability 3; whether that text is the consolidated version is not verified.
+- The Arabic law 2004-63 is added from igppp.tn (public body), reliability 5.
+- The Ministry of Justice page of civil questions (cites COC 788 and 791) is added as `government_guide`, 4.
+- `tn-web6-droits-locataire` is removed (the page answers 404; it is marked `removed`, not deleted).
+- Africa-laws.org (another copy of the official COC) was considered and dropped: its robots.txt disallows fetching.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** `app.listings` has no rent period, but P3's schema and GB practice include weekly rents. Comparing a weekly rent with a monthly budget gives wrong results. Phase 3 adds `rent_period` and a monthly-equivalent column used by `search_listings`.

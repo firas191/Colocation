@@ -37,7 +37,7 @@ test('decodeBytes: charset from header, from meta, default utf-8', () => {
   const meta = Buffer.concat([Buffer.from('<meta charset="iso-8859-1">'), latin]);
   assert.match(T.decodeBytes(meta, 'text/html').text, /Loyer été$/);
   assert.equal(T.decodeBytes(Buffer.from('الكراء'), '').text, 'الكراء');
-  assert.equal(T.decodeBytes(Buffer.from('x'), 'text/html; charset=not-a-charset').charset, 'utf-8');
+  assert.throws(() => T.decodeBytes(Buffer.from('x'), 'text/html; charset=not-a-charset'), /unsupported charset/);
 });
 
 test('pdfPagesToText: running header/footer and page numbers removed, wrapped lines joined', () => {
@@ -96,4 +96,41 @@ test('splitUrl: scheme, host, path and query without the URL class', () => {
   assert.deepEqual(R.splitUrl('http://h:8081'), { protocol: 'http:', host: 'h:8081', pathname: '/', search: '' });
   assert.equal(R.splitUrl('ftp://x/y'), null);
   assert.equal(R.robotsDecision(200, '', 'UA', 'file:///etc/passwd').allowed, false);
+});
+
+test('decodeBytes: windows-1256 and iso-8859-6 decoded from tables, without ICU (F-029)', () => {
+  const real = global.TextDecoder;
+  global.TextDecoder = class { constructor(l) { if (l !== 'utf-8') throw new RangeError('no ICU: ' + l); return new real(l); } };
+  try {
+    const fixture = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../tests/fixtures/kb/law_ar.html'));
+    const r = T.decodeBytes(fixture, 'text/html');
+    assert.equal(r.charset, 'windows-1256');
+    assert.match(r.text, /يدفع المكتري معين الكراء/);
+    assert.ok(!r.text.includes('\ufffd'));
+    // "الكراء" in ISO-8859-6
+    assert.equal(T.decodeBytes(Buffer.from([0xc7, 0xe4, 0xe3, 0xd1, 0xc7, 0xc1]), 'text/plain; charset=iso-8859-6').text, 'الكراء');
+    assert.equal(T.decodeBytes(Buffer.from([0x80, 0xe9]), 'text/html; charset=ISO-8859-1').text, '€é');
+  } finally {
+    global.TextDecoder = real;
+  }
+});
+
+test('normalizeText removes characters outside the BMP so JS and PostgreSQL offsets agree (F-030)', () => {
+  const t = T.normalizeText('Arnaque \u{1F6A8} évitée \u{1F44D}! Fin');
+  assert.equal(t, 'Arnaque évitée ! Fin');
+  assert.equal([...t].length, t.length);              // one UTF-16 unit per code point
+  assert.equal(T.normalizeText('a\ud800b'), 'ab');     // lone surrogate dropped
+});
+
+test('htmlToText drops struck-through (repealed) wording', () => {
+  const { text } = T.htmlToText('<p>Le délai est de <del>deux</del><strike>deux</strike><s>2</s> trois mois.</p>');
+  assert.equal(text, 'Le délai est de trois mois.');
+});
+
+test('cutBetween keeps the article between markers; missing start fails, missing end keeps the rest', () => {
+  const t = 'Menu\nAccueil\n# Titre\n\nTexte utile.\n\nLIRE AUSSI\nautre';
+  assert.deepEqual(T.cutBetween(t, '# Titre', 'LIRE AUSSI'), { text: '# Titre\n\nTexte utile.', ended: true });
+  assert.deepEqual(T.cutBetween(t, null, 'LIRE AUSSI'), { text: 'Menu\nAccueil\n# Titre\n\nTexte utile.', ended: true });
+  assert.equal(T.cutBetween(t, '# Titre', 'ABSENT').ended, false);
+  assert.throws(() => T.cutBetween(t, 'ABSENT', null), /start marker not found/);
 });

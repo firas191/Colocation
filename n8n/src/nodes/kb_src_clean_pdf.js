@@ -10,11 +10,17 @@ const pages = Array.isArray(r.text) ? r.text : [String(r.text || '')];
 const buf = await this.helpers.getBinaryDataBuffer(0, 'data');
 const f = x.source.fetch || {};
 const out = pdfPagesToText(pages);
+let cut = null;
+if (f.start_at || f.end_at) {
+  const c = cutBetween(out.text, f.start_at, f.end_at);
+  out.text = c.text;
+  cut = { start_at: f.start_at || null, end_at: f.end_at || null, end_found: c.ended };
+}
 if (out.text.length < (f.min_chars || 200)) throw new Error(`extracted_too_short ${out.text.length} chars (scanned PDF without a text layer?)`);
 return [{ json: {
   ...x, http_status: status, content_type: String((r.headers || {})['content-type'] || 'application/pdf').slice(0, 200),
   content: out.text, extractor: 'pdf_v1', bytes_b64: buf.toString('base64'),
-  doc_metadata: { pages: out.pages, lines_dropped: out.lines_dropped, raw_bytes: buf.length,
+  doc_metadata: { pages: out.pages, lines_dropped: out.lines_dropped, cut, raw_bytes: buf.length,
                   pdf_info: r.info ? { Title: r.info.Title || null, Producer: r.info.Producer || null } : null,
                   fetch_ms: Date.now() - x.t0 },
 } }];

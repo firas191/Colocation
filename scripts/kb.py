@@ -72,8 +72,16 @@ def read_sources(pack_dir: Path):
         if not r["url"].startswith(("http://", "https://")):
             errors.append(f"{pack_dir.name}/sources.csv line {i}: url")
         fetch = {"format": r["format"] or None}
-        if r["select"]:
-            fetch["select"] = json.loads(r["select"])
+        if r.get("extract"):
+            try:
+                ex = json.loads(r["extract"])
+            except json.JSONDecodeError as e:
+                errors.append(f"{pack_dir.name}/sources.csv line {i}: extract is not JSON ({e})")
+                ex = {}
+            unknown = set(ex) - {"select", "start_at", "end_at", "min_chars", "keep_boilerplate", "require_select"}
+            if unknown:
+                errors.append(f"{pack_dir.name}/sources.csv line {i}: unknown extract keys {sorted(unknown)}")
+            fetch.update(ex)
         out.append({**r, "jurisdiction_code": code, "fetch_config": fetch})
     keys = [r["source_key"] for r in out]
     dup = {k for k in keys if keys.count(k) > 1}
@@ -244,7 +252,8 @@ def ingest(args):
     for s in out.get("sources", []):
         ch = s.get("chunks") or {}
         desc = ", ".join(f"{k}: {v.get('chunks')} chunks" for k, v in ch.items()) if ch else ""
-        print(f"  {s['status']:8} {s['source_key']:34} {s.get('action') or s.get('step') or ''} {desc} {s.get('error') or ''}")
+        print(f"  {s['status']:8} {s['source_key']:34} {s.get('action') or s.get('step') or ''} {desc} "
+              f"{s.get('error') or s.get('reason') or ''}")
     if job.get("error"):
         print("job error:", job["error"])
     return 0 if job["status"] == "succeeded" else 2
