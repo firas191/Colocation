@@ -104,7 +104,8 @@ $c = Step "pull service images (largest download: Ollama, n8n)" { docker compose
 Stop-OnFail $c "pull images"
 $c = Step "build images" { docker compose @files --profile test build }
 Stop-OnFail $c "build images"
-$c = Step "start stack" { docker compose @files up -d }
+# Caddy reads its config file only at start: restart it so an edited Caddyfile is used.
+$c = Step "start stack" { docker compose @files up -d; docker compose @files restart proxy }
 Stop-OnFail $c "start stack"
 
 $c = Step "wait for n8n, proxy and model pull (max 20 min)" {
