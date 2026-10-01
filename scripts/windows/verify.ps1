@@ -180,7 +180,7 @@ raise SystemExit(0 if r.status_code == 200 and dims == [1024] * 4 else 1)
 Step "PHASE 2: TEI embeds 1024 numbers with multilingual-e5-large and tokenizes with offsets" {
   docker compose @files --profile test run --rm --no-deps tests python -c @"
 import httpx, math, time
-texts = ['passage: chambre meublee pres de la fac', 'passage: غرفة للكراء', 'query: room to rent near campus', 'query: 7ajti b bit fi ariana']
+texts = ['passage: chambre meublee pres de la fac', 'passage: \u063a\u0631\u0641\u0629 \u0644\u0644\u0643\u0631\u0627\u0621', 'query: room to rent near campus', 'query: 7ajti b bit fi ariana']
 t = time.time()
 r = httpx.post('http://tei:80/embed', json={'inputs': texts, 'normalize': True}, timeout=600)
 dt = time.time() - t
@@ -188,7 +188,7 @@ e = r.json()
 dims = [len(x) for x in e]
 norms = [round(math.sqrt(sum(v * v for v in x)), 4) for x in e]
 print('embed status', r.status_code, 'dims', dims, 'l2_norms', norms, 'seconds_for_4_texts', round(dt, 2))
-s = 'Le dépôt est restitué. الكراء عقد'
+s = 'Le d\u00e9p\u00f4t est restitu\u00e9. \u0627\u0644\u0643\u0631\u0627\u0621 \u0639\u0642\u062f'
 k = httpx.post('http://tei:80/tokenize', json={'inputs': [s], 'add_special_tokens': False}, timeout=60).json()[0]
 stop = max(t['stop'] for t in k)
 unit = 'char' if stop <= len(s) else 'byte'

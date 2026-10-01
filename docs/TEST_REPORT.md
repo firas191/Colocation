@@ -561,6 +561,58 @@ Failures found while building this phase: F-023, F-024, F-025.
 
 ---
 
+## T-19 First phase-2 run on the owner's PC (2026-10-01T02:10+01:00) - FAILED in contract tests (F-026)
+
+Evidence: `reports/verify-20261001-021026/summary.txt` and `verify.log` on the owner's PC.
+
+```
+PASS  every pinned image tag exists in its registry  (exit 0, 82.6 s)          (includes the TEI image)
+PASS  pull service images (largest download: Ollama, n8n)  (exit 0, 193.2 s)
+PASS  wait for TEI (multilingual-e5-large; first start downloads the model, max 45 min)  (exit 0, 1662.7 s)
+PASS  PHASE 2: TEI embeds 1024 numbers with multilingual-e5-large and tokenizes with offsets  (exit 0, 1.4 s)
+PASS  PHASE 1 and 2: database tests (pgTAP on the compose PostgreSQL)  (exit 0, 1.6 s)
+PASS  unit tests, JavaScript (Code-node helpers, chunkers, metrics, workflow checks)  (exit 0, 0.9 s)
+FAIL  PHASE 1 and 2: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)  (exit 1, 98.5 s)
+PASS  export workflows from n8n and scan for secrets  (exit 0, 10.4 s)
+```
+
+```
+TEI info {"model_id":"intfloat/multilingual-e5-large","model_sha":"3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3","model_dtype":"float32",
+  ... "max_input_length":512,"max_batch_tokens":16384,"max_batch_requests":8,"max_client_batch_size":64,"auto_truncate":true, ... "version":"1.9.4"}
+embed status 200 dims [1024, 1024, 1024, 1024] l2_norms [1.0, 1.0, 1.0, 1.0] seconds_for_4_texts 0.6
+tokenize tokens 32 max stop 71 chars 45 utf8 bytes 71 offset unit byte
+Files=7, Tests=193 ... Result: PASS                      (PostgreSQL 18.6, all migrations 0001 to 0007)
+========= 1 failed, 63 passed, 1 skipped, 8 errors in 96.56s (0:01:36) =========
+E       AssertionError: (404, '{"request_id":"...","error":{"code":"NOT_FOUND","message":"Route not found","details":[]}}')
+```
+
+All 9 failures and errors are `GET /v1/jobs/{id}` answered by the proxy's 404 (F-026). The TEI sample text
+reached TEI garbled (F-027): the embedding dimensions and the byte-offset result are valid, the token texts
+and the 0.6 s timing are not about the intended sentence. The first `kb.ps1 -Step ingest` was stopped by the
+owner with no output (F-028); whether its job finished in n8n is not known.
+
+## T-20 Fixes for F-026 to F-028, sandbox (2026-10-01) - PASS, with mocks for TEI and Ollama
+
+Caddyfile rewritten as one ordered `route`; checked with Caddy 2.6.2 only (2.11.4 is checked by the next
+`verify.ps1` run on the owner's PC). Same sandbox setup as T-18.
+
+```
+$ caddy validate --config infra/caddy/Caddyfile --adapter caddyfile
+Valid configuration
+$ pytest -v -rs tests/unit tests/contract
+tests/contract/test_kb.py::test_parameterised_routes_reach_their_workflows PASSED
+tests/contract/test_health_and_failures.py::test_oversized_body_rejected_by_proxy PASSED
+================== 74 passed, 1 skipped in 107.31s (0:01:47) ===================
+$ psql ... insert a kb_ingest job for QZ marked running since 4 hours; python3 scripts/kb.py ingest --jurisdiction QZ ...
+job 0e88f46f-... (kb_ingest) was still marked running after 4.0 h: marked failed (abandoned)
+/v1/admin/kb/ingest: job 30e8ce47-... accepted
+      0.3s  job running
+      2.5s  job succeeded
+ingest succeeded in 3 s: {"ok": 0, "failed": 0, "skipped": 1}
+```
+
+---
+
 ## Not run
 
 | Item | Why | How it will be run |

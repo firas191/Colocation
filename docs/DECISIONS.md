@@ -140,7 +140,7 @@ Ollama's library has no official build of multilingual-e5-large, and converted c
 
 ### D-035 Token counts come from the XLM-RoBERTa tokenizer served by TEI
 
-Spec 10.3 counts tokens with the embedding model's tokenizer. bge-m3 and multilingual-e5-large are both XLM-RoBERTa models with the same SentencePiece vocabulary, so one tokenizer serves both; this is stated by the model cards, not measured here (verify.ps1 logs a tokenization sample). Documents are cut into pieces of at most 1,000 characters at whitespace before calling `/tokenize`, which keeps requests small and does not change SentencePiece tokens. TEI returns offsets either in characters or in UTF-8 bytes depending on version; the code detects which on each piece and converts (`kb/lib/tokens.js`, tested both ways).
+Spec 10.3 counts tokens with the embedding model's tokenizer. bge-m3 and multilingual-e5-large are both XLM-RoBERTa models with the same SentencePiece vocabulary, so one tokenizer serves both; this is stated by the model cards, not measured here (verify.ps1 logs a tokenization sample). Documents are cut into pieces of at most 1,000 characters at whitespace before calling `/tokenize`, which keeps requests small and does not change SentencePiece tokens. TEI may return offsets in characters or in UTF-8 bytes; the code detects which on each piece and converts (`kb/lib/tokens.js`, tested both ways). TEI 1.9.4 on the owner's PC returned byte offsets (T-19).
 
 ### D-036 Lexical leg: normalised text, simple parser, short stop-word list
 

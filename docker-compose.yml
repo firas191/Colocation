@@ -238,6 +238,7 @@ services:
       FS_OUTAGE_STORAGE_START: docker start fs-garage
       FS_FIXTURES_BASE: http://fixtures:8081
       PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"          # progress lines appear while a long job runs (F-028)
       PYTEST_ADDOPTS: "-p no:cacheprovider"
     volumes:
       - ./:/flatshare:ro

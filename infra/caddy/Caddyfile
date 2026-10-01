@@ -65,42 +65,45 @@
 	request_body {
 		max_size 1MiB
 	}
-	@too_large expression `{http.request.header.Content-Length} != "" && int({http.request.header.Content-Length}) > 1048576`
-	handle @too_large {
-		header Content-Type application/json
-		header X-Request-Id {http.request.uuid}
-		respond `{"request_id":"{http.request.uuid}","error":{"code":"PAYLOAD_TOO_LARGE","message":"Request body is too large","details":[]}}` 413
-	}
 	header {
 		-Server
 		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer
 	}
 
-	# Routes with path parameters: n8n registers them under /webhook/<webhookId>/...
-	# (docs/DECISIONS.md D-024), so each gets its own rewrite. n8n/tests/workflows.test.js
-	# checks that these ids match the workflows.
-	@jobs_get path_regexp ^/v1/jobs/[^/]+$
-	handle @jobs_get {
-		rewrite * /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0010{uri}
-		import n8n_upstream
-	}
-	@eval_run_get path_regexp ^/v1/admin/eval/runs/[^/]+$
-	handle @eval_run_get {
-		rewrite * /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011{uri}
-		import n8n_upstream
-	}
+	# One ordered list ("route"): Caddy does not re-sort directives inside it, so the
+	# size check runs first and the parameterised rewrites before the general one
+	# whatever Caddy's directive-sorting rules are (FAILURES F-026).
+	route {
+		@too_large expression `{http.request.header.Content-Length} != "" && int({http.request.header.Content-Length}) > 1048576`
+		handle @too_large {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"PAYLOAD_TOO_LARGE","message":"Request body is too large","details":[]}}` 413
+		}
+		# All API routes go to n8n production webhooks. Routes with path parameters are
+		# registered by n8n under /webhook/<webhookId>/... (docs/DECISIONS.md D-024), so they
+		# get their own rewrite, applied in the written order. With one "handle" block per
+		# route, Caddy 2.11.4 answered 404 for the parameterised routes on the owner's PC
+		# (2.6.2 in the sandbox did not); directive sorting is the likely cause, not
+		# confirmed (FAILURES F-026). n8n/tests/workflows.test.js checks the ids.
+		handle /v1/* {
+			route {
+				@jobs_get path_regexp ^/v1/jobs/[^/]+$
+				rewrite @jobs_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0010{uri}
+				@eval_run_get path_regexp ^/v1/admin/eval/runs/[^/]+$
+				rewrite @eval_run_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011{uri}
+				@not_rewritten not path /webhook/*
+				rewrite @not_rewritten /webhook{uri}
+				import n8n_upstream
+			}
+		}
 
-	@api path /v1/*
-	handle @api {
-		rewrite * /webhook{uri}
-		import n8n_upstream
-	}
-
-	handle {
-		header Content-Type application/json
-		header X-Request-Id {http.request.uuid}
-		respond `{"request_id":"{http.request.uuid}","error":{"code":"NOT_FOUND","message":"Route not found","details":[]}}` 404
+		handle {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"NOT_FOUND","message":"Route not found","details":[]}}` 404
+		}
 	}
 
 	handle_errors {

@@ -75,3 +75,8 @@ Image ids (`docker image inspect`; for pulled images the RepoDigest has the same
 | flatshare/tests:py3.12.14 (built locally) | sha256:863ce4f4c938f51cf9b064476dd2b671b688d4df296c3a16bec1e6d13236f635 |
 
 Tags stay the pin in `docker-compose.yml`; pinning by digest is part of the phase 9 hardening.
+
+TEI, from `GET /info` on the owner's PC (`reports/verify-20261001-021026/verify.log`, 2026-10-01):
+version 1.9.4 (image sha e80ef22), model `intfloat/multilingual-e5-large` at `3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3`,
+dtype float32, pooling mean, max_input_length 512, max_batch_tokens 16384, max_client_batch_size 64, auto_truncate true.
+First start (model download) took 1661 s.

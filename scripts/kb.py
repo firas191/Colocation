@@ -153,11 +153,17 @@ def seed_datasets(conn, force=False):
 def wait_job(c: Client, uid: str, job_id: str, timeout_s: int):
     t0 = time.time()
     last = None
+    misses = 0
     while time.time() - t0 < timeout_s:
         r = c.call("GET", f"/v1/jobs/{job_id}", user_id=uid)
         if r.status_code != 200:
+            misses += 1
             print(f"  poll: HTTP {r.status_code} {r.text[:200]}")
+            if r.status_code == 404 and misses >= 6:
+                sys.exit(f"GET /v1/jobs/{job_id} keeps answering 404: the job route is not reachable through the proxy "
+                         "(see docs/FAILURES.md F-026). The job itself may still be running in n8n.")
         else:
+            misses = 0
             d = r.json()["data"]
             if d["status"] != last:
                 print(f"  {time.time() - t0:7.1f}s  job {d['status']}")
@@ -168,10 +174,26 @@ def wait_job(c: Client, uid: str, job_id: str, timeout_s: int):
     sys.exit(f"job {job_id} did not finish within {timeout_s} s")
 
 
-def post_job(path: str, body: dict, timeout_s: int):
+def post_job(path: str, body: dict, timeout_s: int, job_type: str, max_age_h: float = 3.0):
+    """Start a job, or wait for one of the same type that is already queued or running
+    (for example after the script was stopped while n8n kept working). A job older than
+    max_age_h is assumed dead (n8n restarted; no reaper before phase 4) and marked failed."""
     c = client()
     with psycopg.connect(dsn(), autocommit=True) as conn:
         uid = operator_id(conn)
+        active = conn.execute("""select id, extract(epoch from now() - coalesce(started_at, created_at)) / 3600
+                                 from app.jobs where type = %s and status in ('queued', 'running')
+                                   and input->>'jurisdiction' = %s
+                                 order by created_at""", (job_type, body.get("jurisdiction"))).fetchall()
+        for jid, age_h in active:
+            if age_h > max_age_h:
+                conn.execute("""update app.jobs set status = 'failed', finished_at = now(),
+                                  error = 'abandoned: still running after ' || %s || ' h; marked by scripts/kb.py'
+                                where id = %s and status in ('queued', 'running')""", (round(age_h, 1), jid))
+                print(f"job {jid} ({job_type}) was still marked running after {age_h:.1f} h: marked failed (abandoned)")
+            else:
+                print(f"job {jid} ({job_type}) is already running for {age_h * 60:.0f} min: waiting for it instead of starting another")
+                return wait_job(c, uid, str(jid), timeout_s)
     r = c.call("POST", path, body=body, user_id=uid, idem="kb-" + uuid.uuid4().hex)
     if r.status_code != 202:
         sys.exit(f"{path}: HTTP {r.status_code} {r.text[:500]}")
@@ -185,7 +207,7 @@ def ingest(args):
     if args.sources:
         body["sources"] = args.sources.split(",")
     t0 = time.time()
-    job = post_job("/v1/admin/kb/ingest", body, args.timeout)
+    job = post_job("/v1/admin/kb/ingest", body, args.timeout, "kb_ingest")
     out = job.get("output") or {}
     print(f"ingest {job['status']} in {time.time() - t0:.0f} s: {json.dumps(out.get('counts'))}")
     for s in out.get("sources", []):
@@ -210,7 +232,7 @@ def run_eval(args):
     sha = args.git_sha or git_sha()
     if sha:
         body["git_sha"] = sha
-    job = post_job("/v1/admin/eval/runs", body, args.timeout)
+    job = post_job("/v1/admin/eval/runs", body, args.timeout, "eval_retrieval")
     out = job.get("output") or {}
     for r in out.get("runs", []):
         c, s = r["config"], r["summary"] or {}

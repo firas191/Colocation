@@ -204,12 +204,21 @@ def test_retried_request_returns_the_same_job(client, zz, idem):
 
 
 # ------------------------------------------------------------------ job status
+def test_parameterised_routes_reach_their_workflows(client, zz):
+    """Both routes with a path parameter must be answered by n8n, not by the proxy's 404."""
+    for path, msg in ((f"/v1/jobs/{uuid.uuid4()}", "Job not found"),
+                      (f"/v1/admin/eval/runs/{uuid.uuid4()}", "Evaluation run not found")):
+        j = assert_error(client.call("GET", path, user_id=zz["admin"]), 404, "NOT_FOUND")
+        assert j["error"]["message"] == msg, (path, j)
+
+
 def test_job_status_visibility(client, zz, first_ingest, db):
     jid = first_ingest["job_id"]
     other = make_user(db, "user")
     assert_error(client.call("GET", f"/v1/jobs/{jid}", user_id=other), 404, "NOT_FOUND")
     assert_error(client.call("GET", "/v1/jobs/not-a-uuid", user_id=zz["admin"]), 404, "NOT_FOUND")
-    assert_error(client.call("GET", f"/v1/jobs/{uuid.uuid4()}", user_id=zz["admin"]), 404, "NOT_FOUND")
+    j = assert_error(client.call("GET", f"/v1/jobs/{uuid.uuid4()}", user_id=zz["admin"]), 404, "NOT_FOUND")
+    assert j["error"]["message"] == "Job not found"            # answered by the workflow, not by the proxy (F-026)
     assert_error(client.call("GET", f"/v1/jobs/{jid}"), 401, "UNAUTHENTICATED")
     moderator = make_user(db, "moderator")
     assert_ok(client.call("GET", f"/v1/jobs/{jid}", user_id=moderator), 200, "JobResponse")
@@ -260,7 +269,8 @@ def test_eval_run_end_to_end(client, zz, first_ingest, db, idem):
     stored = db.execute("select count(*) from eval.results where run_id = %s", (lex_b["run_id"],)).fetchone()[0]
     assert stored == 4
     assert_error(client.call("GET", f"/v1/admin/eval/runs/{lex_b['run_id']}", user_id=zz["user"]), 403, "FORBIDDEN")
-    assert_error(client.call("GET", f"/v1/admin/eval/runs/{uuid.uuid4()}", user_id=zz["admin"]), 404, "NOT_FOUND")
+    j = assert_error(client.call("GET", f"/v1/admin/eval/runs/{uuid.uuid4()}", user_id=zz["admin"]), 404, "NOT_FOUND")
+    assert j["error"]["message"] == "Evaluation run not found"
 
 
 def test_eval_with_unresolvable_gold_fails_the_job(client, zz, first_ingest, db, idem):
