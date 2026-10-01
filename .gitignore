@@ -11,3 +11,6 @@ __pycache__/
 secrets/
 .secrets.local
 flatshare.bundle
+
+# fetched source texts and raw bytes (third-party content, re-fetchable; DECISIONS D-044)
+kb/packs/*/documents/

@@ -1,0 +1,101 @@
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# Subtest: relevance: overlap of at least half of the shorter span
+ok 1 - relevance: overlap of at least half of the shorter span
+# Subtest: hit, recall, mrr and ndcg with per-gold credit
+ok 2 - hit, recall, mrr and ndcg with per-gold credit
+# Subtest: nothing retrieved, and queries without usable gold
+ok 3 - nothing retrieved, and queries without usable gold
+# Subtest: splitPieces cuts at whitespace and covers the text exactly
+ok 4 - splitPieces cuts at whitespace and covers the text exactly
+# Subtest: pieceOffsets converts UTF-8 byte offsets and trims leading spaces
+ok 5 - pieceOffsets converts UTF-8 byte offsets and trims leading spaces
+# Subtest: countTokens counts tokens fully inside a span
+ok 6 - countTokens counts tokens fully inside a span
+# Subtest: strategy A: 500/50 windows, exact spans, last window ends at the last token
+ok 7 - strategy A: 500/50 windows, exact spans, last window ends at the last token
+# Subtest: structure: headings with folded titles, articles, heading paths
+ok 8 - structure: headings with folded titles, articles, heading paths
+# Subtest: structure: Arabic articles and markdown headings
+ok 9 - structure: Arabic articles and markdown headings
+# Subtest: strategy B: small articles merged under the same title, never across titles; refs and embed text
+ok 10 - strategy B: small articles merged under the same title, never across titles; refs and embed text
+# Subtest: strategy B: a long article is split at sentence boundaries, every piece within the limit
+ok 11 - strategy B: a long article is split at sentence boundaries, every piece within the limit
+# Subtest: strategy B: one sentence longer than the limit is cut into token windows
+ok 12 - strategy B: one sentence longer than the limit is cut into token windows
+# Subtest: normalizeText: NFKC, NBSP, zero-width, soft hyphen, blank lines
+ok 13 - normalizeText: NFKC, NBSP, zero-width, soft hyphen, blank lines
+# Subtest: htmlToText: headings, paragraphs, lists, entities; scripts and nav dropped
+ok 14 - htmlToText: headings, paragraphs, lists, entities; scripts and nav dropped
+# Subtest: htmlToText: select a container by id, nested same tags balanced
+ok 15 - htmlToText: select a container by id, nested same tags balanced
+# Subtest: decodeBytes: charset from header, from meta, default utf-8
+ok 16 - decodeBytes: charset from header, from meta, default utf-8
+# Subtest: pdfPagesToText: running header/footer and page numbers removed, wrapped lines joined
+ok 17 - pdfPagesToText: running header/footer and page numbers removed, wrapped lines joined
+# Subtest: sentenceStarts: abbreviations, numbers and lower-case continuations are not boundaries
+ok 18 - sentenceStarts: abbreviations, numbers and lower-case continuations are not boundaries
+# Subtest: robots: specific group beats *, longest rule wins, Allow wins a tie, wildcards
+ok 19 - robots: specific group beats *, longest rule wins, Allow wins a tie, wildcards
+# Subtest: robots: decisions from the HTTP status (RFC 9309)
+ok 20 - robots: decisions from the HTTP status (RFC 9309)
+# Subtest: splitUrl: scheme, host, path and query without the URL class
+ok 21 - splitUrl: scheme, host, path and query without the URL class
+# Subtest: vector get_no_body: canonical query and signature match the Python client
+ok 22 - vector get_no_body: canonical query and signature match the Python client
+# Subtest: vector post_json_unicode: canonical query and signature match the Python client
+ok 23 - vector post_json_unicode: canonical query and signature match the Python client
+# Subtest: vector query_repeated_reserved: canonical query and signature match the Python client
+ok 24 - vector query_repeated_reserved: canonical query and signature match the Python client
+# Subtest: vector path_param: canonical query and signature match the Python client
+ok 25 - vector path_param: canonical query and signature match the Python client
+# Subtest: canonicalQuery rejects nested values (qs-style a[b]=1)
+ok 26 - canonicalQuery rejects nested values (qs-style a[b]=1)
+# Subtest: canonicalQuery of nothing is empty
+ok 27 - canonicalQuery of nothing is empty
+# Subtest: canonicalQuery sorts by encoded key and keeps value order
+ok 28 - canonicalQuery sorts by encoded key and keeps value order
+# Subtest: buildPath fills and encodes parameters
+ok 29 - buildPath fills and encodes parameters
+# Subtest: header returns the first non-empty value
+ok 30 - header returns the first non-empty value
+# Subtest: correlationId is a v4-shaped uuid
+ok 31 - correlationId is a v4-shaped uuid
+# Subtest: errorText handles strings, objects and nesting
+ok 32 - errorText handles strings, objects and nesting
+# Subtest: redactPg removes values from Postgres key details
+ok 33 - redactPg removes values from Postgres key details
+# Subtest: wf.api.admin_eval_runs_create.json: Code nodes compile and node references resolve
+ok 34 - wf.api.admin_eval_runs_create.json: Code nodes compile and node references resolve
+# Subtest: wf.api.admin_eval_runs_get.json: Code nodes compile and node references resolve
+ok 35 - wf.api.admin_eval_runs_get.json: Code nodes compile and node references resolve
+# Subtest: wf.api.admin_kb_ingest.json: Code nodes compile and node references resolve
+ok 36 - wf.api.admin_kb_ingest.json: Code nodes compile and node references resolve
+# Subtest: wf.api.health.json: Code nodes compile and node references resolve
+ok 37 - wf.api.health.json: Code nodes compile and node references resolve
+# Subtest: wf.api.jobs_get.json: Code nodes compile and node references resolve
+ok 38 - wf.api.jobs_get.json: Code nodes compile and node references resolve
+# Subtest: wf.api.users_sync.json: Code nodes compile and node references resolve
+ok 39 - wf.api.users_sync.json: Code nodes compile and node references resolve
+# Subtest: wf.eval.retrieval.json: Code nodes compile and node references resolve
+ok 40 - wf.eval.retrieval.json: Code nodes compile and node references resolve
+# Subtest: wf.gateway.auth.json: Code nodes compile and node references resolve
+ok 41 - wf.gateway.auth.json: Code nodes compile and node references resolve
+# Subtest: wf.kb.ingest.json: Code nodes compile and node references resolve
+ok 42 - wf.kb.ingest.json: Code nodes compile and node references resolve
+# Subtest: wf.kb.ingest_source.json: Code nodes compile and node references resolve
+ok 43 - wf.kb.ingest_source.json: Code nodes compile and node references resolve
+# Subtest: wf.ops.error_handler.json: Code nodes compile and node references resolve
+ok 44 - wf.ops.error_handler.json: Code nodes compile and node references resolve
+# Subtest: wf.test.fail.json: Code nodes compile and node references resolve
+ok 45 - wf.test.fail.json: Code nodes compile and node references resolve
+# Subtest: parameterised routes: Caddyfile rewrites use the webhook ids of the workflows
+ok 46 - parameterised routes: Caddyfile rewrites use the webhook ids of the workflows
+# tests 46
+# suites 0
+# pass 46
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 457.495039

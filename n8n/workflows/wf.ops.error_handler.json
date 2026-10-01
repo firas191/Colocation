@@ -52,8 +52,8 @@
           "name": "Flatshare DB (n8n_worker)"
         }
       },
-      "onError": "stopWorkflow",
-      "alwaysOutputData": false
+      "alwaysOutputData": false,
+      "onError": "stopWorkflow"
     }
   ],
   "connections": {

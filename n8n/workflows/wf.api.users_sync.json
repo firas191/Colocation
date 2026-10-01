@@ -168,8 +168,8 @@
           "name": "Flatshare DB (n8n_worker)"
         }
       },
-      "onError": "continueErrorOutput",
-      "alwaysOutputData": false
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
     },
     {
       "id": "306e6de0-dfe6-53a6-bfdd-90a204bd885f",
@@ -238,8 +238,8 @@
           "name": "Flatshare DB (n8n_worker)"
         }
       },
-      "onError": "continueErrorOutput",
-      "alwaysOutputData": false
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
     },
     {
       "id": "0bb6a4f2-7b12-51ff-9798-5e6e5c59d75b",

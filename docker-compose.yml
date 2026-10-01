@@ -116,6 +116,23 @@ services:
     entrypoint: ["ollama", "pull", "${EMBED_MODEL:-bge-m3}"]
     restart: "no"
 
+  # Text Embeddings Inference, CPU build: multilingual-e5-large (the comparison
+  # embedding model, spec 10.4) and its tokenizer for chunking (D-034, D-035).
+  # The model (about 2.2 GB) is downloaded from Hugging Face on first start.
+  tei:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4
+    container_name: fs-tei
+    command: ["--model-id", "intfloat/multilingual-e5-large",
+              "--revision", "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3",
+              "--max-client-batch-size", "64", "--auto-truncate", "--port", "80"]
+    environment:
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    volumes:
+      - tei_data:/data
+    # No container health check: the image is not known to ship curl or wget.
+    # verify.ps1 and scripts/kb_run.py wait for GET /health from the tests container.
+    restart: unless-stopped
+
   n8n-setup:
     image: n8nio/n8n:2.41.3
     depends_on:
@@ -189,6 +206,17 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me}
     restart: unless-stopped
 
+  # Static files for the ingestion tests (profile "test"): robots.txt, HTML and
+  # PDF fixtures served on the compose network only (not published).
+  fixtures:
+    image: caddy:2.11.4-alpine
+    container_name: fs-fixtures
+    profiles: ["test"]
+    command: ["caddy", "file-server", "--root", "/srv", "--listen", ":8081"]
+    volumes:
+      - ./tests/fixtures/kb:/srv:ro
+    restart: "no"
+
   # Test runner (profile "test"). It mounts the Docker socket only so that the
   # outage tests can stop and start containers; do not enable it elsewhere.
   tests:
@@ -208,6 +236,7 @@ services:
       FS_OUTAGE_OLLAMA_START: docker start fs-ollama
       FS_OUTAGE_STORAGE_STOP: docker stop fs-garage
       FS_OUTAGE_STORAGE_START: docker start fs-garage
+      FS_FIXTURES_BASE: http://fixtures:8081
       PYTHONDONTWRITEBYTECODE: "1"
       PYTEST_ADDOPTS: "-p no:cacheprovider"
     volumes:
@@ -216,6 +245,7 @@ services:
     working_dir: /flatshare
 
 volumes:
+  tei_data:
   pgdata:
   garage_meta:
   garage_data:

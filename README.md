@@ -2,7 +2,7 @@
 
 Backend of a worldwide flatshare platform, built on n8n for the ESPRIT Advanced Deep Learning
 final project (AI automation). Specification: `FLATSHARE_BACKEND_SPEC.md` (one folder up).
-This repository is at **phase 1 of 10** (environment, database, API gateway). No frontend.
+This repository is at **phase 2 of 10** (environment, database, API gateway, knowledge base and retrieval evaluation). No frontend.
 
 ## Requirements
 
@@ -29,6 +29,10 @@ stack, pulls `bge-m3`, and runs every check: embedding dimension, database tests
 contract tests through the proxy (including outage tests that stop and restart containers),
 and a secret scan. Results: `reports\verify-<timestamp>\summary.txt` and `verify.log`.
 Add `-Cpu` to ignore the GPU, `-SkipOutages` to skip the tests that stop containers.
+The first start after phase 2 also downloads multilingual-e5-large (about 2.2 GB) into the `tei` service.
+
+Knowledge base: `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step ingest` (sources,
+ingestion, exported texts), then `-Step eval` (retrieval evaluation, writes `docs/RETRIEVAL_EVAL.md`).
 
 Linux/macOS: `scripts/setup-env.sh`, then `docker compose up -d` and the commands in `docs/RUNBOOK.md`.
 
@@ -42,19 +46,22 @@ After start:
 
 | Area | State |
 |---|---|
-| Database | 6 migrations (baseline schema unchanged + gateway, security fixes, settings, rate limits, request log), 156 pgTAP assertions |
-| API | `GET /v1/health`, `POST /v1/users/sync`, signed-request gateway with replay protection, rate limits, idempotency, error envelope; `docs/openapi.yaml` |
-| n8n workflows | `wf.gateway.auth`, `wf.api.health`, `wf.api.users_sync`, `wf.ops.error_handler` |
-| Not yet | knowledge base and RAG (phase 2), agents and prompts (3 to 6), multimodal services (4), documents and privacy workflows (7), evaluation (8), hardening (9), 3D (10) |
+| Database | 7 migrations (baseline schema unchanged + gateway, security fixes, settings, rate limits, request log, knowledge-base pipeline), 193 pgTAP assertions |
+| API | `GET /v1/health`, `POST /v1/users/sync`, `GET /v1/jobs/:id`, admin: `POST /v1/admin/kb/ingest`, `POST /v1/admin/eval/runs`, `GET /v1/admin/eval/runs/:id`; signed-request gateway with replay protection, rate limits, idempotency, error envelope; `docs/openapi.yaml` |
+| n8n workflows | gateway, health, users sync, error handler; knowledge-base ingestion (`wf.kb.ingest`, `wf.kb.ingest_source`), retrieval evaluation (`wf.eval.retrieval`), jobs and admin endpoints |
+| Knowledge base | TN pack v1 and global sources (`kb/packs`), chunkers A and B (`kb/chunkers`), bge-m3 (Ollama) and multilingual-e5-large (TEI) |
+| Not yet | legal answers with citations (phase 6), agents and prompts (3 to 6), multimodal services (4), documents and privacy workflows (7), full ablation and reranker (8), hardening (9), 3D (10) |
 
 ## Layout
 
 ```
 docker-compose.yml, docker-compose.gpu.yml, .env.example
 infra/        postgres image, Caddyfile, garage.toml, test-runner image
+kb/           packs (sources per jurisdiction), lib (cleaning, robots, tokens), chunkers, tests
+eval/         lib (metrics), runners (report), datasets (gold sets), tests
 db/           migrations (dbmate), tests (pgTAP), seed, baseline (original files)
 n8n/          build.py, src (Code-node JS), workflows (generated JSON), tests
-scripts/      db-bootstrap.sh, n8n-setup.sh, db-test.sh, secret-scan.sh, setup-env.sh, windows/*.ps1
+scripts/      db-bootstrap.sh, n8n-setup.sh, db-test.sh, secret-scan.sh, setup-env.sh, kb.py, windows/*.ps1
 tests/        client (signing reference), contract, unit, mocks (sandbox only), vectors
 docs/         DECISIONS, FAILURES, TEST_REPORT, VERSIONS, ARCHITECTURE, API_SIGNING, RUNBOOK, openapi.yaml
 reports/      evidence logs (phase1: sandbox runs; verify-*: runs on the owner's machine)

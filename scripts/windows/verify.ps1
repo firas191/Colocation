@@ -1,4 +1,4 @@
-# Build, start and verify the stack (phases 0 and 1) on Windows with Docker Desktop.
+# Build, start and verify the stack (phases 0 to 2) on Windows with Docker Desktop.
 # Run from the repository root:
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\verify.ps1          # GPU if Docker can see one
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\verify.ps1 -Cpu     # force CPU
@@ -92,7 +92,8 @@ Stop-OnFail $c "compose config"
 $c = Step "every pinned image tag exists in its registry" {
   $bad = 0
   foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
-                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli")) {
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli",
+                     "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
     docker manifest inspect $img *> $null
     if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
   }
@@ -126,19 +127,39 @@ if ($c -ne 0) {
 }
 Stop-OnFail $c "wait for the stack"
 
+# TEI downloads multilingual-e5-large (about 2.2 GB) from Hugging Face on its first start.
+$c = Step "wait for TEI (multilingual-e5-large; first start downloads the model, max 45 min)" {
+  docker compose @files --profile test run --rm --no-deps tests python -c @"
+import time, httpx
+t0 = time.time()
+while time.time() - t0 < 2700:
+    try:
+        r = httpx.get('http://tei:80/health', timeout=5)
+        if r.status_code == 200:
+            print('TEI healthy after', round(time.time() - t0), 's'); raise SystemExit(0)
+    except httpx.HTTPError:
+        pass
+    time.sleep(10)
+print('TEI not healthy after 45 min'); raise SystemExit(1)
+"@
+}
+if ($c -ne 0) { Step "TEI logs (last 100 lines)" { docker compose @files logs --no-color --tail 100 tei } | Out-Null }
+Stop-OnFail $c "wait for TEI"
+
 Step "one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)" {
   docker compose @files logs --no-color db-bootstrap n8n-setup ollama-pull
 } | Out-Null
 
 Step "component versions" {
   docker compose @files images
-  foreach ($i in @("flatshare/postgres:18-3.6-pgvector0.8", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14")) {
+  foreach ($i in @("flatshare/postgres:18-3.6-pgvector0.8", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14", "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
     docker image inspect --format "{{index .RepoTags 0}} id={{.Id}} digests={{.RepoDigests}}" $i
   }
   docker exec -u postgres fs-postgres psql -At -d flatshare -c "select version()" -c "select extname || ' ' || extversion from pg_extension order by 1" -c "select 'migration ' || max(version) from public.schema_migrations"
   docker exec fs-n8n n8n --version
   docker exec fs-ollama ollama --version
   docker exec fs-ollama ollama list
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; print('TEI info', httpx.get('http://tei:80/info', timeout=10).text)"
 } | Out-Null
 
 Step "PHASE 0: embedding call returns 1024 numbers (bge-m3 via Ollama)" {
@@ -156,12 +177,33 @@ raise SystemExit(0 if r.status_code == 200 and dims == [1024] * 4 else 1)
 "@
 } | Out-Null
 
-Step "PHASE 1: database tests (pgTAP on the compose PostgreSQL)" {
+Step "PHASE 2: TEI embeds 1024 numbers with multilingual-e5-large and tokenizes with offsets" {
+  docker compose @files --profile test run --rm --no-deps tests python -c @"
+import httpx, math, time
+texts = ['passage: chambre meublee pres de la fac', 'passage: غرفة للكراء', 'query: room to rent near campus', 'query: 7ajti b bit fi ariana']
+t = time.time()
+r = httpx.post('http://tei:80/embed', json={'inputs': texts, 'normalize': True}, timeout=600)
+dt = time.time() - t
+e = r.json()
+dims = [len(x) for x in e]
+norms = [round(math.sqrt(sum(v * v for v in x)), 4) for x in e]
+print('embed status', r.status_code, 'dims', dims, 'l2_norms', norms, 'seconds_for_4_texts', round(dt, 2))
+s = 'Le dépôt est restitué. الكراء عقد'
+k = httpx.post('http://tei:80/tokenize', json={'inputs': [s], 'add_special_tokens': False}, timeout=60).json()[0]
+stop = max(t['stop'] for t in k)
+unit = 'char' if stop <= len(s) else 'byte'
+print('tokenize tokens', len(k), 'max stop', stop, 'chars', len(s), 'utf8 bytes', len(s.encode()), 'offset unit', unit)
+print('tokens', [(t['text'], t['start'], t['stop']) for t in k])
+raise SystemExit(0 if r.status_code == 200 and dims == [1024] * 4 and len(k) > 0 else 1)
+"@
+} | Out-Null
+
+Step "PHASE 1 and 2: database tests (pgTAP on the compose PostgreSQL)" {
   docker exec -u postgres fs-postgres bash /flatshare/scripts/db-test.sh
 } | Out-Null
 
-Step "unit tests, JavaScript (Code-node helpers)" {
-  docker compose @files run --rm --no-deps -v "${root}:/flatshare:ro" --entrypoint node n8n --test /flatshare/n8n/tests/canonical.test.js
+Step "unit tests, JavaScript (Code-node helpers, chunkers, metrics, workflow checks)" {
+  docker compose @files run --rm --no-deps -v "${root}:/flatshare:ro" --entrypoint sh n8n -c "node --test /flatshare/n8n/tests/*.test.js /flatshare/kb/tests/*.test.js /flatshare/eval/tests/*.test.js"
 } | Out-Null
 
 Step "workflow JSON matches n8n/build.py" {
@@ -170,7 +212,8 @@ Step "workflow JSON matches n8n/build.py" {
 
 $pytestArgs = @("pytest", "-v", "-rs", "tests/unit", "tests/contract")
 if ($SkipOutages) { $pytestArgs += @("-k", "not down and not unreachable") }
-Step "PHASE 1: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)" {
+Step "start the test fixture server (ingestion tests)" { docker compose @files --profile test up -d fixtures } | Out-Null
+Step "PHASE 1 and 2: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)" {
   docker compose @files --profile test run --rm --no-deps tests @pytestArgs
 } | Out-Null
 

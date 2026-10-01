@@ -496,11 +496,77 @@ checked 13 secret values against 95 files: none found
 
 ---
 
-## Not run (phase 0 and 1)
+## T-18 Phase 2 in the cloud sandbox (2026-10-01) - PASS, with mocks for TEI and Ollama
+
+Where: cloud sandbox, native stack as in T-1 to T-9 (PostgreSQL 16.13, pgvector 0.6.0, PostGIS 3.4.2,
+n8n 2.41.3 with its internal task runner, Caddy 2.6.2 as the proxy). **TEI and Ollama are mocks**
+(`tests/mocks/deps_mock.py`: whitespace tokenizer with UTF-8 byte offsets, hashed bag-of-words vectors of
+1024 numbers). These runs check the plumbing (requests, batching, offsets, storage, jobs, metrics); they say
+nothing about retrieval quality, model behaviour or speed. Fixture files were served by `python -m http.server`.
+
+JavaScript unit tests (cleaning, robots.txt, token offsets, structure parser, chunkers A and B, metrics,
+static checks on every generated workflow), evidence `reports/phase2/01-unit-js.log`:
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# tests 46
+# pass 46
+# fail 0
+```
+
+Database tests, all migrations 0001 to 0007, evidence `reports/phase2/02-pgtap-sandbox.log`:
+
+```
+$ scripts/db-test.sh
+db/tests/070_kb_pipeline.sql ......... 1..37 ok
+All tests successful.
+Files=7, Tests=193,  0 wallclock secs
+Result: PASS
+```
+
+070 covers normalisation (Latin, Arabic, NFKC), the lexical query, document versioning (created, unchanged,
+updated, superseded), raw bytes and hashes, chunk spans cut from the text and rejected outside it, embedding
+model and dimension checks, search by mode, jurisdiction, reliability and current version, gold resolution
+(found, ambiguous, missing), timed search, and grants.
+
+Python unit and contract tests through Caddy, phase 1 and phase 2 together, evidence
+`reports/phase2/03-pytest-unit-contract-sandbox.log`:
+
+```
+$ pytest -v -rs tests/unit tests/contract      (FS_API_BASE = sandbox Caddy, FS_FIXTURES_BASE = fixture server)
+tests/contract/test_kb.py::test_ingest_requires_admin_role PASSED
+tests/contract/test_kb.py::test_ingest_validation PASSED
+tests/contract/test_kb.py::test_ingest_outcomes_per_source PASSED
+tests/contract/test_kb.py::test_robots_rules_respected PASSED
+tests/contract/test_kb.py::test_documents_chunks_and_embeddings_stored PASSED
+tests/contract/test_kb.py::test_reingest_unchanged_is_skipped PASSED
+tests/contract/test_kb.py::test_force_creates_new_version_and_search_sees_only_current PASSED
+tests/contract/test_kb.py::test_retried_request_returns_the_same_job PASSED
+tests/contract/test_kb.py::test_job_status_visibility PASSED
+tests/contract/test_kb.py::test_eval_run_end_to_end PASSED
+tests/contract/test_kb.py::test_eval_with_unresolvable_gold_fails_the_job PASSED
+tests/contract/test_kb.py::test_eval_validation PASSED
+SKIPPED [1] tests/contract/test_health_and_failures.py:160: checks raw n8n behaviour without the proxy
+=================== 72 passed, 1 skipped in 92.86s (0:01:32) ===================
+```
+
+Failure paths exercised: non-admin and anonymous callers, invalid bodies, unknown jurisdiction, a page
+disallowed by robots.txt for every agent, a page disallowed only for our user agent, a page with no
+content, a 404, an unchanged re-fetch, a forced re-fetch, a retried request with the same idempotency
+key, job status seen by another user, malformed and unknown job ids, an evaluation whose gold cannot be
+located. Other checks: `python3 n8n/build.py --check` (up to date), `caddy validate` (valid), secret scan
+(detect-secrets no new findings; one Hugging Face commit id marked with an allowlist comment).
+
+Failures found while building this phase: F-023, F-024, F-025.
+
+---
+
+## Not run
 
 | Item | Why | How it will be run |
 |---|---|---|
-| Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | phase 2, on the knowledge-base load (`ollama ps` shows the processor) |
+| Phase 2 on the compose stack: real TEI and Ollama, real sources, gold set, evaluation numbers | sandbox cannot reach the models or the sites (F-002) | `verify.ps1`, then `kb.ps1 -Step ingest`, gold set, `kb.ps1 -Step eval` |
+| Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | ingestion timings in the phase 2 run; `ollama ps` |
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |

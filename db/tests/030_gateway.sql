@@ -70,9 +70,12 @@ select is((select pg_temp.v('test-client', ts, method, path, query, '3f1c0000-00
 select is((select pg_temp.v('test-client', (ts::bigint - 301)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000b', uid, idem, ip, body,
             pg_temp.sign(secret, (ts::bigint - 301)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000b', uid, idem, ip, body)) ->> 'reason' from r),
           'stale_timestamp', 'correctly signed but 301 s old: rejected');
-select is((select pg_temp.v('test-client', (ts::bigint + 301)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000c', uid, idem, ip, body,
-            pg_temp.sign(secret, (ts::bigint + 301)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000c', uid, idem, ip, body)) ->> 'reason' from r),
-          'stale_timestamp', 'correctly signed but 301 s in the future: rejected');
+-- ts comes from now() (transaction start) while the server uses clock_timestamp(): when the
+-- clock passes a second boundary during the file, "+301" was 300 s ahead and accepted (F-023).
+-- 305 s keeps the test independent of how long the file takes, as the contract tests do (F-008).
+select is((select pg_temp.v('test-client', (ts::bigint + 305)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000c', uid, idem, ip, body,
+            pg_temp.sign(secret, (ts::bigint + 305)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000c', uid, idem, ip, body)) ->> 'reason' from r),
+          'stale_timestamp', 'correctly signed but 305 s in the future: rejected');
 select is((select pg_temp.v('test-client', (ts::bigint - 290)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000d', uid, idem, ip, body,
             pg_temp.sign(secret, (ts::bigint - 290)::text, method, path, query, '3f1c0000-0000-4000-8000-00000000000d', uid, idem, ip, body)) ->> 'ok' from r),
           'true', '290 s old: still inside the window');

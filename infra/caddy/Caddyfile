@@ -12,6 +12,48 @@
 	}
 }
 
+(n8n_upstream) {
+	reverse_proxy {$N8N_UPSTREAM:n8n:5678} {
+		header_up -X-Forwarded-Host
+		@n8n_not_found {
+			status 404
+			header !X-Request-Id
+		}
+		handle_response @n8n_not_found {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"NOT_FOUND","message":"Route not found","details":[]}}` 404
+		}
+		@n8n_bad_request {
+			status 400 415 422
+			header !X-Request-Id
+		}
+		handle_response @n8n_bad_request {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"VALIDATION_FAILED","message":"Request body is not valid JSON","details":[]}}` 422
+		}
+		@n8n_unavailable {
+			status 502 503 504
+			header !X-Request-Id
+		}
+		handle_response @n8n_unavailable {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}` 503
+		}
+		@n8n_error {
+			status 5xx
+			header !X-Request-Id
+		}
+		handle_response @n8n_error {
+			header Content-Type application/json
+			header X-Request-Id {http.request.uuid}
+			respond `{"request_id":"{http.request.uuid}","error":{"code":"INTERNAL","message":"Internal error","details":[]}}` 500
+		}
+	}
+}
+
 :{$PROXY_PORT:8080} {
 	log {
 		output stdout
@@ -35,48 +77,24 @@
 		Referrer-Policy no-referrer
 	}
 
+	# Routes with path parameters: n8n registers them under /webhook/<webhookId>/...
+	# (docs/DECISIONS.md D-024), so each gets its own rewrite. n8n/tests/workflows.test.js
+	# checks that these ids match the workflows.
+	@jobs_get path_regexp ^/v1/jobs/[^/]+$
+	handle @jobs_get {
+		rewrite * /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0010{uri}
+		import n8n_upstream
+	}
+	@eval_run_get path_regexp ^/v1/admin/eval/runs/[^/]+$
+	handle @eval_run_get {
+		rewrite * /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011{uri}
+		import n8n_upstream
+	}
+
 	@api path /v1/*
 	handle @api {
 		rewrite * /webhook{uri}
-		reverse_proxy {$N8N_UPSTREAM:n8n:5678} {
-			header_up -X-Forwarded-Host
-			@n8n_not_found {
-				status 404
-				header !X-Request-Id
-			}
-			handle_response @n8n_not_found {
-				header Content-Type application/json
-				header X-Request-Id {http.request.uuid}
-				respond `{"request_id":"{http.request.uuid}","error":{"code":"NOT_FOUND","message":"Route not found","details":[]}}` 404
-			}
-			@n8n_bad_request {
-				status 400 415 422
-				header !X-Request-Id
-			}
-			handle_response @n8n_bad_request {
-				header Content-Type application/json
-				header X-Request-Id {http.request.uuid}
-				respond `{"request_id":"{http.request.uuid}","error":{"code":"VALIDATION_FAILED","message":"Request body is not valid JSON","details":[]}}` 422
-			}
-			@n8n_unavailable {
-				status 502 503 504
-				header !X-Request-Id
-			}
-			handle_response @n8n_unavailable {
-				header Content-Type application/json
-				header X-Request-Id {http.request.uuid}
-				respond `{"request_id":"{http.request.uuid}","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}` 503
-			}
-			@n8n_error {
-				status 5xx
-				header !X-Request-Id
-			}
-			handle_response @n8n_error {
-				header Content-Type application/json
-				header X-Request-Id {http.request.uuid}
-				respond `{"request_id":"{http.request.uuid}","error":{"code":"INTERNAL","message":"Internal error","details":[]}}` 500
-			}
-		}
+		import n8n_upstream
 	}
 
 	handle {

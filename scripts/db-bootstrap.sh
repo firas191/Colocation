@@ -2,7 +2,7 @@
 # Prepare PostgreSQL for the stack. Idempotent: safe to run on every start.
 #  1. n8n's own database and role (n8n_app)
 #  2. application database: migrations (dbmate), role passwords
-#  3. settings that depend on the deployment (Ollama URL, storage health URL)
+#  3. settings that depend on the deployment (Ollama, TEI and storage health URLs)
 #  4. API client keys for the website server and the test client (created once;
 #     secrets written to $SECRETS_DIR/api-clients.env, never printed)
 # Runs inside the postgres container (compose service "db-bootstrap") or any
@@ -55,8 +55,10 @@ echo "== deployment settings"
 psql -v ON_ERROR_STOP=1 -X -q -d "$FLATSHARE_DB" \
   -v ollama="${OLLAMA_BASE_URL:-http://ollama:11434}" \
   -v model="${EMBED_MODEL:-bge-m3}" \
-  -v s3h="${S3_HEALTH_URL:-http://garage:3903/health}" <<'SQL'
+  -v s3h="${S3_HEALTH_URL:-http://garage:3903/health}" \
+  -v tei="${TEI_BASE_URL:-http://tei:80}" <<'SQL'
 update app.settings set value = to_jsonb(:'ollama'::text) where key = 'ollama.base_url';
+update app.settings set value = to_jsonb(:'tei'::text)    where key = 'kb.tei_base_url';
 update app.settings set value = to_jsonb(:'model'::text)  where key = 'ollama.embed_model';
 update app.settings set value = to_jsonb(:'s3h'::text)    where key = 's3.health_url';
 SQL

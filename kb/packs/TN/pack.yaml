@@ -1,0 +1,12 @@
+# Jurisdiction pack (spec 4.1). Status lifecycle: draft -> verified (owner sign-off) -> active.
+code: TN
+status: draft
+languages: [ar, fr]
+currency: TND
+timezone: Africa/Tunis
+measurement: metric
+owner_signoff: null          # date and name when the owner has reviewed the sources and rules
+last_verified: null          # set from the latest successful ingestion of every source
+sources: sources.csv
+rules: rules.json            # phase 6 (legal agent); no rule values are stated before then
+eval: eval/queries.jsonl     # copy of eval/datasets/tn_retrieval_v1.jsonl after review

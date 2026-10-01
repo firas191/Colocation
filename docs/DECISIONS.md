@@ -124,6 +124,68 @@ The session has access to an n8n Cloud workspace. It is not used to run these wo
 
 A variable is a secret when its name ends in `PASSWORD`, `SECRET`, `SECRET_KEY`, `SECRET_ACCESS_KEY`, `TOKEN`, `API_KEY` or `ENCRYPTION_KEY`. Other variables (database names, bucket name, URLs, ports, model name, key ids) are configuration whose defaults are in the repository on purpose; scanning them made the check fail on every correct setup (FAILURES F-019). Key ids (`FLATSHARE_*_KEY_ID`, `S3_ACCESS_KEY_ID`) travel in request headers and are not secret on their own. To keep a new secret from slipping through under an unusual name, `tests/unit/test_secret_scan.py` requires every variable in `.env.example` to be either secret by name or listed as configuration in the test.
 
+## Phase 2 (knowledge base and retrieval evaluation)
+
+### D-032 TN pack v1: what is in it and what is not
+
+17 TN sources and 3 global ones (`kb/packs/TN/sources.csv`, `kb/packs/GLOBAL/sources.csv`): the Code des obligations et des contrats in French and Arabic from legislation.tn (whole code, lease of things from article 727), the data-protection law 2004-63 in French and Arabic, the INPDP procedures, the 2017 registration-duties code from the Ministry of Finance, a 2014 study published by the housing ministry, the IORT compilation of landlord-tenant texts, and lower-reliability sources chosen because they disagree with each other on registration, fees and sub-letting (spec 10.1: "include a few lower-reliability sources"). The spec targets 25 to 40 documents per pack; v1 has 20 including global ones, and the report records the real counts. Whole documents are ingested, not slices: retrieval has to find the right articles among unrelated ones, as it will in use. The URLs are leads found by web search; whether each one fetches, and what it contains, is only known after the first ingestion on the owner's PC (the cloud sandbox cannot reach these sites, F-002).
+
+### D-033 Raw fetches are stored in PostgreSQL
+
+Every fetch keeps its bytes, sha256, URL, status and content type in `kb.raw_fetches` (bytea), linked from the document version it produced. Object storage (spec 5.1) is meant for user media with presigned uploads (phase 4); for a few tens of public documents a table is simpler, transactional with the document row, and covered by the same backup. Revisit if the corpus grows past a few hundred MB.
+
+### D-034 multilingual-e5-large runs in Text Embeddings Inference on the CPU
+
+Ollama's library has no official build of multilingual-e5-large, and converted community builds would need checking against the reference implementation. Hugging Face's Text Embeddings Inference (TEI) loads the original model at a pinned revision (`3d7cfbd`, read from the Hugging Face API on 2026-10-01), applies the model's own pooling and normalisation, and also exposes the tokenizer (D-035). The CPU image is used: the GTX 1650 has 4 GB, already used by bge-m3, and is needed for local LLMs in phase 3. Only e5 (the comparison model) runs on the CPU; its ingestion time is measured, not assumed. Image `ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4` (v1.9.4 is the latest release on GitHub; the `cpu-1.9.4-grpc` sibling tag was seen on the package page, the plain tag is checked by verify.ps1). The prefixes "query: " and "passage: " are stored in `ai.models` and applied by the workflows.
+
+### D-035 Token counts come from the XLM-RoBERTa tokenizer served by TEI
+
+Spec 10.3 counts tokens with the embedding model's tokenizer. bge-m3 and multilingual-e5-large are both XLM-RoBERTa models with the same SentencePiece vocabulary, so one tokenizer serves both; this is stated by the model cards, not measured here (verify.ps1 logs a tokenization sample). Documents are cut into pieces of at most 1,000 characters at whitespace before calling `/tokenize`, which keeps requests small and does not change SentencePiece tokens. TEI returns offsets either in characters or in UTF-8 bytes depending on version; the code detects which on each piece and converts (`kb/lib/tokens.js`, tested both ways).
+
+### D-036 Lexical leg: normalised text, simple parser, short stop-word list
+
+`kb.chunks.tsv` is generated from `kb.lex_normalize(content)`: NFKC, Arabic diacritics and tatweel removed, alef variants and alef maqsura unified, Latin accents removed, lower case (spec 10.2 step 3). The original text is kept for display. Queries go through the same parser and normalisation, minus a short French, English and Arabic stop-word list, and are OR-joined. No stemming: French plurals and Arabic clitics (بـ, الـ, و) do not match their base form. That is a known weakness of the lexical leg; dense retrieval covers part of it, and the per-mode results show how much.
+
+### D-037 Source types for news and private sites
+
+`kb.sources.source_type` has no "news" value. News articles are typed `commercial_guide` with reliability 3 for a named outlet, which keeps them below official guidance and above blogs. The spec's appendix C calls diwan.tn a "state portal"; its own about page names a private company (Diwan Services Web SARL), so it is `commercial_guide`, reliability 3. The Imprimerie Officielle compilation of landlord-tenant texts is `primary_law` with reliability 4 because it is hosted by a private company, not by the publisher.
+
+### D-038 Gold spans are quotes, resolved at evaluation time
+
+A gold span is stored as `{source_key, start quote, end quote}` and resolved against the current document version when an evaluation starts (`eval.resolve_gold`). Offsets would silently point at the wrong text after any cleaner change; quotes either still match or fail loudly. An evaluation whose gold cannot be found, or whose start quote appears more than once, fails before computing anything (no partial numbers). Gold is defined on the cleaned text, independently of chunking (spec 10.7).
+
+### D-039 Relevance and metrics
+
+A retrieved chunk is relevant when it overlaps a gold span of the same document by at least half of the shorter of the two (setting `eval.relevance_overlap`). Using the shorter length means a small chunk inside a long gold article counts, and a long chunk that contains a short gold sentence counts. Each gold span is credited once: Recall@k is the share of gold spans reached in the top k; nDCG@10 gives gain 1 to a chunk that reaches a not-yet-credited gold span, with the ideal ranking computed from the number of gold spans. This keeps a chunker that cuts one passage in two from scoring twice. Queries without gold spans (out of scope) are stored and excluded from retrieval metrics; they are for the abstention test of phase 6.
+
+### D-040 What "latency per query" means in the evaluation
+
+Database search time measured inside PostgreSQL (`eval.timed_search`) plus the embedding time per query, where all queries of a run are embedded in batches and the total is divided by the number of queries. No network hop, no reranker, no answer generation. It is a component figure for comparing configurations on the same machine, not the user-facing latency of `/v1/legal/ask`.
+
+### D-041 Admin endpoints and jobs before the general job worker
+
+The spec lists `POST /v1/admin/eval/runs`, `GET /v1/admin/eval/runs/:id` and `GET /v1/jobs/:id`; ingestion has no endpoint in spec 6.3 (only "manual and scheduled"). `POST /v1/admin/kb/ingest` is added so ingestion is triggered, authorised (role admin) and logged like any other call. Both admin calls create an `app.jobs` row, start the worker workflow without waiting, and answer 202. The general job worker, retries and the reaper are phase 4. Until then a worker that fails inside a step marks its job failed ("Job failed" branch, F-025); a crash of n8n itself leaves the job `running`.
+
+### D-042 Retrieval function replaced
+
+`kb.search_chunks` gains a mode (dense, lexical, hybrid), candidate count and RRF constant as parameters, searches only current document versions, uses the normalised lexical column, and returns the dense similarity (for the abstention threshold of phase 6) and the chunk span (for evaluation). The HNSW index is still not used because the filtered set is a CTE (spec observation below); every search is an exact scan, and its time is measured in each run.
+
+### D-043 robots.txt
+
+Each fetch first reads `/robots.txt` of the host with User-Agent `FlatshareKB/0.2`, applies RFC 9309 (most specific group, longest rule, Allow wins a tie), and skips the source when disallowed. A robots.txt answering 4xx means no restriction; 5xx or no answer means do not fetch (RFC 9309 section 2.3.1). Sites' terms of use are not checked automatically; the `license` column records what is known, and texts stay internal (D-044).
+
+### D-044 Fetched texts are not committed
+
+Cleaned texts and raw files are exported to `kb/packs/<CODE>/documents/` for reading and gold-set work, and that folder is git-ignored: most sources are copyrighted guides and news that may be used internally for retrieval but not redistributed (spec 10.1). Reproducibility comes from `sources.csv` (URL), the retrieval time and the content hashes in the report.
+
+### D-045 Test fixtures and a test jurisdiction
+
+Ingestion tests fetch synthetic HTML and PDF files from a `fixtures` service (profile test, Caddy file server, not published) and use jurisdiction `QZ` (ISO user-assigned range) with source keys `test-*`, so the real TN pack in the same database is never touched. The fixture texts say they are synthetic; they are not law.
+
+### D-046 The health endpoint does not check TEI yet
+
+`GET /v1/health` checks what the user-facing API needs. TEI is only used by admin ingestion and evaluation in this phase; verify.ps1 and `scripts/kb.py` check it before use. It joins the health check when a user-facing route depends on it.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** `app.listings` has no rent period, but P3's schema and GB practice include weekly rents. Comparing a weekly rent with a monthly budget gives wrong results. Phase 3 adds `rent_period` and a monthly-equivalent column used by `search_listings`.

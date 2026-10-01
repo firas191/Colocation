@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /private/
+
+User-agent: FlatshareKB
+Disallow: /private/
+Disallow: /blocked-for-us.html

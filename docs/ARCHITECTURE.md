@@ -1,4 +1,4 @@
-# Architecture (state after phase 1)
+# Architecture (state after phase 2)
 
 This file describes what exists. The target architecture is in FLATSHARE_BACKEND_SPEC.md
 sections 5 and 8; deviations are in DECISIONS.md.
@@ -12,8 +12,9 @@ sections 5 and 8; deviations are in DECISIONS.md.
 | `postgres` | One server, two databases: `flatshare` (app, kb, ai, eval, sec schemas) and `n8n` (n8n's own data) | compose network |
 | `garage` | S3-compatible object storage (bucket created at start) | compose network |
 | `ollama` | Embeddings (bge-m3), later local LLMs and vision | compose network |
+| `tei` (Text Embeddings Inference, CPU) | multilingual-e5-large embeddings and the XLM-RoBERTa tokenizer used for chunking | compose network |
 | one-shot: `db-bootstrap`, `n8n-setup`, `ollama-pull` | migrations, role passwords, settings, API keys; credential and workflow import; model pull | — |
-| profiles: `queue` (Redis), `test` (test runner) | load tests later; contract tests | — |
+| profiles: `queue` (Redis), `test` (test runner, fixture file server) | load tests later; contract and ingestion tests | — |
 
 Not built yet: ASR, Media, Text services (phase 4), 3D worker (phase 10), Telegram channel.
 
@@ -51,6 +52,13 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `wf.api.health` | `GET /v1/health` | database, object storage, Ollama + embedding model checks |
 | `wf.api.users_sync` | `POST /v1/users/sync` | create/update user, consent status |
 | `wf.ops.error_handler` | Error Trigger | records unexpected workflow failures in `ai.executions` |
+| `wf.api.admin_kb_ingest` | `POST /v1/admin/kb/ingest` (admin) | creates a `kb_ingest` job, starts `wf.kb.ingest`, answers 202 |
+| `wf.kb.ingest` | sub-workflow (job worker) | loads the pack's sources, runs `wf.kb.ingest_source` for each, logs, finishes the job |
+| `wf.kb.ingest_source` | sub-workflow | robots.txt, fetch, clean (HTML or PDF), store version, tokenize (TEI), chunk A and B, embed (Ollama, TEI), store |
+| `wf.api.jobs_get` | `GET /v1/jobs/:id` | job status for the requester, admins and moderators |
+| `wf.api.admin_eval_runs_create` | `POST /v1/admin/eval/runs` (admin) | creates an `eval_retrieval` job, starts `wf.eval.retrieval`, answers 202 |
+| `wf.eval.retrieval` | sub-workflow (job worker) | resolves gold, embeds queries once per model, searches every configuration, stores per-query metrics |
+| `wf.api.admin_eval_runs_get` | `GET /v1/admin/eval/runs/:id` (admin) | one run with summary and per-query metrics |
 | `wf.test.fail` | `GET /v1/test/fail` | test-only, throws; imported only with `N8N_IMPORT_TEST_WORKFLOWS=1` |
 
 ## Database roles
@@ -62,3 +70,25 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `n8n_worker` | workflows (credential "Flatshare DB (n8n_worker)") | CRUD on app/kb/ai/eval, bypasses RLS, calls `sec.verify_request`; cannot read `sec.api_clients` |
 | `api_user` | reserved for a future API layer | RLS-limited reads and owner-limited writes; three functions |
 | `sec_owner` | owns `sec.*` | no login |
+
+## Knowledge base (phase 2)
+
+```mermaid
+flowchart LR
+  CSV[kb/packs/*/sources.csv] -->|scripts/kb.py seed| SRC[(kb.sources)]
+  API[POST /v1/admin/kb/ingest] --> JOB[(app.jobs)] --> W[wf.kb.ingest]
+  W -->|per source| S[wf.kb.ingest_source]
+  S -->|robots.txt, GET| WEB[source site]
+  S -->|bytes| RAW[(kb.raw_fetches)]
+  S -->|cleaned text, new version if changed| DOC[(kb.documents)]
+  S -->|/tokenize| TEI[TEI]
+  S -->|A fixed_500_50, B structure_aware_v1| CH[(kb.chunks + spans + tsv)]
+  S -->|/api/embed| OL[Ollama bge-m3]
+  S -->|/embed passage:| TEI
+  OL & TEI --> EMB[(kb.chunk_embeddings)]
+  EV[POST /v1/admin/eval/runs] --> J2[(app.jobs)] --> WE[wf.eval.retrieval]
+  WE -->|eval.resolve_gold, kb.search_chunks| RES[(eval.runs, eval.results)]
+  RES -->|scripts/kb.py eval / report| MD[docs/RETRIEVAL_EVAL.md]
+```
+
+Compute stays outside n8n only where n8n cannot do it: tokenization and e5 embeddings (TEI), bge-m3 embeddings (Ollama), search and storage (PostgreSQL functions). Cleaning, structure parsing, chunking and metrics are plain JavaScript in `kb/` and `eval/lib/`, inlined into Code nodes by `n8n/build.py` and unit-tested with `node --test`.

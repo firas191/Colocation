@@ -1,0 +1,5 @@
+# Sources that apply everywhere (jurisdiction_code = null): scam recognition,
+# flatshare practice, reading a lease. Spec 10.1 "global documents".
+code: GLOBAL
+status: draft
+sources: sources.csv
