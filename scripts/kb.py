@@ -154,6 +154,7 @@ def wait_job(c: Client, uid: str, job_id: str, timeout_s: int):
     t0 = time.time()
     last = None
     misses = 0
+    seen = 0
     while time.time() - t0 < timeout_s:
         r = c.call("GET", f"/v1/jobs/{job_id}", user_id=uid)
         if r.status_code != 200:
@@ -168,10 +169,40 @@ def wait_job(c: Client, uid: str, job_id: str, timeout_s: int):
             if d["status"] != last:
                 print(f"  {time.time() - t0:7.1f}s  job {d['status']}")
                 last = d["status"]
+            seen = progress(job_id, seen, t0)
             if d["status"] in ("succeeded", "failed", "cancelled"):
                 return d
         time.sleep(int(os.environ.get("FS_POLL_S", "10")))
     sys.exit(f"job {job_id} did not finish within {timeout_s} s")
+
+
+def progress(job_id: str, seen: int, t0: float) -> int:
+    """Print what the job finished since the last poll: one line per source
+    (ingestion) or per configuration (evaluation). Read-only database queries."""
+    try:
+        with psycopg.connect(dsn(), autocommit=True) as conn:
+            rows = conn.execute("""
+              select l.id, l.source_key || ': ' || l.status || ' (' || l.step || ')'
+                       || coalesce(', ' || round(l.ms / 1000.0) || ' s', '')
+                       || coalesce(' ' || (l.detail->>'error'), '')
+              from kb.ingest_log l where l.job_id = %s and l.id > %s
+              union all
+              select 0, 'run ' || (r.config->>'strategy') || ' / ' || (r.config->>'model') || ' / '
+                       || (r.config->>'mode') || ': ' || r.status
+              from eval.runs r where r.job_id = %s and r.status <> 'running'
+              order by 1""", (job_id, seen, job_id)).fetchall()
+    except Exception as e:                       # progress is informative only
+        print(f"  (progress not available: {e.__class__.__name__})")
+        return seen
+    runs = [t for i, t in rows if i == 0]
+    for i, text in rows:
+        if i:
+            print(f"  {time.time() - t0:7.1f}s  {text}")
+            seen = max(seen, i)
+    if runs and len(runs) != getattr(progress, "_runs", 0):
+        print(f"  {time.time() - t0:7.1f}s  {len(runs)} evaluation runs finished; last: {runs[-1]}")
+        progress._runs = len(runs)
+    return seen
 
 
 def post_job(path: str, body: dict, timeout_s: int, job_type: str, max_age_h: float = 3.0):
