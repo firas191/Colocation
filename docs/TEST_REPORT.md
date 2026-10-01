@@ -454,11 +454,52 @@ exit=0
 
 ---
 
+## T-17 Seventh compose run on the owner's PC (2026-10-01T00:51+01:00) - every step PASS
+
+Git history at 3485d3e, GPU override on. Phase 0 and phase 1 acceptance runs on the compose stack.
+Evidence: `reports/verify-20261001-005156/summary.txt` and `verify.log` on the owner's PC.
+
+```
+PASS  sync git history with flatshare.bundle  (exit 0, 0.3 s)
+PASS  Docker engine is running  (exit 0, 0.2 s)
+PASS  GPU visible to Docker (docker run --gpus all ... nvidia-smi)  (exit 0, 1.4 s)
+PASS  docker and compose versions  (exit 0, 0.2 s)
+PASS  free disk space (...)  (exit 0, 0.2 s)
+PASS  compose config is valid  (exit 0, 0.1 s)
+PASS  every pinned image tag exists in its registry  (exit 0, 80.4 s)
+PASS  pull service images (largest download: Ollama, n8n)  (exit 0, 2.4 s)
+PASS  build images  (exit 0, 1.8 s)
+PASS  start stack  (exit 0, 33.5 s)
+PASS  wait for n8n, proxy and model pull (max 20 min)  (exit 0, 0.4 s)
+PASS  one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)  (exit 0, 2 s)
+PASS  component versions  (exit 0, 1.1 s)
+PASS  PHASE 0: embedding call returns 1024 numbers (bge-m3 via Ollama)  (exit 0, 4.2 s)
+PASS  PHASE 1: database tests (pgTAP on the compose PostgreSQL)  (exit 0, 1.3 s)
+PASS  unit tests, JavaScript (Code-node helpers)  (exit 0, 0.8 s)
+PASS  workflow JSON matches n8n/build.py  (exit 0, 0.7 s)
+PASS  PHASE 1: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)  (exit 0, 75.5 s)
+PASS  export workflows from n8n and scan for secrets  (exit 0, 6.6 s)
+PASS  final state  (exit 0, 0.2 s)
+```
+
+```
+status 200 model bge-m3 dims [1024, 1024, 1024, 1024] l2_norms [1.0, 1.0, 1.0, 1.0] seconds_for_4_texts 3.49
+Files=6, Tests=156 ... Result: PASS
+=================== 57 passed, 1 skipped in 74.12s (0:01:14) ===================
+Successfully exported 5 workflows.
+== detect-secrets (baseline: .secrets.baseline)
+no new findings
+== exact-match scan of deployment secrets
+secret variables checked: POSTGRES_PASSWORD N8N_DB_PASSWORD N8N_WORKER_DB_PASSWORD API_USER_DB_PASSWORD N8N_ENCRYPTION_KEY N8N_RUNNERS_AUTH_TOKEN S3_SECRET_ACCESS_KEY GARAGE_RPC_SECRET GARAGE_ADMIN_TOKEN GARAGE_METRICS_TOKEN REDIS_PASSWORD FLATSHARE_WEBSITE_SECRET FLATSHARE_TESTS_SECRET
+checked 13 secret values against 95 files: none found
+```
+
+---
+
 ## Not run (phase 0 and 1)
 
 | Item | Why | How it will be run |
 |---|---|---|
-| verify.ps1 step "export workflows from n8n and scan for secrets" with the fixed script | fix made after T-13; its parts ran separately in T-14 | next verify.ps1 run |
 | Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | phase 2, on the knowledge-base load (`ollama ps` shows the processor) |
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
