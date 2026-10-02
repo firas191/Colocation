@@ -208,3 +208,13 @@ test('scriptProblem: Latin-looking garbage from an Arabic PDF without Unicode fo
   assert.match(T.scriptProblem('للمكتري أن يكري لغيره ما اكتراه أو يحيل عقد كرائه', 'fr'), /Latin letters in a fr source/);
   assert.equal(T.scriptProblem('', 'fr'), 'no letters in the extracted text');
 });
+
+test('htmlToText: a <br> inside a heading does not split it (F-039)', () => {
+  const html = '<h2 class="t">Titre<br>III : Du louage</h2><h4>Des<br/>effets du louage des choses</h4><p>Art. 739. - Le bailleur<br>est tenu.</p>';
+  assert.equal(T.htmlToText(html).text, '## Titre III : Du louage\n\n#### Des effets du louage des choses\n\nArt. 739. - Le bailleur\nest tenu.');
+});
+
+test('htmlToText: source line breaks are spaces, <pre> keeps them (F-039)', () => {
+  const html = '<h2>Titre \n    III : Du louage</h2>\n<p>Le preneur doit restituer la chose ; il doit le prix à dire\nd\'experts.</p><pre>ligne 1\nligne 2</pre>';
+  assert.equal(T.htmlToText(html).text, "## Titre III : Du louage\n\nLe preneur doit restituer la chose ; il doit le prix à dire d'experts.\n\nligne 1\nligne 2");
+});

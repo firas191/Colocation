@@ -7,7 +7,7 @@ pass `--force`.
 ## tn_retrieval v1 (`tn_retrieval_v1.jsonl`, written by `build_tn_retrieval_v1.py`)
 
 48 questions about renting and flatsharing in Tunisia, written by reading the texts exported
-after the TN ingestion of T-27, with the extraction changes of T-28 applied, before any retrieval
+after the TN ingestion of T-27, with the extraction changes of T-28 and T-30 applied, before any retrieval
 was run on them.
 
 | Group | Queries | Notes |

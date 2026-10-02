@@ -871,6 +871,56 @@ New tests: decoding with comments excluded (F-036), quoted `>` in attributes (F-
 `tests/unit/test_datasets.py` (ids, tags, abstain has no gold, every contradiction lists two or more sources, gold
 sources exist in the packs, the JSONL is what its builder writes). Log: `reports/phase2/10-pytest-after-f036-f038-sandbox.log`.
 
+## T-29 Twelfth compose run and fifth TN ingestion on the owner's PC (2026-10-02) - every step PASS; ingestion 12 ok, 18 skipped, 0 failed
+
+`verify.ps1` (`reports/verify-20261002-145157`): every step passed (contract tests 132 s). `kb.ps1 -Step ingest`
+(`reports/kb-20261002-150026/kb.log`):
+
+```
+sources: 30 upserted from 2 packs; marked removed: ['tn-lo-2004-63-ar-igppp']
+dataset tn_retrieval v1: 48 queries (48 new or changed, 0 removed)
+      1146.6s  tn-coc-ar-cawtar: ok (done), 1131 s
+      1156.8s  tn-coc-jurisite-739: ok (done), 3 s
+ingest succeeded in 1344 s: {"ok": 12, "failed": 0, "skipped": 18}
+  ok  tn-coc-ar-cawtar               updated fixed_500_50: 215 chunks, structure_aware_v1: 302 chunks
+  ok  tn-justice-questions-civiles   updated fixed_500_50: 5 chunks, structure_aware_v1: 13 chunks
+exported 30 documents under kb/packs/*/documents/
+```
+
+First ingestion with no failed source. The stored lengths match what `kb/tools/reextract.js` predicted in T-28 for
+all 10 changed documents (for example CAWTAR 322,209 and the Justice page 7,936 characters). The cleaned Arabic code
+text took 1131 s for 517 chunks and both models. The export still lists the removed `tn-lo-2004-63-ar-igppp`: export
+writes every current document; search excludes it (`kb.search_chunks` keeps active sources only). The evaluation was
+not run in this round (`-Step ingest`).
+
+## T-30 Fix for F-039, sandbox (2026-10-02) - PASS, with mocks for TEI and Ollama
+
+```
+$ node kb/tools/reextract.js <copy of kb/packs, stored texts as of T-29>
+changed  gl-twenty-campus-arnaques          10077 -> 10060 chars
+changed  tn-diwan-location                  3880 -> 3867 chars
+changed  tn-notaire-tunisienumerique        5018 -> 5012 chars
+changed  tn-cyriljarnias-location           34023 -> 34020 chars
+changed  tn-houni-colocation-tunis          4344 -> 4322 chars
+changed  tn-web6-inpdp                      6691 -> 6657 chars
+changed  tn-coc-jurisite-727-738            2928 -> 2916 chars
+(the 7 other jurisite pages, 588 to 9,418 characters)
+14 document(s) would change
+```
+
+Gold spans checked again against these texts: 0 problems out of 89.
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# tests 59
+# pass 59
+# fail 0
+$ pytest -v -rs tests/unit tests/contract
+=================== 77 passed, 1 skipped in 99.62s (0:01:39) ===================
+```
+
+Log: `reports/phase2/11-pytest-after-f039-sandbox.log`.
+
 ---
 
 ## Not run

@@ -244,6 +244,14 @@ function htmlToText(html, opts = {}) {
     if (inner !== null) { h = inner; selected = true; break; }
   }
   if (!opts.keepBoilerplate) h = removeElements(h, BOILERPLATE_ELEMENTS);
+  // A heading is one line: a <br> inside it would cut the heading's label from its title
+  // ("Titre" / "III : Du louage"), and chunker B would see the title as a text unit (F-039).
+  h = h.replace(new RegExp(`(<h([1-6])${ATTRS}\\s*>)([\\s\\S]*?)(</h\\2\\s*>)`, 'gi'),
+    (m, open, lvl, inner, close) => open + inner.replace(new RegExp(`<br${ATTRS}\\s*/?>`, 'gi'), ' ') + close);
+  // Line breaks in the HTML source are spaces when rendered; only tags make lines. Without
+  // this, a heading written over two source lines became two lines of text (F-039).
+  h = h.split(/(<pre(?=[\s>])[\s\S]*?<\/pre\s*>)/i)
+    .map((part, i) => (i % 2 ? part : part.replace(/[ \t\r\n\f]+/g, ' '))).join('');
   h = h.replace(TAG_RE, (m, close, name) => {
     const n = name.toLowerCase();
     if (/^h[1-6]$/.test(n)) return close ? '\n\n' : `\n\n${'#'.repeat(Number(n[1]))} `;
