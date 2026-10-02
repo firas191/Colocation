@@ -163,7 +163,7 @@ test('decodeBytes: valid UTF-8 untouched; mostly-invalid bytes with only utf-8 d
   const ok = T.decodeBytes(Buffer.from('<p>été ✓ الكراء</p>'), 'text/html; charset=utf-8');
   assert.deepEqual([ok.charset, ok.invalid_bytes, ok.text], ['utf-8', 0, '<p>été ✓ الكراء</p>']);
   const allLatin = Buffer.from('<p>d\xe9p\xf4t \xe0 r\xe9gler \xe9ch\xe9ance</p>', 'latin1');
-  assert.throws(() => T.decodeBytes(allLatin, 'text/html; charset=utf-8'), /decoding_failed utf-8 \(header\): 6 invalid bytes, 0 valid/);
+  assert.throws(() => T.decodeBytes(allLatin, 'text/html; charset=utf-8'), /decoding_failed utf-8 \(header\): 6 invalid bytes and 0 valid/);
   // no declaration at all
   assert.throws(() => T.decodeBytes(allLatin, 'text/html'), /decoding_failed utf-8 \(default\)/);
 });
@@ -174,4 +174,37 @@ test('utf8Scan follows RFC 3629: overlong forms, surrogates and > U+10FFFF are i
   assert.equal(T.utf8Scan(Buffer.from([0xed, 0xa0, 0x80])).invalid, 3);         // UTF-16 surrogate
   assert.equal(T.utf8Scan(Buffer.from([0xf4, 0x90, 0x80, 0x80])).invalid, 4);   // above U+10FFFF
   assert.equal(T.utf8Scan(Buffer.from([0xe2, 0x82])).invalid, 2);               // truncated
+});
+
+test('decodeBytes: Latin-1 bytes inside HTML comments do not count against a short UTF-8 page (F-036)', () => {
+  // tn-coc-jurisite-739: 24 Latin-1 bytes in template comments, one in an attribute, few accents in the text
+  const latin = (x) => Buffer.from(x, 'latin1');
+  const comments = Array.from({ length: 23 }, () => Buffer.concat([Buffer.from('<!-- ajout'), latin('\xe9'), Buffer.from(' -->')]));
+  const buf = Buffer.concat([Buffer.from('<meta charset="utf-8">'), ...comments,
+    Buffer.from('<img alt="L'), latin('\xe9'), Buffer.from('gislation">'),
+    Buffer.from('<p>Article 739 - Le preneur est tenu de payer le loyer. Il répond des dégâts.</p>')]);
+  assert.deepEqual(T.utf8Scan(buf), { multibyte: 3, invalid: 24 });
+  assert.deepEqual(T.utf8Scan(buf, true), { multibyte: 3, invalid: 1 });
+  const r = T.decodeBytes(buf, 'text/html; charset=utf-8');
+  assert.equal(r.charset, 'utf-8+windows-1252');
+  assert.equal(r.note, '1 of 24 invalid bytes outside HTML comments');
+  assert.match(r.text, /Il répond des dégâts\./);
+  assert.match(r.text, /alt="Législation"/);
+});
+
+test('htmlToText: a ">" inside a quoted attribute does not end the tag (F-037)', () => {
+  // as on wrcati.cawtar.org: a tooltip attribute holding HTML
+  const html = `<p>أركان <acronym onMouseOver="return overlib('العقد هو اتفاق', CAPTION, '<center>Contrat<center>', LEFT);" onMouseOut="return nd(1);">العقد</acronym> الذي يترتب عليه</p><p title='a > b'>Fin</p>`;
+  assert.equal(T.htmlToText(html).text, 'أركان العقد الذي يترتب عليه\n\nFin');
+  const sel = T.htmlToText(`<div data-x="<b>" id="content"><p>Texte</p></div><div>Menu</div>`, { select: { id: 'content' } });
+  assert.deepEqual([sel.selected, sel.text], [true, 'Texte']);
+});
+
+test('scriptProblem: Latin-looking garbage from an Arabic PDF without Unicode fonts is caught (F-038)', () => {
+  const garbage = '‘ngW¬*Kr33∂h4_rS¡ƒ ct`sn V`Lst<(8_∫ΩtDLd_∫sd$ ±L8_∫b3 ÷±a∫nh_∫2` cXS∫nc*L ‘ngX_∫sƒnld _∫2t ƒƒ*<s∫r33wj<gru∫';
+  assert.match(T.scriptProblem(garbage, 'ar'), /symbol characters/);
+  assert.equal(T.scriptProblem('الفصل 772 للمكتري أن يكري لغيره ما اكتراه (art. 772 COC)', 'ar'), null);
+  assert.equal(T.scriptProblem('Le preneur a le droit de sous-louer, à moins que la défense...', 'fr'), null);
+  assert.match(T.scriptProblem('للمكتري أن يكري لغيره ما اكتراه أو يحيل عقد كرائه', 'fr'), /Latin letters in a fr source/);
+  assert.equal(T.scriptProblem('', 'fr'), 'no letters in the extracted text');
 });

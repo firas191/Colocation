@@ -1,0 +1,9 @@
+[
+  {
+    "name": "tn_retrieval",
+    "kind": "retrieval",
+    "version": 1,
+    "file": "tn_retrieval_v1.jsonl",
+    "notes": "48 TN questions (spec 10.7): 25 French, 5 English, 6 Arabic script, 4 transliterated, 4 code-switched, 4 out of scope. Gold = quoted spans of the current documents (eval.resolve_gold). See eval/datasets/README.md."
+  }
+]

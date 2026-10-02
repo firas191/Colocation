@@ -31,6 +31,10 @@ if (f.start_at || f.end_at) {
   cut = { start_at: f.start_at || null, end_at: f.end_at || null, end_found: c.ended };
 }
 if (content.length < (f.min_chars || 200)) throw new Error(`extracted_too_short ${content.length} chars`);
+// Text in the wrong script for the source's language: a font without a Unicode mapping
+// or a wrong decoder. Stop instead of storing it (F-038).
+const scriptErr = scriptProblem(content, x.source.language);
+if (scriptErr) throw new Error(`wrong_script ${x.source.language}: ${scriptErr}`);
 // Replacement characters left in the kept text mean a wrong decoder: stop instead of
 // storing garbled text. Counted after cleaning, so comments and dropped markup do not count.
 const bad = (content.match(/\ufffd/g) || []).length;

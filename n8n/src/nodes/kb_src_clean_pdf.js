@@ -17,6 +17,10 @@ if (f.start_at || f.end_at) {
   cut = { start_at: f.start_at || null, end_at: f.end_at || null, end_found: c.ended };
 }
 if (out.text.length < (f.min_chars || 200)) throw new Error(`extracted_too_short ${out.text.length} chars (scanned PDF without a text layer?)`);
+// Text in the wrong script for the source's language: a font without a Unicode mapping
+// or a wrong decoder. Stop instead of storing it (F-038).
+const scriptErr = scriptProblem(out.text, x.source.language);
+if (scriptErr) throw new Error(`wrong_script ${x.source.language}: ${scriptErr}`);
 return [{ json: {
   ...x, http_status: status, content_type: String((r.headers || {})['content-type'] || 'application/pdf').slice(0, 200),
   content: out.text, extractor: 'pdf_v1', bytes_b64: buf.toString('base64'),

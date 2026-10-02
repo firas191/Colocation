@@ -206,6 +206,21 @@ HTML gives the Content-Type header precedence over `<meta charset>`. Two real ca
 
 The HTTP Request node sends all its items' requests concurrently (F-033). For a long document that put every batch on TEI's CPU at once, so the per-request timeout measured the whole document, not one batch. The node now runs inside a loop with batch size 1. TEI on the CPU already processed the concurrent requests from one queue, so total time should change little; this is expected, not measured (the next ingestion records it). For Ollama on the GPU some overlap is lost; it is the fast model, so this was accepted rather than adding a second loop per model. Tokenization requests (cheap; 12 for the largest document, 353,919 characters in 1,000-character pieces, 32 per request) and the evaluation's query embeddings (a few batches) stay concurrent.
 
+### D-050 TN pack v1.2 before the gold set
+
+Reading every exported text to write the gold set (D-051) led to these changes:
+- `tn-lo-2004-63-ar-igppp` is removed: its PDF has no usable text layer (F-038). Arabic text of law 2004-63 is not in the corpus; questions about it in Arabic are cross-lingual.
+- Extraction options for the nine jurisitetunisie.com pages (keep from the "Livre Deux" heading to the site's footer link) and for the Ministry of Justice page (keep only the civil and commercial questions; 16,766 characters of which more than half were the site menu, now 7,936).
+- The fixes F-036 to F-038 change the stored text of 10 documents at the next ingestion; `kb/tools/reextract.js` lists them before ingesting.
+
+### D-051 Gold set v1: 48 questions, gold as quoted spans
+
+`eval/datasets/tn_retrieval_v1.jsonl`, written by `build_tn_retrieval_v1.py`, described in `eval/datasets/README.md`. 48 rather than 40, because the language groups of spec 10.7 need several questions each to say anything: 25 French, 5 English, 6 Arabic script, 4 transliterated, 4 code-switched, 4 out of scope; 10 contradiction cases. Choices:
+- The gold is the supporting text in the question's language when the corpus has it, else French (tagged `cross_lingual`). Transliterated and code-switched questions list both the Arabic and the French text of the code. Recall therefore asks a mixed-language question to find both versions; Hit@k and MRR do not.
+- Blogs and press pages are gold when they state the point. Retrieval should surface them; whether an answer may rely on them is a later decision based on reliability.
+- Out-of-scope questions have no gold and are not scored for retrieval; abstention is measured when answers exist (phase 6).
+- Written before any retrieval run on the corpus, so the questions are not fitted to what the system already finds. One person wrote and checked them (no second annotator); this is a limit of the numbers.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** `app.listings` has no rent period, but P3's schema and GB practice include weekly rents. Comparing a weekly rent with a monthly budget gives wrong results. Phase 3 adds `rent_period` and a monthly-equivalent column used by `search_listings`.

@@ -81,12 +81,24 @@ function utf8SeqLen(b, i) {
   return 0;
 }
 
-// Valid multi-byte sequences and invalid bytes in a buffer.
-function utf8Scan(b) {
+// Valid multi-byte sequences and invalid bytes in a buffer. With skipComments,
+// bytes inside HTML comments are not counted: they never reach the text, and one
+// site's Latin-1 bytes are all in its template comments (F-036).
+function utf8Scan(b, skipComments) {
   let multibyte = 0, invalid = 0;
+  const skip = [];
+  if (skipComments) {
+    const re = /<!--[\s\S]*?-->/g;
+    const lat = Buffer.from(b).toString('latin1');
+    let m;
+    while ((m = re.exec(lat))) skip.push([m.index, m.index + m[0].length]);
+  }
+  let k = 0;
   for (let i = 0; i < b.length;) {
+    while (k < skip.length && skip[k][1] <= i) k++;
+    const inComment = k < skip.length && skip[k][0] <= i;
     const n = utf8SeqLen(b, i);
-    if (n === 0) { invalid++; i++; } else { if (n > 1) multibyte++; i += n; }
+    if (n === 0) { if (!inComment) invalid++; i++; } else { if (n > 1 && !inComment) multibyte++; i += n; }
   }
   return { multibyte, invalid };
 }
@@ -120,8 +132,9 @@ function decodeWith(buf, label) {
 // UTF-8 and the bytes are not valid UTF-8 (DECISIONS D-048, FAILURES F-032):
 //  1. another declaration names a different charset -> use it
 //     (a server default "charset=utf-8" over a windows-1256 page);
-//  2. otherwise, if valid multi-byte sequences outnumber invalid bytes, the
-//     text is UTF-8 with stray Latin-1 bytes -> decode them as windows-1252;
+//  2. otherwise, if outside HTML comments valid multi-byte sequences are at least
+//     as many as invalid bytes, the text is UTF-8 with stray Latin-1 bytes ->
+//     decode those as windows-1252 (F-036: comments excluded from the count);
 //  3. otherwise fail: the real charset is unknown.
 function decodeBytes(buf, contentType) {
   const head = Buffer.from(buf.subarray(0, 4096)).toString('latin1');
@@ -136,10 +149,12 @@ function decodeBytes(buf, contentType) {
     return { text: decodeWith(buf, other), charset: other, source: d.meta === other ? 'meta' : 'header',
              invalid_bytes: scan.invalid, note: `declared utf-8 (${source}) but ${scan.invalid} bytes are not UTF-8` };
   }
-  if (scan.multibyte >= scan.invalid) {
-    return { text: decodeUtf8Mixed(buf), charset: 'utf-8+windows-1252', source, invalid_bytes: scan.invalid };
+  const body = utf8Scan(buf, true);          // outside HTML comments
+  if (body.multibyte >= body.invalid) {
+    return { text: decodeUtf8Mixed(buf), charset: 'utf-8+windows-1252', source, invalid_bytes: scan.invalid,
+             note: `${body.invalid} of ${scan.invalid} invalid bytes outside HTML comments` };
   }
-  throw new Error(`decoding_failed utf-8 (${source}): ${scan.invalid} invalid bytes, ${scan.multibyte} valid multi-byte sequences, no other charset declared`);
+  throw new Error(`decoding_failed utf-8 (${source}): ${body.invalid} invalid bytes and ${body.multibyte} valid multi-byte sequences outside HTML comments (${scan.invalid} invalid in all), no other charset declared`);
 }
 
 // ---------------------------------------------------------------------------
@@ -171,6 +186,11 @@ const BOILERPLATE_ELEMENTS = ['nav', 'header', 'footer', 'aside', 'form'];
 const BLOCK_TAGS = new Set(['p', 'div', 'section', 'article', 'main', 'ul', 'ol', 'table', 'tr', 'tbody', 'thead',
   'blockquote', 'pre', 'dl', 'dd', 'dt', 'figure', 'figcaption', 'address', 'center', 'hr', 'body', 'html']);
 
+// Attributes of a tag, with quoted values that may contain ">" (F-037: a tooltip
+// attribute holding "<center>" ended the tag early and leaked its text).
+const ATTRS = `(?:\\s+[^\\s=>"'/]+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|[^\\s>"']*))?)*`;
+const TAG_RE = new RegExp(`<(\\/?)([a-z][a-z0-9]*)(${ATTRS})\\s*\\/?>`, 'gi');
+
 function attrMatches(tagText, sel) {
   if (sel.id) {
     const m = /\sid\s*=\s*["']([^"']*)["']/i.exec(tagText);
@@ -187,16 +207,16 @@ function attrMatches(tagText, sel) {
 // Nested elements with the same tag name are balanced.
 function extractElement(html, sel) {
   const tag = (sel.tag || '[a-z][a-z0-9]*').toLowerCase();
-  const openRe = new RegExp(`<(${tag})(\\s[^>]*)?>`, 'gi');
+  const openRe = new RegExp(`<(${tag})(${ATTRS})\\s*>`, 'gi');
   let m;
   while ((m = openRe.exec(html))) {
     if (!attrMatches(m[0], sel)) continue;
     const name = m[1].toLowerCase();
-    const re = new RegExp(`<(/?)${name}(?=[\\s>/])[^>]*>`, 'gi');
+    const re = new RegExp(`<(/?)${name}(?=[\\s>/])${ATTRS}\\s*/?>`, 'gi');
     re.lastIndex = m.index + m[0].length;
     let depth = 1, t;
     while ((t = re.exec(html))) {
-      if (t[0].endsWith('/>')) continue;
+      if (t[0].endsWith('/>') && !t[1]) continue;
       depth += t[1] ? -1 : 1;
       if (depth === 0) return html.slice(m.index + m[0].length, t.index);
     }
@@ -209,7 +229,7 @@ function removeElements(html, names) {
   let out = html;
   for (const n of names) {
     out = out.replace(new RegExp(`<${n}(?=[\\s>/])[\\s\\S]*?</${n}\\s*>`, 'gi'), ' ');
-    out = out.replace(new RegExp(`<${n}(?=[\\s>/])[^>]*/>`, 'gi'), ' ');
+    out = out.replace(new RegExp(`<${n}(?=[\\s>/])${ATTRS}\\s*/>`, 'gi'), ' ');
   }
   return out;
 }
@@ -224,7 +244,7 @@ function htmlToText(html, opts = {}) {
     if (inner !== null) { h = inner; selected = true; break; }
   }
   if (!opts.keepBoilerplate) h = removeElements(h, BOILERPLATE_ELEMENTS);
-  h = h.replace(/<(\/?)([a-z][a-z0-9]*)(\s[^>]*)?\/?>/gi, (m, close, name) => {
+  h = h.replace(TAG_RE, (m, close, name) => {
     const n = name.toLowerCase();
     if (/^h[1-6]$/.test(n)) return close ? '\n\n' : `\n\n${'#'.repeat(Number(n[1]))} `;
     if (n === 'br') return '\n';
@@ -238,6 +258,23 @@ function htmlToText(html, opts = {}) {
   // a heading marker left alone on its line (empty heading) is dropped
   text = text.replace(/^#{1,6}\s*$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
   return { text, selected };
+}
+
+// Is the extracted text in the script of the source's language? A PDF whose fonts
+// have no Unicode mapping gives Latin-looking garbage for an Arabic text (F-038).
+// Returns null when the text looks right, else a short reason.
+function scriptProblem(text, language) {
+  const t = String(text || '');
+  const arabic = (t.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
+  const latin = (t.match(/[A-Za-z\u00C0-\u024F]/g) || []).length;
+  const odd = (t.match(/[^\s\p{L}\p{N}\p{P}\p{Sc}°+=<>|~^`]/gu) || []).length
+    + (t.match(/[\u2200-\u22FF\u0192\u00AC\u00F7\u2206\u221A\u221E\u2248\u2260\u2264\u2265\u03A9\u220F\u2211\u222B]/g) || []).length;
+  const letters = arabic + latin;
+  if (!letters) return 'no letters in the extracted text';
+  if (odd / t.length > 0.05) return `${Math.round(100 * odd / t.length)}% symbol characters (font without a Unicode mapping?)`;
+  if (language === 'ar' && arabic / letters < 0.3) return `${Math.round(100 * arabic / letters)}% Arabic letters in an Arabic source`;
+  if ((language === 'fr' || language === 'en') && latin / letters < 0.5) return `${Math.round(100 * latin / letters)}% Latin letters in a ${language} source`;
+  return null;
 }
 
 // Keep the text from the first line starting with startAt (inclusive) to the
@@ -339,6 +376,6 @@ function sentenceStarts(text, start = 0, end = text.length) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { normalizeText, sniffCharset, declaredCharsets, utf8Scan, decodeUtf8Mixed, decodeBytes, decodeEntities, extractElement, htmlToText,
+  module.exports = { normalizeText, scriptProblem, sniffCharset, declaredCharsets, utf8Scan, decodeUtf8Mixed, decodeBytes, decodeEntities, extractElement, htmlToText,
     pdfPagesToText, sentenceStarts, cutBetween };
 }

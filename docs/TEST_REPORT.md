@@ -793,6 +793,84 @@ one `.invalid` host) printed `https://www.justice.gov.tn/robots.txt HTTP 403` (t
 403) and `network error: ENOTFOUND`, exit 0; it exits 1 only when no host answers. It was not run in Windows
 PowerShell here. Log: `reports/phase2/09-pytest-after-f034-f035-sandbox.log`.
 
+## T-27 Eleventh compose run and fourth TN ingestion on the owner's PC (2026-10-02) - every verify step PASS; ingestion 8 ok, 22 skipped, 1 failed
+
+`verify.ps1` (`reports/verify-20261002-121304`): every step passed, contract tests included (78 s). This is the
+first complete pass of phases 0 to 2 on the compose stack with real TEI and Ollama.
+
+`kb.ps1 -Step ingest` (`reports/kb-20261002-122937/kb.log`):
+
+```
+== n8n container reaches the internet
+   https://www.justice.gov.tn/robots.txt HTTP 403
+   https://www.jurisitetunisie.com/robots.txt HTTP 200
+   PASS (exit 0, 0.5 s)
+      1110.0s  tn-coc-ar-cawtar: ok (done), 1101 s
+      1131.0s  tn-coc-jurisite-727-738: ok (done), 12 s
+      1131.0s  tn-coc-jurisite-739: failed (source_workflow) decoding_failed utf-8 (header): 24 invalid bytes, 13 valid multi-byte sequences, no other charset declared [line 146]
+ingest failed in 1226 s: {"ok": 8, "failed": 1, "skipped": 22}
+  skipped  tn-coc-ar      robots  robots_unreachable_503 [robots.txt HTTP 503]
+  skipped  tn-inpdp-procedures  robots  robots_unreachable [robots.txt HTTP 0] getaddrinfo EAI_AGAIN www.inpdp.tn
+exported 29 documents under kb/packs/*/documents/
+```
+
+- F-033 fixed on the PC: `tn-coc-ar-cawtar` (587 chunks, both models) completed in 1101 s with embedding requests sent
+  one at a time. This is the measured cost of the largest document on this PC (TEI on CPU, Ollama on the GPU); the
+  split between the two models was not measured.
+- F-032 fixed on the PC for 6 of the 7 jurisite pages; the 7th failed (F-036).
+- The robots.txt reason now carries the network error: inpdp.tn does not resolve from the PC (`EAI_AGAIN`).
+- `tn-lapresse-arnaque-sousse` was "updated" again (version 3): its page changes between fetches (1,492 then 1,507
+  characters), so it gets a new version on most runs.
+
+Reading the exported texts for the gold set found F-037 (debris in the Arabic code text) and F-038 (a PDF stored as
+symbols).
+
+## T-28 Fixes for F-036 to F-038 and gold set v1, sandbox (2026-10-02) - PASS, with mocks for TEI and Ollama
+
+`kb/tools/reextract.js` on the raw pages saved on the PC, old code and old pack (checks that the tool reproduces the
+pipeline), then new code and new pack:
+
+```
+$ node kb/tools/reextract.js <copy of kb/packs> <text.js at HEAD>
+0 document(s) would change                       (20 HTML documents, all "same")
+$ node kb/tools/reextract.js <copy of kb/packs with the new sources.csv>
+changed  tn-coc-jurisite-727-738            3134 -> 2928 chars
+changed  tn-coc-jurisite-740-746            2868 -> 2662 chars
+changed  tn-coc-jurisite-747                794 -> 588 chars
+changed  tn-coc-jurisite-748-757            4643 -> 4437 chars
+changed  tn-coc-jurisite-758-766            3380 -> 3174 chars
+changed  tn-coc-jurisite-767-790            8697 -> 8491 chars
+changed  tn-coc-jurisite-791-804            4361 -> 4155 chars
+changed  tn-coc-jurisite-805-827            9643 -> 9437 chars
+changed  tn-coc-ar-cawtar                   353919 -> 322209 chars
+changed  tn-justice-questions-civiles       16766 -> 7936 chars
+10 document(s) would change
+```
+
+The jurisite pages lose only the site header above "# Livre Deux"; CAWTAR loses the 568 tooltip fragments.
+`tn-coc-jurisite-739` was not saved (it failed before storage); its decoding is covered by the unit test.
+
+Gold set: 48 questions, 89 gold spans. Every span was resolved with a script that does what `eval.resolve_gold` does
+(start quote found once, end quote after it) against the texts the next ingestion will store (the exported texts,
+with the 10 changes above): 0 problems. One start quote was ambiguous on the first pass (it also appears in the
+table of contents of `tn-mehat-logement-locatif-2014`) and was lengthened. `kb.py seed` loaded the dataset in the
+sandbox (`dataset tn_retrieval v1: 48 queries`); `kb.py check-gold` there reports every span missing, as expected
+with no TN documents in the sandbox database. The real check is `kb.ps1 -Step eval` on the PC, which stops before
+evaluating if any span does not resolve.
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# tests 57
+# pass 57
+# fail 0
+$ pytest -v -rs tests/unit tests/contract
+=================== 77 passed, 1 skipped in 82.91s (0:01:22) ===================
+```
+
+New tests: decoding with comments excluded (F-036), quoted `>` in attributes (F-037), script check (F-038),
+`tests/unit/test_datasets.py` (ids, tags, abstain has no gold, every contradiction lists two or more sources, gold
+sources exist in the packs, the JSONL is what its builder writes). Log: `reports/phase2/10-pytest-after-f036-f038-sandbox.log`.
+
 ---
 
 ## Not run

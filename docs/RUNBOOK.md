@@ -64,6 +64,8 @@ and the fixture server for the ingestion tests: `docker compose --profile test u
 | Last ingestion result per source | `docker exec -u postgres fs-postgres psql -d flatshare -c "select s.source_key, l.status, l.step, l.detail->>'error' from kb.ingest_log l join kb.sources s on s.id = l.source_id order by l.id desc limit 30"` |
 
 Adding a source is a data change: a line in `kb/packs/<CODE>/sources.csv`, then `kb.ps1 -Step ingest`.
+Before changing `extract` options or `kb/lib/text.js`, run `node kb/tools/reextract.js` after an export: it
+re-extracts the saved raw HTML pages and lists which stored texts would change.
 A gold set is `eval/datasets/<name>_v<version>.jsonl` listed in `eval/datasets/manifest.json`; once a version has
 evaluation runs its queries cannot change (bump the version).
 
