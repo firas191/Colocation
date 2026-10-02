@@ -1,0 +1,86 @@
+verify.ps1 run 20260929-225144 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-09-29T22:51:44.5741330+01:00
+853618f fix(infra): PostgreSQL 18 + PostGIS 3.6 (trixie) with PGDG pgvector/pgTAP; separate image pull step
+e906539 fix(infra): postgis 17-3.5 base image; verify.ps1 checks image tags and stops on failure
+e72b61d test: wait for recovery after dependency outage tests
+56539c9 chore: ship history as a git bundle; verify.ps1 restores it
+bb5bfb6 feat(infra): compose stack, postgres image, Windows setup/verify scripts; docs and phase 0-1 evidence
+exit=0 seconds=0.3
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-09-29T22:51:44.8695403+01:00
+GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design (UUID: GPU-ee1b4c30-d658-6a46-7bfb-e81ac22f9265)
+exit=0 seconds=9.1
+gpu_override=True
+
+===== docker and compose versions =====
+command: docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version
+started: 2026-09-29T22:51:53.9864294+01:00
+client 29.7.2 server 29.7.2
+Docker Compose version v5.4.0
+exit=0 seconds=0.2
+
+===== free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed) =====
+command: Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | ForEach-Object { "{0}: {1:N1} GB free" -f $_.Name, ($_.Free / 1GB) }
+started: 2026-09-29T22:51:54.1576506+01:00
+C: 13.2 GB free
+D: 131.1 GB free
+E: 3.9 GB free
+exit=0 seconds=0.2
+
+===== compose config is valid =====
+command: docker compose @files config -q
+started: 2026-09-29T22:51:54.3117613+01:00
+exit=0 seconds=0.1
+
+===== every pinned image tag exists in its registry =====
+command: $bad = 0
+  foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli")) {
+    docker manifest inspect $img *> $null
+    if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
+  }
+  $global:LASTEXITCODE = $bad
+started: 2026-09-29T22:51:54.4677456+01:00
+found    postgis/postgis:18-3.6
+found    amacneil/dbmate:2.36.0
+found    dxflrs/garage:v2.4.1
+found    ollama/ollama:0.34.4
+found    n8nio/n8n:2.41.3
+found    n8nio/runners:2.41.3
+found    caddy:2.11.4-alpine
+found    python:3.12.14-slim
+found    docker:29.8.1-cli
+exit=0 seconds=95.2
+
+===== pull service images (largest download: Ollama, n8n) =====
+command: docker compose @files pull --ignore-buildable
+started: 2026-09-29T22:53:29.6437957+01:00
+ Image flatshare/postgres:18-3.6-pgvector0.8 Skipped Image can be built
+ Image caddy:2.11.4-alpine Pulling 
+ Image flatshare/postgres:18-3.6-pgvector0.8 Pulling 
+ Image dxflrs/garage:v2.4.1 Pulling 
+ Image n8nio/n8n:2.41.3 Pulling 
+ Image n8nio/runners:2.41.3 Pulling 
+ Image ollama/ollama:0.34.4 Pulling 
+ Image flatshare/postgres:18-3.6-pgvector0.8 Error pull access denied for flatshare/postgres, repository does not exist or may require 'docker login'
+ Image caddy:2.11.4-alpine Interrupted 
+ Image n8nio/runners:2.41.3 Interrupted 
+ Image n8nio/n8n:2.41.3 Interrupted 
+ Image ollama/ollama:0.34.4 Interrupted 
+ Image dxflrs/garage:v2.4.1 Interrupted 
+Error response from daemon: pull access denied for flatshare/postgres, repository does not exist or may require 'docker login'
+exit=1 seconds=1.1

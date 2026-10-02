@@ -1,0 +1,51 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-02T15:47:43.4568012+01:00
+healthy
+ Container flatshare-tests-run-7e1c195939da Creating 
+ Container flatshare-tests-run-7e1c195939da Created 
+TEI 200
+exit=0 seconds=0.9
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-02T15:47:44.3934309+01:00
+ Container flatshare-tests-run-1d3b82958440 Creating 
+ Container flatshare-tests-run-1d3b82958440 Created 
+sources: 30 upserted from 2 packs; marked removed: []
+dataset tn_retrieval v1: 48 queries (0 new or changed, 0 removed)
+exit=0 seconds=1.2
+
+===== gold spans resolve against the current documents =====
+command: docker @kb check-gold
+started: 2026-10-02T15:47:45.5530275+01:00
+ Container flatshare-tests-run-e779cc7a1984 Creating 
+ Container flatshare-tests-run-e779cc7a1984 Created 
+48 queries, 89 gold spans, 0 problems
+exit=0 seconds=1.3
+
+===== retrieval evaluation (full matrix) and docs\RETRIEVAL_EVAL.md =====
+command: docker @kb eval --jurisdiction $Jurisdiction
+started: 2026-10-02T15:47:46.8801978+01:00
+ Container flatshare-tests-run-09ec47b2a875 Creating 
+ Container flatshare-tests-run-09ec47b2a875 Created 
+/v1/admin/eval/runs: job 92e8c6cd-4bb7-4d0c-8142-644e39eec3af accepted
+      0.2s  job running
+     20.7s  job succeeded
+     20.7s  12 evaluation runs finished; last: run structure_aware_v1 / multilingual-e5-large / hybrid: succeeded
+  fixed_500_50         bge-m3                 dense    hit@5 0.7045  mrr 0.5214  recall@10 0.625  p95 115.86 ms
+  fixed_500_50         bge-m3                 lexical  hit@5 0.3636  mrr 0.2985  recall@10 0.3788  p95 12.2 ms
+  fixed_500_50         bge-m3                 hybrid   hit@5 0.6591  mrr 0.4467  recall@10 0.6136  p95 121.93 ms
+  fixed_500_50         multilingual-e5-large  dense    hit@5 0.6136  mrr 0.4643  recall@10 0.5663  p95 114.74000000000001 ms
+  fixed_500_50         multilingual-e5-large  lexical  hit@5 0.3636  mrr 0.2985  recall@10 0.3788  p95 9.2 ms
+  fixed_500_50         multilingual-e5-large  hybrid   hit@5 0.5909  mrr 0.4145  recall@10 0.5492  p95 121.02000000000001 ms
+  structure_aware_v1   bge-m3                 dense    hit@5 0.6364  mrr 0.4616  recall@10 0.5019  p95 117.17 ms
+  structure_aware_v1   bge-m3                 lexical  hit@5 0.3864  mrr 0.2444  recall@10 0.3826  p95 11.35 ms
+  structure_aware_v1   bge-m3                 hybrid   hit@5 0.6591  mrr 0.4475  recall@10 0.536  p95 124.47 ms
+  structure_aware_v1   multilingual-e5-large  dense    hit@5 0.5909  mrr 0.4525  recall@10 0.5511  p95 116.76 ms
+  structure_aware_v1   multilingual-e5-large  lexical  hit@5 0.3864  mrr 0.2444  recall@10 0.3826  p95 12.9 ms
+  structure_aware_v1   multilingual-e5-large  hybrid   hit@5 0.5682  mrr 0.43  recall@10 0.517  p95 125.03 ms
+wrote /flatshare/docs/RETRIEVAL_EVAL.md
+exit=0 seconds=24.6

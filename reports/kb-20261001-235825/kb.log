@@ -1,0 +1,79 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-01T23:58:26.6445345+01:00
+healthy
+ Container flatshare-tests-run-2859fdb68f53 Creating 
+ Container flatshare-tests-run-2859fdb68f53 Created 
+TEI 200
+exit=0 seconds=0.8
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-01T23:58:27.4301191+01:00
+ Container flatshare-tests-run-f1344c6a0dc9 Creating 
+ Container flatshare-tests-run-f1344c6a0dc9 Created 
+sources: 20 upserted from 2 packs; marked removed: []
+datasets: no manifest
+exit=0 seconds=1
+
+===== ingest TN (fetch, clean, chunk, embed; can take long on CPU) =====
+command: docker @kb @args2
+started: 2026-10-01T23:58:28.4171094+01:00
+ Container flatshare-tests-run-65f676b4d575 Creating 
+ Container flatshare-tests-run-65f676b4d575 Created 
+job 96476bcc-370b-464b-b283-76e3ce7326f4 (kb_ingest) was still marked running after 21.1 h: marked failed (abandoned)
+/v1/admin/kb/ingest: job c1289795-4545-48f0-b005-c30a33b095d2 accepted
+      0.2s  job running
+   1284.0s  job failed
+ingest failed in 1285 s: {"ok": 11, "failed": 5, "skipped": 4}
+  failed   gl-123loger-arnaques               source_workflow  chunk span outside the document text
+  failed   gl-gestetud-arnaques               source_workflow  chunk span outside the document text
+  failed   gl-twenty-campus-arnaques          source_workflow  chunk span outside the document text
+  ok       tn-cdet-2017                       unchanged fixed_500_50: 87 chunks, structure_aware_v1: 151 chunks 
+  skipped  tn-coc-ar                          robots  
+  skipped  tn-coc-fr                          robots  
+  ok       tn-cyriljarnias-location           created fixed_500_50: 20 chunks, structure_aware_v1: 29 chunks 
+  ok       tn-diwan-location                  created fixed_500_50: 3 chunks, structure_aware_v1: 4 chunks 
+  ok       tn-dpo-consulting-loi              created fixed_500_50: 18 chunks, structure_aware_v1: 57 chunks 
+  ok       tn-houni-colocation-tunis          created fixed_500_50: 3 chunks, structure_aware_v1: 9 chunks 
+  skipped  tn-inpdp-procedures                robots  
+  ok       tn-lapresse-arnaque-sousse         created fixed_500_50: 2 chunks, structure_aware_v1: 7 chunks 
+  skipped  tn-lo-2004-63-ar                   robots  
+  ok       tn-lo-2004-63-fr                   created fixed_500_50: 29 chunks, structure_aware_v1: 47 chunks 
+  ok       tn-loi-76-35-recueil               created fixed_500_50: 62 chunks, structure_aware_v1: 94 chunks 
+  ok       tn-mehat-logement-locatif-2014     created fixed_500_50: 72 chunks, structure_aware_v1: 90 chunks 
+  ok       tn-notaire-tunisienumerique        created fixed_500_50: 5 chunks, structure_aware_v1: 21 chunks 
+  ok       tn-profiscal-det-ch7-2006          created fixed_500_50: 17 chunks, structure_aware_v1: 51 chunks 
+  failed   tn-web6-droits-locataire           source_workflow  fetch_http_404 https://web6.tn/blog/droits-devoirs-locataire-proprietaire-tunisie-2026/ [line 234]
+  failed   tn-web6-inpdp                      source_workflow  chunk span outside the document text
+job error: 5 of 20 sources failed
+System.Management.Automation.RemoteException
+exit=2 seconds=1286.5
+
+===== export current documents to kb\packs\*\documents =====
+command: docker @kb export
+started: 2026-10-02T00:19:54.9045031+01:00
+ Container flatshare-tests-run-1637d1a69760 Creating 
+ Container flatshare-tests-run-1637d1a69760 Created 
+  gl-123loger-arnaques               v1    34,219 chars  null
+  gl-gestetud-arnaques               v1    49,794 chars  null
+  gl-twenty-campus-arnaques          v2    11,437 chars  null
+  test-guide-pdf                     v1       348 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  test-law-ar                        v1       369 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  test-law-fr                        v2     2,206 chars  {"fixed_500_50": 2, "structure_aware_v1": 3}
+  tn-cdet-2017                       v1   153,148 chars  {"fixed_500_50": 87, "structure_aware_v1": 151}
+  tn-cyriljarnias-location           v1    36,421 chars  {"fixed_500_50": 20, "structure_aware_v1": 29}
+  tn-diwan-location                  v1     4,198 chars  {"fixed_500_50": 3, "structure_aware_v1": 4}
+  tn-dpo-consulting-loi              v1    34,838 chars  {"fixed_500_50": 18, "structure_aware_v1": 57}
+  tn-houni-colocation-tunis          v1     5,347 chars  {"fixed_500_50": 3, "structure_aware_v1": 9}
+  tn-lapresse-arnaque-sousse         v1     2,468 chars  {"fixed_500_50": 2, "structure_aware_v1": 7}
+  tn-lo-2004-63-fr                   v1    55,409 chars  {"fixed_500_50": 29, "structure_aware_v1": 47}
+  tn-loi-76-35-recueil               v1   113,977 chars  {"fixed_500_50": 62, "structure_aware_v1": 94}
+  tn-mehat-logement-locatif-2014     v1   138,451 chars  {"fixed_500_50": 72, "structure_aware_v1": 90}
+  tn-notaire-tunisienumerique        v1     9,032 chars  {"fixed_500_50": 5, "structure_aware_v1": 21}
+  tn-profiscal-det-ch7-2006          v1    30,908 chars  {"fixed_500_50": 17, "structure_aware_v1": 51}
+  tn-web6-inpdp                      v1     7,131 chars  null
+exported 18 documents under kb/packs/*/documents/
+exit=0 seconds=1.8

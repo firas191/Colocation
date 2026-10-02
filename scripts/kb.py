@@ -285,10 +285,27 @@ def run_eval(args):
 
 
 def report_for(job_id, out):
+    """Write the report, and a JSON dump of the evaluation (reports/eval/<job>.json) for failure analysis."""
     import report  # eval/runners/report.py
     with psycopg.connect(dsn()) as conn:
+        if job_id == "latest":
+            row = conn.execute("select id from app.jobs where type = 'eval_retrieval' and status = 'succeeded' "
+                               "order by created_at desc limit 1").fetchone()
+            if not row:
+                sys.exit("no succeeded evaluation job")
+            job_id = str(row[0])
         data = report.load(conn, job_id)
-    ds = data[0][1]
+        ds = data[0][1]
+        gold = {qid: g for qid, g in conn.execute(
+            """select q.external_id, eval.resolve_gold(q.gold) from eval.queries q join eval.datasets d on d.id = q.dataset_id
+               where d.name = %s and d.version = %s""", (ds["dataset"], ds["version"])).fetchall()}
+    dump = ROOT / "reports" / "eval" / f"{job_id}.json"
+    try:
+        dump.parent.mkdir(parents=True, exist_ok=True)
+        dump.write_text(json.dumps(report.to_json(data, gold), ensure_ascii=False, default=str), encoding="utf-8")
+        print("wrote", dump)
+    except OSError as e:                      # reports/ not mounted writable: the report still gets written
+        print("dump not written:", e)
     notes_file = ROOT / "eval" / "datasets" / f"{ds['dataset']}_v{ds['version']}_notes.json"
     notes = json.loads(notes_file.read_text(encoding="utf-8")) if notes_file.exists() else {}
     tried_file = ROOT / "eval" / "reports" / "tried.md"
@@ -356,7 +373,7 @@ def main():
             s.add_argument("--jurisdiction", default="TN"); s.add_argument("--k", type=int, default=10)
             s.add_argument("--timeout", type=int, default=3600); s.add_argument("--git-sha")
             s.add_argument("--out", default=str(ROOT / "docs" / "RETRIEVAL_EVAL.md"))
-    s = sub.add_parser("report"); s.add_argument("--job", required=True); s.add_argument("--out", default=str(ROOT / "docs" / "RETRIEVAL_EVAL.md"))
+    s = sub.add_parser("report"); s.add_argument("--job", default="latest", help="evaluation job id, or latest"); s.add_argument("--out", default=str(ROOT / "docs" / "RETRIEVAL_EVAL.md"))
     a = ap.parse_args()
     fn = {"seed": seed, "ingest": ingest, "export": export, "check-gold": check_gold, "eval": run_eval,
           "report": lambda a: report_for(a.job, a.out)}[a.cmd]

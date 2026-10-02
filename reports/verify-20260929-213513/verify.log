@@ -1,0 +1,109 @@
+verify.ps1 run 20260929-213513 on FIRAS
+
+===== restore git history from flatshare.bundle =====
+command: git init -q -b main
+    git fetch -q flatshare.bundle main
+    git reset -q --mixed FETCH_HEAD
+    git log --oneline -n 5
+started: 2026-09-29T21:35:13.6939964+01:00
+56539c9 chore: ship history as a git bundle; verify.ps1 restores it
+bb5bfb6 feat(infra): compose stack, postgres image, Windows setup/verify scripts; docs and phase 0-1 evidence
+d8aae46 feat(gateway): n8n gateway, health, users/sync, error handler; Caddy proxy; contract and unit tests
+9fdb9f0 feat(db): dbmate migrations from tested baseline, gateway and security fixes, pgTAP suite
+exit=0 seconds=0.6
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-09-29T21:35:14.6627603+01:00
+GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design (UUID: GPU-ee1b4c30-d658-6a46-7bfb-e81ac22f9265)
+exit=0 seconds=1.6
+gpu_override=True
+
+===== docker and compose versions =====
+command: docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version
+started: 2026-09-29T21:35:16.2252803+01:00
+client 29.7.2 server 29.7.2
+Docker Compose version v5.4.0
+exit=0 seconds=0.2
+
+===== compose config is valid =====
+command: docker compose @files config -q
+started: 2026-09-29T21:35:16.4207245+01:00
+exit=0 seconds=0.2
+
+===== build images =====
+command: docker compose @files --profile test build
+started: 2026-09-29T21:35:16.6480570+01:00
+ Image flatshare/tests:py3.12.14 Building 
+ Image flatshare/postgres:17-3.6-pgvector0.8.6 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.04kB done
+#1 DONE 0.0s
+
+#2 [postgres internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.02kB 0.0s done
+#2 DONE 0.0s
+
+#3 [tests internal] load build definition from Dockerfile
+#3 transferring dockerfile: 599B 0.0s done
+#3 DONE 0.0s
+
+#4 [tests internal] load metadata for docker.io/library/python:3.12.14-slim
+#4 ...
+
+#5 [auth] amacneil/dbmate:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [auth] library/python:pull token for registry-1.docker.io
+#6 DONE 0.0s
+
+#7 [auth] postgis/postgis:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/docker:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [tests internal] load metadata for docker.io/library/docker:29.8.1-cli
+#9 ...
+
+#10 [postgres internal] load metadata for docker.io/postgis/postgis:17-3.6
+#10 ERROR: docker.io/postgis/postgis:17-3.6: not found
+
+#11 [postgres internal] load metadata for docker.io/amacneil/dbmate:2.36.0
+#11 CANCELED
+
+#4 [tests internal] load metadata for docker.io/library/python:3.12.14-slim
+#4 CANCELED
+
+#9 [tests internal] load metadata for docker.io/library/docker:29.8.1-cli
+#9 CANCELED
+------
+ > [postgres internal] load metadata for docker.io/postgis/postgis:17-3.6:
+------
+Dockerfile:5
+System.Management.Automation.RemoteException
+--------------------
+System.Management.Automation.RemoteException
+   3 |     FROM amacneil/dbmate:2.36.0 AS dbmate
+System.Management.Automation.RemoteException
+   4 |     
+System.Management.Automation.RemoteException
+   5 | >>> FROM postgis/postgis:17-3.6
+System.Management.Automation.RemoteException
+   6 |     ARG PGVECTOR_TAG=v0.8.6
+System.Management.Automation.RemoteException
+   7 |     RUN set -eux; \
+System.Management.Automation.RemoteException
+--------------------
+System.Management.Automation.RemoteException
+target postgres: failed to solve: postgis/postgis:17-3.6: failed to resolve source metadata for docker.io/postgis/postgis:17-3.6: docker.io/postgis/postgis:17-3.6: not found
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+View build details: docker-desktop://dashboard/build/default/default/ustgpe4oe0e8fvez1dj8jbm6p
+System.Management.Automation.RemoteException
+exit=1 seconds=2.2
+
+===== start stack =====
+command: docker compose @files up -d
+started: 2026-09-29T21:35:18.8153780+01:00

@@ -1,0 +1,27 @@
+verify.ps1 run 20261001-234900 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-10-01T23:49:00.8572561+01:00
+e703c5b fix(verify): restart the proxy so an edited Caddyfile is loaded
+14890c6 fix(proxy,kb): ordered Caddy route for parameterised paths, ASCII-only PowerShell, resumable kb.py
+d5e3ca7 feat(kb): phase 2 knowledge-base ingestion and retrieval evaluation
+c20e719 docs: T-17 full verify run on the owner's PC, every step passes
+3485d3e docs: reword TEST_REPORT line flagged by detect-secrets (F-022); T-16
+exit=0 seconds=0.8
+
+===== Docker engine is running =====
+command: docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}"
+started: 2026-10-01T23:49:01.6809895+01:00
+server  os 
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+exit=1 seconds=1

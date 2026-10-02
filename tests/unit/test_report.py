@@ -49,3 +49,26 @@ def test_render_smoke():
     assert "`s2`: failed at `fetch`: fetch_http_404" in text
     assert "split \\| article" in text and "dépôt / garantie" in text
     assert "[0.000, 0.000]" in text                    # identical A and B: interval at 0
+
+
+def test_dump_round_trip_renders_the_same_report():
+    import json
+    from decimal import Decimal
+    now = datetime(2026, 10, 2, 14, 47, tzinfo=timezone.utc)
+    job = ("j1", {"dataset": "d", "version": 1, "jurisdiction": "TN", "k": 10}, {}, "succeeded", now, now)
+    cfgs = [{"strategy": s, "model": "bge-m3", "mode": "hybrid"} for s in ("fixed_500_50", "structure_aware_v1")]
+    runs = [{"id": f"r{i}", "config": c, "summary": {"mrr": 0.25}, "git_sha": "abc", "started_at": now,
+             "finished_at": now, "status": "succeeded"} for i, c in enumerate(cfgs)]
+    m = {"gold_spans": 1, "mrr": 0.25, "recall@10": 0.5}
+    results = {r["id"]: {"q1": {"language": "fr", "tags": [], "query": "q", "metrics": m, "retrieved": []}} for r in runs}
+    docs = [("s1", "primary_law", 5, "fr", "TN", 1000, 1, "html_v1", now)]
+    chunks = [("fixed_500_50", 3, Decimal("480.5"), Decimal("20.25"), 400, 500)]
+    models = [("bge-m3", "ollama", None, "", "")]
+    last = [("s1", "skipped", "unchanged", None), ("s2", "skipped", "robots", None)]
+    data = (job, runs, results, docs, chunks, models, last)
+    back = report.from_json(json.loads(json.dumps(report.to_json(data, {"q1": []}))))
+    a = report.render(*data, notes={}, tried="")
+    b = report.render(*back, notes={}, tried="")
+    strip = lambda t: "\n".join(l for l in t.splitlines() if not l.startswith("- Report written"))  # noqa: E731
+    assert strip(a) == strip(b)
+    assert "`s2`: skipped at `robots`" in a and "`s1`" not in a.split("## Gold set")[0].split("did not store")[1]

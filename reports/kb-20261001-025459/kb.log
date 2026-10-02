@@ -1,0 +1,25 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-01T02:55:00.2505458+01:00
+healthy
+ Container flatshare-tests-run-145a7b3c5e65 Creating 
+ Container flatshare-tests-run-145a7b3c5e65 Created 
+TEI 200
+exit=0 seconds=0.8
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-01T02:55:01.0956012+01:00
+ Container flatshare-tests-run-e874307c43bc Creating 
+ Container flatshare-tests-run-e874307c43bc Created 
+sources: 20 upserted from 2 packs; marked removed: []
+datasets: no manifest
+exit=0 seconds=1
+
+===== ingest TN (fetch, clean, chunk, embed; can take long on CPU) =====
+command: docker @kb @args2
+started: 2026-10-01T02:55:02.0977814+01:00
+ Container flatshare-tests-run-ea9e2994b1af Creating 
+ Container flatshare-tests-run-ea9e2994b1af Created 

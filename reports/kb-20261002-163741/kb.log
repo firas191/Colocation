@@ -1,0 +1,54 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-02T16:37:43.3276562+01:00
+healthy
+ Container flatshare-tests-run-33969d00af7c Creating 
+ Container flatshare-tests-run-33969d00af7c Created 
+TEI 200
+exit=0 seconds=0.9
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-02T16:37:44.2317060+01:00
+ Container flatshare-tests-run-3f17a4b30bb8 Creating 
+ Container flatshare-tests-run-3f17a4b30bb8 Created 
+sources: 30 upserted from 2 packs; marked removed: []
+dataset tn_retrieval v1: 48 queries (0 new or changed, 0 removed)
+dataset tn_retrieval v2: 48 queries (48 new or changed, 0 removed)
+exit=0 seconds=1.1
+
+===== gold spans resolve against the current documents =====
+command: docker @kb check-gold --version $Version
+started: 2026-10-02T16:37:45.3317554+01:00
+ Container flatshare-tests-run-61809a4baf19 Creating 
+ Container flatshare-tests-run-61809a4baf19 Created 
+48 queries, 304 gold spans, 0 problems
+exit=0 seconds=1.5
+
+===== retrieval evaluation (full matrix) and docs\RETRIEVAL_EVAL.md =====
+command: docker @kb eval --jurisdiction $Jurisdiction --version $Version
+started: 2026-10-02T16:37:46.8238186+01:00
+ Container flatshare-tests-run-4f5e933c2600 Creating 
+ Container flatshare-tests-run-4f5e933c2600 Created 
+/v1/admin/eval/runs: job ecc9ed34-1362-4ec6-8ed8-567847c32299 accepted
+      0.2s  job queued
+     10.4s  job running
+     20.5s  job succeeded
+     20.5s  12 evaluation runs finished; last: run structure_aware_v1 / multilingual-e5-large / hybrid: succeeded
+  fixed_500_50         bge-m3                 dense    hit@5 0.7955  mrr 0.6695  recall@10 0.518  p95 143.42 ms
+  fixed_500_50         bge-m3                 lexical  hit@5 0.5  mrr 0.3994  recall@10 0.2605  p95 10.12 ms
+  fixed_500_50         bge-m3                 hybrid   hit@5 0.75  mrr 0.6153  recall@10 0.4736  p95 147.13 ms
+  fixed_500_50         multilingual-e5-large  dense    hit@5 0.75  mrr 0.5838  recall@10 0.4433  p95 141.18 ms
+  fixed_500_50         multilingual-e5-large  lexical  hit@5 0.5  mrr 0.3994  recall@10 0.2605  p95 9.91 ms
+  fixed_500_50         multilingual-e5-large  hybrid   hit@5 0.7727  mrr 0.5631  recall@10 0.4317  p95 146.83 ms
+  structure_aware_v1   bge-m3                 dense    hit@5 0.7727  mrr 0.6207  recall@10 0.421  p95 143.2 ms
+  structure_aware_v1   bge-m3                 lexical  hit@5 0.5227  mrr 0.3085  recall@10 0.2594  p95 10.22 ms
+  structure_aware_v1   bge-m3                 hybrid   hit@5 0.8182  mrr 0.6131  recall@10 0.4332  p95 150.35 ms
+  structure_aware_v1   multilingual-e5-large  dense    hit@5 0.6591  mrr 0.6025  recall@10 0.418  p95 143.18 ms
+  structure_aware_v1   multilingual-e5-large  lexical  hit@5 0.5227  mrr 0.3085  recall@10 0.2594  p95 10.33 ms
+  structure_aware_v1   multilingual-e5-large  hybrid   hit@5 0.7273  mrr 0.5871  recall@10 0.4183  p95 150.66 ms
+wrote /flatshare/reports/eval/ecc9ed34-1362-4ec6-8ed8-567847c32299.json
+wrote /flatshare/docs/RETRIEVAL_EVAL.md
+exit=0 seconds=25.2

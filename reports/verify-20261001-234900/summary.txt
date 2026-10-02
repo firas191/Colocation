@@ -1,0 +1,2 @@
+PASS  sync git history with flatshare.bundle  (exit 0, 0.8 s)
+FAIL  Docker engine is running  (exit 1, 1 s)

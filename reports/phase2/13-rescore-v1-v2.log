@@ -1,0 +1,30 @@
+$ node eval/runners/rescore.js reports/phase2/eval-92e8c6cd.json eval/datasets/tn_retrieval_v1.jsonl kb/packs
+A bge-m3 dense                       hit@1 0.409  hit@5 0.705  hit@10 0.841  recall@5 0.515  recall@10 0.625  mrr 0.521  ndcg@10 0.478
+A bge-m3 lexical                     hit@1 0.227  hit@5 0.364  hit@10 0.477  recall@5 0.290  recall@10 0.379  mrr 0.298  ndcg@10 0.287
+A bge-m3 hybrid                      hit@1 0.318  hit@5 0.659  hit@10 0.773  recall@5 0.439  recall@10 0.614  mrr 0.447  ndcg@10 0.434
+A multilingual-e5-large dense        hit@1 0.341  hit@5 0.614  hit@10 0.773  recall@5 0.451  recall@10 0.566  mrr 0.464  ndcg@10 0.428
+A multilingual-e5-large lexical      hit@1 0.227  hit@5 0.364  hit@10 0.477  recall@5 0.290  recall@10 0.379  mrr 0.298  ndcg@10 0.287
+A multilingual-e5-large hybrid       hit@1 0.295  hit@5 0.591  hit@10 0.727  recall@5 0.443  recall@10 0.549  mrr 0.414  ndcg@10 0.405
+B bge-m3 dense                       hit@1 0.318  hit@5 0.636  hit@10 0.705  recall@5 0.458  recall@10 0.502  mrr 0.462  ndcg@10 0.422
+B bge-m3 lexical                     hit@1 0.136  hit@5 0.386  hit@10 0.500  recall@5 0.288  recall@10 0.383  mrr 0.244  ndcg@10 0.247
+B bge-m3 hybrid                      hit@1 0.295  hit@5 0.659  hit@10 0.773  recall@5 0.458  recall@10 0.536  mrr 0.448  ndcg@10 0.410
+B multilingual-e5-large dense        hit@1 0.341  hit@5 0.591  hit@10 0.750  recall@5 0.430  recall@10 0.551  mrr 0.453  ndcg@10 0.423
+B multilingual-e5-large lexical      hit@1 0.136  hit@5 0.386  hit@10 0.500  recall@5 0.288  recall@10 0.383  mrr 0.244  ndcg@10 0.247
+B multilingual-e5-large hybrid       hit@1 0.318  hit@5 0.568  hit@10 0.705  recall@5 0.400  recall@10 0.517  mrr 0.430  ndcg@10 0.402
+
+# per-query comparison with the metrics stored by the n8n workflow (mrr, recall@10, ndcg@10, hit@5)
+2304 values compared, 0 differ
+
+$ node eval/runners/rescore.js reports/phase2/eval-92e8c6cd.json eval/datasets/tn_retrieval_v2.jsonl kb/packs
+A bge-m3 dense                       hit@1 0.568  hit@5 0.795  hit@10 0.932  recall@5 0.386  recall@10 0.518  mrr 0.669  ndcg@10 0.449
+A bge-m3 lexical                     hit@1 0.295  hit@5 0.500  hit@10 0.682  recall@5 0.189  recall@10 0.261  mrr 0.399  ndcg@10 0.245
+A bge-m3 hybrid                      hit@1 0.500  hit@5 0.750  hit@10 0.841  recall@5 0.338  recall@10 0.474  mrr 0.615  ndcg@10 0.400
+A multilingual-e5-large dense        hit@1 0.455  hit@5 0.750  hit@10 0.841  recall@5 0.343  recall@10 0.443  mrr 0.584  ndcg@10 0.391
+A multilingual-e5-large lexical      hit@1 0.295  hit@5 0.500  hit@10 0.682  recall@5 0.189  recall@10 0.261  mrr 0.399  ndcg@10 0.245
+A multilingual-e5-large hybrid       hit@1 0.432  hit@5 0.773  hit@10 0.841  recall@5 0.337  recall@10 0.432  mrr 0.563  ndcg@10 0.377
+B bge-m3 dense                       hit@1 0.500  hit@5 0.773  hit@10 0.818  recall@5 0.339  recall@10 0.421  mrr 0.621  ndcg@10 0.421
+B bge-m3 lexical                     hit@1 0.159  hit@5 0.523  hit@10 0.682  recall@5 0.175  recall@10 0.259  mrr 0.308  ndcg@10 0.205
+B bge-m3 hybrid                      hit@1 0.477  hit@5 0.818  hit@10 0.886  recall@5 0.340  recall@10 0.433  mrr 0.613  ndcg@10 0.397
+B multilingual-e5-large dense        hit@1 0.523  hit@5 0.659  hit@10 0.818  recall@5 0.306  recall@10 0.418  mrr 0.603  ndcg@10 0.393
+B multilingual-e5-large lexical      hit@1 0.159  hit@5 0.523  hit@10 0.682  recall@5 0.175  recall@10 0.259  mrr 0.308  ndcg@10 0.205
+B multilingual-e5-large hybrid       hit@1 0.477  hit@5 0.727  hit@10 0.818  recall@5 0.308  recall@10 0.418  mrr 0.587  ndcg@10 0.388

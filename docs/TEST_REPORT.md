@@ -921,14 +921,143 @@ $ pytest -v -rs tests/unit tests/contract
 
 Log: `reports/phase2/11-pytest-after-f039-sandbox.log`.
 
+## T-31 Thirteenth compose run, sixth TN ingestion and the first retrieval evaluation on the owner's PC (2026-10-02) - PASS
+
+`verify.ps1` (`reports/verify-20261002-153349`): every step passed. `kb.ps1 -Step ingest`
+(`reports/kb-20261002-154043`): `ingest succeeded in 332 s: {"ok": 15, "failed": 0, "skipped": 15}`; strategy B on the
+jurisite pages went from 5 chunks to 2 (727-738) and from 5 to 1 (739, 747) after F-039. Before the evaluation, a
+script on the PC resolved the 89 gold spans against the exported texts (0 problems) and `kb/tools/reextract.js`
+reported 0 documents to change. `tn-notaire-tunisienumerique` is 4,944 characters, not the 5,012 predicted: the page
+changed on the site between fetches.
+
+`kb.ps1 -Step eval` (`reports/kb-20261002-154742/kb.log`), real TEI (CPU) and Ollama (GPU), job
+`92e8c6cd-4bb7-4d0c-8142-644e39eec3af`, code 9b4ff3b:
+
+```
+   48 queries, 89 gold spans, 0 problems
+   /v1/admin/eval/runs: job 92e8c6cd-4bb7-4d0c-8142-644e39eec3af accepted
+        20.7s  job succeeded
+     fixed_500_50         bge-m3                 dense    hit@5 0.7045  mrr 0.5214  recall@10 0.625  p95 115.86 ms
+     fixed_500_50         bge-m3                 lexical  hit@5 0.3636  mrr 0.2985  recall@10 0.3788  p95 12.2 ms
+     fixed_500_50         bge-m3                 hybrid   hit@5 0.6591  mrr 0.4467  recall@10 0.6136  p95 121.93 ms
+     fixed_500_50         multilingual-e5-large  dense    hit@5 0.6136  mrr 0.4643  recall@10 0.5663  p95 114.74000000000001 ms
+     fixed_500_50         multilingual-e5-large  lexical  hit@5 0.3636  mrr 0.2985  recall@10 0.3788  p95 9.2 ms
+     fixed_500_50         multilingual-e5-large  hybrid   hit@5 0.5909  mrr 0.4145  recall@10 0.5492  p95 121.02000000000001 ms
+     structure_aware_v1   bge-m3                 dense    hit@5 0.6364  mrr 0.4616  recall@10 0.5019  p95 117.17 ms
+     structure_aware_v1   bge-m3                 lexical  hit@5 0.3864  mrr 0.2444  recall@10 0.3826  p95 11.35 ms
+     structure_aware_v1   bge-m3                 hybrid   hit@5 0.6591  mrr 0.4475  recall@10 0.536  p95 124.47 ms
+     structure_aware_v1   multilingual-e5-large  dense    hit@5 0.5909  mrr 0.4525  recall@10 0.5511  p95 116.76 ms
+     structure_aware_v1   multilingual-e5-large  lexical  hit@5 0.3864  mrr 0.2444  recall@10 0.3826  p95 12.9 ms
+     structure_aware_v1   multilingual-e5-large  hybrid   hit@5 0.5682  mrr 0.43  recall@10 0.517  p95 125.03 ms
+   wrote /flatshare/docs/RETRIEVAL_EVAL.md
+```
+
+The tables, the paired bootstrap intervals for A against B and the per-language results are in
+`docs/RETRIEVAL_EVAL.md`; every A against B interval contains 0. The worst-10 explanations were not written yet: they
+need the retrieved chunks, which only the database had (T-32).
+
+## T-32 Evaluation dump for failure analysis, sandbox (2026-10-02) - PASS
+
+`kb.py report` (and `kb.ps1 -Step report`) now also writes `reports/eval/<job>.json`: the data the report is built from
+plus the resolved gold spans, so failures can be read against the exported texts and the report re-rendered with
+`eval/runners/report.py --from-dump` away from the database. The report no longer lists "skipped at unchanged" as a
+failed ingestion. In the sandbox, after the contract evaluation test: the dump was written, and the report rendered
+from the dump is identical to the one rendered from the database (apart from the "written at" line). New unit test:
+dump round trip. `pytest tests/unit tests/contract`: `78 passed, 1 skipped in 58.62s`
+(`reports/phase2/12-pytest-report-dump-sandbox.log`).
+
+## T-33 Failure analysis of the first evaluation and the final docs/RETRIEVAL_EVAL.md (2026-10-02)
+
+`kb.ps1 -Step report` on the owner's PC (`reports/kb-20261002-155957/kb.log`):
+
+```
+   wrote /flatshare/reports/eval/92e8c6cd-4bb7-4d0c-8142-644e39eec3af.json
+   wrote /flatshare/docs/RETRIEVAL_EVAL.md
+```
+
+The dump is kept as `reports/phase2/eval-92e8c6cd.json` (spans, ranks and metrics; no source text). The retrieved
+chunks of the worst queries were read against the texts exported on the PC after T-31 (scripted: chunk span applied
+to `clean.txt`). Findings are in `docs/RETRIEVAL_EVAL.md` (worst 10, from `eval/datasets/tn_retrieval_v1_notes.json`)
+and `eval/reports/tried.md`. The final report was rendered in the sandbox from the dump with
+`eval/runners/report.py --from-dump`; its numbers are the PC's. New section "Secondary comparisons" (hybrid against
+dense, e5 against bge-m3, same paired bootstrap): one of 16 intervals excludes 0 (A / bge-m3, recall@5, hybrid minus
+dense: -0.076 [-0.148, -0.008]).
+
+Counts quoted in the notes, from the dump: the gold of each worst-10 question reaches the top 10 in 0 to 8 of the 12
+runs; the top-1 chunk is under 200 characters in 9 of 48 questions for B / e5 / dense, 1 for B / bge-m3 / dense, 0 for
+the A runs; on transliterated questions the lexical leg's top 3 share only the token "el" with the question.
+
+## T-34 Gold set v2 by pooling, sandbox (2026-10-02) - built and rescored; the stack run is T-35
+
+Pool: the top 10 of each of the 12 runs of job `92e8c6cd`, merged where passages overlap: 1,060 regions for the 44
+scored questions. Every region was judged (`eval/datasets/pool_v2/judgments.json`): 152 relevant, 135 new passages
+proposed. Review: all 135 read, 4 rejected (`pool_v2/review.json`); 25 randomly drawn "not relevant" judgments read,
+24 agreed with and 1 borderline. Built with need groups and merging: 304 gold spans, all of which resolve against the
+texts exported on the PC (the builder and `rescore.js` both stop on a quote that is missing or ambiguous).
+
+`eval/runners/rescore.js` scores the retrieved lists stored in the dump with the same metrics code as the workflow.
+Check first: rescoring with v1 reproduces the stored metrics exactly. Then v2 (`reports/phase2/13-rescore-v1-v2.log`):
+
+```
+# per-query comparison with the metrics stored by the n8n workflow (mrr, recall@10, ndcg@10, hit@5)
+2304 values compared, 0 differ
+
+$ node eval/runners/rescore.js reports/phase2/eval-92e8c6cd.json eval/datasets/tn_retrieval_v2.jsonl kb/packs
+A bge-m3 dense                       hit@1 0.568  hit@5 0.795  hit@10 0.932  recall@5 0.386  recall@10 0.518  mrr 0.669  ndcg@10 0.449
+A bge-m3 hybrid                      hit@1 0.500  hit@5 0.750  hit@10 0.841  recall@5 0.338  recall@10 0.474  mrr 0.615  ndcg@10 0.400
+B bge-m3 dense                       hit@1 0.500  hit@5 0.773  hit@10 0.818  recall@5 0.339  recall@10 0.421  mrr 0.621  ndcg@10 0.421
+B bge-m3 hybrid                      hit@1 0.477  hit@5 0.818  hit@10 0.886  recall@5 0.340  recall@10 0.433  mrr 0.613  ndcg@10 0.397
+(the other 8 configurations in the log)
+```
+
+A report rendered from these rescored metrics (a preview, not committed) shows the A against B intervals for dense and
+hybrid search all containing 0, and one for lexical search excluding 0 (MRR, B minus A: -0.091 [-0.185, -0.003], same
+value for both models since the lexical leg does not use embeddings). The official v2 numbers come from running the
+evaluation on the stack with dataset v2 (T-35); since the documents and settings have not changed, they should equal
+the rescored ones, which checks the pooling build end to end.
+
+`kb.py seed` in the sandbox: `dataset tn_retrieval v2: 48 queries (48 new or changed, 0 removed)`. Unit tests: 7 passed
+(`test_datasets.py` adds: v2 keeps v1's questions and tags, every span has a grade and an origin, need groups are
+disjoint).
+
+## T-35 Evaluation with gold set v2 on the owner's PC (2026-10-02) - PASS, equal to the rescoring of T-34
+
+`kb.ps1 -Step eval -Version 2` (`reports/kb-20261002-163741/kb.log`), job `ecc9ed34-1362-4ec6-8ed8-567847c32299`:
+
+```
+   dataset tn_retrieval v2: 48 queries (48 new or changed, 0 removed)
+   48 queries, 304 gold spans, 0 problems
+        20.5s  job succeeded
+     fixed_500_50         bge-m3                 dense    hit@5 0.7955  mrr 0.6695  recall@10 0.518  p95 143.42 ms
+     fixed_500_50         bge-m3                 hybrid   hit@5 0.75  mrr 0.6153  recall@10 0.4736  p95 147.13 ms
+     structure_aware_v1   bge-m3                 dense    hit@5 0.7727  mrr 0.6207  recall@10 0.421  p95 143.2 ms
+     structure_aware_v1   bge-m3                 hybrid   hit@5 0.8182  mrr 0.6131  recall@10 0.4332  p95 150.35 ms
+   (8 other configurations in the log)
+   wrote /flatshare/reports/eval/ecc9ed34-1362-4ec6-8ed8-567847c32299.json
+   wrote /flatshare/docs/RETRIEVAL_EVAL.md
+```
+
+Checks run on the PC with the two dumps (`reports/phase2/eval-92e8c6cd.json`, `reports/phase2/eval-ecc9ed34.json`):
+
+```
+retrieved lists identical to job 92e8c6cd: 576 different: 0
+stored v2 metrics vs offline rescore: 3456 values, 0 differ
+```
+
+Retrieval is deterministic for unchanged documents and settings, and the metrics the workflow stored for v2 equal the
+offline rescoring of T-34 to the last digit. Latency p95 is 141-151 ms against 115-125 ms in T-31 for the same
+searches: the difference is in the query-embedding time (the database search stays at 10 ms in lexical mode); its
+cause was not measured. `docs/RETRIEVAL_EVAL.md` is now the v2 report; `docs/RETRIEVAL_EVAL_v1.md` keeps v1.
+
 ---
 
 ## Not run
 
 | Item | Why | How it will be run |
 |---|---|---|
-| Phase 2 on the compose stack: real TEI and Ollama, real sources, gold set, evaluation numbers | sandbox cannot reach the models or the sites (F-002) | `verify.ps1`, then `kb.ps1 -Step ingest`, gold set, `kb.ps1 -Step eval` |
-| Steady-state embedding latency; whether Ollama uses the GPU | not measured in T-13 | ingestion timings in the phase 2 run; `ollama ps` |
+| Human check of the relevance judgments (v1 and v2 were written and judged by models) | no human annotator so far | a sample of 30 judgments for the owner to label, before phase 8 |
+| Reranker, query rewriting, source-diverse retrieval | not built (phases 6 and 8) | the full ablation |
+| Whether Ollama uses the GPU (`ollama ps`); split of embedding time between the two models | not measured; T-29 measured 1131 s for both models together on the largest document | phase 3 |
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |

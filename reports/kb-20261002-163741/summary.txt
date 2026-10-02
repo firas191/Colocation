@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, TEI answers)  (exit 0, 0.9 s)
+PASS  seed: pack sources and evaluation datasets  (exit 0, 1.1 s)
+PASS  gold spans resolve against the current documents  (exit 0, 1.5 s)
+PASS  retrieval evaluation (full matrix) and docs\RETRIEVAL_EVAL.md  (exit 0, 25.2 s)

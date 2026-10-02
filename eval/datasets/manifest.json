@@ -5,5 +5,12 @@
     "version": 1,
     "file": "tn_retrieval_v1.jsonl",
     "notes": "48 TN questions (spec 10.7): 25 French, 5 English, 6 Arabic script, 4 transliterated, 4 code-switched, 4 out of scope. Gold = quoted spans of the current documents (eval.resolve_gold). See eval/datasets/README.md."
+  },
+  {
+    "name": "tn_retrieval",
+    "kind": "retrieval",
+    "version": 2,
+    "file": "tn_retrieval_v2.jsonl",
+    "notes": "v1 plus pooled judgments: every passage in the top 10 of any of the 12 runs of job 92e8c6cd judged (1,060 merged regions), relevant ones added, shared within need groups; 304 gold spans (89 in v1). See eval/datasets/README.md and D-052."
   }
 ]

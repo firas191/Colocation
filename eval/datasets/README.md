@@ -40,3 +40,31 @@ Rules for the gold:
 - Blogs and press pages are included as gold when they state the point, since retrieval
   should find them; whether an answer may rely on them is decided by source reliability at
   answer time (phase 6), not here.
+
+## tn_retrieval v2 (`tn_retrieval_v2.jsonl`, written by `build_tn_retrieval_v2.py`)
+
+Same 48 questions; the gold adds every passage that answers the question among those the first
+evaluation retrieved (D-052). Built after reading the v1 run showed that relevant secondary passages were
+missing from the gold (`eval/reports/tried.md`).
+
+- Pool: the top 10 of each of the 12 runs of job `92e8c6cd`, merged where passages overlap: 1,060
+  regions for the 44 scored questions (`pool_v2/pool_regions.json`, ranges only).
+- Judging: each region judged against written rules (`pool_v2/judgments.json`, with grade and a
+  one-sentence reason): relevant when it states the rule, right, condition, amount or procedure asked
+  about, or a necessary part of it; any language; every side of a contradiction. Not relevant when only
+  on the topic, when it states French law for a Tunisian question (scam advice excepted), or when it is
+  the rule of another regime (commercial leases, rural leases, professional premises). The judging was
+  done by eight model-based annotators working in parallel, each on a share of the questions; I then
+  read every proposed new passage (135; 4 rejected, `pool_v2/review.json`) and 25 randomly drawn "not
+  relevant" judgments (agreed with 24; the other was borderline). No human has checked the judgments.
+- Need groups: questions that ask the same thing in other words or languages share their relevant
+  passages (`review.json`, 12 groups), so the answer to a question does not depend on which of its
+  paraphrases happened to retrieve it.
+- Overlapping passages of one document are merged, so a passage is credited once.
+- Result: 304 gold spans (89 in v1): 29 for each scam question and 13 for each registration question,
+  which many sources answer, and 1 or 2 for the narrow article questions. With that many spans,
+  recall@k is low by construction for the broad questions, so recall is not comparable between v1 and v2;
+  Hit@k and MRR are.
+- Known bias of pooling: passages that none of the 12 runs retrieved are not judged and count as not
+  relevant, and a future configuration that finds new relevant passages is under-scored until they are
+  judged.

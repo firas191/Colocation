@@ -1,0 +1,5 @@
+PASS  stack is up (n8n healthy, TEI answers)  (exit 0, 0.9 s)
+PASS  seed: pack sources and evaluation datasets  (exit 0, 1.2 s)
+PASS  n8n container reaches the internet  (exit 0, 0.5 s)
+PASS  ingest TN (fetch, clean, chunk, embed; can take long on CPU)  (exit 0, 333.7 s)
+PASS  export current documents to kb\packs\*\documents  (exit 0, 4.5 s)

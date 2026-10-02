@@ -1,0 +1,74 @@
+verify.ps1 run 20261001-004050 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-10-01T00:40:50.2087383+01:00
+6f761fc docs: F-020 lock files left by a git fetch from the desktop shell
+1b4bfc4 docs: T-14 secret-scan fix evidence (sandbox and owner's PC)
+f835073 fix(secret-scan): check only secret-named variables; record the first passing compose run
+241b4c6 fix(compose): db-bootstrap never pulls the locally built postgres image
+853618f fix(infra): PostgreSQL 18 + PostGIS 3.6 (trixie) with PGDG pgvector/pgTAP; separate image pull step
+exit=0 seconds=1.3
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-10-01T00:40:51.5337516+01:00
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+exit=1 seconds=0.2
+gpu_override=False
+
+===== docker and compose versions =====
+command: docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version
+started: 2026-10-01T00:40:51.6921402+01:00
+client 29.7.2 server 
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+Docker Compose version v5.4.0
+exit=0 seconds=0.3
+
+===== free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed) =====
+command: Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | ForEach-Object { "{0}: {1:N1} GB free" -f $_.Name, ($_.Free / 1GB) }
+started: 2026-10-01T00:40:52.0182028+01:00
+C: 14.4 GB free
+D: 126.8 GB free
+E: 3.9 GB free
+exit=0 seconds=0.5
+
+===== compose config is valid =====
+command: docker compose @files config -q
+started: 2026-10-01T00:40:52.5457018+01:00
+exit=0 seconds=0.3
+
+===== every pinned image tag exists in its registry =====
+command: $bad = 0
+  foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli")) {
+    docker manifest inspect $img *> $null
+    if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
+  }
+  $global:LASTEXITCODE = $bad
+started: 2026-10-01T00:40:52.9022165+01:00
+found    postgis/postgis:18-3.6
+found    amacneil/dbmate:2.36.0
+found    dxflrs/garage:v2.4.1
+found    ollama/ollama:0.34.4
+found    n8nio/n8n:2.41.3
+found    n8nio/runners:2.41.3
+found    caddy:2.11.4-alpine
+found    python:3.12.14-slim
+found    docker:29.8.1-cli
+exit=0 seconds=91.3
+
+===== pull service images (largest download: Ollama, n8n) =====
+command: docker compose @files pull --ignore-buildable
+started: 2026-10-01T00:42:24.1628340+01:00
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+exit=1 seconds=0.3

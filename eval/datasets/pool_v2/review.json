@@ -1,0 +1,80 @@
+{
+ "rejected_spans": [
+  {
+   "region_id": "tn-41-r26",
+   "start_prefix": "Le montant du loyer des locaux à usage d'administration publ",
+   "reason": "Law 76-35 art. 16 sets the increase for professional and administrative premises; the question is about a dwelling. Other judges excluded rules of other regimes (commercial leases), so this is excluded for consistency."
+  },
+  {
+   "region_id": "tn-03-r12",
+   "start_prefix": "Le preneur répond de la perte et de la dégradation de la cho",
+   "reason": "COC 782-783 are about the tenant's liability for damage, not about who pays small repairs; the judge of tn-33 (same question in Arabic) excluded the same articles."
+  },
+  {
+   "region_id": "tn-20-r15",
+   "start_prefix": "Le bail est résilié à défaut de paiement du loyer aux échéan",
+   "reason": "Commercial-lease law 77-37 art. 23; the question is about a residential lease. Excluded like the other commercial-lease passages."
+  },
+  {
+   "region_id": "tn-24-r15",
+   "start_prefix": "Est puni d’un an d’emprisonnement et d’une amende de cinq mi",
+   "reason": "The quoted art. 90 punishes processing without the declaration or the authorisations of arts. 15 and 69; it does not mention transfers abroad (art. 52), so it does not answer the question as the judge stated."
+  }
+ ],
+ "need_groups": [
+  [
+   "tn-12",
+   "tn-26",
+   "tn-32",
+   "tn-37"
+  ],
+  [
+   "tn-07",
+   "tn-31",
+   "tn-38"
+  ],
+  [
+   "tn-15",
+   "tn-36",
+   "tn-43"
+  ],
+  [
+   "tn-18",
+   "tn-41"
+  ],
+  [
+   "tn-09",
+   "tn-44"
+  ],
+  [
+   "tn-14",
+   "tn-29"
+  ],
+  [
+   "tn-21",
+   "tn-30",
+   "tn-40"
+  ],
+  [
+   "tn-13",
+   "tn-35"
+  ],
+  [
+   "tn-03",
+   "tn-33"
+  ],
+  [
+   "tn-27",
+   "tn-39"
+  ],
+  [
+   "tn-08",
+   "tn-42"
+  ],
+  [
+   "tn-05",
+   "tn-34"
+  ]
+ ],
+ "note": "Questions in one need group ask the same thing in other words or languages; a passage judged relevant for one is relevant for all (D-052)."
+}

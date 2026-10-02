@@ -1,0 +1,7 @@
+PASS  sync git history with flatshare.bundle  (exit 0, 0.3 s)
+PASS  GPU visible to Docker (docker run --gpus all ... nvidia-smi)  (exit 0, 1.6 s)
+PASS  docker and compose versions  (exit 0, 0.2 s)
+PASS  free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed)  (exit 0, 0.3 s)
+PASS  compose config is valid  (exit 0, 0.1 s)
+PASS  every pinned image tag exists in its registry  (exit 0, 79.1 s)
+FAIL  build images  (exit 1, 2625.6 s)

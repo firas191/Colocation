@@ -59,7 +59,9 @@ and the fixture server for the ingestion tests: `docker compose --profile test u
 |---|---|
 | Load sources and gold sets, ingest TN, export texts | `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step ingest` |
 | Only some sources, or re-chunk unchanged ones | add `-Sources "tn-coc-fr,tn-cdet-2017"`, `-Force` |
-| Check gold, run the evaluation matrix, write docs/RETRIEVAL_EVAL.md | `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step eval` |
+| Check gold, run the evaluation matrix, write docs/RETRIEVAL_EVAL.md | `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step eval` (add `-Version 2` for gold set v2) |
+| Re-render the report and write the evaluation dump | `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step report` |
+| Score a dump against another gold set, without the stack | `node eval/runners/rescore.js reports/eval/<job>.json eval/datasets/<file>.jsonl kb/packs` |
 | Same from any shell | `docker compose --profile test run --rm --no-deps -v "$PWD/kb/packs:/flatshare/kb/packs" -v "$PWD/docs:/flatshare/docs" tests python scripts/kb.py <seed\|ingest\|export\|check-gold\|eval\|report>` |
 | Last ingestion result per source | `docker exec -u postgres fs-postgres psql -d flatshare -c "select s.source_key, l.status, l.step, l.detail->>'error' from kb.ingest_log l join kb.sources s on s.id = l.source_id order by l.id desc limit 30"` |
 

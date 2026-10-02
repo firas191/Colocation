@@ -221,6 +221,16 @@ Reading every exported text to write the gold set (D-051) led to these changes:
 - Out-of-scope questions have no gold and are not scored for retrieval; abstention is measured when answers exist (phase 6).
 - Written before any retrieval run on the corpus, so the questions are not fitted to what the system already finds. One person wrote and checked them (no second annotator); this is a limit of the numbers.
 
+### D-052 Gold set v2 by pooling
+
+Reading the first run showed relevant passages missing from the v1 gold (F-040). v2 keeps the 48 questions and adds every relevant passage among those any of the 12 runs placed in its top 10 (pooling, as in TREC-style evaluations), judged against written rules (`eval/datasets/README.md`). Choices:
+- Pool depth 10, the deepest the metrics read (Hit@10, Recall@10, nDCG@10). Depth 5 would have halved the work but left ranks 6-10 unjudged.
+- Relevance does not depend on language: the Arabic text of an article answers a French question as well as the French text does. This replaces the v1 rule that preferred the question's language, which judged equivalent passages differently.
+- Questions that ask the same thing share their relevant passages (need groups), because pooling otherwise makes the gold of a question depend on what its own runs happened to retrieve.
+- Rules of other regimes (commercial leases, rural leases, professional premises) are not relevant to questions about housing, even for questions tagged contradiction; the judges were not consistent on this, and review applied it to all.
+- Judging was done by model-based annotators and reviewed by me, with no human check (stated in the report). v1 stays in the database and its report is kept (`docs/RETRIEVAL_EVAL_v1.md`); the same retrieved lists are scored against both.
+- Recall is not comparable between v1 and v2 (up to 29 spans per question in v2); the comparison between versions uses Hit@k and MRR.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** `app.listings` has no rent period, but P3's schema and GB practice include weekly rents. Comparing a weekly rent with a monthly budget gives wrong results. Phase 3 adds `rent_period` and a monthly-equivalent column used by `search_listings`.

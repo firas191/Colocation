@@ -1,0 +1,123 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-02T10:55:42.9185329+01:00
+healthy
+ Container flatshare-tests-run-4c982f73ce42 Creating 
+ Container flatshare-tests-run-4c982f73ce42 Created 
+TEI 200
+exit=0 seconds=1.5
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-02T10:55:44.4472027+01:00
+ Container flatshare-tests-run-2663e6f76ae9 Creating 
+ Container flatshare-tests-run-2663e6f76ae9 Created 
+sources: 31 upserted from 2 packs; marked removed: []
+datasets: no manifest
+exit=0 seconds=1.7
+
+===== ingest TN (fetch, clean, chunk, embed; can take long on CPU) =====
+command: docker @kb @args2
+started: 2026-10-02T10:55:46.1725184+01:00
+ Container flatshare-tests-run-d08f3c36116a Creating 
+ Container flatshare-tests-run-d08f3c36116a Created 
+/v1/admin/kb/ingest: job 4e6bf5d7-52b4-4589-a181-2789cc23ebf5 accepted
+      0.3s  job running
+     10.6s  gl-123loger-arnaques: skipped (robots), 5 s
+     10.6s  gl-gestetud-arnaques: skipped (robots), 5 s
+     20.9s  job succeeded
+     20.9s  gl-twenty-campus-arnaques: skipped (robots), 5 s
+     20.9s  tn-cdet-2017: skipped (robots), 0 s
+     20.9s  tn-coc-ar: skipped (robots), 0 s
+     20.9s  tn-coc-ar-cawtar: skipped (robots), 0 s
+     20.9s  tn-coc-fr: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-727-738: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-739: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-740-746: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-747: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-748-757: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-758-766: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-767-790: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-791-804: skipped (robots), 0 s
+     20.9s  tn-coc-jurisite-805-827: skipped (robots), 0 s
+     20.9s  tn-cyriljarnias-location: skipped (robots), 0 s
+     20.9s  tn-diwan-location: skipped (robots), 0 s
+     20.9s  tn-dpo-consulting-loi: skipped (robots), 0 s
+     20.9s  tn-houni-colocation-tunis: skipped (robots), 0 s
+     20.9s  tn-inpdp-procedures: skipped (robots), 0 s
+     20.9s  tn-justice-questions-civiles: skipped (robots), 0 s
+     20.9s  tn-lapresse-arnaque-sousse: skipped (robots), 0 s
+     20.9s  tn-lo-2004-63-ar: skipped (robots), 0 s
+     20.9s  tn-lo-2004-63-ar-igppp: skipped (robots), 0 s
+     20.9s  tn-lo-2004-63-fr: skipped (robots), 0 s
+     20.9s  tn-loi-76-35-recueil: skipped (robots), 0 s
+     20.9s  tn-mehat-logement-locatif-2014: skipped (robots), 0 s
+     20.9s  tn-notaire-tunisienumerique: skipped (robots), 0 s
+     20.9s  tn-profiscal-det-ch7-2006: skipped (robots), 0 s
+     20.9s  tn-web6-inpdp: skipped (robots), 0 s
+ingest succeeded in 24 s: {"ok": 0, "failed": 0, "skipped": 31}
+  skipped  gl-123loger-arnaques               robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  gl-gestetud-arnaques               robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  gl-twenty-campus-arnaques          robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-cdet-2017                       robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-ar                          robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-ar-cawtar                   robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-fr                          robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-727-738            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-739                robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-740-746            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-747                robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-748-757            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-758-766            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-767-790            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-791-804            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-coc-jurisite-805-827            robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-cyriljarnias-location           robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-diwan-location                  robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-dpo-consulting-loi              robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-houni-colocation-tunis          robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-inpdp-procedures                robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-justice-questions-civiles       robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-lapresse-arnaque-sousse         robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-lo-2004-63-ar                   robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-lo-2004-63-ar-igppp             robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-lo-2004-63-fr                   robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-loi-76-35-recueil               robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-mehat-logement-locatif-2014     robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-notaire-tunisienumerique        robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-profiscal-det-ch7-2006          robots  robots_unreachable [robots.txt HTTP 0]
+  skipped  tn-web6-inpdp                      robots  robots_unreachable [robots.txt HTTP 0]
+exit=0 seconds=26.1
+
+===== export current documents to kb\packs\*\documents =====
+command: docker @kb export
+started: 2026-10-02T10:56:12.2418393+01:00
+ Container flatshare-tests-run-500675cbe017 Creating 
+ Container flatshare-tests-run-500675cbe017 Created 
+  gl-123loger-arnaques               v2    34,152 chars  {"fixed_500_50": 19, "structure_aware_v1": 49}
+  gl-gestetud-arnaques               v2    46,003 chars  {"fixed_500_50": 22, "structure_aware_v1": 51}
+  gl-twenty-campus-arnaques          v3    10,077 chars  {"fixed_500_50": 6, "structure_aware_v1": 10}
+  test-guide-pdf                     v1       348 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  test-law-ar                        v1       369 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  test-law-fr                        v2     2,206 chars  {"fixed_500_50": 2, "structure_aware_v1": 3}
+  tn-cdet-2017                       v1   153,148 chars  {"fixed_500_50": 87, "structure_aware_v1": 151}
+  tn-coc-ar-cawtar                   v1   353,919 chars  {"fixed_500_50": 245, "structure_aware_v1": 342}
+  tn-coc-jurisite-767-790            v1     8,697 chars  {"fixed_500_50": 6, "structure_aware_v1": 13}
+  tn-coc-jurisite-805-827            v1     9,643 chars  {"fixed_500_50": 6, "structure_aware_v1": 13}
+  tn-cyriljarnias-location           v2    34,023 chars  {"fixed_500_50": 18, "structure_aware_v1": 27}
+  tn-diwan-location                  v2     3,880 chars  {"fixed_500_50": 2, "structure_aware_v1": 3}
+  tn-dpo-consulting-loi              v2    30,670 chars  {"fixed_500_50": 16, "structure_aware_v1": 50}
+  tn-houni-colocation-tunis          v2     4,344 chars  {"fixed_500_50": 3, "structure_aware_v1": 9}
+  tn-justice-questions-civiles       v1    16,766 chars  {"fixed_500_50": 9, "structure_aware_v1": 26}
+  tn-lapresse-arnaque-sousse         v2     1,492 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  tn-lo-2004-63-ar-igppp             v1    46,304 chars  {"fixed_500_50": 49, "structure_aware_v1": 76}
+  tn-lo-2004-63-fr                   v1    55,409 chars  {"fixed_500_50": 29, "structure_aware_v1": 47}
+  tn-loi-76-35-recueil               v1   113,977 chars  {"fixed_500_50": 62, "structure_aware_v1": 94}
+  tn-mehat-logement-locatif-2014     v1   138,451 chars  {"fixed_500_50": 72, "structure_aware_v1": 90}
+  tn-notaire-tunisienumerique        v2     5,018 chars  {"fixed_500_50": 3, "structure_aware_v1": 7}
+  tn-profiscal-det-ch7-2006          v1    30,908 chars  {"fixed_500_50": 17, "structure_aware_v1": 51}
+  tn-web6-inpdp                      v2     6,691 chars  {"fixed_500_50": 4, "structure_aware_v1": 16}
+exported 23 documents under kb/packs/*/documents/
+exit=0 seconds=2.4

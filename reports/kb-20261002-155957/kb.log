@@ -1,0 +1,28 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-02T15:59:59.3662107+01:00
+healthy
+ Container flatshare-tests-run-8e36201ffc31 Creating 
+ Container flatshare-tests-run-8e36201ffc31 Created 
+TEI 200
+exit=0 seconds=1
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-02T16:00:00.3339237+01:00
+ Container flatshare-tests-run-87ac771b0276 Creating 
+ Container flatshare-tests-run-87ac771b0276 Created 
+sources: 30 upserted from 2 packs; marked removed: []
+dataset tn_retrieval v1: 48 queries (0 new or changed, 0 removed)
+exit=0 seconds=1.1
+
+===== docs\RETRIEVAL_EVAL.md and reports\eval\<job>.json for the latest evaluation =====
+command: docker @kb report --job latest
+started: 2026-10-02T16:00:01.4497612+01:00
+ Container flatshare-tests-run-58fb138f76a8 Creating 
+ Container flatshare-tests-run-58fb138f76a8 Created 
+wrote /flatshare/reports/eval/92e8c6cd-4bb7-4d0c-8142-644e39eec3af.json
+wrote /flatshare/docs/RETRIEVAL_EVAL.md
+exit=0 seconds=2

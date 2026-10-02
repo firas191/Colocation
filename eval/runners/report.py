@@ -6,6 +6,10 @@ eval/datasets/<dataset>_notes.json and eval/reports/tried.md and are included
 verbatim, marked as such.
 
     python3 eval/runners/report.py --dsn "<libpq dsn>" --job <eval job id> [--out docs/RETRIEVAL_EVAL.md]
+    python3 eval/runners/report.py --from-dump reports/eval/<job>.json [--out ...]
+
+A dump (`dump()`, written by `scripts/kb.py report`) holds everything `render` needs plus the
+resolved gold spans, so failures can be analysed and the report re-rendered away from the database.
 """
 from __future__ import annotations
 
@@ -98,6 +102,32 @@ def load(conn, job_id: str):
     return job, runs, results, docs, chunks, models, last_ingest
 
 
+def to_json(data, gold=None) -> dict:
+    """Serialisable form of load()'s result (datetimes as ISO strings), plus resolved gold per query."""
+    job, runs, results, docs, chunks, models, last_ingest = data
+    iso = lambda d: d.isoformat() if d else None  # noqa: E731
+    return {
+        "job": [job[0] and str(job[0]), job[1], job[2], job[3], iso(job[4]), iso(job[5])],
+        "runs": [{**r, "id": str(r["id"]), "started_at": iso(r["started_at"]), "finished_at": iso(r["finished_at"])} for r in runs],
+        "results": results,
+        "docs": [[*d[:8], iso(d[8])] for d in docs],
+        "chunks": [[c[0], c[1], float(c[2]), float(c[3] or 0), c[4], c[5]] for c in chunks],
+        "models": [list(m) for m in models],
+        "last_ingest": [list(x) for x in last_ingest],
+        "gold": gold or {},
+    }
+
+
+def from_json(d: dict):
+    dt = lambda s: datetime.fromisoformat(s) if s else None  # noqa: E731
+    j = d["job"]
+    job = (j[0], j[1], j[2], j[3], dt(j[4]), dt(j[5]))
+    runs = [{**r, "started_at": dt(r["started_at"]), "finished_at": dt(r["finished_at"])} for r in d["runs"]]
+    docs = [tuple([*x[:8], dt(x[8])]) for x in d["docs"]]
+    return (job, runs, d["results"], docs, [tuple(c) for c in d["chunks"]], [tuple(m) for m in d["models"]],
+            [tuple(x) for x in d["last_ingest"]])
+
+
 def render(job, runs, results, docs, chunks, models, last_ingest, notes: dict, tried: str) -> str:
     job_id, jinput, _out, jstatus, created, finished = job
     L = []
@@ -123,10 +153,11 @@ def render(job, runs, results, docs, chunks, models, last_ingest, notes: dict, t
     w("|---|---|---|---|---|---|---|---|---|")
     for key, stype, rel, lang, jur, chars, ver, ext, ret in docs:
         w(f"| `{key}` | {stype} | {rel} | {lang} | {jur or 'global'} | {chars:,} | {ver} | {ext} | {ret:%Y-%m-%d %H:%M} |")
-    failed = [x for x in last_ingest if x[1] != "ok"]
+    # "skipped at unchanged" is a successful run with nothing to do
+    failed = [x for x in last_ingest if x[1] != "ok" and not (x[1] == "skipped" and x[2] == "unchanged")]
     if failed:
         w("")
-        w("Sources whose last ingestion did not succeed (not in the corpus above unless an earlier version exists):")
+        w("Sources whose last ingestion did not store a document (not in the corpus above unless an earlier version exists):")
         w("")
         for key, status, step, err in failed:
             w(f"- `{key}`: {status} at `{step}`" + (f": {err}" if err else ""))
@@ -160,7 +191,7 @@ def render(job, runs, results, docs, chunks, models, last_ingest, notes: dict, t
       "of chunking. A retrieved chunk is relevant when it overlaps a gold span by at least half of the shorter of the "
       "two; each gold span is credited once (D-039).")
     w("")
-    w("By language group: " + ", ".join(f"{k} {v}" for k, v in sorted(groups.items())) + ".")
+    w("By language group, all queries: " + ", ".join(f"{k} {v}" for k, v in sorted(groups.items())) + ".")
     w("By tag: " + (", ".join(f"`{k}` {v}" for k, v in sorted(tags.items())) or "none") + ".")
     w("")
 
@@ -199,6 +230,40 @@ def render(job, runs, results, docs, chunks, models, last_ingest, notes: dict, t
                 b = [qb[q]["metrics"].get(m) for q in ids]
                 d, lo, hi = bootstrap_diff(a, b)
                 w(f"| {model} / {mode} | {m} | {fmt(mean(a))} | {fmt(mean(b))} | {fmt(d)} | [{fmt(lo)}, {fmt(hi)}] |")
+    w("")
+
+    w("## Secondary comparisons")
+    w("")
+    w("Same paired bootstrap. Retrieval mode (hybrid minus dense) and embedding model (multilingual-e5-large minus "
+      "bge-m3), each with the other factors fixed. Not part of the primary question; listed so that differences seen in "
+      "the table above are not read as results without an interval. With 16 intervals at 95%, about one is expected to "
+      "exclude 0 by chance.")
+    w("")
+    w("| Fixed | Comparison | Metric | First | Second | Difference | 95% interval |")
+    w("|---|---|---|---|---|---|---|")
+
+    def paired(ra, rb):
+        qa, qb = results.get(str(ra["id"]), {}), results.get(str(rb["id"]), {})
+        return [q for q in sorted(qa) if q in qb and (qa[q]["metrics"] or {}).get("gold_spans")], qa, qb
+
+    pairs = []
+    for strat in ("fixed_500_50", "structure_aware_v1"):
+        letter = "A" if strat == "fixed_500_50" else "B"
+        for model in sorted({r["config"]["model"] for r in runs}):
+            pairs.append((f"{letter} {model}", "dense -> hybrid",
+                          by_cfg.get((strat, model, "dense")), by_cfg.get((strat, model, "hybrid"))))
+        for mode in ("dense", "hybrid"):
+            pairs.append((f"{letter} {mode}", "bge-m3 -> multilingual-e5-large",
+                          by_cfg.get((strat, "bge-m3", mode)), by_cfg.get((strat, "multilingual-e5-large", mode))))
+    for fixed, comp, ra, rb in pairs:
+        if not ra or not rb:
+            continue
+        ids, qa, qb = paired(ra, rb)
+        for m in ("mrr", "recall@5"):
+            a = [qa[q]["metrics"].get(m) for q in ids]
+            b = [qb[q]["metrics"].get(m) for q in ids]
+            d, lo, hi = bootstrap_diff(a, b)
+            w(f"| {fixed} | {comp} | {m} | {fmt(mean(a))} | {fmt(mean(b))} | {fmt(d)} | [{fmt(lo)}, {fmt(hi)}] |")
     w("")
 
     w("## By language group (hybrid)")
@@ -255,13 +320,19 @@ def render(job, runs, results, docs, chunks, models, last_ingest, notes: dict, t
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dsn", required=True)
-    ap.add_argument("--job", required=True)
+    ap.add_argument("--dsn")
+    ap.add_argument("--job")
+    ap.add_argument("--from-dump")
     ap.add_argument("--out", default=str(ROOT / "docs" / "RETRIEVAL_EVAL.md"))
     a = ap.parse_args()
-    import psycopg
-    with psycopg.connect(a.dsn) as conn:
-        data = load(conn, a.job)
+    if a.from_dump:
+        data = from_json(json.loads(Path(a.from_dump).read_text(encoding="utf-8")))
+    else:
+        if not (a.dsn and a.job):
+            ap.error("--dsn and --job, or --from-dump")
+        import psycopg
+        with psycopg.connect(a.dsn) as conn:
+            data = load(conn, a.job)
     dataset = data[0][1]["dataset"]
     notes_file = ROOT / "eval" / "datasets" / f"{dataset}_v{data[0][1]['version']}_notes.json"
     notes = json.loads(notes_file.read_text(encoding="utf-8")) if notes_file.exists() else {}

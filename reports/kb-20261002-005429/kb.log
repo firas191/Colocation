@@ -1,0 +1,124 @@
+
+===== stack is up (n8n healthy, TEI answers) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker compose @files --profile test run --rm --no-deps tests python -c "import httpx; r = httpx.get('http://tei:80/health', timeout=10); print('TEI', r.status_code); raise SystemExit(0 if r.status_code == 200 else 1)"
+started: 2026-10-02T00:54:30.5652846+01:00
+healthy
+ Container flatshare-tests-run-74cb231343e2 Creating 
+ Container flatshare-tests-run-74cb231343e2 Created 
+TEI 200
+exit=0 seconds=0.8
+
+===== seed: pack sources and evaluation datasets =====
+command: docker @kb seed
+started: 2026-10-02T00:54:31.3735762+01:00
+ Container flatshare-tests-run-c9039db4f9fe Creating 
+ Container flatshare-tests-run-c9039db4f9fe Created 
+sources: 31 upserted from 2 packs; marked removed: ['tn-web6-droits-locataire']
+datasets: no manifest
+exit=0 seconds=1
+
+===== ingest TN (fetch, clean, chunk, embed; can take long on CPU) =====
+command: docker @kb @args2
+started: 2026-10-02T00:54:32.3964952+01:00
+ Container flatshare-tests-run-9194643746eb Creating 
+ Container flatshare-tests-run-9194643746eb Created 
+/v1/admin/kb/ingest: job 8a9b38e3-5d45-49c8-853f-9b68c2cc770d accepted
+      0.2s  job running
+     84.5s  gl-123loger-arnaques: ok (done), 77 s
+    168.9s  gl-gestetud-arnaques: ok (done), 86 s
+    189.8s  gl-twenty-campus-arnaques: ok (done), 21 s
+    189.8s  tn-cdet-2017: skipped (unchanged), 1 s
+    189.8s  tn-coc-ar: skipped (robots), 0 s
+    798.9s  tn-coc-ar-cawtar: failed (source_workflow) The connection was aborted, perhaps the server is offline
+    798.9s  tn-coc-fr: skipped (robots), 1 s
+    798.9s  tn-coc-jurisite-727-738: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    798.9s  tn-coc-jurisite-739: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    798.9s  tn-coc-jurisite-740-746: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    798.9s  tn-coc-jurisite-747: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    809.4s  tn-coc-jurisite-748-757: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    809.4s  tn-coc-jurisite-758-766: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    830.4s  tn-coc-jurisite-767-790: ok (done), 22 s
+    830.4s  tn-coc-jurisite-791-804: failed (source_workflow) decoding_failed utf-8: 24 replacement characters [line 292]
+    851.4s  tn-coc-jurisite-805-827: ok (done), 23 s
+    914.6s  tn-cyriljarnias-location: ok (done), 67 s
+    925.0s  tn-diwan-location: ok (done), 7 s
+   1009.1s  tn-dpo-consulting-loi: ok (done), 85 s
+   1030.3s  tn-houni-colocation-tunis: ok (done), 14 s
+   1030.3s  tn-inpdp-procedures: skipped (robots), 5 s
+   1072.0s  tn-justice-questions-civiles: ok (done), 39 s
+   1072.0s  tn-lapresse-arnaque-sousse: ok (done), 4 s
+   1082.5s  tn-lo-2004-63-ar: skipped (robots), 5 s
+   1250.7s  tn-lo-2004-63-ar-igppp: ok (done), 175 s
+   1250.7s  tn-lo-2004-63-fr: skipped (unchanged), 1 s
+   1261.3s  tn-loi-76-35-recueil: skipped (unchanged), 3 s
+   1261.3s  tn-mehat-logement-locatif-2014: skipped (unchanged), 1 s
+   1271.8s  tn-notaire-tunisienumerique: ok (done), 13 s
+   1271.8s  tn-profiscal-det-ch7-2006: skipped (unchanged), 1 s
+   1292.6s  job failed
+   1292.7s  tn-web6-inpdp: ok (done), 22 s
+ingest failed in 1294 s: {"ok": 14, "failed": 8, "skipped": 9}
+  ok       gl-123loger-arnaques               updated fixed_500_50: 19 chunks, structure_aware_v1: 49 chunks 
+  ok       gl-gestetud-arnaques               updated fixed_500_50: 22 chunks, structure_aware_v1: 51 chunks 
+  ok       gl-twenty-campus-arnaques          updated fixed_500_50: 6 chunks, structure_aware_v1: 10 chunks 
+  skipped  tn-cdet-2017                       unchanged  unchanged
+  skipped  tn-coc-ar                          robots  robots_unreachable_503 [robots.txt HTTP 503]
+  failed   tn-coc-ar-cawtar                   source_workflow  The connection was aborted, perhaps the server is offline
+  skipped  tn-coc-fr                          robots  robots_unreachable_503 [robots.txt HTTP 503]
+  failed   tn-coc-jurisite-727-738            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  failed   tn-coc-jurisite-739                source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  failed   tn-coc-jurisite-740-746            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  failed   tn-coc-jurisite-747                source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  failed   tn-coc-jurisite-748-757            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  failed   tn-coc-jurisite-758-766            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  ok       tn-coc-jurisite-767-790            created fixed_500_50: 6 chunks, structure_aware_v1: 13 chunks 
+  failed   tn-coc-jurisite-791-804            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  ok       tn-coc-jurisite-805-827            created fixed_500_50: 6 chunks, structure_aware_v1: 13 chunks 
+  ok       tn-cyriljarnias-location           updated fixed_500_50: 18 chunks, structure_aware_v1: 27 chunks 
+  ok       tn-diwan-location                  updated fixed_500_50: 2 chunks, structure_aware_v1: 3 chunks 
+  ok       tn-dpo-consulting-loi              updated fixed_500_50: 16 chunks, structure_aware_v1: 50 chunks 
+  ok       tn-houni-colocation-tunis          updated fixed_500_50: 3 chunks, structure_aware_v1: 9 chunks 
+  skipped  tn-inpdp-procedures                robots  robots_unreachable [robots.txt HTTP 0]
+  ok       tn-justice-questions-civiles       created fixed_500_50: 9 chunks, structure_aware_v1: 26 chunks 
+  ok       tn-lapresse-arnaque-sousse         updated fixed_500_50: 1 chunks, structure_aware_v1: 1 chunks 
+  skipped  tn-lo-2004-63-ar                   robots  robots_unreachable [robots.txt HTTP 0]
+  ok       tn-lo-2004-63-ar-igppp             created fixed_500_50: 49 chunks, structure_aware_v1: 76 chunks 
+  skipped  tn-lo-2004-63-fr                   unchanged  unchanged
+  skipped  tn-loi-76-35-recueil               unchanged  unchanged
+  skipped  tn-mehat-logement-locatif-2014     unchanged  unchanged
+  ok       tn-notaire-tunisienumerique        updated fixed_500_50: 3 chunks, structure_aware_v1: 7 chunks 
+  skipped  tn-profiscal-det-ch7-2006          unchanged  unchanged
+  ok       tn-web6-inpdp                      updated fixed_500_50: 4 chunks, structure_aware_v1: 16 chunks 
+job error: 8 of 31 sources failed
+System.Management.Automation.RemoteException
+exit=2 seconds=1295.2
+
+===== export current documents to kb\packs\*\documents =====
+command: docker @kb export
+started: 2026-10-02T01:16:07.5784066+01:00
+ Container flatshare-tests-run-81b553965c1d Creating 
+ Container flatshare-tests-run-81b553965c1d Created 
+  gl-123loger-arnaques               v2    34,152 chars  {"fixed_500_50": 19, "structure_aware_v1": 49}
+  gl-gestetud-arnaques               v2    46,003 chars  {"fixed_500_50": 22, "structure_aware_v1": 51}
+  gl-twenty-campus-arnaques          v3    10,077 chars  {"fixed_500_50": 6, "structure_aware_v1": 10}
+  test-guide-pdf                     v1       348 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  test-law-fr                        v2     2,206 chars  {"fixed_500_50": 2, "structure_aware_v1": 3}
+  tn-cdet-2017                       v1   153,148 chars  {"fixed_500_50": 87, "structure_aware_v1": 151}
+  tn-coc-ar-cawtar                   v1   353,919 chars  {"fixed_500_50": 245, "structure_aware_v1": 342}
+  tn-coc-jurisite-767-790            v1     8,697 chars  {"fixed_500_50": 6, "structure_aware_v1": 13}
+  tn-coc-jurisite-805-827            v1     9,643 chars  {"fixed_500_50": 6, "structure_aware_v1": 13}
+  tn-cyriljarnias-location           v2    34,023 chars  {"fixed_500_50": 18, "structure_aware_v1": 27}
+  tn-diwan-location                  v2     3,880 chars  {"fixed_500_50": 2, "structure_aware_v1": 3}
+  tn-dpo-consulting-loi              v2    30,670 chars  {"fixed_500_50": 16, "structure_aware_v1": 50}
+  tn-houni-colocation-tunis          v2     4,344 chars  {"fixed_500_50": 3, "structure_aware_v1": 9}
+  tn-justice-questions-civiles       v1    16,766 chars  {"fixed_500_50": 9, "structure_aware_v1": 26}
+  tn-lapresse-arnaque-sousse         v2     1,492 chars  {"fixed_500_50": 1, "structure_aware_v1": 1}
+  tn-lo-2004-63-ar-igppp             v1    46,304 chars  {"fixed_500_50": 49, "structure_aware_v1": 76}
+  tn-lo-2004-63-fr                   v1    55,409 chars  {"fixed_500_50": 29, "structure_aware_v1": 47}
+  tn-loi-76-35-recueil               v1   113,977 chars  {"fixed_500_50": 62, "structure_aware_v1": 94}
+  tn-mehat-logement-locatif-2014     v1   138,451 chars  {"fixed_500_50": 72, "structure_aware_v1": 90}
+  tn-notaire-tunisienumerique        v2     5,018 chars  {"fixed_500_50": 3, "structure_aware_v1": 7}
+  tn-profiscal-det-ch7-2006          v1    30,908 chars  {"fixed_500_50": 17, "structure_aware_v1": 51}
+  tn-web6-inpdp                      v2     6,691 chars  {"fixed_500_50": 4, "structure_aware_v1": 16}
+exported 22 documents under kb/packs/*/documents/
+exit=0 seconds=1.9

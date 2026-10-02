@@ -4,11 +4,13 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step ingest       # seed + ingest TN + export
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step eval         # seed + check gold + evaluate + report
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step all
-# Options: -Jurisdiction TN, -Sources "key1,key2" (ingest only these), -Force (re-chunk unchanged sources).
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step report       # report + dump of the latest evaluation
+# Options: -Jurisdiction TN, -Sources "key1,key2" (ingest only these), -Force (re-chunk unchanged sources),
+#          -Version 2 (gold set version for -Step eval; default 1).
 # Output: reports\kb-<timestamp>\kb.log and summary.txt; texts in kb\packs\<CODE>\documents\ (not committed);
 # docs\RETRIEVAL_EVAL.md after -Step eval.
-param([ValidateSet("ingest", "eval", "all")][string]$Step = "ingest", [string]$Jurisdiction = "TN",
-      [string]$Sources = "", [switch]$Force)
+param([ValidateSet("ingest", "eval", "all", "report")][string]$Step = "ingest", [string]$Jurisdiction = "TN",
+      [string]$Sources = "", [switch]$Force, [int]$Version = 1)
 
 $ErrorActionPreference = "Continue"
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -43,9 +45,10 @@ if (Test-Path "docker-compose.gpu.yml") {
   docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L *> $null
   if ($LASTEXITCODE -eq 0) { $files += @("-f", "docker-compose.gpu.yml") }
 }
-# The repository is mounted read-only in the tests container; these two folders are written.
+# The repository is mounted read-only in the tests container; these folders are written.
 New-Item -ItemType Directory -Force -Path (Join-Path $root "kb\packs") | Out-Null
-$rw = @("-v", "${root}\kb\packs:/flatshare/kb/packs", "-v", "${root}\docs:/flatshare/docs")
+New-Item -ItemType Directory -Force -Path (Join-Path $root "reports\eval") | Out-Null
+$rw = @("-v", "${root}\kb\packs:/flatshare/kb/packs", "-v", "${root}\docs:/flatshare/docs", "-v", "${root}\reports\eval:/flatshare/reports/eval")
 $kb = @("compose") + $files + @("--profile", "test", "run", "--rm", "--no-deps") + $rw + @("tests", "python", "scripts/kb.py")
 
 Step "stack is up (n8n healthy, TEI answers)" {
@@ -73,9 +76,12 @@ if ($Step -in @("ingest", "all")) {
   Step "export current documents to kb\packs\*\documents" { docker @kb export } | Out-Null
 }
 if ($Step -in @("eval", "all")) {
-  $c = Step "gold spans resolve against the current documents" { docker @kb check-gold }
+  $c = Step "gold spans resolve against the current documents" { docker @kb check-gold --version $Version }
   if ($c -ne 0) { Write-Host "Stopped: the gold set does not match the corpus. Log: $log"; exit 1 }
-  Step "retrieval evaluation (full matrix) and docs\RETRIEVAL_EVAL.md" { docker @kb eval --jurisdiction $Jurisdiction } | Out-Null
+  Step "retrieval evaluation (full matrix) and docs\RETRIEVAL_EVAL.md" { docker @kb eval --jurisdiction $Jurisdiction --version $Version } | Out-Null
+}
+if ($Step -eq "report") {
+  Step "docs\RETRIEVAL_EVAL.md and reports\eval\<job>.json for the latest evaluation" { docker @kb report --job latest } | Out-Null
 }
 
 Write-Host ""
