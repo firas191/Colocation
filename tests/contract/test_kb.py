@@ -153,11 +153,21 @@ def test_documents_chunks_and_embeddings_stored(first_ingest, db):
                              where s.source_key like 'test-%' group by 1""").fetchall())
     total = sum(per.values())
     assert emb == {"bge-m3": total, "multilingual-e5-large": total}
-    refs = [r[0] for r in db.execute("""select c.article_ref from kb.chunks c join kb.documents d on d.id = c.document_id
-                                        join kb.sources s on s.id = d.source_id
-                                        where s.source_key = 'test-law-fr' and c.strategy = 'structure_aware_v1'
-                                        order by c.chunk_index""").fetchall()]
-    assert refs == ["TST art. 1-12", "TST art. 13"]
+    rows = db.execute("""select c.article_ref, c.token_count from kb.chunks c join kb.documents d on d.id = c.document_id
+                         join kb.sources s on s.id = d.source_id
+                         where s.source_key = 'test-law-fr' and c.strategy = 'structure_aware_v1'
+                         order by c.chunk_index""").fetchall()
+    # Where the 400-token limit splits articles 1-12 depends on the tokenizer: one chunk
+    # with the sandbox mock (one token per word), two with XLM-RoBERTa on the PC (T-25).
+    # What must hold either way: articles 1 to 13 in order, each once, merged runs only,
+    # within the limit, and article 13 (another title) alone.
+    covered = []
+    for ref, ntok in rows:
+        assert ref.startswith("TST art. ") and ntok <= 400, (ref, ntok)
+        a, _, b = ref[len("TST art. "):].partition("-")
+        covered += list(range(int(a), int(b or a) + 1))
+    assert covered == list(range(1, 14)), [r[0] for r in rows]
+    assert rows[-1][0] == "TST art. 13"
 
 
 def test_reingest_unchanged_is_skipped(client, zz, first_ingest, db, idem):
@@ -188,10 +198,36 @@ def test_force_creates_new_version_and_search_sees_only_current(client, zz, firs
     versions = db.execute("""select d.version, d.status from kb.documents d join kb.sources s on s.id = d.source_id
                              where s.source_key = 'test-law-fr' order by 1""").fetchall()
     assert versions == [(1, "superseded"), (2, "current")]
+    # Search covers QZ and the global sources; only test-law-fr's hits are checked here, since
+    # global documents of the real pack can match the same words (T-25).
     hits = db.execute("""select distinct d.version from kb.search_chunks('bge-m3', 'structure_aware_v1', null,
                            'dépôt garantie restitué', 'QZ', 1::smallint, 20, 'lexical') r
-                         join kb.documents d on d.id = r.document_id""").fetchall()
+                         join kb.documents d on d.id = r.document_id
+                         join kb.sources s on s.id = d.source_id where s.source_key = 'test-law-fr'""").fetchall()
     assert hits == [(2,)]
+
+
+def test_no_network_fails_the_job(client, zz, db, idem):
+    """robots.txt unreachable for every source (no HTTP answer at all) means our network is down:
+    each source is still skipped (RFC 9309), but the job fails and says why (T-25)."""
+    db.execute("""insert into app.jurisdictions (code, country_code, name, default_currency, default_locale, languages, timezone)
+                  values ('QY', 'QY', 'Test jurisdiction, unreachable sources (tests only)', 'TND', 'fr-TN', '{fr}', 'Africa/Tunis')
+                  on conflict do nothing""")
+    db.execute("delete from kb.sources where source_key like 'test-offline-%'")
+    for i in (1, 2):   # ".invalid" never resolves (RFC 6761)
+        db.execute("""insert into kb.sources (source_key, jurisdiction_code, title, url, publisher, source_type, reliability, language)
+                      values (%s, 'QY', %s, %s, 'test fixtures', 'blog', 1, 'fr')""",
+                   (f"test-offline-{i}", f"test-offline-{i}", f"http://offline-{i}.invalid/page.html"))
+    try:
+        r = client.call("POST", "/v1/admin/kb/ingest", body={"jurisdiction": "QY", "include_global": False},
+                        user_id=zz["admin"], idem=idem())
+        job = wait_job(client, zz["admin"], assert_ok(r, 202)["data"]["status_url"])
+        assert job["status"] == "failed"
+        assert job["error"].startswith("no_network: robots.txt unreachable for all 2 sources ("), job["error"]
+        for s in by_key(job).values():
+            assert s["status"] == "skipped" and s["reason"].startswith("robots_unreachable [robots.txt HTTP 0] "), s
+    finally:
+        db.execute("delete from kb.sources where source_key like 'test-offline-%'")
 
 
 def test_retried_request_returns_the_same_job(client, zz, idem):

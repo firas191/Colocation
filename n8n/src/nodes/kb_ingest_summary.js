@@ -15,6 +15,7 @@ const results = items.map((r) => ({
   error: r.status === 'ok' || r.status === 'skipped' ? null : (r.error || errorOf(r)),
   reason: r.status !== 'skipped' ? null : r.step === 'robots' && r.detail && r.detail.robots
     ? r.detail.robots.reason + (r.detail.robots.rule ? ` (${r.detail.robots.rule})` : '') + ` [robots.txt HTTP ${r.detail.robots.status}]`
+      + (r.detail.robots.error ? ` ${r.detail.robots.error}` : '')
     : r.step,
   chunks: r.chunks || null,
   embeddings: r.embeddings || null,
@@ -28,9 +29,17 @@ function errorOf(r) {
 const failed = results.filter((r) => r.status === 'failed');
 const counts = { ok: 0, skipped: 0, failed: 0 };
 for (const r of results) counts[r.status] = (counts[r.status] || 0) + 1;
+// Every robots.txt request failed without any HTTP answer: that is our network, not
+// the sites. Skipping is still right per source (RFC 9309), but the job must not
+// report success (T-25).
+const offline = items.filter((r) => r.status === 'skipped' && r.step === 'robots' && r.detail && r.detail.robots
+                                    && r.detail.robots.status === 0);
+const noNetwork = results.length >= 2 && offline.length === results.length;
+const firstErr = noNetwork ? (offline[0].detail.robots.error || 'no error message') : null;
 return [{ json: {
   job_id: plan.job_id,
-  status: failed.length ? 'failed' : 'succeeded',
-  error: failed.length ? `${failed.length} of ${results.length} sources failed` : null,
+  status: failed.length || noNetwork ? 'failed' : 'succeeded',
+  error: noNetwork ? `no_network: robots.txt unreachable for all ${results.length} sources (${firstErr})`
+    : failed.length ? `${failed.length} of ${results.length} sources failed` : null,
   output: { counts, sources: results, unknown_sources: plan.unknown_sources || [] },
 } }];

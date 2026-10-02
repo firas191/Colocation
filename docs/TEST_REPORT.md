@@ -741,6 +741,58 @@ $ pytest -v -rs tests/unit tests/contract
 Logs: `reports/phase2/07-js-unit-after-f032-f033.log`, `reports/phase2/08-pytest-after-f032-f033-sandbox.log`.
 The database was not changed in this round, so pgTAP was not re-run (193 tests passed in T-22 and on the PC).
 
+## T-25 Tenth compose run and third TN ingestion on the owner's PC (2026-10-02) - contract tests FAILED (F-034), ingestion reached no site (F-035)
+
+`verify.ps1` at 06:01 (`reports/verify-20261002-060113`): every step passed except the contract tests,
+72 passed, 2 failed. `test-law-ar` now passes on the PC (F-032 fixed under Caddy). The two failures:
+
+```
+E       AssertionError: assert ['TST art. 1-...'TST art. 13'] == ['TST art. 1-...'TST art. 13']
+E         At index 0 diff: 'TST art. 1-10' != 'TST art. 1-12'
+E         Left contains one more item: 'TST art. 13'
+E       AssertionError: assert [(2,), (3,)] == [(2,)]
+============= 2 failed, 72 passed, 1 skipped in 118.27s (0:01:58) ==============
+```
+
+Both are test defects (F-034). `kb.ps1 -Step ingest` at 10:55 (`reports/kb-20261002-105540/kb.log`):
+
+```
+/v1/admin/kb/ingest: job 4e6bf5d7-52b4-4589-a181-2789cc23ebf5 accepted
+ingest succeeded in 24 s: {"ok": 0, "failed": 0, "skipped": 31}
+skipped gl-123loger-arnaques robots robots_unreachable [robots.txt HTTP 0]
+(the same for all 31 sources)
+```
+
+No site answered; the cause on the PC is not known (F-035). The stored documents were not changed, so the
+export is the same 22 documents as in T-23 plus `test-law-ar` from the verify run. F-033 (CAWTAR) and the seven
+jurisite pages are still not checked on the PC.
+
+## T-26 Fixes for F-034 and F-035, sandbox (2026-10-02) - PASS, with mocks for TEI and Ollama
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# tests 54
+# pass 54
+# fail 0
+$ pytest -v -rs tests/contract/test_kb.py
+tests/contract/test_kb.py::test_no_network_fails_the_job PASSED          [ 57%]
+============================= 14 passed in 23.47s ==============================
+$ pytest -v -rs tests/unit tests/contract
+=================== 75 passed, 1 skipped in 99.31s (0:01:39) ===================
+```
+
+Job error and source reason from the new test, read from `app.jobs`:
+
+```
+no_network: robots.txt unreachable for all 2 sources (getaddrinfo ENOTFOUND offline-1.invalid)
+robots_unreachable [robots.txt HTTP 0] getaddrinfo ENOTFOUND offline-1.invalid
+```
+
+The `kb.ps1` internet check (the same `node -e` script, run with the sandbox's Node 22 against one real host and
+one `.invalid` host) printed `https://www.justice.gov.tn/robots.txt HTTP 403` (the sandbox's egress proxy answers
+403) and `network error: ENOTFOUND`, exit 0; it exits 1 only when no host answers. It was not run in Windows
+PowerShell here. Log: `reports/phase2/09-pytest-after-f034-f035-sandbox.log`.
+
 ---
 
 ## Not run

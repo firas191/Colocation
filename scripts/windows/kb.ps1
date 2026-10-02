@@ -57,6 +57,15 @@ $c = Step "seed: pack sources and evaluation datasets" { docker @kb seed }
 if ($c -ne 0) { Write-Host "Stopped: seed failed. Log: $log"; exit 1 }
 
 if ($Step -in @("ingest", "all")) {
+  # Sources are fetched by n8n: check its container reaches the internet first (T-25: after the
+  # PC slept, every robots.txt request failed without an HTTP answer and all sources were skipped).
+  $c = Step "n8n container reaches the internet" {
+    docker exec fs-n8n node -e "Promise.allSettled(['https://www.justice.gov.tn/robots.txt','https://www.jurisitetunisie.com/robots.txt'].map(u=>fetch(u,{signal:AbortSignal.timeout(15000)}).then(r=>u+' HTTP '+r.status))).then(rs=>{let ok=0;for(const r of rs){if(r.status==='fulfilled'){ok++;console.log(r.value)}else{console.log('network error: '+((r.reason.cause&&r.reason.cause.code)||r.reason.message))}}process.exit(ok?0:1)})"
+  }
+  if ($c -ne 0) {
+    Write-Host "Stopped: n8n cannot reach the internet. Restart Docker Desktop (or check the PC's connection), then run this again. Log: $log"
+    exit 1
+  }
   $args2 = @("ingest", "--jurisdiction", $Jurisdiction)
   if ($Sources) { $args2 += @("--sources", $Sources) }
   if ($Force) { $args2 += "--force" }
