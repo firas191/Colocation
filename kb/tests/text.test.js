@@ -134,3 +134,44 @@ test('cutBetween keeps the article between markers; missing start fails, missing
   assert.equal(T.cutBetween(t, '# Titre', 'ABSENT').ended, false);
   assert.throws(() => T.cutBetween(t, 'ABSENT', null), /start marker not found/);
 });
+
+test('decodeBytes: header says utf-8, bytes are windows-1256 as the meta says (F-032, Caddy/Go default header)', () => {
+  const fixture = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../tests/fixtures/kb/law_ar.html'));
+  const r = T.decodeBytes(fixture, 'text/html; charset=utf-8');
+  assert.equal(r.charset, 'windows-1256');
+  assert.equal(r.source, 'meta');
+  assert.ok(r.invalid_bytes > 0);
+  assert.match(r.note, /declared utf-8 \(header\)/);
+  assert.match(r.text, /يدفع المكتري معين الكراء/);
+  assert.ok(!r.text.includes('�'));
+});
+
+test('decodeBytes: UTF-8 page with a Latin-1 template keeps the UTF-8 text, stray bytes read as windows-1252 (F-032)', () => {
+  // as on jurisitetunisie.com: comments saved in Latin-1, content in UTF-8, both declarations utf-8
+  const latin = (s) => Buffer.from(s, 'latin1');
+  const buf = Buffer.concat([Buffer.from('<meta charset="utf-8"><!-- Ajout'), latin('\xe9'), Buffer.from(' 2023 -->'),
+    Buffer.from('<p>Le preneur doit payer le loyer aux termes convenus. Ã défaut, voilà la règle: dépôt, échéance.</p>')]);
+  const r = T.decodeBytes(buf, 'text/html; charset=utf-8');
+  assert.equal(r.charset, 'utf-8+windows-1252');
+  assert.equal(r.invalid_bytes, 1);
+  assert.match(r.text, /Ajouté 2023/);
+  assert.match(r.text, /voilà la règle: dépôt, échéance/);
+  assert.ok(!r.text.includes('�'));
+});
+
+test('decodeBytes: valid UTF-8 untouched; mostly-invalid bytes with only utf-8 declared fail (F-032)', () => {
+  const ok = T.decodeBytes(Buffer.from('<p>été ✓ الكراء</p>'), 'text/html; charset=utf-8');
+  assert.deepEqual([ok.charset, ok.invalid_bytes, ok.text], ['utf-8', 0, '<p>été ✓ الكراء</p>']);
+  const allLatin = Buffer.from('<p>d\xe9p\xf4t \xe0 r\xe9gler \xe9ch\xe9ance</p>', 'latin1');
+  assert.throws(() => T.decodeBytes(allLatin, 'text/html; charset=utf-8'), /decoding_failed utf-8 \(header\): 6 invalid bytes, 0 valid/);
+  // no declaration at all
+  assert.throws(() => T.decodeBytes(allLatin, 'text/html'), /decoding_failed utf-8 \(default\)/);
+});
+
+test('utf8Scan follows RFC 3629: overlong forms, surrogates and > U+10FFFF are invalid', () => {
+  assert.deepEqual(T.utf8Scan(Buffer.from('aé€𝄞')), { multibyte: 3, invalid: 0 });
+  assert.equal(T.utf8Scan(Buffer.from([0xc0, 0xaf])).invalid, 2);               // overlong "/"
+  assert.equal(T.utf8Scan(Buffer.from([0xed, 0xa0, 0x80])).invalid, 3);         // UTF-16 surrogate
+  assert.equal(T.utf8Scan(Buffer.from([0xf4, 0x90, 0x80, 0x80])).invalid, 4);   // above U+10FFFF
+  assert.equal(T.utf8Scan(Buffer.from([0xe2, 0x82])).invalid, 2);               // truncated
+});

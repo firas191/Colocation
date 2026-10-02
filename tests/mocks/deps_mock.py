@@ -7,7 +7,10 @@ docs/TEST_REPORT.md.
 
     python3 deps_mock.py ollama 11434 [--no-model]
     python3 deps_mock.py s3 3903
-    python3 deps_mock.py tei 8090 [--char-offsets]
+    python3 deps_mock.py tei 8090 [--char-offsets] [--embed-delay-ms N]
+
+GET /_mock/stats returns the highest number of /embed or /api/embed requests
+that were in flight at the same time (sandbox evidence for F-033).
 
 Mock embeddings: a bag of hashed lower-case words in 1024 dimensions, L2
 normalised, so texts sharing words are close. Mock tokenizer: one token per run
@@ -19,12 +22,30 @@ import json
 import math
 import re
 import sys
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
 kind, port = sys.argv[1], int(sys.argv[2])
 no_model = "--no-model" in sys.argv
 char_offsets = "--char-offsets" in sys.argv
+embed_delay = int(sys.argv[sys.argv.index("--embed-delay-ms") + 1]) / 1000 if "--embed-delay-ms" in sys.argv else 0
+stats = {"in_flight": 0, "max_in_flight": 0, "embed_requests": 0}
+stats_lock = threading.Lock()
+
+
+def embed_begin():
+    with stats_lock:
+        stats["in_flight"] += 1
+        stats["embed_requests"] += 1
+        stats["max_in_flight"] = max(stats["max_in_flight"], stats["in_flight"])
+    time.sleep(embed_delay)
+
+
+def embed_end():
+    with stats_lock:
+        stats["in_flight"] -= 1
 
 
 def embed(text: str) -> list[float]:
@@ -60,6 +81,12 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        if self.path == "/_mock/stats":
+            return self.reply(200, stats)
+        if self.path == "/_mock/reset":
+            with stats_lock:
+                stats.update(max_in_flight=0, embed_requests=0)
+            return self.reply(200, stats)
         if kind == "ollama" and self.path == "/api/tags":
             models = [] if no_model else [{"name": "bge-m3:latest", "model": "bge-m3:latest"}]
             return self.reply(200, {"models": models})
@@ -74,11 +101,19 @@ class H(BaseHTTPRequestHandler):
         if kind == "ollama" and self.path == "/api/embed":
             inputs = body.get("input")
             inputs = [inputs] if isinstance(inputs, str) else inputs
-            return self.reply(200, {"model": body.get("model"), "embeddings": [embed(t) for t in inputs], "mock": True})
+            embed_begin()
+            try:
+                return self.reply(200, {"model": body.get("model"), "embeddings": [embed(t) for t in inputs], "mock": True})
+            finally:
+                embed_end()
         if kind == "tei" and self.path == "/embed":
             inputs = body.get("inputs")
             inputs = [inputs] if isinstance(inputs, str) else inputs
-            return self.reply(200, [embed(t) for t in inputs])
+            embed_begin()
+            try:
+                return self.reply(200, [embed(t) for t in inputs])
+            finally:
+                embed_end()
         if kind == "tei" and self.path == "/tokenize":
             inputs = body.get("inputs")
             inputs = [inputs] if isinstance(inputs, str) else inputs

@@ -10,10 +10,10 @@ if (status < 200 || status >= 300) throw new Error(`fetch_http_${status || 'erro
 const buf = await this.helpers.getBinaryDataBuffer(0, 'data');
 const headers = r.headers || {};
 const ctype = String(headers['content-type'] || '');
-const { text: raw, charset } = decodeBytes(buf, ctype);
-// A wrong decoder produces replacement characters: stop instead of storing garbled text (F-029).
-const bad = (raw.match(/\ufffd/g) || []).length;
-if (bad > Math.max(5, raw.length * 0.001)) throw new Error(`decoding_failed ${charset}: ${bad} replacement characters`);
+// decodeBytes throws decoding_failed when the charset cannot be established (F-029, F-032).
+const dec = decodeBytes(buf, ctype);
+const raw = dec.text;
+const charset = dec.charset;
 const f = x.source.fetch || {};
 let content, selected = null;
 if (/^text\/plain/i.test(ctype) || f.format === 'text') {
@@ -31,8 +31,13 @@ if (f.start_at || f.end_at) {
   cut = { start_at: f.start_at || null, end_at: f.end_at || null, end_found: c.ended };
 }
 if (content.length < (f.min_chars || 200)) throw new Error(`extracted_too_short ${content.length} chars`);
+// Replacement characters left in the kept text mean a wrong decoder: stop instead of
+// storing garbled text. Counted after cleaning, so comments and dropped markup do not count.
+const bad = (content.match(/\ufffd/g) || []).length;
+if (bad > Math.max(5, content.length * 0.001)) throw new Error(`decoding_failed ${charset}: ${bad} replacement characters in the extracted text`);
 return [{ json: {
   ...x, http_status: status, content_type: ctype.slice(0, 200), content,
   extractor: 'html_v1', bytes_b64: buf.toString('base64'),
-  doc_metadata: { charset, selected, cut, raw_bytes: buf.length, fetch_ms: Date.now() - x.t0 },
+  doc_metadata: { charset, charset_source: dec.source, invalid_bytes: dec.invalid_bytes,
+                  charset_note: dec.note || null, replacement_chars: bad, selected, cut, raw_bytes: buf.length, fetch_ms: Date.now() - x.t0 },
 } }];

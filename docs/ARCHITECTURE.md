@@ -54,7 +54,7 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `wf.ops.error_handler` | Error Trigger | records unexpected workflow failures in `ai.executions` |
 | `wf.api.admin_kb_ingest` | `POST /v1/admin/kb/ingest` (admin) | creates a `kb_ingest` job, starts `wf.kb.ingest`, answers 202 |
 | `wf.kb.ingest` | sub-workflow (job worker) | loads the pack's sources, runs `wf.kb.ingest_source` for each, logs, finishes the job |
-| `wf.kb.ingest_source` | sub-workflow | robots.txt, fetch, clean (HTML or PDF), store version, tokenize (TEI), chunk A and B, embed (Ollama, TEI), store |
+| `wf.kb.ingest_source` | sub-workflow | robots.txt, fetch, clean (HTML or PDF), store version, tokenize (TEI), chunk A and B, embed (Ollama, TEI; one request at a time, D-049), store |
 | `wf.api.jobs_get` | `GET /v1/jobs/:id` | job status for the requester, admins and moderators |
 | `wf.api.admin_eval_runs_create` | `POST /v1/admin/eval/runs` (admin) | creates an `eval_retrieval` job, starts `wf.eval.retrieval`, answers 202 |
 | `wf.eval.retrieval` | sub-workflow (job worker) | resolves gold, embeds queries once per model, searches every configuration, stores per-query metrics |

@@ -1,0 +1,64 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/flatshare
+plugins: anyio-4.13.0
+collecting ... collected 13 items
+
+tests/contract/test_kb.py::test_ingest_requires_admin_role PASSED        [  7%]
+tests/contract/test_kb.py::test_ingest_validation PASSED                 [ 15%]
+tests/contract/test_kb.py::test_ingest_outcomes_per_source FAILED        [ 23%]
+tests/contract/test_kb.py::test_robots_rules_respected PASSED            [ 30%]
+tests/contract/test_kb.py::test_documents_chunks_and_embeddings_stored FAILED [ 38%]
+tests/contract/test_kb.py::test_reingest_unchanged_is_skipped PASSED     [ 46%]
+tests/contract/test_kb.py::test_force_creates_new_version_and_search_sees_only_current PASSED [ 53%]
+tests/contract/test_kb.py::test_retried_request_returns_the_same_job PASSED [ 61%]
+tests/contract/test_kb.py::test_parameterised_routes_reach_their_workflows PASSED [ 69%]
+tests/contract/test_kb.py::test_job_status_visibility PASSED             [ 76%]
+tests/contract/test_kb.py::test_eval_run_end_to_end PASSED               [ 84%]
+tests/contract/test_kb.py::test_eval_with_unresolvable_gold_fails_the_job PASSED [ 92%]
+tests/contract/test_kb.py::test_eval_validation PASSED                   [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_ingest_outcomes_per_source ________________________
+
+first_ingest = {'job_id': '442d4fa4-1d5f-4253-91a0-e95f8cbcfa72', 'type': 'kb_ingest', 'status': 'failed', 'attempts': 1, ...}
+
+    def test_ingest_outcomes_per_source(first_ingest):
+        job = first_ingest
+        assert job["status"] == "failed"                                         # two sources fail on purpose
+>       assert job["error"] == "2 of 7 sources failed"
+E       AssertionError: assert '3 of 7 sources failed' == '2 of 7 sources failed'
+E         
+E         - 2 of 7 sources failed
+E         ? ^
+E         + 3 of 7 sources failed
+E         ? ^
+
+tests/contract/test_kb.py:108: AssertionError
+_________________ test_documents_chunks_and_embeddings_stored __________________
+
+first_ingest = {'job_id': '442d4fa4-1d5f-4253-91a0-e95f8cbcfa72', 'type': 'kb_ingest', 'status': 'failed', 'attempts': 1, ...}
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 user=n8n_worker database=flatshare) at 0x7f4d1a1669d0>
+
+    def test_documents_chunks_and_embeddings_stored(first_ingest, db):
+        docs = db.execute("""select s.source_key, d.version, d.status, d.extractor, d.content, d.content_hash,
+                                    r.sha256, r.byte_count, d.char_count
+                             from kb.documents d join kb.sources s on s.id = d.source_id
+                             left join kb.raw_fetches r on r.id = d.raw_fetch_id
+                             where s.source_key like 'test-%' order by 1""").fetchall()
+>       assert [d[0] for d in docs] == ["test-guide-pdf", "test-law-ar", "test-law-fr"]
+E       AssertionError: assert ['test-guide-...'test-law-fr'] == ['test-guide-...'test-law-fr']
+E         
+E         At index 1 diff: 'test-law-fr' != 'test-law-ar'
+E         Right contains one more item: 'test-law-fr'
+E         
+E         Full diff:
+E           [
+E               'test-guide-pdf',...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests/contract/test_kb.py:134: AssertionError
+======================== 2 failed, 11 passed in 18.56s =========================
+exit=1

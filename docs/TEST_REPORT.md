@@ -672,6 +672,75 @@ left the setting `ollama.embed_model` at a test value; the setting was reset and
 result above, `reports/phase2/05-pytest-after-f029-f030-sandbox.log`). The extraction options were checked on the
 owner's PC against the saved raw pages; the decoding fix is checked by the next `verify.ps1`.
 
+## T-23 Second TN ingestion on the owner's PC (2026-10-02T00:54+01:00) - 14 ok, 9 skipped, 8 failed
+
+`verify.ps1` before it (`reports/verify-20261002-003947`): every step passed except the contract tests, 72 passed
+and 2 failed (`test_ingest_outcomes_per_source`: "3 of 7 sources failed"; `test_documents_chunks_and_embeddings_stored`:
+`test-law-ar` missing). Cause: F-032. Then `scripts\windows\kb.ps1 -Step ingest`
+(`reports/kb-20261002-005429/kb.log`), real TEI (CPU) and Ollama (GPU):
+
+```
+/v1/admin/kb/ingest: job 8a9b38e3-5d45-49c8-853f-9b68c2cc770d accepted
+   1292.6s  job failed
+ingest failed in 1294 s: {"ok": 14, "failed": 8, "skipped": 9}
+  skipped  tn-coc-ar                          robots  robots_unreachable_503 [robots.txt HTTP 503]
+  failed   tn-coc-ar-cawtar                   source_workflow  The connection was aborted, perhaps the server is offline
+  skipped  tn-coc-fr                          robots  robots_unreachable_503 [robots.txt HTTP 503]
+  failed   tn-coc-jurisite-727-738            source_workflow  decoding_failed utf-8: 24 replacement characters [line 292]
+  (same error for 739, 740-746, 747, 748-757, 758-766, 791-804)
+  ok       tn-coc-jurisite-767-790            created fixed_500_50: 6 chunks, structure_aware_v1: 13 chunks
+  ok       tn-coc-jurisite-805-827            created fixed_500_50: 6 chunks, structure_aware_v1: 13 chunks
+  skipped  tn-inpdp-procedures                robots  robots_unreachable [robots.txt HTTP 0]
+  ok       tn-justice-questions-civiles       created fixed_500_50: 9 chunks, structure_aware_v1: 26 chunks
+  skipped  tn-lo-2004-63-ar                   robots  robots_unreachable [robots.txt HTTP 0]
+  ok       tn-lo-2004-63-ar-igppp             created fixed_500_50: 49 chunks, structure_aware_v1: 76 chunks
+  ok       gl-123loger-arnaques, gl-gestetud-arnaques, gl-twenty-campus-arnaques, tn-cyriljarnias-location,
+           tn-diwan-location, tn-dpo-consulting-loi, tn-houni-colocation-tunis, tn-lapresse-arnaque-sousse,
+           tn-notaire-tunisienumerique, tn-web6-inpdp: "updated" (new extraction options, F-031; emoji fix, F-030)
+  skipped  tn-cdet-2017, tn-lo-2004-63-fr, tn-loi-76-35-recueil, tn-mehat-logement-locatif-2014,
+           tn-profiscal-det-ch7-2006: unchanged
+```
+
+The four pages that failed with "chunk span outside the document text" in T-21 (F-030) now pass. Failures: F-032
+(jurisite pages), F-033 (CAWTAR). Robots reasons: D-047. The export lists 22 current documents (3 of them test
+fixtures); `tn-coc-ar-cawtar` is among them with its chunks but incomplete embeddings. Per-source times were not
+broken down (they are in `kb.ingest_log`).
+
+## T-24 Fixes for F-032 and F-033, sandbox (2026-10-02) - PASS, with mocks for TEI and Ollama
+
+The sandbox fixture server was changed from Python's `http.server` to `caddy file-server` (same header as the
+PC). Before the fix, with that server, the PC failure reproduced exactly
+(`reports/phase2/06-f032-reproduced-caddy-fixtures.log`):
+
+```
+E       AssertionError: assert '3 of 7 sources failed' == '2 of 7 sources failed'
+======================== 2 failed, 11 passed in 18.56s =========================
+```
+
+Concurrency of embedding requests, counted by the mocks (`GET /_mock/stats`, each request held 300 ms), for a
+forced re-ingestion of `test-law-fr` with batch sizes set to 1 (10 requests per model):
+
+```
+old workflow (HEAD 8309941): tei {"max_in_flight": 3, "embed_requests": 10}  ollama {"max_in_flight": 3, "embed_requests": 10}
+new workflow (Embed loop):   tei {"max_in_flight": 1, "embed_requests": 10}  ollama {"max_in_flight": 1, "embed_requests": 10}
+```
+
+The two jurisite pages saved on the PC, decoded with the new code: `utf-8+windows-1252`, 24 invalid bytes,
+0 replacement characters in the extracted text, extracted length unchanged (8,697 and 9,643 characters). The seven
+failed pages were not saved (they failed before storage); the next ingestion checks them.
+
+```
+$ node --test n8n/tests/*.test.js kb/tests/*.test.js eval/tests/*.test.js
+# tests 54
+# pass 54
+# fail 0
+$ pytest -v -rs tests/unit tests/contract
+=================== 74 passed, 1 skipped in 97.93s (0:01:37) ===================
+```
+
+Logs: `reports/phase2/07-js-unit-after-f032-f033.log`, `reports/phase2/08-pytest-after-f032-f033-sandbox.log`.
+The database was not changed in this round, so pgTAP was not re-run (193 tests passed in T-22 and on the PC).
+
 ---
 
 ## Not run

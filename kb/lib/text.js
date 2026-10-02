@@ -31,14 +31,20 @@ function normalizeText(s) {
 }
 
 // ---------------------------------------------------------------------------
-// Bytes -> string. The charset comes from the Content-Type header, else from a
-// <meta charset> / XML declaration in the first 4 KB, else UTF-8.
-function sniffCharset(contentType, headBytesLatin1) {
+// Bytes -> string. Declarations, in the HTML order of precedence: the
+// Content-Type header, then a <meta charset> / XML declaration in the first
+// 4 KB, else UTF-8. See decodeBytes for what happens when they are wrong.
+function declaredCharsets(contentType, headBytesLatin1) {
   const m = /charset\s*=\s*["']?([\w-]+)/i.exec(contentType || '');
-  if (m) return m[1].toLowerCase();
   const h = headBytesLatin1 || '';
   const meta = /<meta[^>]+charset\s*=\s*["']?([\w-]+)/i.exec(h) || /<\?xml[^>]+encoding\s*=\s*["']([\w-]+)/i.exec(h);
-  return meta ? meta[1].toLowerCase() : 'utf-8';
+  const norm = (x) => { const l = x.toLowerCase(); return CHARSET_ALIASES[l] || l; };
+  return { header: m ? norm(m[1]) : null, meta: meta ? norm(meta[1]) : null };
+}
+
+function sniffCharset(contentType, headBytesLatin1) {
+  const d = declaredCharsets(contentType, headBytesLatin1);
+  return d.header || d.meta || 'utf-8';
 }
 
 // Single-byte code pages decoded without ICU: the Node build in n8n's runner image
@@ -59,19 +65,81 @@ function decodeSingleByte(buf, table) {
   return s;
 }
 
-function decodeBytes(buf, contentType) {
-  const head = Buffer.from(buf.subarray(0, 4096)).toString('latin1');
-  let label = sniffCharset(contentType, head);
-  label = CHARSET_ALIASES[label] || label;
-  // WHATWG treats iso-8859-1 as windows-1252; the table is used whatever ICU is present,
-  // so results do not depend on how Node was built.
-  if (SINGLE_BYTE[label]) return { text: decodeSingleByte(buf, SINGLE_BYTE[label]), charset: label };
-  if (label === 'utf-8') return { text: new TextDecoder('utf-8').decode(buf), charset: label };
+// Length of the valid UTF-8 sequence starting at i (RFC 3629: no overlong
+// forms, no surrogates, nothing above U+10FFFF), or 0 if it is not valid.
+function utf8SeqLen(b, i) {
+  const c = b[i];
+  if (c < 0x80) return 1;
+  const cont = (k, lo = 0x80, hi = 0xbf) => i + k < b.length && b[i + k] >= lo && b[i + k] <= hi;
+  if (c >= 0xc2 && c <= 0xdf) return cont(1) ? 2 : 0;
+  if (c === 0xe0) return cont(1, 0xa0) && cont(2) ? 3 : 0;
+  if ((c >= 0xe1 && c <= 0xec) || c === 0xee || c === 0xef) return cont(1) && cont(2) ? 3 : 0;
+  if (c === 0xed) return cont(1, 0x80, 0x9f) && cont(2) ? 3 : 0;
+  if (c === 0xf0) return cont(1, 0x90) && cont(2) && cont(3) ? 4 : 0;
+  if (c >= 0xf1 && c <= 0xf3) return cont(1) && cont(2) && cont(3) ? 4 : 0;
+  if (c === 0xf4) return cont(1, 0x80, 0x8f) && cont(2) && cont(3) ? 4 : 0;
+  return 0;
+}
+
+// Valid multi-byte sequences and invalid bytes in a buffer.
+function utf8Scan(b) {
+  let multibyte = 0, invalid = 0;
+  for (let i = 0; i < b.length;) {
+    const n = utf8SeqLen(b, i);
+    if (n === 0) { invalid++; i++; } else { if (n > 1) multibyte++; i += n; }
+  }
+  return { multibyte, invalid };
+}
+
+// UTF-8 where valid; each invalid byte read as windows-1252. For pages whose
+// template was saved in Latin-1 while the content is UTF-8 (F-032).
+function decodeUtf8Mixed(b) {
+  const parts = [];
+  let start = 0;
+  const flush = (end) => { if (end > start) parts.push(new TextDecoder('utf-8').decode(b.subarray(start, end))); };
+  for (let i = 0; i < b.length;) {
+    const n = utf8SeqLen(b, i);
+    if (n === 0) { flush(i); parts.push(SINGLE_BYTE['windows-1252'][b[i] - 128]); i++; start = i; } else i += n;
+  }
+  flush(b.length);
+  return parts.join('');
+}
+
+function decodeWith(buf, label) {
+  if (SINGLE_BYTE[label]) return decodeSingleByte(buf, SINGLE_BYTE[label]);
+  if (label === 'utf-8') return new TextDecoder('utf-8').decode(buf);
   try {
-    return { text: new TextDecoder(label).decode(buf), charset: label };
+    return new TextDecoder(label).decode(buf);
   } catch (e) {
     throw new Error(`unsupported charset ${label}`);   // never guess: a wrong decoder garbles the text silently
   }
+}
+
+// Returns {text, charset, source, invalid_bytes}. HTML gives the header
+// precedence over <meta>; we follow that except when the chosen charset is
+// UTF-8 and the bytes are not valid UTF-8 (DECISIONS D-048, FAILURES F-032):
+//  1. another declaration names a different charset -> use it
+//     (a server default "charset=utf-8" over a windows-1256 page);
+//  2. otherwise, if valid multi-byte sequences outnumber invalid bytes, the
+//     text is UTF-8 with stray Latin-1 bytes -> decode them as windows-1252;
+//  3. otherwise fail: the real charset is unknown.
+function decodeBytes(buf, contentType) {
+  const head = Buffer.from(buf.subarray(0, 4096)).toString('latin1');
+  const d = declaredCharsets(contentType, head);
+  const label = d.header || d.meta || 'utf-8';
+  const source = d.header ? 'header' : d.meta ? 'meta' : 'default';
+  if (label !== 'utf-8') return { text: decodeWith(buf, label), charset: label, source, invalid_bytes: 0 };
+  const scan = utf8Scan(buf);
+  if (scan.invalid === 0) return { text: decodeWith(buf, 'utf-8'), charset: 'utf-8', source, invalid_bytes: 0 };
+  const other = [d.header, d.meta].find((x) => x && x !== 'utf-8');
+  if (other) {
+    return { text: decodeWith(buf, other), charset: other, source: d.meta === other ? 'meta' : 'header',
+             invalid_bytes: scan.invalid, note: `declared utf-8 (${source}) but ${scan.invalid} bytes are not UTF-8` };
+  }
+  if (scan.multibyte >= scan.invalid) {
+    return { text: decodeUtf8Mixed(buf), charset: 'utf-8+windows-1252', source, invalid_bytes: scan.invalid };
+  }
+  throw new Error(`decoding_failed utf-8 (${source}): ${scan.invalid} invalid bytes, ${scan.multibyte} valid multi-byte sequences, no other charset declared`);
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +339,6 @@ function sentenceStarts(text, start = 0, end = text.length) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { normalizeText, sniffCharset, decodeBytes, decodeEntities, extractElement, htmlToText,
+  module.exports = { normalizeText, sniffCharset, declaredCharsets, utf8Scan, decodeUtf8Mixed, decodeBytes, decodeEntities, extractElement, htmlToText,
     pdfPagesToText, sentenceStarts, cutBetween };
 }

@@ -567,12 +567,17 @@ def kb_ingest_source():
     pg_node(wf, "Store chunks", "select kb.store_chunks($1::uuid, $2::jsonb) as ids",
             "={{ [ $json.doc.document_id, JSON.stringify($json.chunks) ] }}", [3300, -200], on_error=None)
     code_node(wf, "Embed batches", "kb_src_embed_batches.js", [3520, -200])
-    http_node(wf, "Embed", "POST", "={{ $json.url }}", [3740, -200], body="={{ JSON.stringify($json.body) }}",
+    # One embedding request at a time (F-033): the HTTP Request node starts all its
+    # items' requests at once, so a long document queued every batch on TEI's CPU
+    # and the last ones hit the timeout. The loop sends them one after the other;
+    # the timeout then applies to one batch.
+    wf.node("Embed loop", "n8n-nodes-base.splitInBatches", 3, {"batchSize": 1, "options": {}}, [3740, -200])
+    http_node(wf, "Embed", "POST", "={{ $json.url }}", [3960, -300], body="={{ JSON.stringify($json.body) }}",
               fmt="text", timeout="={{ Number($('Cleaned').first().json.cfg.embed_timeout_ms || 600000) }}")
-    code_node(wf, "Vectors", "kb_src_vectors.js", [3960, -200])
+    code_node(wf, "Vectors", "kb_src_vectors.js", [4180, -100])
     pg_node(wf, "Store embeddings", "select $1::text as model, kb.store_embeddings($1, $2::jsonb) as n",
-            "={{ [ $json.model, $json.rows ] }}", [4180, -200], on_error=None)
-    code_node(wf, "Result", "kb_src_result.js", [4400, -200], subst={"__MODE__": "done"})
+            "={{ [ $json.model, $json.rows ] }}", [4400, -100], on_error=None)
+    code_node(wf, "Result", "kb_src_result.js", [4620, -100], subst={"__MODE__": "done"})
 
     wf.link("Start", "Robots URL")
     wf.link("Robots URL", "Fetch robots.txt")
@@ -594,8 +599,10 @@ def kb_ingest_source():
     wf.link("Tokenize", "Chunk")
     wf.link("Chunk", "Store chunks")
     wf.link("Store chunks", "Embed batches")
-    wf.link("Embed batches", "Embed")
-    wf.link("Embed", "Vectors")
+    wf.link("Embed batches", "Embed loop")
+    wf.link("Embed loop", "Vectors", 0)       # done: every answer, in request order
+    wf.link("Embed loop", "Embed", 1)         # loop: one request
+    wf.link("Embed", "Embed loop")
     wf.link("Vectors", "Store embeddings")
     wf.link("Store embeddings", "Result")
     return wf

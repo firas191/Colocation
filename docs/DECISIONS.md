@@ -196,6 +196,16 @@ The first complete run on the owner's PC (T-21) skipped four sources at the robo
 - `tn-web6-droits-locataire` is removed (the page answers 404; it is marked `removed`, not deleted).
 - Africa-laws.org (another copy of the official COC) was considered and dropped: its robots.txt disallows fetching.
 
+Second run (T-23): the robots.txt reasons are now recorded. legislation.tn (`tn-coc-fr`, `tn-coc-ar`) answers its robots.txt with HTTP 503; inpdp.tn (`tn-lo-2004-63-ar`, `tn-inpdp-procedures`) did not answer at all (network error, reported as status 0). RFC 9309 section 2.3.1.4 treats a server error or an unreachable robots.txt as "complete disallow", so these four stay skipped; the job will retry them on every run. The replacements above cover them.
+
+### D-048 Charset when the declaration is wrong
+
+HTML gives the Content-Type header precedence over `<meta charset>`. Two real cases broke that (F-032): a server default `charset=utf-8` over a windows-1256 page, and a UTF-8 page whose template contains a few Latin-1 bytes. Rule, applied only when the chosen charset is UTF-8 and the bytes are not valid UTF-8 (RFC 3629): use another declared charset if there is one; else, if valid multi-byte UTF-8 sequences outnumber the invalid bytes, keep UTF-8 and read each invalid byte as windows-1252; else fail with `decoding_failed`. Detection libraries (chardet and similar) were not used: they guess, and a wrong guess garbles text silently, while every case here has a declaration to check. The chosen charset, its source (header, meta, default), the number of invalid bytes and a note are stored in the document metadata, and a page whose extracted text still has more than 0.1% replacement characters fails.
+
+### D-049 Embedding requests are sent one at a time
+
+The HTTP Request node sends all its items' requests concurrently (F-033). For a long document that put every batch on TEI's CPU at once, so the per-request timeout measured the whole document, not one batch. The node now runs inside a loop with batch size 1. TEI on the CPU already processed the concurrent requests from one queue, so total time should change little; this is expected, not measured (the next ingestion records it). For Ollama on the GPU some overlap is lost; it is the fast model, so this was accepted rather than adding a second loop per model. Tokenization requests (cheap; 12 for the largest document, 353,919 characters in 1,000-character pieces, 32 per request) and the evaluation's query embeddings (a few batches) stay concurrent.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** `app.listings` has no rent period, but P3's schema and GB practice include weekly rents. Comparing a weekly rent with a monthly budget gives wrong results. Phase 3 adds `rent_period` and a monthly-equivalent column used by `search_listings`.
