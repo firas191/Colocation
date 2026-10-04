@@ -1,0 +1,187 @@
+## paced (default interval), n=70 warmup=5
+75 requests, one every 1.10 s (limit 60/min): about 1.4 min
+{
+ "date": "2026-10-03T20:46:40+00:00",
+ "requests": 70,
+ "ok": 70,
+ "warmup": 5,
+ "published_listings": 3,
+ "interval_s": 1.1,
+ "load": "sequential, one request at a time, paced under the rate limit",
+ "client_ms": {
+  "p50": 522.4,
+  "p95": 588.2,
+  "max": 728.6
+ },
+ "server_ms": {
+  "p50": 479,
+  "p95": 547,
+  "max": 646
+ },
+ "embed_ms_p95": 323,
+ "db_ms": {
+  "p50": 1.04,
+  "p95": 2.14
+ },
+ "ai_executions": {
+  "n": 70,
+  "p50": 479,
+  "p95": 547,
+  "max": 646
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 46,
+   "server_p95": 548
+  },
+  "filters": {
+   "n": 24,
+   "server_p95": 298
+  }
+ },
+ "empty_results": 70,
+ "errors": []
+}
+wrote reports/eval/search-bench-20261003-204640.json
+exit=0
+
+## no pacing (--interval 0), n=70 warmup=5 — reproduces the PC failure
+75 requests, one every 0.00 s (limit 60/min): about 0.0 min
+{
+ "date": "2026-10-03T20:46:57+00:00",
+ "requests": 70,
+ "ok": 18,
+ "warmup": 5,
+ "published_listings": 3,
+ "interval_s": 0.0,
+ "load": "sequential, one request at a time, paced under the rate limit",
+ "client_ms": {
+  "p50": 343.9,
+  "p95": 558.0,
+  "max": 558.0
+ },
+ "server_ms": {
+  "p50": 296,
+  "p95": 507,
+  "max": 507
+ },
+ "embed_ms_p95": 321,
+ "db_ms": {
+  "p50": 1.15,
+  "p95": 2.42
+ },
+ "ai_executions": {
+  "n": 18,
+  "p50": 296,
+  "p95": 507,
+  "max": 507
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 8,
+   "server_p95": 507
+  },
+  "filters": {
+   "n": 10,
+   "server_p95": 375
+  }
+ },
+ "empty_results": 18,
+ "errors": [
+  {
+   "status": 429,
+   "client_ms": 158.9,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 146.5,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2",
+    "max_rent": "600000",
+    "near": "INSAT",
+    "radius_m": "2000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 145.4,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT",
+    "max_rent": "550000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 149.5,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "80000",
+    "near": "Paris 13e",
+    "radius_m": "2000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 188.2,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement \u00e0 partager La Marsa",
+    "max_rent": "320000"
+   },
+   "error": "RATE_LIMITED"
+  }
+ ]
+}
+wrote reports/eval/search-bench-20261003-204657.json
+exit=1

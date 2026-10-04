@@ -1,0 +1,40 @@
+$ python3 -m pytest -v tests/unit
+# 2026-10-03T21:45:09Z
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/flatshare
+plugins: anyio-4.13.0
+collecting ... collected 28 items
+
+tests/unit/test_datasets.py::test_manifest_and_queries_are_consistent PASSED [  3%]
+tests/unit/test_datasets.py::test_dataset_file_is_what_its_builder_writes PASSED [  7%]
+tests/unit/test_datasets.py::test_v2_extends_v1 PASSED                   [ 10%]
+tests/unit/test_openapi.py::test_openapi_is_valid PASSED                 [ 14%]
+tests/unit/test_openapi.py::test_every_error_code_has_a_status PASSED    [ 17%]
+tests/unit/test_prompt_report.py::test_report_renders_tables_and_paired_differences PASSED [ 21%]
+tests/unit/test_prompts.py::test_prompt_files_pass_the_registry_check PASSED [ 25%]
+tests/unit/test_prompts.py::test_few_shot_examples_are_not_golden_items PASSED [ 28%]
+tests/unit/test_prompts.py::test_gold_labels_validate_against_the_output_schemas PASSED [ 32%]
+tests/unit/test_prompts.py::test_golden_set_coverage PASSED              [ 35%]
+tests/unit/test_prompts.py::test_relabel_sample_is_blind_and_complete PASSED [ 39%]
+tests/unit/test_prompts.py::test_schema_lite_agrees_with_jsonschema PASSED [ 42%]
+tests/unit/test_prompts.py::test_p2_v3_has_its_own_schema_with_main_unit_amounts PASSED [ 46%]
+tests/unit/test_report.py::test_language_groups PASSED                   [ 50%]
+tests/unit/test_report.py::test_bootstrap_is_paired_and_reproducible PASSED [ 53%]
+tests/unit/test_report.py::test_render_smoke PASSED                      [ 57%]
+tests/unit/test_report.py::test_dump_round_trip_renders_the_same_report PASSED [ 60%]
+tests/unit/test_scripts.py::test_powershell_scripts_are_ascii PASSED     [ 64%]
+tests/unit/test_secret_scan.py::test_script_regex_matches_this_test PASSED [ 67%]
+tests/unit/test_secret_scan.py::test_every_env_example_variable_is_classified PASSED [ 71%]
+tests/unit/test_secret_scan.py::test_config_values_in_repo_are_not_secrets PASSED [ 75%]
+tests/unit/test_secret_scan.py::test_secret_in_export_fails PASSED       [ 78%]
+tests/unit/test_secret_scan.py::test_last_line_without_newline_is_read PASSED [ 82%]
+tests/unit/test_seed_listings.py::test_deterministic_and_sized PASSED    [ 85%]
+tests/unit/test_seed_listings.py::test_money_and_places PASSED           [ 89%]
+tests/unit/test_seed_listings.py::test_texts_follow_the_language PASSED  [ 92%]
+tests/unit/test_signing_vectors.py::test_vectors PASSED                  [ 96%]
+tests/unit/test_signing_vectors.py::test_query_encoding_matches_encodeURIComponent PASSED [100%]
+
+============================== 28 passed in 1.63s ==============================
+# exit=0

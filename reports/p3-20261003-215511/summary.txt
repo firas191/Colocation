@@ -1,0 +1,3 @@
+PASS  stack is up (n8n healthy, migration 0008 applied)  (exit 0, 0.3 s)
+PASS  unload the LLMs (search uses only the embedding model)  (exit 0, 0.7 s)
+PASS  search latency: 200 requests through the proxy  (exit 0, 237.1 s)

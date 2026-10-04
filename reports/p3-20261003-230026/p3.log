@@ -1,0 +1,81 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T23:00:28.0820323+01:00
+healthy
+0009
+exit=0 seconds=0.3
+
+===== prompts: store new versions (prompts\*\v*.md) =====
+command: docker @reg sync
+started: 2026-10-03T23:00:28.4120915+01:00
+ Container flatshare-tests-run-6c9928dd3f96 Creating 
+ Container flatshare-tests-run-6c9928dd3f96 Created 
+prompt registry up to date
+exit=0 seconds=1.2
+
+===== evaluate P1_router versions 3 on qwen3.5:4b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T23:00:29.6533646+01:00
+ Container flatshare-tests-run-ec435f4d27cb Creating 
+ Container flatshare-tests-run-ec435f4d27cb Created 
+/v1/admin/eval/prompt-runs: job 2bdc974b-bf62-4adf-a026-81d6f1bde440 accepted
+      0.2s  job running
+   1371.7s  job succeeded
+   1371.7s  1 evaluation runs finished; last: run P1_router v3 / qwen3.5:4b: succeeded
+job 2bdc974b-bf62-4adf-a026-81d6f1bde440: succeeded 
+  items 160  model qwen3.5:4b  run_id 88ce797b-e2ee-4dcf-b172-8eb148d186f0  version 3  json_valid 1  latency_p95_ms 8650  intent_accuracy 0.925
+exit=0 seconds=1374.4
+
+===== evaluate P2_profile_extractor versions 3 on qwen3.5:4b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T23:23:24.0940734+01:00
+ Container flatshare-tests-run-b6f9b9e22466 Creating 
+ Container flatshare-tests-run-b6f9b9e22466 Created 
+/v1/admin/eval/prompt-runs: job bd45b378-3498-4d90-bb4e-1cb9a224b8f8 accepted
+      0.2s  job running
+   2490.6s  job succeeded
+   2490.6s  1 evaluation runs finished; last: run P2_profile_extractor v3 / qwen3.5:4b: succeeded
+job bd45b378-3498-4d90-bb4e-1cb9a224b8f8: succeeded 
+  f1 0.8764  items 110  model qwen3.5:4b  run_id 5aa623d2-6058-4669-aed2-dce90fb4c0bc  version 3  json_valid 1  latency_p95_ms 31047  unit_error_items 0
+exit=0 seconds=2493.4
+
+===== Ollama memory placement after qwen3.5:4b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-04T00:04:57.5086304+01:00
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
+
+===== prompts: active versions from prompts\*\prompt.json =====
+command: docker @reg sync
+started: 2026-10-04T00:04:57.8379238+01:00
+ Container flatshare-tests-run-9d854a087548 Creating 
+ Container flatshare-tests-run-9d854a087548 Created 
+prompt registry up to date
+exit=0 seconds=2
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-04T00:04:59.8522837+01:00
+ Container flatshare-tests-run-7dfb78c5845c Creating 
+ Container flatshare-tests-run-7dfb78c5845c Created 
+Traceback (most recent call last):
+  File "/flatshare/scripts/p3.py", line 410, in <module>
+    main()
+  File "/flatshare/scripts/p3.py", line 405, in main
+    {"geo-fetch": geo_fetch, "geo-load": geo_load, "geo-coverage": geo_coverage, "seed": seed, "seed-listings": seed_listings_cmd,
+  File "/flatshare/scripts/p3.py", line 275, in report
+    Path(args.out).write_text(prompt_report.render(data), encoding="utf-8")
+  File "/usr/local/lib/python3.12/pathlib.py", line 1047, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/flatshare/docs/PROMPT_EVAL.md'
+System.Management.Automation.RemoteException
+exit=1 seconds=3.7

@@ -12,5 +12,19 @@
     "version": 2,
     "file": "tn_retrieval_v2.jsonl",
     "notes": "v1 plus pooled judgments: every passage in the top 10 of any of the 12 runs of job 92e8c6cd judged (1,060 merged regions), relevant ones added, shared within need groups; 304 gold spans (89 in v1). See eval/datasets/README.md and D-052."
+  },
+  {
+    "name": "p1_router",
+    "kind": "routing",
+    "version": 1,
+    "file": "p1_router_v1.jsonl",
+    "notes": "160 synthetic messages for P1 (spec 9.5): fr 34, en 24, ar 14, Tunisian in Arabic script 16, Tunisian arabizi 22, code-switched 22, de 10, es 9, it 9; 18 injection, 12 mixed-intent, 10 ambiguous. Guide: eval/datasets/guides/p1_router.md. Model-written and model-labelled (D-055)."
+  },
+  {
+    "name": "p2_profile",
+    "kind": "extraction",
+    "version": 1,
+    "file": "p2_profile_v1.jsonl",
+    "notes": "110 synthetic search requests for P2 (spec 9.5): TN 55, FR 30, GB 25; 52 unit traps, 21 without budget, 22 protected preferences, 49 relative dates. Guide: eval/datasets/guides/p2_profile.md. Model-written and model-labelled (D-055)."
   }
 ]

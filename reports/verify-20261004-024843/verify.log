@@ -1,0 +1,65 @@
+verify.ps1 run 20261004-024843 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-10-04T02:48:43.3722874+01:00
+local commits found: history left as it is
+adf454d knowledge base
+9b4ff3b fix(kb): HTML source line breaks are spaces (F-039)
+b45249b feat(eval): gold set v1 (48 TN questions); fix(kb): comments in charset count, quoted ">" in tags, script check
+f2a47e1 fix(kb): tests independent of tokenizer and global corpus; no-network run fails the job
+95cb382 fix(kb): charset when UTF-8 is declared wrongly, embedding requests one at a time
+exit=0 seconds=0.7
+
+===== Docker engine is running =====
+command: docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}"
+started: 2026-10-04T02:48:44.1295524+01:00
+server 29.7.2 os Docker Desktop
+exit=0 seconds=0.2
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-10-04T02:48:44.3635662+01:00
+GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design (UUID: GPU-ee1b4c30-d658-6a46-7bfb-e81ac22f9265)
+exit=0 seconds=1.7
+gpu_override=True
+
+===== docker and compose versions =====
+command: docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version
+started: 2026-10-04T02:48:46.0981684+01:00
+client 29.7.2 server 29.7.2
+Docker Compose version v5.4.0
+exit=0 seconds=0.2
+
+===== free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed) =====
+command: Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | ForEach-Object { "{0}: {1:N1} GB free" -f $_.Name, ($_.Free / 1GB) }
+started: 2026-10-04T02:48:46.2920463+01:00
+C: 5.3 GB free
+D: 115.5 GB free
+E: 3.9 GB free
+exit=0 seconds=0.4
+
+===== compose config is valid =====
+command: docker compose @files config -q
+started: 2026-10-04T02:48:46.7109898+01:00
+exit=0 seconds=0.2
+
+===== every pinned image tag exists in its registry =====
+command: $bad = 0
+  foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli",
+                     "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
+    docker manifest inspect $img *> $null
+    if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
+  }
+  $global:LASTEXITCODE = $bad
+started: 2026-10-04T02:48:46.9188001+01:00

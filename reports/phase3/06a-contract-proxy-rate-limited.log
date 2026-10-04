@@ -1,0 +1,273 @@
+$ . /opt/lab/test-env.sh && export FS_API_BASE=http://127.0.0.1:8080 FS_VIA_PROXY=1 FS_FIXTURES_BASE=http://127.0.0.1:8081 && cd tests/contract && python3 -m pytest -v -rs -p no:cacheprovider
+# 2026-10-02T21:34:26Z
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+rootdir: /home/claude/flatshare/tests/contract
+plugins: anyio-4.13.0
+collecting ... collected 82 items
+
+test_gateway_auth.py::test_signed_request_accepted PASSED                [  1%]
+test_gateway_auth.py::test_unsigned_request_rejected PASSED              [  2%]
+test_gateway_auth.py::test_missing_single_header_rejected PASSED         [  3%]
+test_gateway_auth.py::test_wrong_signature_rejected PASSED               [  4%]
+test_gateway_auth.py::test_signature_from_other_secret_rejected PASSED   [  6%]
+test_gateway_auth.py::test_unknown_key_rejected PASSED                   [  7%]
+test_gateway_auth.py::test_old_timestamp_rejected_with_server_time PASSED [  8%]
+test_gateway_auth.py::test_future_timestamp_rejected PASSED              [  9%]
+test_gateway_auth.py::test_replayed_request_rejected PASSED              [ 10%]
+test_gateway_auth.py::test_tampered_query_rejected PASSED                [ 12%]
+test_gateway_auth.py::test_repeated_and_encoded_query_params_accepted PASSED [ 13%]
+test_gateway_auth.py::test_nested_query_rejected PASSED                  [ 14%]
+test_gateway_auth.py::test_tampered_body_rejected PASSED                 [ 15%]
+test_gateway_auth.py::test_body_whitespace_is_signed_bytes PASSED        [ 17%]
+test_gateway_auth.py::test_swapped_user_id_rejected PASSED               [ 18%]
+test_gateway_auth.py::test_swapped_idempotency_key_rejected PASSED       [ 19%]
+test_gateway_auth.py::test_signature_for_other_route_rejected PASSED     [ 20%]
+test_gateway_auth.py::test_rate_limit_per_ip PASSED                      [ 21%]
+test_gateway_auth.py::test_rate_limit_counts_bad_signatures PASSED       [ 23%]
+test_health_and_failures.py::test_health_all_up PASSED                   [ 24%]
+test_health_and_failures.py::test_health_reports_missing_embedding_model PASSED [ 25%]
+test_health_and_failures.py::test_malformed_json_body PASSED             [ 26%]
+test_health_and_failures.py::test_empty_body_on_post PASSED              [ 28%]
+test_health_and_failures.py::test_unexpected_error_recorded_by_error_handler_direct SKIPPED [ 29%]
+test_health_and_failures.py::test_unexpected_error_enveloped_by_proxy PASSED [ 30%]
+test_health_and_failures.py::test_unknown_route_enveloped_by_proxy PASSED [ 31%]
+test_health_and_failures.py::test_n8n_internals_not_reachable_through_proxy PASSED [ 32%]
+test_health_and_failures.py::test_oversized_body_rejected_by_proxy PASSED [ 34%]
+test_kb.py::test_ingest_requires_admin_role PASSED                       [ 35%]
+test_kb.py::test_ingest_validation PASSED                                [ 36%]
+test_kb.py::test_ingest_outcomes_per_source PASSED                       [ 37%]
+test_kb.py::test_robots_rules_respected PASSED                           [ 39%]
+test_kb.py::test_documents_chunks_and_embeddings_stored PASSED           [ 40%]
+test_kb.py::test_reingest_unchanged_is_skipped PASSED                    [ 41%]
+test_kb.py::test_force_creates_new_version_and_search_sees_only_current PASSED [ 42%]
+test_kb.py::test_no_network_fails_the_job PASSED                         [ 43%]
+test_kb.py::test_retried_request_returns_the_same_job PASSED             [ 45%]
+test_kb.py::test_parameterised_routes_reach_their_workflows PASSED       [ 46%]
+test_kb.py::test_job_status_visibility PASSED                            [ 47%]
+test_kb.py::test_eval_run_end_to_end PASSED                              [ 48%]
+test_kb.py::test_eval_with_unresolvable_gold_fails_the_job PASSED        [ 50%]
+test_kb.py::test_eval_validation PASSED                                  [ 51%]
+test_profile_search.py::test_listings_embedded PASSED                    [ 52%]
+test_profile_search.py::test_search_needs_user_and_consent PASSED        [ 53%]
+test_profile_search.py::test_search_validation PASSED                    [ 54%]
+test_profile_search.py::test_search_filters_and_public_fields PASSED     [ 56%]
+test_profile_search.py::test_search_text_is_hybrid PASSED                [ 57%]
+test_profile_search.py::test_search_near_a_place PASSED                  [ 58%]
+test_profile_search.py::test_search_budget_in_another_currency PASSED    [ 59%]
+test_profile_search.py::test_put_profile_validation PASSED               [ 60%]
+test_profile_search.py::test_put_profile_and_search_with_it PASSED       [ 62%]
+test_profile_search.py::test_extract_profile_guardrails PASSED           [ 63%]
+test_profile_search.py::test_extract_and_save PASSED                     [ 64%]
+test_profile_search.py::test_extract_retry_and_failures PASSED           [ 65%]
+test_profile_search.py::test_llm_request_shape PASSED                    [ 67%]
+test_profile_search.py::test_assistant_routes_a_search PASSED            [ 68%]
+test_profile_search.py::test_assistant_other_routes PASSED               [ 69%]
+test_profile_search.py::test_prompt_eval_validation PASSED               [ 70%]
+test_profile_search.py::test_prompt_eval_end_to_end PASSED               [ 71%]
+test_profile_search.py::test_prompt_eval_bad_requests_fail_the_job PASSED [ 73%]
+test_profile_search.py::test_fx_refresh_job_finishes PASSED              [ 74%]
+test_users_sync.py::test_create_then_update PASSED                       [ 75%]
+test_users_sync.py::test_consent_status_reported PASSED                  [ 76%]
+test_users_sync.py::test_idempotent_replay_returns_stored_response PASSED [ 78%]
+test_users_sync.py::test_same_key_different_body_conflicts PASSED        [ 79%]
+test_users_sync.py::test_concurrent_duplicates_create_one_user PASSED    [ 80%]
+test_users_sync.py::test_missing_idempotency_key PASSED                  [ 81%]
+test_users_sync.py::test_bad_idempotency_key PASSED                      [ 82%]
+test_users_sync.py::test_validation_errors_listed PASSED                 [ 84%]
+test_users_sync.py::test_validation_failure_is_idempotent_too PASSED     [ 85%]
+test_users_sync.py::test_wrong_content_type PASSED                       [ 86%]
+test_users_sync.py::test_json_array_body FAILED                          [ 87%]
+test_users_sync.py::test_email_taken_by_other_account FAILED             [ 89%]
+test_users_sync.py::test_unknown_jurisdiction FAILED                     [ 90%]
+test_users_sync.py::test_sql_injection_strings_stored_literally FAILED   [ 91%]
+test_users_sync.py::test_unicode_and_rtl_display_name FAILED             [ 92%]
+test_users_sync.py::test_unknown_and_malformed_user_header FAILED        [ 93%]
+test_users_sync.py::test_erased_user_is_refused FAILED                   [ 95%]
+test_health_and_failures.py::test_health_when_dependency_down[OLLAMA-ollama] FAILED [ 96%]
+test_health_and_failures.py::test_health_when_dependency_down[STORAGE-object_storage] PASSED [ 97%]
+test_health_and_failures.py::test_database_server_down PASSED            [ 98%]
+test_health_and_failures.py::test_app_database_unreachable_gives_503_envelope PASSED [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_json_array_body _____________________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3f9da0>
+
+    def test_json_array_body(client, idem):
+        url, h, b = client.build("POST", "/v1/users/sync", raw_body=b'[{"external_auth_id":"x"}]', idem=idem())
+>       assert_error(client.send("POST", url, h, b), 422, "VALIDATION_FAILED")
+
+test_users_sync.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 422, code = 'VALIDATION_FAILED'
+
+    def assert_error(r, status, code):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"6d837ef6-4265-4681-a047-d58dbc5389bf","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 422
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:94: AssertionError
+______________________ test_email_taken_by_other_account _______________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3fb920>
+
+    def test_email_taken_by_other_account(client, idem):
+        email = f"{uuid.uuid4().hex[:8]}@example.com"
+>       assert_ok(client.call("POST", "/v1/users/sync", body={"external_auth_id": ext(), "email": email}, idem=idem()), 201, "UserSyncResponse")
+
+test_users_sync.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 201
+schema = 'UserSyncResponse'
+
+    def assert_ok(r, status=200, schema=None):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"6473e7ee-d796-4ec4-b7b7-e7a2b54130c5","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 201
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:107: AssertionError
+__________________________ test_unknown_jurisdiction ___________________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3fbb00>
+
+    def test_unknown_jurisdiction(client, idem):
+>       j = assert_error(client.call("POST", "/v1/users/sync", body={"external_auth_id": ext(), "jurisdiction_code": "ZZ"},
+                                     idem=idem()), 422, "VALIDATION_FAILED")
+
+test_users_sync.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 422, code = 'VALIDATION_FAILED'
+
+    def assert_error(r, status, code):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"f2528b26-5cde-4e88-a584-2a2570724299","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 422
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:94: AssertionError
+_________________ test_sql_injection_strings_stored_literally __________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3f89a0>
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 user=n8n_worker database=flatshare) at 0x7fd71b77cc50>
+
+    def test_sql_injection_strings_stored_literally(client, idem, db):
+        evil = "Robert'); drop table app.users; --"
+>       d = assert_ok(client.call("POST", "/v1/users/sync", body={"external_auth_id": ext(), "display_name": evil}, idem=idem()), 201, "UserSyncResponse")["data"]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_users_sync.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 201
+schema = 'UserSyncResponse'
+
+    def assert_ok(r, status=200, schema=None):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"a7144076-d330-45b5-ad9d-fe3fffd2de15","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 201
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:107: AssertionError
+______________________ test_unicode_and_rtl_display_name _______________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3fbc40>
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 user=n8n_worker database=flatshare) at 0x7fd71b753150>
+
+    def test_unicode_and_rtl_display_name(client, idem, db):
+        name = "فراس بن خليفة"
+>       d = assert_ok(client.call("POST", "/v1/users/sync", body={"external_auth_id": ext(), "display_name": name}, idem=idem()), 201, "UserSyncResponse")["data"]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_users_sync.py:138: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 201
+schema = 'UserSyncResponse'
+
+    def assert_ok(r, status=200, schema=None):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"6cdda23e-c209-456f-b38e-d9b975f248c6","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 201
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:107: AssertionError
+____________________ test_unknown_and_malformed_user_header ____________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71b3fb920>
+
+    def test_unknown_and_malformed_user_header(client, idem):
+        for uid in ("00000000-0000-0000-0000-0000000000ff", "not-a-uuid"):
+>           assert_error(client.call("POST", "/v1/users/sync", body={"external_auth_id": ext()}, idem=idem(), user_id=uid),
+                         401, "UNAUTHENTICATED")
+
+test_users_sync.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 401, code = 'UNAUTHENTICATED'
+
+    def assert_error(r, status, code):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"d46cdc1b-2576-4286-b001-f8f234c482a5","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 401
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:94: AssertionError
+_________________________ test_erased_user_is_refused __________________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>
+idem = <function idem.<locals>.<lambda> at 0x7fd71af582c0>
+db = <psycopg.Connection [IDLE] (host=127.0.0.1 user=n8n_worker database=flatshare) at 0x7fd71b73e690>
+
+    def test_erased_user_is_refused(client, idem, db):
+        e = ext()
+>       uid = assert_ok(client.call("POST", "/v1/users/sync", body={"external_auth_id": e}, idem=idem()), 201, "UserSyncResponse")["data"]["user_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_users_sync.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+r = <Response [429 Too Many Requests]>, status = 201
+schema = 'UserSyncResponse'
+
+    def assert_ok(r, status=200, schema=None):
+>       assert r.status_code == status, (r.status_code, r.text)
+E       AssertionError: (429, '{"request_id":"1ccfc9b7-78bb-43eb-9cae-088a6762b667","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":17}]}}')
+E       assert 429 == 201
+E        +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+conftest.py:107: AssertionError
+_______________ test_health_when_dependency_down[OLLAMA-ollama] ________________
+
+client = <fsclient.Client object at 0x7fd71bb86b50>, name = 'OLLAMA'
+check = 'ollama'
+
+    @pytest.mark.parametrize("name,check", [("OLLAMA", "ollama"), ("STORAGE", "object_storage")])
+    def test_health_when_dependency_down(client, name, check):
+        stop, start = outage(name)
+        run(stop)
+        try:
+            t = time.time()
+            r = client.call("GET", "/v1/health")
+            elapsed = time.time() - t
+>           assert r.status_code == 503, r.text
+E           AssertionError: {"request_id":"a72216bc-1953-4210-848c-f0886987c6bb","error":{"code":"RATE_LIMITED","message":"Too many requests","details":[{"retry_after_s":16}]}}
+E           assert 429 == 503
+E            +  where 429 = <Response [429 Too Many Requests]>.status_code
+
+test_health_and_failures.py:72: AssertionError
+=========================== short test summary info ============================
+SKIPPED [1] test_health_and_failures.py:160: checks raw n8n behaviour without the proxy
+============== 8 failed, 73 passed, 1 skipped in 98.00s (0:01:37) ==============
+# exit=1

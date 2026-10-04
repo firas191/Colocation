@@ -127,11 +127,13 @@ def exec_wf(wf, name, wid, wname, wait=True, pos=None, on_error=None):
     }, pos, **extra)
 
 
-def pg_node(wf, name, query, replacement, pos=None, on_error="continueErrorOutput", always_output=False):
+def pg_node(wf, name, query, replacement, pos=None, on_error="continueErrorOutput", always_output=False, retries=0):
     params = {"operation": "executeQuery", "query": query, "options": {}}
     if replacement:
         params["options"]["queryReplacement"] = replacement
     extra = {"onError": on_error} if on_error else {}
+    if retries:
+        extra.update(retryOnFail=True, maxTries=retries + 1, waitBetweenTries=5000)
     return wf.node(name, "n8n-nodes-base.postgres", 2.6, params, pos, credentials=PG_CRED, alwaysOutputData=always_output, **extra)
 
 
@@ -376,7 +378,7 @@ EVAL_GET_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011"
 
 CREATE_JOB_SQL = """insert into app.jobs (type, status, input, requested_by, idempotency_key)
 select $4, 'queued', $1::jsonb, $2::uuid, $3
-where exists (select 1 from app.jurisdictions where code = $1::jsonb->>'jurisdiction')
+where $1::jsonb->>'jurisdiction' is null or exists (select 1 from app.jurisdictions where code = $1::jsonb->>'jurisdiction')
 on conflict (idempotency_key) do update set idempotency_key = excluded.idempotency_key
 returning id, type, status, created_at, (xmax = 0) as created"""
 
@@ -674,9 +676,432 @@ def eval_retrieval():
     return wf
 
 
+# ---------- phase 3: prompts, profiles, search ------------------------------------
+LLM_CALL_WF = "fsLlmCall0000001"
+EVALP_WF = "fsEvalPrompts001"
+PROFILE_WF = "fsProfileExtr001"
+MATCH_WF = "fsMatchSearch001"
+EMBED_WF = "fsListingsEmb001"
+FX_WF = "fsFxRefresh00001"
+USER_CONSENTS = ["terms", "privacy"]       # D-062: endpoints that process a person's request text or profile
+
+
+def llm_call():
+    """Sub-workflow: one prompt call to the local model with schema validation and one retry.
+    Input {prompt, version?, model?, vars, meta?}; output see llm_result.js."""
+    wf = WF(LLM_CALL_WF, "wf.llm.call", tags=["agent", "llm"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Load prompt",
+            "select ai.prompt_for($1, nullif($2, '')::int) as prompt_row,"
+            " (select jsonb_object_agg(key, value) from app.settings where key like 'llm.%' or key = 'ollama.base_url') as cfg",
+            "={{ [ $json.prompt, $json.version === null || $json.version === undefined ? '' : String($json.version) ] }}",
+            [220, 0], on_error=None)
+    code_node(wf, "Build request", "llm_build.js", [440, 0])
+    if_node(wf, "Call model?", "={{ !$json.skip }}", [660, 0])
+    http_node(wf, "Call model", "POST", "={{ $json.url }}", [880, -100], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ $json.timeout_ms }}", on_error="continueRegularOutput")
+    code_node(wf, "Check output", "llm_check.js", [1100, -100], subst={"__ATTEMPT__": "1"})
+    if_node(wf, "Retry?", "={{ $json.retry }}", [1320, -100])
+    http_node(wf, "Call model again", "POST", "={{ $json.url }}", [1540, -200], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ $('Build request').first().json.timeout_ms }}",
+              on_error="continueRegularOutput")
+    code_node(wf, "Check retry", "llm_check.js", [1760, -200], subst={"__ATTEMPT__": "2"})
+    code_node(wf, "Result", "llm_result.js", [1980, 0])
+    wf.link("Start", "Load prompt")
+    wf.link("Load prompt", "Build request")
+    wf.link("Build request", "Call model?")
+    wf.link("Call model?", "Call model", 0)
+    wf.link("Call model?", "Result", 1)
+    wf.link("Call model", "Check output")
+    wf.link("Check output", "Retry?")
+    wf.link("Retry?", "Call model again", 0)
+    wf.link("Retry?", "Result", 1)
+    wf.link("Call model again", "Check retry")
+    wf.link("Check retry", "Result")
+    return wf
+
+
+EVALP_START_SQL = """with j as (
+  update app.jobs set status = 'running', started_at = now(), attempts = attempts + 1
+  where id = $1::uuid and status = 'queued' returning id, input)
+select j.id as job_id, j.input, d.id as dataset_id, d.kind,
+  (select jsonb_agg(jsonb_build_object('id', q.id, 'external_id', q.external_id, 'query', q.query, 'gold', q.gold,
+                                       'tags', to_jsonb(q.tags)) order by q.external_id)
+     from eval.queries q where q.dataset_id = d.id) as queries,
+  (select jsonb_agg(jsonb_build_object('version_id', v.id, 'version', v.version) order by v.version)
+     from ai.prompt_versions v join ai.prompts p on p.id = v.prompt_id
+    where p.name = j.input->>'prompt'
+      and v.version in (select x::int from jsonb_array_elements_text(j.input->'versions') x)) as versions,
+  (select jsonb_object_agg(code, app.extraction_context(code)) from app.jurisdictions) as contexts,
+  (select value #>> '{}' from app.settings where key = 'llm.default_model') as default_model
+from j left join eval.datasets d on d.name = j.input->>'dataset' and d.version = (j.input->>'dataset_version')::int"""
+
+EVALP_LOAD_SQL = """select r.id as run_id, r.config, r.prompt_version_id,
+  (select jsonb_agg(jsonb_build_object('external_id', q.external_id, 'tags', to_jsonb(q.tags), 'query', q.query,
+                                       'labels', q.gold->'labels', 'metrics', x.metrics, 'output', x.output)
+                    order by q.external_id)
+     from eval.results x join eval.queries q on q.id = x.query_id where x.run_id = r.id) as results
+from eval.runs r where r.job_id = $1::uuid order by r.started_at, r.id"""
+
+EVALP_FINISH_SQL = """with s as (
+  update eval.runs r set status = 'succeeded', finished_at = now(), summary = x->'summary'
+  from jsonb_array_elements($1::jsonb) x where r.id = (x->>'run_id')::uuid returning r.id),
+f as (
+  insert into ai.prompt_failures (prompt_version_id, eval_run_id, item_id, category, input, observed_output, expected_output)
+  select (x->>'prompt_version_id')::uuid, (x->>'eval_run_id')::uuid, x->>'item_id', x->>'category', x->>'input',
+         x->>'observed', x->>'expected'
+  from jsonb_array_elements($2::jsonb) x returning 1)
+select (select count(*) from s) as runs, (select count(*) from f) as failures"""
+
+
+def eval_prompts():
+    """Worker: golden-set run of one prompt for given versions and models (spec 9.5 loop steps 1-2)."""
+    wf = WF(EVALP_WF, "wf.eval.prompts", tags=["eval", "worker"], settings={"saveDataSuccessExecution": "none"})
+    E = "continueErrorOutput"
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Start job", EVALP_START_SQL, "={{ [ $json.id ] }}", [220, 0], on_error=None, always_output=True)
+    code_node(wf, "Plan", "evalp_plan.js", [440, 0], on_error=E)
+    pg_node(wf, "Create runs",
+            "insert into eval.runs (dataset_id, config, git_sha, job_id, status, prompt_version_id)"
+            " select $1::uuid, (x->'config') || jsonb_build_object('key', x->>'key'), $2, $3::uuid, 'running', (x->>'prompt_version_id')::uuid"
+            " from jsonb_array_elements($4::jsonb) x returning id, config->>'key' as key",
+            "={{ [ $json.dataset_id, $json.git_sha || '', $json.job_id, JSON.stringify($json.runs) ] }}", [660, 0], on_error=E)
+    code_node(wf, "Expand", "evalp_expand.js", [880, 0], on_error=E)
+    wf.node("Loop items", "n8n-nodes-base.splitInBatches", 3, {"batchSize": 1, "options": {}}, [1100, 0])
+    code_node(wf, "Call input", "evalp_vars.js", [1320, 100], on_error=E)
+    exec_wf(wf, "Call model", LLM_CALL_WF, "wf.llm.call", pos=[1540, 100], on_error=E)
+    code_node(wf, "Score", "evalp_score.js", [1760, 100], on_error=E)
+    pg_node(wf, "Store result",
+            "insert into eval.results (run_id, query_id, retrieved, output, metrics) values ($1::uuid, $2::uuid, '[]'::jsonb, $3::jsonb, $4::jsonb)"
+            " on conflict (run_id, query_id) do update set output = excluded.output, metrics = excluded.metrics returning run_id",
+            "={{ $json.params }}", [1980, 100], on_error=E, retries=2)
+    code_node(wf, "Loop done", "evalp_done.js", [1320, -150])
+    pg_node(wf, "Load results", EVALP_LOAD_SQL, "={{ [ $json.job_id ] }}", [1540, -150], on_error=E)
+    code_node(wf, "Summarize", "evalp_summary.js", [1760, -150], on_error=E)
+    pg_node(wf, "Finish runs", EVALP_FINISH_SQL, "={{ [ JSON.stringify($json.summaries), JSON.stringify($json.failures) ] }}",
+            [1980, -150], on_error=E)
+    wf.node("Job output", "n8n-nodes-base.code", 2, {"mode": "runOnceForAllItems", "language": "javaScript", "jsCode":
+            "// wf.eval.prompts > \"Job output\"\nconst s = $('Summarize').first().json;\nconst f = $input.first().json;\n"
+            "return [{ json: { job_id: s.job_id, status: 'succeeded', error: null, output: { runs: s.brief, failures_recorded: Number(f.failures) } } }];\n"},
+            [2200, -150])
+    code_node(wf, "Job failed", "worker_failed.js", [1760, -400])
+    pg_node(wf, "Finish job", FINISH_JOB_SQL,
+            "={{ [ $json.job_id, $json.status, JSON.stringify($json.output), $json.error ] }}", [2420, -250], on_error=None)
+    wf.link("Start", "Start job")
+    wf.link("Start job", "Plan")
+    wf.link("Plan", "Create runs", 0)
+    wf.link("Create runs", "Expand", 0)
+    wf.link("Expand", "Loop items", 0)
+    wf.link("Loop items", "Loop done", 0)
+    wf.link("Loop items", "Call input", 1)
+    wf.link("Call input", "Call model", 0)
+    wf.link("Call model", "Score", 0)
+    wf.link("Score", "Store result", 0)
+    wf.link("Store result", "Loop items", 0)
+    wf.link("Loop done", "Load results")
+    wf.link("Load results", "Summarize", 0)
+    wf.link("Summarize", "Finish runs", 0)
+    wf.link("Finish runs", "Job output", 0)
+    for n in ("Plan", "Create runs", "Expand", "Call input", "Call model", "Score", "Store result", "Load results", "Summarize", "Finish runs"):
+        wf.link(n, "Job failed", 1)
+    wf.link("Job output", "Finish job")
+    wf.link("Job failed", "Finish job")
+    return wf
+
+
+def profile_extract():
+    """Sub-workflow A2: free text -> checked profile with a geocoded anchor (spec 8.2).
+    Input {text, jurisdiction, today, model?, version?}."""
+    wf = WF(PROFILE_WF, "wf.profile.extract", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", "select app.extraction_context($1) as ctx", "={{ [ $json.jurisdiction || '' ] }}", [220, 0], on_error=None)
+    code_node(wf, "Call input", "profile_vars.js", [440, 0])
+    exec_wf(wf, "Extract", LLM_CALL_WF, "wf.llm.call", pos=[660, 0])
+    code_node(wf, "Check profile", "profile_post.js", [880, 0])
+    pg_node(wf, "Geocode",
+            "select case when $1 <> '' and $2 <> '' then app.geocode($1, $2) end as g",
+            "={{ [ $json.anchor_label || '', $json.geo_jurisdiction || '' ] }}", [1100, 0], on_error=None)
+    code_node(wf, "Result", "profile_result.js", [1320, 0])
+    for a, b in (("Start", "Context"), ("Context", "Call input"), ("Call input", "Extract"), ("Extract", "Check profile"),
+                 ("Check profile", "Geocode"), ("Geocode", "Result")):
+        wf.link(a, b)
+    return wf
+
+
+def match_search():
+    """Sub-workflow A3 (phase 3 part): embed the text query and run app.search_public.
+    Input {jurisdiction, q, max_rent_minor, currency, budget_period, lat, lng, place, radius_m, limit}."""
+    wf = WF(MATCH_WF, "wf.match.search", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Settings", "select (select jsonb_object_agg(key, value #>> '{}') from app.settings"
+            " where key in ('ollama.base_url', 'ollama.embed_model', 'llm.keep_alive')) as cfg", None, [220, 0], on_error=None)
+    code_node(wf, "Plan", "match_plan.js", [440, 0])
+    if_node(wf, "Text query?", "={{ $json.embed }}", [660, 0])
+    http_node(wf, "Embed query", "POST", "={{ $json.url }}", [880, -100], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 30000 }}", on_error="continueRegularOutput")
+    code_node(wf, "Query vector", "match_vector.js", [1100, -100])
+    code_node(wf, "No text", "match_novector.js", [1100, 100])
+    code_node(wf, "Search input", "match_search_input.js", [1320, 0])
+    pg_node(wf, "Search", "select app.search_public($1::jsonb) as r", "={{ $json.params }}", [1540, 0], on_error=None)
+    code_node(wf, "Result", "match_result.js", [1760, 0])
+    wf.link("Start", "Settings")
+    wf.link("Settings", "Plan")
+    wf.link("Plan", "Text query?")
+    wf.link("Text query?", "Embed query", 0)
+    wf.link("Text query?", "No text", 1)
+    wf.link("Embed query", "Query vector")
+    wf.link("Query vector", "Search input")
+    wf.link("No text", "Search input")
+    wf.link("Search input", "Search")
+    wf.link("Search", "Result")
+    return wf
+
+
+def endpoint(wid, name, method, path, hook, route_extra=None):
+    """Common head of a user endpoint: webhook, route, gateway, 'Gateway ok?' (false -> Envelope)."""
+    wf = WF(wid, name, tags=["api", "v1"])
+    webhook(wf, method, path, hook, [0, 0])
+    route = {"method": method, "template": "/" + path, "require_user": True, "idempotent": False,
+             "required_consents": USER_CONSENTS, "roles": []}
+    route.update(route_extra or {})
+    route_node(wf, route, [220, 0])
+    gateway_call(wf, [440, 0])
+    if_node(wf, "Gateway ok?", "={{ $json.ok }}", [660, 0])
+    wf.link("Webhook", "Route")
+    wf.link("Route", "Gateway")
+    wf.link("Gateway", "Gateway ok?")
+    wf.link("Gateway ok?", "Envelope", 1)
+    return wf
+
+
+def api_search():
+    wf = endpoint("fsApiSearch00001", "wf.api.search", "GET", "v1/search", "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0012")
+    code_node(wf, "Validate query", "search_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Profile",
+            "select (select jsonb_build_object('jurisdiction_code', jurisdiction_code, 'budget_max_minor', budget_max_minor,"
+            " 'currency', currency, 'budget_period', budget_period, 'radius_m', search_radius_m,"
+            " 'lat', st_y(anchor_point::geometry), 'lng', st_x(anchor_point::geometry))"
+            " from app.profiles where user_id = app.try_uuid($1) and $2::boolean) as profile",
+            "={{ [ $json.params[0], String($json.params[1]) ] }}", [1320, -200], on_error=None)
+    code_node(wf, "Search input", "search_input.js", [1540, -200])
+    if_node(wf, "Has jurisdiction?", "={{ !$json.no_jurisdiction }}", [1760, -200])
+    exec_wf(wf, "Search", MATCH_WF, "wf.match.search", pos=[1980, -300])
+    code_node(wf, "Build result", "search_result.js", [2200, -300])
+    code_node(wf, "No jurisdiction", "search_nojur.js", [1980, -100])
+    respond_tail(wf, 2420)
+    wf.link("Gateway ok?", "Validate query", 0)
+    wf.link("Validate query", "Valid?")
+    wf.link("Valid?", "Profile", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Profile", "Search input")
+    wf.link("Search input", "Has jurisdiction?")
+    wf.link("Has jurisdiction?", "Search", 0)
+    wf.link("Has jurisdiction?", "No jurisdiction", 1)
+    wf.link("Search", "Build result")
+    wf.link("Build result", "Envelope")
+    wf.link("No jurisdiction", "Envelope")
+    return wf
+
+
+def api_profiles_extract():
+    wf = endpoint("fsApiProfExtr001", "wf.api.profiles_extract", "POST", "v1/profiles/extract",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0013")
+    code_node(wf, "Validate body", "profiles_extract_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    code_node(wf, "Extract input", "profiles_extract_call.js", [1320, -200])
+    exec_wf(wf, "Extract", PROFILE_WF, "wf.profile.extract", pos=[1540, -200])
+    if_node(wf, "Save?", "={{ $('Validate body').first().json.save && $json.ok }}", [1760, -200])
+    code_node(wf, "Save input", "profiles_save_params.js", [1980, -300])
+    pg_node(wf, "Save profile", "select app.save_profile($1::uuid, $2::jsonb) as saved", "={{ $json.params }}",
+            [2200, -300], on_error="continueRegularOutput")
+    code_node(wf, "Build result", "profiles_extract_result.js", [2420, -200])
+    respond_tail(wf, 2640)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Extract input", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Extract input", "Extract")
+    wf.link("Extract", "Save?")
+    wf.link("Save?", "Save input", 0)
+    wf.link("Save?", "Build result", 1)
+    wf.link("Save input", "Save profile")
+    wf.link("Save profile", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_profiles_me():
+    wf = endpoint("fsApiProfMe00001", "wf.api.profiles_me", "PUT", "v1/profiles/me",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0014", {"idempotent": True})
+    code_node(wf, "Validate body", "profiles_me_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Save profile", "select app.save_profile($1::uuid, $2::jsonb) as saved", "={{ $json.params }}",
+            [1320, -200], on_error="continueRegularOutput")
+    code_node(wf, "Build result", "profiles_me_result.js", [1540, -200])
+    respond_tail(wf, 1760)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Save profile", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Save profile", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def orchestrator():
+    """A0 (spec 8.2): P1 classifies, a deterministic Switch routes. Phase 3 serves search_listings;
+    other intents answer with a status code until their agents exist."""
+    wf = endpoint("fsOrchestrator01", "wf.orchestrator", "POST", "v1/assistant/message",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0015")
+    code_node(wf, "Validate body", "orch_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Context", "select coalesce((select (value #>> '{}')::float from app.settings where key = 'router.min_confidence'), 0.6) as min_confidence",
+            None, [1320, -200], on_error=None)
+    code_node(wf, "Router input", "orch_p1_input.js", [1540, -200])
+    exec_wf(wf, "Classify", LLM_CALL_WF, "wf.llm.call", pos=[1760, -200])
+    code_node(wf, "Decide route", "orch_route.js", [1980, -200])
+    wf.node("Route by intent", "n8n-nodes-base.switch", 3.2, {
+        "mode": "expression", "numberOutputs": 5, "output": "={{ $json.route }}", "options": {}}, [2200, -200])
+    code_node(wf, "Profile input", "orch_profile_input.js", [2420, -400])
+    exec_wf(wf, "Extract profile", PROFILE_WF, "wf.profile.extract", pos=[2640, -400])
+    code_node(wf, "Match input", "orch_match_input.js", [2860, -400])
+    if_node(wf, "Search?", "={{ !$json.skip }}", [3080, -400])
+    exec_wf(wf, "Match", MATCH_WF, "wf.match.search", pos=[3300, -500])
+    code_node(wf, "Search result", "orch_search_result.js", [3520, -400])
+    code_node(wf, "Other intents", "orch_other.js", [2420, 0])
+    respond_tail(wf, 3740)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Context", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Context", "Router input")
+    wf.link("Router input", "Classify")
+    wf.link("Classify", "Decide route")
+    wf.link("Decide route", "Route by intent")
+    wf.link("Route by intent", "Profile input", 0)
+    for i in (1, 2, 3, 4):
+        wf.link("Route by intent", "Other intents", i)
+    wf.link("Profile input", "Extract profile")
+    wf.link("Extract profile", "Match input")
+    wf.link("Match input", "Search?")
+    wf.link("Search?", "Match", 0)
+    wf.link("Search?", "Search result", 1)
+    wf.link("Match", "Search result")
+    wf.link("Search result", "Envelope")
+    wf.link("Other intents", "Envelope")
+    return wf
+
+
+def admin_eval_prompt_runs_create():
+    return admin_job_endpoint("fsApiEvalPrmt001", "wf.api.admin_eval_prompt_runs_create", "v1/admin/eval/prompt-runs",
+                              "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0016", "evalp_validate.js", EVALP_WF, "wf.eval.prompts")
+
+
+EMBED_START_SQL = """with j as (
+  update app.jobs set status = 'running', started_at = now(), attempts = attempts + 1
+  where id = $1::uuid and status = 'queued' returning id, input)
+select j.id as job_id, j.input, app.listings_to_embed(coalesce((j.input->>'limit')::int, 500)) as listings,
+  (select jsonb_object_agg(key, value #>> '{}') from app.settings where key in ('ollama.base_url', 'ollama.embed_model')) as cfg
+from j"""
+
+
+def listings_embed():
+    wf = WF(EMBED_WF, "wf.listings.embed", tags=["worker"], settings={"saveDataSuccessExecution": "none"})
+    E = "continueErrorOutput"
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Start job", EMBED_START_SQL, "={{ [ $json.id ] }}", [220, 0], on_error=None, always_output=True)
+    code_node(wf, "Batches", "embed_plan.js", [440, 0], on_error=E)
+    if_node(wf, "Anything to embed?", "={{ !$json.none }}", [660, 0])
+    wf.node("Loop batches", "n8n-nodes-base.splitInBatches", 3, {"batchSize": 1, "options": {}}, [880, 0])
+    http_node(wf, "Embed", "POST", "={{ $json.url }}", [1100, 100], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", timeout="={{ 600000 }}", on_error=E)
+    code_node(wf, "Vectors", "embed_vectors.js", [1320, 100], on_error=E)
+    pg_node(wf, "Store", "select app.store_listing_embeddings($1, $2::jsonb) as stored", "={{ $json.params }}", [1540, 100], on_error=E)
+    wf.node("Loop done", "n8n-nodes-base.code", 2, {"mode": "runOnceForAllItems", "language": "javaScript",
+            "jsCode": "// wf.listings.embed > \"Loop done\"\nreturn [{ json: {} }];\n"}, [1100, -150])
+    code_node(wf, "Summarize", "embed_summary.js", [1320, -150])
+    code_node(wf, "Job failed", "worker_failed.js", [1320, -350])
+    pg_node(wf, "Finish job", FINISH_JOB_SQL,
+            "={{ [ $json.job_id, $json.status, JSON.stringify($json.output), $json.error ] }}", [1540, -250], on_error=None)
+    wf.link("Start", "Start job")
+    wf.link("Start job", "Batches")
+    wf.link("Batches", "Anything to embed?", 0)
+    wf.link("Anything to embed?", "Loop batches", 0)
+    wf.link("Anything to embed?", "Summarize", 1)
+    wf.link("Loop batches", "Loop done", 0)
+    wf.link("Loop batches", "Embed", 1)
+    wf.link("Embed", "Vectors", 0)
+    wf.link("Vectors", "Store", 0)
+    wf.link("Store", "Loop batches", 0)
+    wf.link("Loop done", "Summarize")
+    for n in ("Batches", "Embed", "Vectors", "Store"):
+        wf.link(n, "Job failed", 1)
+    wf.link("Summarize", "Finish job")
+    wf.link("Job failed", "Finish job")
+    return wf
+
+
+def admin_listings_embed():
+    return admin_job_endpoint("fsApiListEmb0001", "wf.api.admin_listings_embed", "v1/admin/listings/embed",
+                              "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0017", "embed_validate.js", EMBED_WF, "wf.listings.embed")
+
+
+FX_START_SQL = """with j as (
+  update app.jobs set status = 'running', started_at = now(), attempts = attempts + 1
+  where id = $1::uuid and status = 'queued' returning id)
+select j.id as job_id, (select value #>> '{}' from app.settings where key = 'fx.ecb_url') as url,
+  (select value #>> '{}' from app.settings where key = 'kb.user_agent') as user_agent from j"""
+
+
+def fx_refresh():
+    """Worker: ECB euro reference rates into app.fx_rates (D-057). Daily schedule or admin job."""
+    wf = WF(FX_WF, "wf.fx.refresh", tags=["worker", "fx"], settings={"saveDataSuccessExecution": "none"})
+    E = "continueErrorOutput"
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    # ECB publishes around 16:00 CET; run at 17:10 Europe/Paris on weekdays.
+    wf.node("Every weekday", "n8n-nodes-base.scheduleTrigger", 1.2, {"rule": {"interval": [
+        {"field": "cronExpression", "expression": "10 17 * * 1-5"}]}}, [0, 200])
+    code_node(wf, "Scheduled", "fx_schedule.js", [220, 200])
+    pg_node(wf, "Create job",
+            "insert into app.jobs (type, status, input, idempotency_key) values ('fx_refresh', 'queued', '{}'::jsonb, $1)"
+            " on conflict (idempotency_key) do nothing returning id", "={{ [ $json.key ] }}", [440, 200], on_error=None)
+    pg_node(wf, "Start job", FX_START_SQL, "={{ [ $json.id ] }}", [660, 0], on_error=None, always_output=True)
+    if_node(wf, "Job started?", "={{ !!$json.job_id }}", [880, 0])
+    http_node(wf, "Fetch rates", "GET", "={{ $json.url }}", [1100, -100], fmt="text", timeout="={{ 30000 }}",
+              headers=[("User-Agent", "={{ $json.user_agent }}")], on_error=E)
+    code_node(wf, "Parse rates", "fx_parse.js", [1320, -100], on_error=E)
+    pg_node(wf, "Store rates", "select app.store_fx_rates($1::jsonb) as stored", "={{ $json.params }}", [1540, -100], on_error=E)
+    code_node(wf, "Summarize", "fx_summary.js", [1760, -100])
+    code_node(wf, "Job failed", "worker_failed.js", [1760, 100])
+    pg_node(wf, "Finish job", FINISH_JOB_SQL,
+            "={{ [ $json.job_id, $json.status, JSON.stringify($json.output), $json.error ] }}", [1980, 0], on_error=None)
+    wf.link("Start", "Start job")
+    wf.link("Every weekday", "Scheduled")
+    wf.link("Scheduled", "Create job")
+    wf.link("Create job", "Start job")
+    wf.link("Start job", "Job started?")
+    wf.link("Job started?", "Fetch rates", 0)
+    wf.link("Fetch rates", "Parse rates", 0)
+    wf.link("Parse rates", "Store rates", 0)
+    wf.link("Store rates", "Summarize", 0)
+    for n in ("Fetch rates", "Parse rates", "Store rates"):
+        wf.link(n, "Job failed", 1)
+    wf.link("Summarize", "Finish job")
+    wf.link("Job failed", "Finish job")
+    return wf
+
+
+def admin_fx_refresh():
+    return admin_job_endpoint("fsApiFxRefresh01", "wf.api.admin_fx_refresh", "v1/admin/fx/refresh",
+                              "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0018", "fx_validate.js", FX_WF, "wf.fx.refresh")
+
+
 BUILDS = {
     "workflows": [gateway, health, users_sync, error_handler, admin_kb_ingest, kb_ingest, kb_ingest_source,
-                  jobs_get, admin_eval_runs_create, eval_retrieval, admin_eval_runs_get],
+                  jobs_get, admin_eval_runs_create, eval_retrieval, admin_eval_runs_get,
+                  llm_call, eval_prompts, profile_extract, match_search, api_search, api_profiles_extract, api_profiles_me,
+                  orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh],
     "workflows-test": [test_fail],
 }
 

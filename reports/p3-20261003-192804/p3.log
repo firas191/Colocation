@@ -1,0 +1,39 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T19:28:05.3132714+01:00
+healthy
+0009
+exit=0 seconds=0.4
+
+===== evaluate P1_router versions 1,2 on phi4-mini:3.8b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T19:28:05.7541939+01:00
+ Container flatshare-tests-run-e88ae5c1c2d8 Creating 
+ Container flatshare-tests-run-e88ae5c1c2d8 Created 
+/v1/admin/eval/prompt-runs: job 09e62ee4-a990-42e0-9eff-e909ed4188f4 accepted
+      0.2s  job running
+   1235.1s  job succeeded
+   1235.1s  2 evaluation runs finished; last: run P1_router v2 / phi4-mini:3.8b: succeeded
+job 09e62ee4-a990-42e0-9eff-e909ed4188f4: succeeded 
+  items 160  model phi4-mini:3.8b  run_id ae66f696-52e1-45fb-9973-c8ab933e8a8d  version 1  json_valid 1  latency_p95_ms 6353  intent_accuracy 0.6125
+  items 160  model phi4-mini:3.8b  run_id e6fa38c6-f055-43d7-862c-0d423f29b9bd  version 2  json_valid 1  latency_p95_ms 3555  intent_accuracy 0.7813
+exit=0 seconds=1237.2
+
+===== Ollama memory placement after phi4-mini:3.8b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-03T19:48:43.0037796+01:00
+NAME              ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+phi4-mini:3.8b    78fad5d182a7    3.1 GB    26%/74% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-03T19:48:43.3229884+01:00
+ Container flatshare-tests-run-1390e9a7799e Creating 
+ Container flatshare-tests-run-1390e9a7799e Created 
+wrote reports/eval/prompts-20261003-184844.json and docs/PROMPT_EVAL.md
+exit=0 seconds=3.4

@@ -20,6 +20,7 @@ first `verify.ps1` run on the owner's machine (section "Recorded at run time").
 | Embedding model | `bge-m3` (Ollama library) | `.env` `EMBED_MODEL` | spec default; model digest recorded at pull time |
 | Text Embeddings Inference (CPU) | 1.9.4 | docker-compose.yml `ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4` | GitHub releases page: v1.9.4 marked Latest (read 2026-10-01); supported-models page lists the `cpu-1.9` image family |
 | multilingual-e5-large | revision `3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3` | docker-compose.yml `--revision`, `ai.models.revision` | Hugging Face API `sha` for intfloat/multilingual-e5-large, read 2026-10-01 (licence MIT) |
+| Local LLM candidates (phase 3) | `qwen3.5:4b` (3.4 GB), `granite4.2:3b` (2.2 GB), `phi4-mini:3.8b` (2.5 GB) | `ai.models`, `scripts/windows/p3.ps1 -Models` | ollama.com/library tag pages read 2026-10-02 (sizes as listed there); Ollama tags are not immutable, so the digests are recorded at pull time (`p3.py models`), DECISIONS D-053 |
 | Caddy | 2.11.4 | docker-compose.yml `caddy:2.11.4-alpine` | Docker Hub tag updated 2026-09-23 |
 | Redis (profile `queue` only) | 8.10.2 | docker-compose.yml `redis:8.10.2-alpine` | Docker Hub tag 8.10.2, 2026-09-24 |
 | Test runner image | Python 3.12.14-slim, docker CLI 29.8.1 | infra/tests/Dockerfile | Docker Hub tags 3.12.14-slim (2026-09-25), 29.8.1-cli (2026-09-18) |

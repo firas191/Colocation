@@ -59,6 +59,17 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `wf.api.admin_eval_runs_create` | `POST /v1/admin/eval/runs` (admin) | creates an `eval_retrieval` job, starts `wf.eval.retrieval`, answers 202 |
 | `wf.eval.retrieval` | sub-workflow (job worker) | resolves gold, embeds queries once per model, searches every configuration, stores per-query metrics |
 | `wf.api.admin_eval_runs_get` | `GET /v1/admin/eval/runs/:id` (admin) | one run with summary and per-query metrics |
+| `wf.llm.call` | sub-workflow | loads a prompt version (`ai.prompt_for`), calls Ollama `/api/chat` with the JSON Schema as `format`, validates, retries once with the errors |
+| `wf.orchestrator` | `POST /v1/assistant/message` | A0: P1 router, deterministic Switch; search goes to A2 then A3, other intents answer a status code |
+| `wf.profile.extract` | sub-workflow | A2: P2, amounts converted to minor units from P2 v3 (`lib/money.js`, D-066), deterministic checks (allowed preferences, currency), anchor geocoded |
+| `wf.match.search` | sub-workflow | A3 (search part): embeds the text query (bge-m3), `app.search_public` |
+| `wf.api.search` | `GET /v1/search` | filters, optional text, optional saved profile |
+| `wf.api.profiles_extract` | `POST /v1/profiles/extract` | `wf.profile.extract`, optionally saves |
+| `wf.api.profiles_me` | `PUT /v1/profiles/me` | validates and saves the profile (`app.save_profile`) |
+| `wf.api.admin_eval_prompt_runs_create` | `POST /v1/admin/eval/prompt-runs` (admin) | creates an `eval_prompts` job, starts `wf.eval.prompts` |
+| `wf.eval.prompts` | sub-workflow (job worker) | golden set of P1 or P2 for versions x models, one item at a time; results, summaries, `ai.prompt_failures` |
+| `wf.api.admin_listings_embed` / `wf.listings.embed` | `POST /v1/admin/listings/embed` (admin) / worker | embeds listings without an embedding, 16 texts per request, one request at a time |
+| `wf.api.admin_fx_refresh` / `wf.fx.refresh` | `POST /v1/admin/fx/refresh` (admin) and weekdays 17:10 / worker | ECB reference rates into `app.fx_rates` |
 | `wf.test.fail` | `GET /v1/test/fail` | test-only, throws; imported only with `N8N_IMPORT_TEST_WORKFLOWS=1` |
 
 ## Database roles
@@ -92,3 +103,31 @@ flowchart LR
 ```
 
 Compute stays outside n8n only where n8n cannot do it: tokenization and e5 embeddings (TEI), bge-m3 embeddings (Ollama), search and storage (PostgreSQL functions). Cleaning, structure parsing, chunking and metrics are plain JavaScript in `kb/` and `eval/lib/`, inlined into Code nodes by `n8n/build.py` and unit-tested with `node --test`.
+
+## Profile and search (phase 3)
+
+```mermaid
+flowchart LR
+  MSG[POST /v1/assistant/message] --> O[wf.orchestrator]
+  O -->|P1 via wf.llm.call| OL[Ollama LLM]
+  O -->|Switch: search_listings| P[wf.profile.extract]
+  O -->|other intents| ST[status code]
+  EX[POST /v1/profiles/extract] --> P
+  P -->|P2 via wf.llm.call| OL
+  P -->|checks in code; app.geocode| PL[(app.places, place_names)]
+  P --> M[wf.match.search]
+  S[GET /v1/search] --> M
+  M -->|/api/embed| EMB[Ollama bge-m3]
+  M -->|app.search_public -> app.search_listings| L[(app.listings)]
+  FX[wf.fx.refresh] -->|ECB XML| R[(app.fx_rates)]
+  L -.-> R
+  EV[POST /v1/admin/eval/prompt-runs] --> WE[wf.eval.prompts] -->|wf.llm.call per item| OL
+  WE --> RES[(eval.runs, eval.results, ai.prompt_failures)]
+```
+
+Every LLM call goes through `wf.llm.call`: the template and schema come from the registry, the model
+from `llm.default_model` unless the caller names one. Agent steps (prompt version, model, tokens,
+latency, errors; never the request text) are written to `ai.agent_steps` with the request record by
+`app.api_finish`. Search, money conversion, geocoding and location fuzzing are PostgreSQL functions
+(migration 0008); scoring of prompt outputs is `eval/lib/prompt_metrics.js`, inlined into the worker.
+

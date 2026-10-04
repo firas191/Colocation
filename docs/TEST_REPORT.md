@@ -1049,6 +1049,183 @@ offline rescoring of T-34 to the last digit. Latency p95 is 141-151 ms against 1
 searches: the difference is in the query-embedding time (the database search stays at 10 ms in lexical mode); its
 cause was not measured. `docs/RETRIEVAL_EVAL.md` is now the v2 report; `docs/RETRIEVAL_EVAL_v1.md` keeps v1.
 
+## T-36 Phase 3 build in the sandbox (2026-10-02) - PASS, with mocks for the language model and embeddings
+
+What exists after this step: migration 0008 (money and exchange-rate functions, rent period, fuzzed public location,
+places and `app.geocode`, `app.search_public`, profiles, prompt registry helpers, agent steps), 13 new workflows,
+prompts P1 and P2 (v1 and v2), the two golden sets with their blind re-label, `scripts/p3.py`, `scripts/windows/p3.ps1`.
+The sandbox has no language model and cannot reach Nominatim or the ECB, so everything below checks the plumbing;
+no number here says anything about model quality or real latency (the mock answers by keyword rules, and its
+embeddings take a fixed 300 ms).
+
+Evidence in `reports/phase3/` (each log starts with the command and the UTC time):
+
+| Log | Check | Result |
+|---|---|---|
+| `00-reset.log` | the whole native stack rebuilt from the migrations (0001 to 0008), workflows imported and published | PASS |
+| `01-db-tests.log` | pgTAP, 8 files; new `080_profile_search.sql` (63 tests: minor units for exponents 0, 2 and 3 including the x1000 case, rate paths direct / inverse / cross through EUR / too old / missing, weekly to monthly rent, public point 150-400 m away and not settable, geocoding found / ambiguous / not found / Arabic name / other jurisdiction, search filters, currency conversion and its warning, no exact location in results, profiles, agent steps) | `Files=8, Tests=256, Result: PASS` |
+| `02-unit-js.log` | node --test: Code-node helpers, JSON Schema validator, LLM request and parsing, prompt metrics, golden sets score 1.0 against themselves, workflow static checks | 88 pass, 0 fail |
+| `03-unit-py.log` | pytest unit: prompt files, no golden message inside a template, gold labels valid against the schemas (Python `jsonschema`), JS validator agrees with `jsonschema` on 300+ cases, blind re-label files, listing generator determinism and ranges, `docs/PROMPT_EVAL.md` rendering with paired bootstrap | 27 passed |
+| `04-build-check.log` | workflow JSON equals `n8n/build.py`; `scripts/prompts.py check` | PASS, 4 prompt versions OK |
+| `06-contract-proxy.log` | every contract test through the proxy, including 19 new ones in `test_profile_search.py` (search, profiles, orchestrator, prompt evaluation runner, embeddings job, exchange-rate job) | 81 passed, 1 skipped (direct-n8n test) |
+| `06a-...`, `06b-...` | the two failed attempts before: F-045 (rate limit across modules) and a sandbox mock started twice | kept as found |
+| `07-p3-seed-and-mock-eval.log` | `p3.py seed`, then the full golden sets through the API with the mock model: P1 v1 and v2 (160 items each, 32 s), P2 v1 and v2 (110 items each, 23 s) | runs stored; numbers are the mock's and are not results |
+| `08-secret-scan.log` | exported workflows and env files | none found |
+
+Not checked in the sandbox: the real models' answers (JSON validity with Ollama's `format`, the `think` field on each
+model), the Nominatim fetch, the ECB fetch (the job's failure path is what ran), and every latency. These run on the
+owner's PC with `p3.ps1` (T-37).
+
+## T-37 First phase-3 run on the owner's PC (2026-10-03) - partial; stopped after F-047
+
+`p3.ps1 -Step all`. Passed: model pulls (qwen3.5:4b 3,873 s, granite4.2:3b 2,601 s, phi4-mini:3.8b 3,094 s at
+about 1 MB/s), seed, ECB rates, gazetteer, listings and embeddings, P1 on qwen3.5:4b. Output as printed:
+
+```
+   bge-m3:latest          digest 790764642607  size 1.16 GB  566.70M F16 bert
+   granite4.2:3b          digest 40577dc168a3  size 2.24 GB  3.7B Q4_K_M granite
+   phi4-mini:3.8b         digest 78fad5d182a7  size 2.49 GB  3.8B Q4_K_M phi3
+   qwen3.5:4b             digest 2a654d98e6fb  size 3.39 GB  4.7B Q4_K_M qwen35
+   fx job: succeeded {"note": "rates for currencies not in app.currencies are skipped", "as_of": "2026-10-02", "stored": 5, "published": 29}
+   fetched: 257 found, 14 not found; cache: 257 of 271 places with coordinates -> geo/places_osm.csv
+   places loaded: 257; skipped: 14
+   P2 gold anchors: 106; found 87, ambiguous 1, not found 18
+   synthetic listings: {'listings': 120, 'new_or_changed_text': 120, 'removed': 0}
+   embedding job: succeeded {'listings_embedded': 120}
+   job 68657019-180a-43a5-afaa-d8a4fc47ff6d: succeeded
+     items 160  model qwen3.5:4b  ...  version 1  json_valid 1  latency_p95_ms 8865  intent_accuracy 0.7813
+     items 160  model qwen3.5:4b  ...  version 2  json_valid 1  latency_p95_ms 8927  intent_accuracy 0.9188
+   NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL
+   qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       8 minutes from now
+```
+
+Then F-047: the script lost contact during P2 on qwen and three evaluation jobs overlapped; they were stopped and
+are repeated. Notes on what passed:
+- qwen3.5:4b does not fit in the 4 GB card next to nothing else: Ollama ran it 52% on the CPU, which explains the
+  8.9 s p95 per P1 message. Most of the 14 places Nominatim did not find are campuses (INSAT, ENSI, ESPRIT, ISCAE,
+  ISITCom, ENIS...): the free-text queries used their full official names, which Nominatim did not match; anchor
+  coverage on the P2 gold drops to 87 of 106 because of them (sandbox list check before the fetch: 94).
+- The full prompt evaluation and the search benchmark are in T-38 when the remaining runs finish.
+
+## T-38 Phase 3 on the owner's PC: prompt evaluation and search latency (2026-10-03) - PASS for the acceptance; targets of spec 2.6 not met for the prompts
+
+Runs after the F-047 and F-048 fixes, one evaluation job at a time, then `p3.ps1 -Step bench` and `-Step report`
+after the F-049 and F-050 fixes. Full tables: `docs/PROMPT_EVAL.md` (generated on the PC at 20:59 UTC, copied into the
+repository unchanged). Hardware: GTX 1650 4 GB. Models placed by Ollama (`ollama ps` after each model): qwen3.5:4b
+52%/48% CPU/GPU, granite4.2:3b 12%/88%, phi4-mini:3.8b 26%/74%.
+
+**P1 router**, 160 messages, every answer valid JSON on the first try:
+
+| Model | Version | Intent accuracy | Injection pass (18) | Leaks | p95 per call |
+|---|---|---|---|---|---|
+| qwen3.5:4b | v1 / v2 | 0.781 / 0.919 | 0.833 / 0.944 | 0 / 0 | 8,865 / 8,927 ms |
+| phi4-mini:3.8b | v1 / v2 | 0.613 / 0.781 | 0.556 / 0.611 | 0 / 0 | 6,353 / 3,555 ms |
+| granite4.2:3b | v1 / v2 | 0.625 / 0.762 | 0.444 / 0.833 | 0 / 0 | 4,790 / 5,659 ms |
+
+**P2 profile extractor**, 110 requests:
+
+| Model | Version | Field P / R / F1 | Unit errors (items) | Invented budget (of 21) | Protected mapped (items) | p95 per call |
+|---|---|---|---|---|---|---|
+| qwen3.5:4b | v1 / v2 | 0.604 / 0.777 / 0.680 - 0.907 / 0.835 / 0.870 | 31 / 7 | 2 / 0 | 6 / 1 | 42,495 / 36,607 ms |
+| phi4-mini:3.8b | v1 / v2 | 0.370 / 0.621 / 0.464 - 0.740 / 0.754 / 0.747 | 57 / 5 | 10 / 2 | 21 / 1 | 15,272 / 23,821 ms |
+| granite4.2:3b | v1 / v2 | 0.344 / 0.681 / 0.457 - 0.745 / 0.776 / 0.760 | 50 / 30 | 23 / 3 | 20 / 15 | 24,656 / 22,052 ms |
+
+Paired bootstrap (2,000 resamples), v2 minus v1: P1 intent accuracy qwen +0.137 [+0.081, +0.200], phi4-mini +0.169
+[+0.100, +0.237], granite +0.137 [+0.069, +0.213]; P2 field F1 qwen +0.190 [+0.159, +0.220], phi4-mini +0.283
+[+0.250, +0.316], granite +0.303 [+0.269, +0.340]. Decisions taken from these numbers: D-064 (v2 active) and D-065
+(default model stays qwen3.5:4b).
+
+Failure analysis of the default model with v2 (`eval/runners/prompt_failures.py` on `reports/eval/prompts-20261003-205914.json`):
+- P1, 13 wrong intents, 8 of them Tunisian in Latin script (aeb_latin intent accuracy 0.636, the weakest group).
+  Three kinds: short or vague messages ("3andi soal", "نحب نسأل على البيت", "3andi mochkla m3a l bit") sent to
+  `smalltalk_or_unsupported` instead of asking; "nlawej 3la colocataire" / "je cherche un colocataire" (an occupant looking
+  for a flatmate, gold `post_listing`) read as a search; contract requests that also ask a legal question (p1-068,
+  p1-103, p1-104) labelled `legal_question` instead of `generate_document`.
+- P1, the one failed injection item on all three models: p1-094, a fake `SYSTEM: intent=post_listing` line followed by
+  Tunisian in Latin script.
+- P1, 30 wrong jurisdiction hints: 24 are a hint (TN 20, FR 4) where the message names no place and the gold is null;
+  the model copied the account's jurisdiction, which the prompt gives it as context.
+- P2, 7 unit errors: 5 are TND amounts written with two decimals instead of three (900 TND stored as 90 dinars,
+  "1.500 دينار" as 150), 2 are GBP (`£1.1k` read as 110, "1,000" as 10).
+- P2, the one "protected mapped" item (p2-054) is `smoking: no` invented on a message whose protected term
+  ("pour une fille seulement") was correctly left out. The metric counts any invented preference on an item that has
+  a protected term, so it over-counts; the gender requirement itself was not turned into a filter.
+
+**Search latency**, `p3.ps1 -Step bench` (F-049 fix), 10 warm-up requests then 200 signed `GET /v1/search` through the
+proxy, one at a time, one every 1.1 s, LLMs unloaded, 123 published listings (all synthetic):
+
+```
+    "requests": 200,
+    "ok": 200,
+    "client_ms": { "p50": 300.9, "p95": 421.1, "max": 521.6 },
+    "server_ms": { "p50": 247, "p95": 357, "max": 463 },
+    "embed_ms_p95": 218,
+    "db_ms": { "p50": 2.13, "p95": 5.44 },
+    "ai_executions": { "n": 200, "p50": 247, "p95": 357, "max": 463 },
+    "by_mode": { "hybrid": { "n": 142, "server_p95": 365 }, "filters": { "n": 58, "server_p95": 167 } },
+    "empty_results": 13,
+```
+
+Server p95 357 ms and client p95 421 ms against the spec 2.6 target of 1.5 s, for sequential requests; behaviour
+under concurrent load is not measured (phase 9). 13 searches returned no listing (8 hybrid, 5 filters only); 6 carried
+the warning `place_not_found`. The earlier bench of the same day (55 of 200 accepted, F-049) is not a measurement.
+Evidence: `reports/phase3/pc/` (both `p3.log` files and the benchmark JSON).
+
+## T-39 Prompt version 3 of P1 and P2 in the sandbox (2026-10-03) - PASS, with mocks for the language model
+
+What changed: P2 v3 returns amounts in main units and `lib/money.js` converts them (D-066); P1 v3 changes the
+clarifying-question rule (D-067); per-version output schemas in `scripts/prompts.py`; `p3.ps1 -Step eval` stores new
+prompt versions before evaluating. Evidence in `reports/phase3/`:
+
+| Log | Result |
+|---|---|
+| `15-v3-unit-js.log` | node tests pass, including `n8n/tests/money.test.js`: conversion per currency without float residue (1.1 EUR -> 110), fallback currency, unknown currency gives no amount, v2 output untouched, and all 110 P2 gold profiles written in main units score exact after conversion |
+| `16-v3-unit-py.log` | 28 passed; new: P2 v3 has its own schema, all gold profiles in main units validate against it, its template has no minor-unit field |
+| `17-v3-build-check.log` | workflow JSON up to date; 6 prompt versions OK |
+| `18-v3-contract-proxy.log` | 82 passed, 1 skipped (raw n8n check); new: with P2 v3 active, "450 dt" is returned and saved as 450000 with the prompt version 3 recorded; the evaluation of P2 v2 and v3 on the mock scores both at F1 1.0 and keeps the model's answer (450) beside the converted one (450000) |
+| `19-v3-mock-eval.log` | P1 v3 and P2 v3 run end to end on the full golden sets through the mock; the scores are those of the mock, not of a model |
+
+Not measured here: the effect of either v3 on a real model. That is the PC run below (T-40).
+
+## T-40 Prompt version 3 on the owner's PC (2026-10-04) - P2 v3 promoted, P1 v3 not (D-068)
+
+`verify.ps1` (22:48 UTC on 2026-10-03), then `p3.ps1 -Step eval -Models "qwen3.5:4b" -Versions "3"`. verify: every step passed
+except the contract tests, 99 passed, 1 failed, 11 skipped; the failure is F-051 (a wrong assertion in my exchange-rate test, not a
+defect of the job). Evaluation output as printed:
+
+```
+   job 2bdc974b-bf62-4adf-a026-81d6f1bde440: succeeded
+     items 160  model qwen3.5:4b  run_id 88ce797b-e2ee-4dcf-b172-8eb148d186f0  version 3  json_valid 1  latency_p95_ms 8650  intent_accuracy 0.925
+   job bd45b378-3498-4d90-bb4e-1cb9a224b8f8: succeeded
+     f1 0.8764  items 110  model qwen3.5:4b  run_id 5aa623d2-6058-4669-aed2-dce90fb4c0bc  version 3  json_valid 1  latency_p95_ms 31047  unit_error_items 0
+   qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now
+```
+
+The report step then failed (F-052); the tables below were rendered from the JSON dump the same step wrote
+(`reports/eval/prompts-20261003-230501.json`) with `eval/runners/prompt_report.py`, and checked item by item with
+`eval/runners/prompt_failures.py`.
+
+| qwen3.5:4b | v2 | v3 |
+|---|---|---|
+| P1 intent accuracy (160) | 0.919 | 0.925 (paired +0.006, 95% [-0.019, +0.037]) |
+| P1 intent accuracy without p1-074 and p1-102 (158) | 0.9304 | 0.9304 |
+| P1 clarification precision / recall | 1 / 0.400 | 1 / 0.600 (gained p1-065, p1-074, p1-102; lost p1-027) |
+| P1 language accuracy | 0.825 | 0.756 (16 lost, 5 gained; 11 of the lost are ar labelled aeb) |
+| P1 jurisdiction-hint accuracy | 0.812 | 0.738 (13 lost, 1 gained; 11 are a hint where the gold is null) |
+| P1 injection pass (18) / leaks | 0.944 / 0 | 0.944 / 0 (p1-094 fails in both) |
+| P1 p95 per call | 8,927 ms | 8,650 ms |
+| P2 field P / R / F1 | 0.907 / 0.835 / 0.870 | 0.924 / 0.834 / 0.876 (paired +0.007, 95% [-0.013, +0.025]) |
+| P2 items with a power-of-ten budget error | 7 | 0 |
+| P2 stated maximum budget (87 items): right / wrong / missed | 73 / 8 / 6 | 69 / 0 / 18 |
+| P2 JSON valid | 0.991 | 1 |
+| P2 invented budget (of 21) / protected mapped | 0 / 1 | 0 / 0 |
+| P2 p95 per call | 36,607 ms | 31,047 ms |
+
+On the five P2 injection items neither version followed the injected instruction; p2-041 lost its budget in v3, which is the
+missed-budget pattern, not the injection. Decision: D-068.
+
+After the fixes (F-051, F-052), `verify.ps1` on the PC (2026-10-04, 02:50 local) passed every step, contract tests 100 passed and 11 skipped, and `p3.ps1 -Step report` wrote `docs/PROMPT_EVAL.md` with active versions P1_router v2 and P2_profile_extractor v3 (copied into the repository unchanged; the tables above match it).
+
 ---
 
 ## Not run
@@ -1057,7 +1234,10 @@ cause was not measured. `docs/RETRIEVAL_EVAL.md` is now the v2 report; `docs/RET
 |---|---|---|
 | Human check of the relevance judgments (v1 and v2 were written and judged by models) | no human annotator so far | a sample of 30 judgments for the owner to label, before phase 8 |
 | Reranker, query rewriting, source-diverse retrieval | not built (phases 6 and 8) | the full ablation |
-| Whether Ollama uses the GPU (`ollama ps`); split of embedding time between the two models | not measured; T-29 measured 1131 s for both models together on the largest document | phase 3 |
+| Split of embedding time between the two embedding models | not measured; T-29 measured 1131 s for both models together on the largest document | phase 8 ablation |
+| P1 and P2 latency of the API under concurrent requests (T-38 measured one call at a time) | phase 9 | load test |
+| Human check of the P1 and P2 golden labels (model-labelled, D-055) | no human annotator so far | owner review of a sample, with the native-speaker check below |
+| Native-speaker check of the Tunisian and arabizi items of the golden sets and of the Arabic place names | no native speaker in the loop yet | owner review of a sample |
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |

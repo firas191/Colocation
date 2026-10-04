@@ -68,3 +68,32 @@ missing from the gold (`eval/reports/tried.md`).
 - Known bias of pooling: passages that none of the 12 runs retrieved are not judged and count as not
   relevant, and a future configuration that finds new relevant passages is under-scored until they are
   judged.
+
+## p1_router v1 (`p1_router_v1.jsonl`) and p2_profile v1 (`p2_profile_v1.jsonl`)
+
+Golden sets for the router (P1) and the profile extractor (P2), spec 9.5. Labelling guides:
+`guides/p1_router.md` and `guides/p2_profile.md`; every label follows them. Both sets are synthetic
+(written for the set, no real user messages) and were written and labelled by a model-based
+annotator (D-055).
+
+| Set | Items | Composition |
+|---|---|---|
+| P1 | 160 | language groups fr 34, en 24, ar 14, Tunisian in Arabic script 16, Tunisian arabizi 22, code-switched 22, de 10, es 9, it 9; intents search 45, post 25, legal 30, document 15, report 18, smalltalk/unsupported 27; tags injection 18, mixed_intent 12, ambiguous 10 (needs_clarification), digits_trap 10 |
+| P2 | 110 | account jurisdiction TN 55, FR 30, GB 25; tags unit_trap 52, relative_date 49, protected_pref 22, no_budget 21, commute 19, range 10, weekly 6, foreign_currency 6, injection 5; five "today" dates |
+
+Format: one object per line with `id`, `message`, `context` (`user_jurisdiction` for P1;
+`jurisdiction` and `today` for P2), `gold`, `tags`, `note`. `scripts/kb.py seed` stores the message
+as `eval.queries.query` and `{"labels": gold, "context": context}` as `eval.queries.gold`.
+
+Re-label (spec 9.5): `relabel/<set>_blind.jsonl` holds a random 20% (seed 20261002) with id, message
+and context only; a second annotator labelled them from the guide alone (`relabel/<set>_relabel.jsonl`);
+`python eval/datasets/agreement.py <set>` writes `relabel/<set>_agreement.json`:
+
+| Set | Re-labelled | Items equal on every field | Per field |
+|---|---|---|---|
+| P1 | 32 of 160 | 31 | intent 32/32 (Cohen's kappa 1.000), acceptable intents 32/32, language 31/32, script 32/32, jurisdiction hint 32/32, needs_clarification 32/32 |
+| P2 | 22 of 110 | 21 | every field 22/22 except anchor_label 21/22 ("Nation" vs "métro Nation") |
+
+Both annotators are models working from the same guide: the agreement shows the guide leaves little
+room for interpretation to such an annotator; it does not show human agreement. Tunisian Derja and
+arabizi items have not been checked by a native speaker (spec 9.7).

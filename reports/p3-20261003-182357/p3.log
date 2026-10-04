@@ -1,0 +1,53 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T18:23:58.8716735+01:00
+healthy
+0009
+exit=0 seconds=0.3
+
+===== evaluate P1_router versions 1,2 on granite4.2:3b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T18:23:59.1988278+01:00
+ Container flatshare-tests-run-85ba83a62bba Creating 
+ Container flatshare-tests-run-85ba83a62bba Created 
+/v1/admin/eval/prompt-runs: job 44e2c642-3771-4743-9362-d70f3ede35be accepted
+      0.3s  job running
+   1166.9s  job succeeded
+   1166.9s  2 evaluation runs finished; last: run P1_router v2 / granite4.2:3b: succeeded
+job 44e2c642-3771-4743-9362-d70f3ede35be: succeeded 
+  items 160  model granite4.2:3b  run_id 71736643-87a7-4571-8ed8-72646ac83348  version 1  json_valid 1  latency_p95_ms 4790  intent_accuracy 0.625
+  items 160  model granite4.2:3b  run_id e7a2f9ec-5ab0-4d04-b396-9324153016f4  version 2  json_valid 1  latency_p95_ms 5659  intent_accuracy 0.7625
+exit=0 seconds=1171.2
+
+===== evaluate P2_profile_extractor versions 1,2 on granite4.2:3b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T18:43:30.3767469+01:00
+ Container flatshare-tests-run-971c87581f63 Creating 
+ Container flatshare-tests-run-971c87581f63 Created 
+/v1/admin/eval/prompt-runs: job d5d3492a-b85b-4987-a352-681cf3e8d46e accepted
+      0.3s  job running
+   2667.7s  job succeeded
+   2667.7s  2 evaluation runs finished; last: run P2_profile_extractor v1 / granite4.2:3b: succeeded
+job d5d3492a-b85b-4987-a352-681cf3e8d46e: succeeded 
+  f1 0.4572  items 110  model granite4.2:3b  run_id 96e16f88-c332-4540-9e3e-05d7789c4315  version 1  json_valid 1  latency_p95_ms 24656  unit_error_items 50
+  f1 0.7599  items 110  model granite4.2:3b  run_id 58b4fe71-4603-4211-b7b7-fe16a78bfe56  version 2  json_valid 1  latency_p95_ms 22052  unit_error_items 30
+exit=0 seconds=2670.1
+
+===== Ollama memory placement after granite4.2:3b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-03T19:28:00.4665003+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+granite4.2:3b    40577dc168a3    2.7 GB    12%/88% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-03T19:28:00.7929631+01:00
+ Container flatshare-tests-run-87d6fe8483be Creating 
+ Container flatshare-tests-run-87d6fe8483be Created 
+wrote reports/eval/prompts-20261003-182802.json and docs/PROMPT_EVAL.md
+exit=0 seconds=3.1

@@ -1,0 +1,155 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T19:48:48.3014083+01:00
+healthy
+0009
+exit=0 seconds=0.4
+
+===== unload the LLMs (search uses only the embedding model) =====
+command: foreach ($m in $modelList) { docker exec fs-ollama ollama stop $m 2>&1 | Out-Null }
+    docker exec fs-ollama ollama ps
+started: 2026-10-03T19:48:48.7245941+01:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+exit=0 seconds=1.4
+
+===== search latency: 200 requests through the proxy =====
+command: docker @p3 search-bench --n $BenchN
+started: 2026-10-03T19:48:50.0815921+01:00
+ Container flatshare-tests-run-fde636e26f0d Creating 
+ Container flatshare-tests-run-fde636e26f0d Created 
+{
+ "date": "2026-10-03T18:49:49+00:00",
+ "requests": 200,
+ "ok": 55,
+ "warmup": 10,
+ "published_listings": 123,
+ "client_ms": {
+  "p50": 378.0,
+  "p95": 483.9,
+  "max": 2576.5
+ },
+ "server_ms": {
+  "p50": 297,
+  "p95": 378,
+  "max": 2503
+ },
+ "embed_ms_p95": 151,
+ "db_ms": {
+  "p50": 3,
+  "p95": 10.34
+ },
+ "ai_executions": {
+  "n": 55,
+  "p50": 297,
+  "p95": 378,
+  "max": 2503
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 36,
+   "server_p95": 379
+  },
+  "filters": {
+   "n": 19,
+   "server_p95": 355
+  }
+ },
+ "empty_results": 3,
+ "errors": [
+  {
+   "status": 429,
+   "client_ms": 186.1,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "60000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 160.1,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 170.8,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 175.9,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "420000"
+   },
+   "error": "RATE_LIMITED"
+  },
+  {
+   "status": 429,
+   "client_ms": 149.6,
+   "server_ms": null,
+   "embed_ms": null,
+   "db_ms": null,
+   "search_ms": null,
+   "count": null,
+   "mode": null,
+   "warnings": null,
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation"
+   },
+   "error": "RATE_LIMITED"
+  }
+ ]
+}
+wrote reports/eval/search-bench-20261003-184949.json
+System.Management.Automation.RemoteException
+exit=1 seconds=59.5

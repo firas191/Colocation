@@ -1,0 +1,15 @@
+$ . /opt/lab/test-env.sh && export FS_API_BASE=http://127.0.0.1:8080 FS_POLL_S=2 && python3 scripts/p3.py eval --prompt P1_router --versions 3 --models qwen3.5:4b --label sandbox-mock-v3 && python3 scripts/p3.py eval --prompt P2_profile_extractor --versions 3 --models qwen3.5:4b --label sandbox-mock-v3
+# 2026-10-03T21:45:11Z
+/v1/admin/eval/prompt-runs: job 3ad94333-a69e-4a9c-a895-e3d8a85f6741 accepted
+      0.4s  job running
+     18.5s  job succeeded
+     18.5s  1 evaluation runs finished; last: run P1_router v3 / qwen3.5:4b: succeeded
+job 3ad94333-a69e-4a9c-a895-e3d8a85f6741: succeeded 
+  items 160  model qwen3.5:4b  run_id 05a6084c-4aa5-454e-af2d-982344641d08  version 3  json_valid 1  latency_p95_ms 30  intent_accuracy 0.375
+/v1/admin/eval/prompt-runs: job 6d646a32-7f0a-47ba-adf1-a039b4103723 accepted
+      0.2s  job running
+     11.5s  job succeeded
+     11.5s  1 evaluation runs finished; last: run P2_profile_extractor v3 / qwen3.5:4b: succeeded
+job 6d646a32-7f0a-47ba-adf1-a039b4103723: succeeded 
+  f1 0.3471  items 110  model qwen3.5:4b  run_id 4a94e4bf-9871-494f-b0e2-ad973603241b  version 3  json_valid 1  latency_p95_ms 29  unit_error_items 0
+# exit=0

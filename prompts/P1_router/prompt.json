@@ -1,0 +1,12 @@
+{
+  "name": "P1_router",
+  "agent": "A0 orchestrator",
+  "role": "Classify a message: intent, language, script, jurisdiction hint, confidence, and whether to ask a clarifying question. The orchestrator routes on the intent with a deterministic switch (spec 8.1).",
+  "schema": "schemas/P1_router.schema.json",
+  "variables": [
+    "message",
+    "user_jurisdiction"
+  ],
+  "golden_set": "p1_router",
+  "active_version": 2
+}

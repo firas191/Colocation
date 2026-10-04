@@ -1,0 +1,5 @@
+$ python3 n8n/build.py --check && python3 scripts/prompts.py check
+# 2026-10-03T01:12:05Z
+workflow JSON is up to date
+4 prompt versions OK
+# exit=0

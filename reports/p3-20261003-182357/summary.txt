@@ -1,0 +1,5 @@
+PASS  stack is up (n8n healthy, migration 0008 applied)  (exit 0, 0.3 s)
+PASS  evaluate P1_router versions 1,2 on granite4.2:3b  (exit 0, 1171.2 s)
+PASS  evaluate P2_profile_extractor versions 1,2 on granite4.2:3b  (exit 0, 2670.1 s)
+PASS  Ollama memory placement after granite4.2:3b (GPU or CPU share)  (exit 0, 0.3 s)
+PASS  report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json  (exit 0, 3.1 s)

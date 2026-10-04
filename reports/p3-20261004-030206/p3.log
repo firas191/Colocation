@@ -1,0 +1,26 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-04T03:02:08.3968575+01:00
+healthy
+0009
+exit=0 seconds=0.3
+
+===== prompts: active versions from prompts\*\prompt.json =====
+command: docker @reg sync
+started: 2026-10-04T03:02:08.6996606+01:00
+ Container flatshare-tests-run-a4a692198aff Creating 
+ Container flatshare-tests-run-a4a692198aff Created 
+prompt registry up to date
+exit=0 seconds=1.1
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-04T03:02:09.8078927+01:00
+ Container flatshare-tests-run-4e410d5b0ee3 Creating 
+ Container flatshare-tests-run-4e410d5b0ee3 Created 
+wrote reports/eval/prompts-20261004-020210.json and docs/PROMPT_EVAL.md
+exit=0 seconds=2.6

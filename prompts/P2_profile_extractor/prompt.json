@@ -1,0 +1,16 @@
+{
+  "name": "P2_profile_extractor",
+  "agent": "A2 profile",
+  "role": "Turn a seeker's free-text request into a structured search profile: budget in minor units, place to be near, dates, stay length, declared preferences and languages (spec 2.4 journey A step 4).",
+  "schema": "schemas/P2_profile_extractor.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "default_currency",
+    "currency_exponents",
+    "allowed_preferences"
+  ],
+  "golden_set": "p2_profile",
+  "active_version": 3
+}

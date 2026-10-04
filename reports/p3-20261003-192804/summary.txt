@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0008 applied)  (exit 0, 0.4 s)
+PASS  evaluate P1_router versions 1,2 on phi4-mini:3.8b  (exit 0, 1237.2 s)
+PASS  Ollama memory placement after phi4-mini:3.8b (GPU or CPU share)  (exit 0, 0.3 s)
+PASS  report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json  (exit 0, 3.4 s)

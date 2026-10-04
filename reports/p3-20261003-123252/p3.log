@@ -1,0 +1,40 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T12:32:52.9627099+01:00
+healthy
+0008
+exit=0 seconds=0.3
+
+===== evaluate P2_profile_extractor versions 1,2 on qwen3.5:4b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T12:32:53.3108237+01:00
+ Container flatshare-tests-run-df814f8caca3 Creating 
+ Container flatshare-tests-run-df814f8caca3 Created 
+/v1/admin/eval/prompt-runs: job 7bbc3319-705b-463e-b452-5b3bf8a6111e accepted
+      0.3s  job running
+  poll: HTTP 503 {"request_id":"205c9e43-c1d5-4806-a4f5-226ec2dd1e76","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+   6811.4s  job succeeded
+   6811.4s  2 evaluation runs finished; last: run P2_profile_extractor v2 / qwen3.5:4b: succeeded
+job 7bbc3319-705b-463e-b452-5b3bf8a6111e: succeeded 
+  f1 0.6796  items 110  model qwen3.5:4b  run_id 1f3215d8-1032-4e61-9219-3a6b83b96527  version 1  json_valid 0.9727  latency_p95_ms 42495  unit_error_items 31
+  f1 0.8696  items 110  model qwen3.5:4b  run_id c255a3fa-d7ae-4c59-82e4-6a1e45872e5f  version 2  json_valid 0.9909  latency_p95_ms 36607  unit_error_items 7
+exit=0 seconds=6815.1
+
+===== Ollama memory placement after qwen3.5:4b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-03T14:26:28.4470730+01:00
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.4
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-03T14:26:28.8319528+01:00
+ Container flatshare-tests-run-4d5ee03a6b34 Creating 
+ Container flatshare-tests-run-4d5ee03a6b34 Created 
+wrote reports/eval/prompts-20261003-132630.json and docs/PROMPT_EVAL.md
+exit=0 seconds=2.5

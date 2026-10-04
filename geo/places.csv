@@ -1,0 +1,272 @@
+place_key,jurisdiction,kind,city,query,names
+tn-tunis,TN,city,Tunis,"Tunis, Tunisia",fr:Tunis | en:Tunis | fr:Tunis ville | fr:Grand Tunis | ar:تونس | ar:تونس العاصمة | ar:العاصمة | aeb-Latn:tounes | aeb-Latn:tounis | aeb-Latn:tunis | aeb-Latn:el 3asma | es:Túnez | it:Tunisi
+tn-ariana,TN,city,Ariana,"Ariana, Tunisia",fr:Ariana | fr:Ariana Ville | fr:L'Ariana | en:Ariana | ar:أريانة | ar:اريانة | ar:أريانة المدينة | aeb-Latn:ariana | aeb-Latn:aryana | aeb-Latn:lariana | aeb-Latn:ariana ville
+tn-ben-arous,TN,city,Ben Arous,"Ben Arous, Tunisia",fr:Ben Arous | fr:Benarous | ar:بن عروس | aeb-Latn:ben arous | aeb-Latn:benarous | aeb-Latn:ben 3rous
+tn-manouba,TN,city,Manouba,"Manouba, Tunisia",fr:Manouba | fr:La Manouba | fr:Mannouba | ar:منوبة | aeb-Latn:manouba | aeb-Latn:mannouba | aeb-Latn:lmanouba
+tn-nabeul,TN,city,Nabeul,"Nabeul, Tunisia",fr:Nabeul | ar:نابل | aeb-Latn:nabeul | aeb-Latn:nabel
+tn-zaghouan,TN,city,Zaghouan,"Zaghouan, Tunisia",fr:Zaghouan | fr:Zaghouane | ar:زغوان | aeb-Latn:zaghouan | aeb-Latn:zaghwan
+tn-bizerte,TN,city,Bizerte,"Bizerte, Tunisia",fr:Bizerte | en:Bizerta | it:Biserta | es:Bizerta | ar:بنزرت | aeb-Latn:bizerte | aeb-Latn:benzart | aeb-Latn:bnzart
+tn-beja,TN,city,Béja,"Béja, Tunisia",fr:Béja | fr:Beja | ar:باجة | aeb-Latn:beja | aeb-Latn:baja
+tn-jendouba,TN,city,Jendouba,"Jendouba, Tunisia",fr:Jendouba | ar:جندوبة | aeb-Latn:jendouba | aeb-Latn:jandouba
+tn-le-kef,TN,city,Le Kef,"Le Kef, Tunisia",fr:Le Kef | fr:El Kef | fr:Kef | ar:الكاف | aeb-Latn:kef | aeb-Latn:lkef | aeb-Latn:el kef
+tn-siliana,TN,city,Siliana,"Siliana, Tunisia",fr:Siliana | ar:سليانة | aeb-Latn:siliana | aeb-Latn:sliana
+tn-sousse,TN,city,Sousse,"Sousse, Tunisia",fr:Sousse | en:Sousse | it:Susa | ar:سوسة | aeb-Latn:sousse | aeb-Latn:soussa | aeb-Latn:susa
+tn-monastir,TN,city,Monastir,"Monastir, Tunisia",fr:Monastir | ar:المنستير | aeb-Latn:monastir | aeb-Latn:monestir
+tn-mahdia,TN,city,Mahdia,"Mahdia, Tunisia",fr:Mahdia | ar:المهدية | aeb-Latn:mahdia | aeb-Latn:lmahdia
+tn-sfax,TN,city,Sfax,"Sfax, Tunisia",fr:Sfax | ar:صفاقس | aeb-Latn:sfax | aeb-Latn:sfaks | aeb-Latn:sfakes
+tn-kairouan,TN,city,Kairouan,"Kairouan, Tunisia",fr:Kairouan | fr:Kairouane | en:Kairouan | en:Qairawan | ar:القيروان | aeb-Latn:kairouan | aeb-Latn:9irwan | aeb-Latn:qayrawan
+tn-kasserine,TN,city,Kasserine,"Kasserine, Tunisia",fr:Kasserine | ar:القصرين | aeb-Latn:kasserine | aeb-Latn:gasrine | aeb-Latn:9asrine
+tn-sidi-bouzid,TN,city,Sidi Bouzid,"Sidi Bouzid, Tunisia",fr:Sidi Bouzid | fr:Sidi Bou Zid | ar:سيدي بوزيد | aeb-Latn:sidi bouzid | aeb-Latn:sidibouzid
+tn-gabes,TN,city,Gabès,"Gabès, Tunisia",fr:Gabès | fr:Gabes | ar:قابس | aeb-Latn:gabes | aeb-Latn:9abes
+tn-medenine,TN,city,Médenine,"Médenine, Tunisia",fr:Médenine | fr:Medenine | fr:Mednine | ar:مدنين | aeb-Latn:mednine | aeb-Latn:medenine
+tn-tataouine,TN,city,Tataouine,"Tataouine, Tunisia",fr:Tataouine | ar:تطاوين | aeb-Latn:tataouine | aeb-Latn:tatawin
+tn-gafsa,TN,city,Gafsa,"Gafsa, Tunisia",fr:Gafsa | ar:قفصة | aeb-Latn:gafsa | aeb-Latn:9afsa
+tn-tozeur,TN,city,Tozeur,"Tozeur, Tunisia",fr:Tozeur | ar:توزر | aeb-Latn:tozeur | aeb-Latn:touzer
+tn-kebili,TN,city,Kébili,"Kébili, Tunisia",fr:Kébili | fr:Kebili | ar:قبلي | aeb-Latn:kebili | aeb-Latn:gbeli | aeb-Latn:9bili
+tn-tunis-lafayette,TN,neighbourhood,Tunis,"Lafayette, Tunis, Tunisia",fr:Lafayette | fr:Lafayette Tunis | fr:Lafayet | ar:لافايات | aeb-Latn:lafayette | aeb-Latn:lafayet
+tn-tunis-centre-ville,TN,district,Tunis,"Centre Ville, Tunis, Tunisia",fr:Centre-ville | fr:Centre ville | fr:Centre-ville de Tunis | fr:Tunis Centre | en:Downtown Tunis | ar:وسط المدينة | ar:وسط البلاد | aeb-Latn:centre ville | aeb-Latn:wost lblad | aeb-Latn:west lebled
+tn-tunis-bab-saadoun,TN,neighbourhood,Tunis,"Bab Saadoun, Tunis, Tunisia",fr:Bab Saadoun | fr:Bab Saâdoun | fr:Bab Sadoun | ar:باب سعدون | aeb-Latn:bab saadoun | aeb-Latn:bab sa3doun | aeb-Latn:babsaadoun
+tn-tunis-montplaisir,TN,neighbourhood,Tunis,"Montplaisir, Tunis, Tunisia",fr:Montplaisir | fr:Mont Plaisir | fr:Monplaisir | ar:مونبليزير | aeb-Latn:montplaisir | aeb-Latn:monplaisir
+tn-tunis-mutuelleville,TN,neighbourhood,Tunis,"Mutuelleville, Tunis, Tunisia",fr:Mutuelleville | fr:Mutuelle Ville | fr:Mutuelville | aeb-Latn:mutuelleville | aeb-Latn:mutuelle | aeb-Latn:mitualville
+tn-tunis-belvedere,TN,neighbourhood,Tunis,"Le Belvédère, Tunis, Tunisia",fr:Belvédère | fr:Le Belvédère | fr:Belvedere | fr:Le Belvedere | aeb-Latn:belvedere | aeb-Latn:lbelvedere
+tn-tunis-el-manar,TN,district,Tunis,"El Manar, Tunis, Tunisia",fr:El Manar | fr:Manar | ar:المنار | aeb-Latn:manar | aeb-Latn:lmanar
+tn-tunis-el-manar-1,TN,neighbourhood,Tunis,"El Manar 1, Tunis, Tunisia",fr:El Manar 1 | fr:El Manar I | fr:Manar 1 | fr:Cité El Manar 1 | ar:المنار 1 | aeb-Latn:manar 1 | aeb-Latn:manar1 | aeb-Latn:lmanar 1
+tn-tunis-el-manar-2,TN,neighbourhood,Tunis,"El Manar 2, Tunis, Tunisia",fr:El Manar 2 | fr:El Manar II | fr:Manar 2 | fr:Cité El Manar 2 | ar:المنار 2 | aeb-Latn:manar 2 | aeb-Latn:manar2 | aeb-Latn:lmanar 2
+tn-tunis-el-manar-3,TN,neighbourhood,Tunis,"El Manar 3, Tunis, Tunisia",fr:El Manar 3 | fr:El Manar III | fr:Manar 3 | fr:Cité El Manar 3 | ar:المنار 3 | aeb-Latn:manar 3 | aeb-Latn:manar3 | aeb-Latn:lmanar 3
+tn-el-menzah,TN,district,Tunis,"El Menzah, Tunis, Tunisia",fr:El Menzah | fr:Menzah | ar:المنزه | aeb-Latn:menzah | aeb-Latn:lmenzah
+tn-el-menzah-1,TN,neighbourhood,Tunis,"El Menzah 1, Tunis, Tunisia",fr:El Menzah 1 | fr:El Menzah I | fr:Menzah 1 | fr:Manzah 1 | ar:المنزه 1 | aeb-Latn:menzah 1 | aeb-Latn:menzah1 | aeb-Latn:lmenzah 1
+tn-el-menzah-4,TN,neighbourhood,Tunis,"El Menzah 4, Tunis, Tunisia",fr:El Menzah 4 | fr:El Menzah IV | fr:Menzah 4 | fr:Manzah 4 | ar:المنزه 4 | aeb-Latn:menzah 4 | aeb-Latn:menzah4 | aeb-Latn:lmenzah 4
+tn-el-menzah-5,TN,neighbourhood,Ariana,"El Menzah 5, Ariana, Tunisia",fr:El Menzah 5 | fr:El Menzah V | fr:Menzah 5 | fr:Manzah 5 | ar:المنزه 5 | aeb-Latn:menzah 5 | aeb-Latn:menzah5 | aeb-Latn:lmenzah 5
+tn-el-menzah-6,TN,neighbourhood,Ariana,"El Menzah 6, Ariana, Tunisia",fr:El Menzah 6 | fr:El Menzah VI | fr:Menzah 6 | fr:Manzah 6 | ar:المنزه 6 | aeb-Latn:menzah 6 | aeb-Latn:menzah6 | aeb-Latn:lmenzah 6
+tn-el-menzah-7,TN,neighbourhood,Ariana,"El Menzah 7, Ariana, Tunisia",fr:El Menzah 7 | fr:El Menzah VII | fr:Menzah 7 | fr:Manzah 7 | ar:المنزه 7 | aeb-Latn:menzah 7 | aeb-Latn:menzah7 | aeb-Latn:lmenzah 7
+tn-el-menzah-8,TN,neighbourhood,Ariana,"El Menzah 8, Ariana, Tunisia",fr:El Menzah 8 | fr:El Menzah VIII | fr:Menzah 8 | fr:Manzah 8 | ar:المنزه 8 | aeb-Latn:menzah 8 | aeb-Latn:menzah8 | aeb-Latn:lmenzah 8
+tn-el-menzah-9,TN,neighbourhood,Tunis,"El Menzah 9, Tunisia",fr:El Menzah 9 | fr:El Menzah IX | fr:Menzah 9 | fr:Manzah 9 | ar:المنزه 9 | aeb-Latn:menzah 9 | aeb-Latn:menzah9 | aeb-Latn:lmenzah 9
+tn-tunis-berges-du-lac,TN,district,Tunis,"Les Berges du Lac, Tunis, Tunisia",fr:Les Berges du Lac | fr:Berges du Lac | fr:Le Lac | ar:ضفاف البحيرة | ar:البحيرة | aeb-Latn:lac | aeb-Latn:lbhira | aeb-Latn:el bhira
+tn-tunis-berges-du-lac-1,TN,neighbourhood,Tunis,"Les Berges du Lac 1, Tunis, Tunisia",fr:Les Berges du Lac 1 | fr:Berges du Lac 1 | fr:Lac 1 | fr:Lac I | ar:البحيرة 1 | aeb-Latn:lac 1 | aeb-Latn:lac1 | aeb-Latn:bhira 1
+tn-tunis-berges-du-lac-2,TN,neighbourhood,Tunis,"Les Berges du Lac 2, Tunis, Tunisia",fr:Les Berges du Lac 2 | fr:Berges du Lac 2 | fr:Lac 2 | fr:Lac II | ar:البحيرة 2 | aeb-Latn:lac 2 | aeb-Latn:lac2 | aeb-Latn:bhira 2
+tn-tunis-ain-zaghouan,TN,neighbourhood,Tunis,"Aïn Zaghouan, Tunis, Tunisia",fr:Aïn Zaghouan | fr:Ain Zaghouan | fr:Ain Zaghouen | ar:عين زغوان | aeb-Latn:ain zaghouan | aeb-Latn:3in zaghwan
+tn-tunis-el-aouina,TN,neighbourhood,Tunis,"El Aouina, Tunis, Tunisia",fr:El Aouina | fr:L'Aouina | fr:Aouina | ar:العوينة | aeb-Latn:aouina | aeb-Latn:laouina | aeb-Latn:l3wina
+tn-tunis-charguia-1,TN,neighbourhood,Tunis,"Charguia 1, Tunisia",fr:Charguia 1 | fr:Charguia I | fr:Charguia | fr:Cherguia 1 | ar:الشرقية 1 | aeb-Latn:charguia 1 | aeb-Latn:cherguia 1 | aeb-Latn:charguia
+tn-ariana-charguia-2,TN,neighbourhood,Ariana,"Charguia 2, Tunisia",fr:Charguia 2 | fr:Charguia II | fr:Cherguia 2 | ar:الشرقية 2 | aeb-Latn:charguia 2 | aeb-Latn:cherguia 2
+tn-tunis-centre-urbain-nord,TN,district,Tunis,"Centre Urbain Nord, Tunis, Tunisia",fr:Centre Urbain Nord | fr:Centre urbain nord | fr:CUN | ar:المركز العمراني الشمالي | aeb-Latn:centre urbain | aeb-Latn:centre urbain nord
+tn-tunis-jardins-de-carthage,TN,neighbourhood,Tunis,"Les Jardins de Carthage, Tunis, Tunisia",fr:Jardins de Carthage | fr:Les Jardins de Carthage | fr:Jardin de Carthage | ar:حدائق قرطاج | aeb-Latn:jardins de carthage | aeb-Latn:jardin carthage
+tn-tunis-le-bardo,TN,district,Tunis,"Le Bardo, Tunisia",fr:Le Bardo | fr:Bardo | en:Bardo | ar:باردو | ar:الباردو | aeb-Latn:bardo | aeb-Latn:lbardo
+tn-tunis-la-marsa,TN,district,Tunis,"La Marsa, Tunis, Tunisia",fr:La Marsa | fr:Marsa | fr:El Marsa | en:La Marsa | ar:المرسى | aeb-Latn:lmarsa | aeb-Latn:marsa | aeb-Latn:el marsa
+tn-tunis-gammarth,TN,district,Tunis,"Gammarth, Tunis, Tunisia",fr:Gammarth | fr:Gamarth | ar:قمرت | aeb-Latn:gammarth | aeb-Latn:gamart | aeb-Latn:9amart
+tn-tunis-carthage,TN,district,Tunis,"Carthage, Tunis, Tunisia",fr:Carthage | en:Carthage | it:Cartagine | es:Cartago | de:Karthago | ar:قرطاج | aeb-Latn:carthage | aeb-Latn:9artaj | aeb-Latn:qartaj
+tn-tunis-sidi-bou-said,TN,district,Tunis,"Sidi Bou Saïd, Tunis, Tunisia",fr:Sidi Bou Saïd | fr:Sidi Bou Said | fr:Sidi Bousaid | ar:سيدي بوسعيد | ar:سيدي بو سعيد | aeb-Latn:sidi bou said | aeb-Latn:sidibousaid | aeb-Latn:sidi bou s3id
+tn-tunis-la-goulette,TN,district,Tunis,"La Goulette, Tunis, Tunisia",fr:La Goulette | fr:Goulette | it:La Goletta | ar:حلق الوادي | aeb-Latn:halk el oued | aeb-Latn:7al9 lwed | aeb-Latn:halq el wadi | aeb-Latn:lagoulette
+tn-tunis-le-kram,TN,district,Tunis,"Le Kram, Tunis, Tunisia",fr:Le Kram | fr:Kram | fr:El Kram | ar:الكرم | aeb-Latn:kram | aeb-Latn:lkram
+tn-tunis-cite-el-khadra,TN,neighbourhood,Tunis,"Cité El Khadra, Tunis, Tunisia",fr:Cité El Khadra | fr:Cite El Khadra | fr:El Khadra | ar:حي الخضراء | aeb-Latn:cite khadra | aeb-Latn:el khadra | aeb-Latn:khadhra
+tn-tunis-el-omrane,TN,neighbourhood,Tunis,"El Omrane, Tunis, Tunisia",fr:El Omrane | fr:Omrane | ar:العمران | aeb-Latn:omrane | aeb-Latn:l3omran
+tn-tunis-bab-el-khadra,TN,neighbourhood,Tunis,"Bab El Khadra, Tunis, Tunisia",fr:Bab El Khadra | fr:Bab Khadra | fr:Bab El Khadhra | ar:باب الخضراء | aeb-Latn:bab el khadra | aeb-Latn:bab lakhdhra
+tn-tunis-medina,TN,neighbourhood,Tunis,"Médina de Tunis, Tunis, Tunisia",fr:Médina de Tunis | fr:Medina de Tunis | fr:La Médina | fr:Médina | fr:Medina | en:Medina of Tunis | en:Tunis Medina | ar:مدينة تونس العتيقة | ar:المدينة العتيقة | aeb-Latn:medina | aeb-Latn:lmdina
+tn-tunis-dar-fadhal,TN,neighbourhood,Ariana,"Dar Fadhal, La Soukra, Tunisia",fr:Dar Fadhal | fr:Dar Fadhel | ar:دار فضال | aeb-Latn:dar fadhal | aeb-Latn:dar fadhel
+tn-ariana-ennasr,TN,district,Ariana,"Ennasr, Ariana, Tunisia",fr:Ennasr | fr:En Nasr | fr:Cité Ennasr | ar:النصر | ar:حي النصر | aeb-Latn:nasr | aeb-Latn:ennasr | aeb-Latn:enasr
+tn-ariana-ennasr-1,TN,neighbourhood,Ariana,"Ennasr 1, Ariana, Tunisia",fr:Ennasr 1 | fr:Ennasr I | fr:En Nasr 1 | fr:El Nasr 1 | fr:Cité Ennasr 1 | ar:النصر 1 | aeb-Latn:nasr 1 | aeb-Latn:nasr1 | aeb-Latn:ennasr 1
+tn-ariana-ennasr-2,TN,neighbourhood,Ariana,"Ennasr 2, Ariana, Tunisia",fr:Ennasr 2 | fr:Ennasr II | fr:En Nasr 2 | fr:El Nasr 2 | fr:Cité Ennasr 2 | ar:النصر 2 | aeb-Latn:nasr 2 | aeb-Latn:nasr2 | aeb-Latn:ennasr 2
+tn-ariana-la-soukra,TN,district,Ariana,"La Soukra, Ariana, Tunisia",fr:La Soukra | fr:Soukra | fr:Essoukra | ar:سكرة | ar:السكرة | aeb-Latn:soukra | aeb-Latn:sokra | aeb-Latn:essokra
+tn-ariana-raoued,TN,district,Ariana,"Raoued, Ariana, Tunisia",fr:Raoued | fr:Raouad | ar:رواد | aeb-Latn:raoued | aeb-Latn:rwed
+tn-ariana-el-ghazala,TN,neighbourhood,Ariana,"El Ghazala, Ariana, Tunisia",fr:El Ghazala | fr:Ghazala | fr:Cité El Ghazala | fr:Technopole El Ghazala | fr:Pôle technologique El Ghazala | ar:الغزالة | ar:القطب التكنولوجي بالغزالة | aeb-Latn:ghazela | aeb-Latn:ghazala | aeb-Latn:lghazela
+tn-ariana-ennkhilet,TN,neighbourhood,Ariana,"Ennkhilet, Ariana, Tunisia",fr:Ennkhilet | fr:En Nkhilet | fr:Nkhilet | fr:Ennkhilette | ar:النخيلات | aeb-Latn:nkhilet | aeb-Latn:ennkhilet
+tn-ariana-borj-louzir,TN,neighbourhood,Ariana,"Borj Louzir, Ariana, Tunisia",fr:Borj Louzir | fr:Borj El Ouzir | fr:Borj Lwzir | ar:برج الوزير | aeb-Latn:borj louzir | aeb-Latn:borj lwzir
+tn-ariana-ettadhamen,TN,district,Ariana,"Ettadhamen, Ariana, Tunisia",fr:Ettadhamen | fr:Cité Ettadhamen | fr:Hay Ettadhamen | ar:حي التضامن | aeb-Latn:tadhamen | aeb-Latn:ettadhamen
+tn-manouba-denden,TN,neighbourhood,Manouba,"Denden, Manouba, Tunisia",fr:Denden | fr:Den Den | ar:الدندان | aeb-Latn:denden | aeb-Latn:dendan
+tn-ben-arous-ezzahra,TN,district,Ben Arous,"Ezzahra, Ben Arous, Tunisia",fr:Ezzahra | fr:Ez-Zahra | fr:El Zahra | ar:الزهراء | aeb-Latn:ezzahra | aeb-Latn:zahra
+tn-ben-arous-rades,TN,district,Ben Arous,"Radès, Ben Arous, Tunisia",fr:Radès | fr:Rades | ar:رادس | aeb-Latn:rades
+tn-ben-arous-megrine,TN,district,Ben Arous,"Mégrine, Ben Arous, Tunisia",fr:Mégrine | fr:Megrine | ar:مقرين | aeb-Latn:megrine | aeb-Latn:mgrine
+tn-ben-arous-el-mourouj,TN,district,Ben Arous,"El Mourouj, Ben Arous, Tunisia",fr:El Mourouj | fr:Mourouj | ar:المروج | aeb-Latn:mourouj | aeb-Latn:lmourouj | aeb-Latn:mrouj
+tn-ben-arous-hammam-lif,TN,district,Ben Arous,"Hammam Lif, Ben Arous, Tunisia",fr:Hammam-Lif | fr:Hammam Lif | fr:Hamam Lif | ar:حمام الأنف | aeb-Latn:hammam lif | aeb-Latn:hamamlif | aeb-Latn:7ammam lif
+tn-ben-arous-hammam-chott,TN,district,Ben Arous,"Hammam Chott, Ben Arous, Tunisia",fr:Hammam Chott | fr:Hammam Chatt | ar:حمام الشط | aeb-Latn:hammam chott | aeb-Latn:7ammam echatt
+tn-tunis-bab-bhar,TN,landmark,Tunis,"Bab El Bhar, Tunis, Tunisia",fr:Bab El Bhar | fr:Bab Bhar | fr:Porte de France | en:Sea Gate | ar:باب البحر | aeb-Latn:bab bhar
+tn-tunis-kasbah,TN,landmark,Tunis,"Place de la Kasbah, Tunis, Tunisia",fr:La Kasbah | fr:Kasbah | fr:Place de la Kasbah | ar:القصبة | aeb-Latn:kasba | aeb-Latn:9asba
+tn-tunis-place-barcelone,TN,station,Tunis,"Place Barcelone, Tunis, Tunisia",fr:Place Barcelone | fr:Barcelone | fr:Gare de Tunis | fr:Gare Barcelone | en:Tunis railway station | ar:ساحة برشلونة | aeb-Latn:barcelone | aeb-Latn:place barcelone
+tn-tunis-marine,TN,station,Tunis,"Tunis Marine, Tunis, Tunisia",fr:Tunis Marine | fr:Gare Tunis Marine | fr:TGM Tunis Marine | ar:تونس البحرية | aeb-Latn:tunis marine | aeb-Latn:marine
+tn-tunis-republique,TN,station,Tunis,"Place de la République, Tunis, Tunisia",fr:Place de la République | fr:Place de la Republique | fr:République | ar:ساحة الجمهورية | aeb-Latn:republique
+tn-tunis-passage,TN,station,Tunis,"Passage, Tunis, Tunisia",fr:Passage | fr:Le Passage | fr:Place du Passage | ar:الباساج | aeb-Latn:passage | aeb-Latn:lbassaj
+tn-tunis-avenue-habib-bourguiba,TN,landmark,Tunis,"Avenue Habib Bourguiba, Tunis, Tunisia",fr:Avenue Habib Bourguiba | fr:Av Habib Bourguiba | fr:Avenue Bourguiba | en:Habib Bourguiba Avenue | ar:شارع الحبيب بورقيبة | aeb-Latn:avenue | aeb-Latn:lavenue | aeb-Latn:avenue bourguiba
+tn-tunis-carthage-airport,TN,station,Tunis,"Aéroport international de Tunis-Carthage, Tunis, Tunisia",fr:Aéroport Tunis-Carthage | fr:Aéroport de Tunis-Carthage | fr:Aeroport Tunis Carthage | fr:Tunis-Carthage | en:Tunis-Carthage Airport | en:Tunis Carthage International Airport | ar:مطار تونس قرطاج الدولي | ar:مطار تونس قرطاج | aeb-Latn:matar | aeb-Latn:aeroport
+tn-tunis-tunisia-mall,TN,landmark,Tunis,"Tunisia Mall, Tunis, Tunisia",fr:Tunisia Mall | en:Tunisia Mall | ar:تونيزيا مول | aeb-Latn:tunisia mall | aeb-Latn:tunisiamall
+tn-tunis-bab-alioua,TN,station,Tunis,"Bab Alioua, Tunis, Tunisia",fr:Bab Alioua | fr:Gare routière Bab Alioua | fr:Gare routière Sud | ar:باب عليوة | aeb-Latn:bab alioua | aeb-Latn:bab 3lioua
+tn-sousse-sahloul,TN,neighbourhood,Sousse,"Sahloul, Sousse, Tunisia",fr:Sahloul | fr:Cité Sahloul | ar:سهلول | aeb-Latn:sahloul
+tn-sousse-khezama,TN,neighbourhood,Sousse,"Khezama, Sousse, Tunisia",fr:Khezama | fr:Khzema | fr:Khezama Est | fr:Khezama Ouest | ar:خزامة | aeb-Latn:khezama | aeb-Latn:khzema
+tn-sousse-hammam-sousse,TN,district,Sousse,"Hammam Sousse, Tunisia",fr:Hammam Sousse | fr:Hammam-Sousse | ar:حمام سوسة | aeb-Latn:hammam sousse | aeb-Latn:7ammam soussa
+tn-sousse-port-el-kantaoui,TN,district,Sousse,"Port El Kantaoui, Sousse, Tunisia",fr:Port El Kantaoui | fr:El Kantaoui | fr:Kantaoui | en:Port El Kantaoui | ar:مرسى القنطاوي | ar:القنطاوي | aeb-Latn:kantaoui | aeb-Latn:9antawi
+tn-sousse-medina,TN,neighbourhood,Sousse,"Médina de Sousse, Sousse, Tunisia",fr:Médina de Sousse | fr:Medina de Sousse | fr:Medina Sousse | en:Medina of Sousse | ar:مدينة سوسة العتيقة | aeb-Latn:mdina soussa
+tn-sousse-riadh,TN,district,Sousse,"Sousse Riadh, Sousse, Tunisia",fr:Sousse Riadh | fr:Cité Riadh Sousse | fr:Riadh Sousse | ar:سوسة الرياض | aeb-Latn:riadh soussa
+tn-sousse-msaken,TN,city,Msaken,"Msaken, Sousse, Tunisia",fr:Msaken | fr:M'saken | ar:مساكن | aeb-Latn:msaken
+tn-sousse-boujaafar,TN,landmark,Sousse,"Plage Boujaafar, Sousse, Tunisia",fr:Boujaafar | fr:Plage Boujaafar | fr:Bou Jaafar | ar:بوجعفر | aeb-Latn:boujaafar | aeb-Latn:bouja3far
+tn-sousse-gare,TN,station,Sousse,"Gare de Sousse, Sousse, Tunisia",fr:Gare de Sousse | fr:Gare Sousse Ville | ar:محطة سوسة | aeb-Latn:gare soussa | aeb-Latn:gare sousse
+tn-sfax-medina,TN,neighbourhood,Sfax,"Médina de Sfax, Sfax, Tunisia",fr:Médina de Sfax | fr:Medina de Sfax | fr:Medina Sfax | en:Medina of Sfax | ar:مدينة صفاقس العتيقة | aeb-Latn:mdina sfax
+tn-sfax-sakiet-ezzit,TN,district,Sfax,"Sakiet Ezzit, Sfax, Tunisia",fr:Sakiet Ezzit | fr:Sakiet Ezzeit | ar:ساقية الزيت | aeb-Latn:sakiet ezzit | aeb-Latn:sa9iet ezzit
+tn-sfax-sakiet-eddaier,TN,district,Sfax,"Sakiet Eddaïer, Sfax, Tunisia",fr:Sakiet Eddaïer | fr:Sakiet Eddaier | ar:ساقية الدائر | aeb-Latn:sakiet eddaier | aeb-Latn:sa9iet eddayer
+tn-sfax-el-jadida,TN,district,Sfax,"Sfax El Jadida, Sfax, Tunisia",fr:Sfax El Jadida | fr:Sfax Jadida | ar:صفاقس الجديدة | aeb-Latn:sfax jdida
+tn-sfax-thyna,TN,district,Sfax,"Thyna, Sfax, Tunisia",fr:Thyna | fr:Thina | ar:طينة | aeb-Latn:thyna | aeb-Latn:tina
+tn-sfax-airport,TN,station,Sfax,"Aéroport international de Sfax-Thyna, Sfax, Tunisia",fr:Aéroport de Sfax-Thyna | fr:Aéroport de Sfax | fr:Aeroport Sfax Thyna | en:Sfax-Thyna Airport | ar:مطار صفاقس طينة الدولي | aeb-Latn:matar sfax
+tn-sfax-gare,TN,station,Sfax,"Gare de Sfax, Sfax, Tunisia",fr:Gare de Sfax | ar:محطة صفاقس | aeb-Latn:gare sfax
+tn-monastir-skanes,TN,district,Monastir,"Skanes, Monastir, Tunisia",fr:Skanes | fr:Skanès | ar:سقانص | aeb-Latn:skanes | aeb-Latn:s9anes
+tn-monastir-ribat,TN,landmark,Monastir,"Ribat de Monastir, Monastir, Tunisia",fr:Ribat de Monastir | fr:Ribat | en:Ribat of Monastir | ar:رباط المنستير | aeb-Latn:ribat
+tn-monastir-ksar-hellal,TN,city,Ksar Hellal,"Ksar Hellal, Monastir, Tunisia",fr:Ksar Hellal | fr:Ksar Hilal | ar:قصر هلال | aeb-Latn:ksar hellal | aeb-Latn:9sar hlel
+tn-monastir-moknine,TN,city,Moknine,"Moknine, Monastir, Tunisia",fr:Moknine | ar:المكنين | aeb-Latn:moknine
+tn-monastir-airport,TN,station,Monastir,"Aéroport international de Monastir Habib-Bourguiba, Monastir, Tunisia",fr:Aéroport de Monastir | fr:Aéroport Monastir Habib Bourguiba | fr:Aeroport Monastir | en:Monastir Airport | en:Monastir Habib Bourguiba International Airport | ar:مطار المنستير الحبيب بورقيبة الدولي | ar:مطار المنستير | aeb-Latn:matar monastir
+tn-insat,TN,campus,Tunis,"Institut National des Sciences Appliquées et de Technologie, Tunis, Tunisia",fr:Institut National des Sciences Appliquées et de Technologie | fr:Institut National des Sciences Appliquees et de Technologie | fr:INSAT | en:National Institute of Applied Science and Technology | ar:المعهد الوطني للعلوم التطبيقية والتكنولوجيا | aeb-Latn:insat
+tn-enit,TN,campus,Tunis,"École Nationale d'Ingénieurs de Tunis, Tunis, Tunisia",fr:École Nationale d'Ingénieurs de Tunis | fr:Ecole Nationale d'Ingenieurs de Tunis | fr:ENIT | en:National Engineering School of Tunis | ar:المدرسة الوطنية للمهندسين بتونس | aeb-Latn:enit
+tn-ensit,TN,campus,Tunis,"École Nationale Supérieure d'Ingénieurs de Tunis, Tunis, Tunisia",fr:École Nationale Supérieure d'Ingénieurs de Tunis | fr:Ecole Nationale Superieure d'Ingenieurs de Tunis | fr:ENSIT | fr:ESSTT | ar:المدرسة الوطنية العليا للمهندسين بتونس | aeb-Latn:ensit | aeb-Latn:esstt
+tn-ensi,TN,campus,Manouba,"École Nationale des Sciences de l'Informatique, Manouba, Tunisia",fr:École Nationale des Sciences de l'Informatique | fr:Ecole Nationale des Sciences de l'Informatique | fr:ENSI | en:National School of Computer Science | ar:المدرسة الوطنية لعلوم الإعلامية | aeb-Latn:ensi
+tn-supcom,TN,campus,Ariana,"École Supérieure des Communications de Tunis, Ariana, Tunisia",fr:École Supérieure des Communications de Tunis | fr:Ecole Superieure des Communications de Tunis | fr:Sup'Com | fr:SupCom | fr:Sup Com | ar:المدرسة العليا للمواصلات بتونس | aeb-Latn:supcom
+tn-esprit,TN,campus,Ariana,"École Supérieure Privée d'Ingénierie et de Technologies, Ariana, Tunisia",fr:École Supérieure Privée d'Ingénierie et de Technologies | fr:Ecole Superieure Privee d'Ingenierie et de Technologies | fr:ESPRIT | fr:Esprit Ghazala | fr:Esprit School of Engineering | aeb-Latn:esprit
+tn-isi-ariana,TN,campus,Ariana,"Institut Supérieur d'Informatique, Ariana, Tunisia",fr:Institut Supérieur d'Informatique | fr:Institut Superieur d'Informatique | fr:ISI | fr:ISI Ariana | ar:المعهد العالي للإعلامية | aeb-Latn:isi
+tn-fst,TN,campus,Tunis,"Faculté des Sciences de Tunis, Tunis, Tunisia",fr:Faculté des Sciences de Tunis | fr:Faculte des Sciences de Tunis | fr:FST | fr:FST Tunis | fr:Fac des sciences de Tunis | ar:كلية العلوم بتونس | aeb-Latn:fst | aeb-Latn:fac sciences
+tn-fmt,TN,campus,Tunis,"Faculté de Médecine de Tunis, Tunis, Tunisia",fr:Faculté de Médecine de Tunis | fr:Faculte de Medecine de Tunis | fr:FMT | fr:Fac de médecine de Tunis | en:Faculty of Medicine of Tunis | ar:كلية الطب بتونس | aeb-Latn:fac medecine tunis
+tn-fdspt,TN,campus,Tunis,"Faculté de Droit et des Sciences Politiques de Tunis, Tunis, Tunisia",fr:Faculté de Droit et des Sciences Politiques de Tunis | fr:Faculte de Droit et des Sciences Politiques de Tunis | fr:FDSPT | fr:Fac de droit de Tunis | ar:كلية الحقوق والعلوم السياسية بتونس | aeb-Latn:fac droit
+tn-fseg-tunis,TN,campus,Tunis,"Faculté des Sciences Économiques et de Gestion de Tunis, Tunis, Tunisia",fr:Faculté des Sciences Économiques et de Gestion de Tunis | fr:Faculte des Sciences Economiques et de Gestion de Tunis | fr:FSEG Tunis | fr:FSEGT | ar:كلية العلوم الاقتصادية والتصرف بتونس | aeb-Latn:fseg
+tn-fshst,TN,campus,Tunis,"Faculté des Sciences Humaines et Sociales de Tunis, Tunis, Tunisia",fr:Faculté des Sciences Humaines et Sociales de Tunis | fr:FSHST | fr:Faculté du 9 Avril | fr:Fac 9 Avril | ar:كلية العلوم الإنسانية والاجتماعية بتونس | aeb-Latn:9 avril
+tn-campus-el-manar,TN,campus,Tunis,"Campus Universitaire El Manar, Tunis, Tunisia",fr:Campus universitaire El Manar | fr:Campus El Manar | fr:Campus Farhat Hached | fr:Université de Tunis El Manar | fr:Campus Manar | en:University of Tunis El Manar | ar:المركب الجامعي بالمنار | ar:جامعة تونس المنار | aeb-Latn:campus manar | aeb-Latn:campus
+tn-isg-tunis,TN,campus,Tunis,"Institut Supérieur de Gestion de Tunis, Tunisia",fr:Institut Supérieur de Gestion de Tunis | fr:Institut Superieur de Gestion de Tunis | fr:ISG Tunis | fr:ISG | ar:المعهد العالي للتصرف بتونس | aeb-Latn:isg
+tn-ihec-carthage,TN,campus,Tunis,"Institut des Hautes Études Commerciales de Carthage, Carthage, Tunisia",fr:Institut des Hautes Études Commerciales de Carthage | fr:Institut des Hautes Etudes Commerciales de Carthage | fr:IHEC Carthage | fr:IHEC | ar:معهد الدراسات التجارية العليا بقرطاج | aeb-Latn:ihec
+tn-inat,TN,campus,Tunis,"Institut National Agronomique de Tunisie, Tunis, Tunisia",fr:Institut National Agronomique de Tunisie | fr:INAT | aeb-Latn:inat
+tn-iscae,TN,campus,Manouba,"Institut Supérieur de Comptabilité et d'Administration des Entreprises, Manouba, Tunisia",fr:Institut Supérieur de Comptabilité et d'Administration des Entreprises | fr:Institut Superieur de Comptabilite et d'Administration des Entreprises | fr:ISCAE | ar:المعهد العالي للمحاسبة وإدارة المؤسسات | aeb-Latn:iscae
+tn-univ-manouba,TN,campus,Manouba,"Campus Universitaire de la Manouba, Manouba, Tunisia",fr:Université de la Manouba | fr:Université de Manouba | fr:Campus de la Manouba | fr:Campus Manouba | en:University of Manouba | ar:جامعة منوبة | aeb-Latn:campus manouba
+tn-flah-manouba,TN,campus,Manouba,"Faculté des Lettres, des Arts et des Humanités de la Manouba, Manouba, Tunisia",fr:Faculté des Lettres des Arts et des Humanités de la Manouba | fr:FLAH | fr:FLAHM | fr:Fac des lettres Manouba | ar:كلية الآداب والفنون والإنسانيات بمنوبة | aeb-Latn:fac lettres manouba
+tn-tbs,TN,campus,Ben Arous,"Tunis Business School, Ben Arous, Tunisia",en:Tunis Business School | en:TBS | fr:Tunis Business School | aeb-Latn:tbs
+tn-iset-rades,TN,campus,Ben Arous,"Institut Supérieur des Études Technologiques de Radès, Radès, Tunisia",fr:Institut Supérieur des Études Technologiques de Radès | fr:ISET Radès | fr:ISET Rades | ar:المعهد العالي للدراسات التكنولوجية برادس | aeb-Latn:iset rades
+tn-eniso,TN,campus,Sousse,"École Nationale d'Ingénieurs de Sousse, Sousse, Tunisia",fr:École Nationale d'Ingénieurs de Sousse | fr:Ecole Nationale d'Ingenieurs de Sousse | fr:ENISo | fr:ENISO | ar:المدرسة الوطنية للمهندسين بسوسة | aeb-Latn:eniso
+tn-fm-sousse,TN,campus,Sousse,"Faculté de Médecine de Sousse, Sousse, Tunisia",fr:Faculté de Médecine de Sousse | fr:Faculte de Medecine de Sousse | fr:Faculté de Médecine Ibn El Jazzar | fr:Fac de médecine de Sousse | ar:كلية الطب بسوسة | ar:كلية الطب ابن الجزار بسوسة | aeb-Latn:fac medecine sousse
+tn-isitcom,TN,campus,Sousse,"Institut Supérieur d'Informatique et des Techniques de Communication, Hammam Sousse, Tunisia",fr:Institut Supérieur d'Informatique et des Techniques de Communication | fr:ISITCom | fr:ISITCOM | fr:ISITCom Hammam Sousse | ar:المعهد العالي للإعلامية وتقنيات الاتصال بحمام سوسة | aeb-Latn:isitcom
+tn-enis,TN,campus,Sfax,"École Nationale d'Ingénieurs de Sfax, Sfax, Tunisia",fr:École Nationale d'Ingénieurs de Sfax | fr:Ecole Nationale d'Ingenieurs de Sfax | fr:ENIS | ar:المدرسة الوطنية للمهندسين بصفاقس | aeb-Latn:enis
+tn-fm-sfax,TN,campus,Sfax,"Faculté de Médecine de Sfax, Sfax, Tunisia",fr:Faculté de Médecine de Sfax | fr:Faculte de Medecine de Sfax | fr:Fac de médecine de Sfax | ar:كلية الطب بصفاقس | aeb-Latn:fac medecine sfax
+tn-isims,TN,campus,Sfax,"Institut Supérieur d'Informatique et de Multimédia de Sfax, Sfax, Tunisia",fr:Institut Supérieur d'Informatique et de Multimédia de Sfax | fr:ISIMS | fr:ISIM Sfax | ar:المعهد العالي للإعلامية والملتيميديا بصفاقس | aeb-Latn:isims
+tn-enetcom,TN,campus,Sfax,"École Nationale d'Électronique et des Télécommunications de Sfax, Sfax, Tunisia",fr:École Nationale d'Électronique et des Télécommunications de Sfax | fr:ENET'Com | fr:ENETCom | fr:ENET Com | aeb-Latn:enetcom
+tn-fphm,TN,campus,Monastir,"Faculté de Pharmacie de Monastir, Monastir, Tunisia",fr:Faculté de Pharmacie de Monastir | fr:Faculte de Pharmacie de Monastir | fr:Fac de pharmacie Monastir | ar:كلية الصيدلة بالمنستير | aeb-Latn:fac pharmacie
+tn-fm-monastir,TN,campus,Monastir,"Faculté de Médecine de Monastir, Monastir, Tunisia",fr:Faculté de Médecine de Monastir | fr:Faculte de Medecine de Monastir | fr:Fac de médecine de Monastir | ar:كلية الطب بالمنستير | aeb-Latn:fac medecine monastir
+tn-enim,TN,campus,Monastir,"École Nationale d'Ingénieurs de Monastir, Monastir, Tunisia",fr:École Nationale d'Ingénieurs de Monastir | fr:Ecole Nationale d'Ingenieurs de Monastir | fr:ENIM | ar:المدرسة الوطنية للمهندسين بالمنستير | aeb-Latn:enim
+tn-fsm,TN,campus,Monastir,"Faculté des Sciences de Monastir, Monastir, Tunisia",fr:Faculté des Sciences de Monastir | fr:Faculte des Sciences de Monastir | fr:FSM | ar:كلية العلوم بالمنستير | aeb-Latn:fsm
+fr-paris,FR,city,Paris,"Paris, France",fr:Paris | en:Paris | es:París | it:Parigi | ar:باريس
+fr-marseille,FR,city,Marseille,"Marseille, France",fr:Marseille | en:Marseilles | es:Marsella | it:Marsiglia | ar:مرسيليا
+fr-lyon,FR,city,Lyon,"Lyon, France",fr:Lyon | en:Lyons | it:Lione | ar:ليون
+fr-toulouse,FR,city,Toulouse,"Toulouse, France",fr:Toulouse | es:Tolosa | ar:تولوز
+fr-nice,FR,city,Nice,"Nice, Alpes-Maritimes, France",fr:Nice | it:Nizza | es:Niza | ar:نيس
+fr-nantes,FR,city,Nantes,"Nantes, France",fr:Nantes | ar:نانت
+fr-montpellier,FR,city,Montpellier,"Montpellier, France",fr:Montpellier | fr:Montpelier | ar:مونبلييه
+fr-strasbourg,FR,city,Strasbourg,"Strasbourg, France",fr:Strasbourg | de:Straßburg | de:Strassburg | ar:ستراسبورغ
+fr-bordeaux,FR,city,Bordeaux,"Bordeaux, France",fr:Bordeaux | es:Burdeos | ar:بوردو
+fr-lille,FR,city,Lille,"Lille, France",fr:Lille | ar:ليل
+fr-rennes,FR,city,Rennes,"Rennes, France",fr:Rennes
+fr-toulon,FR,city,Toulon,"Toulon, France",fr:Toulon
+fr-reims,FR,city,Reims,"Reims, France",fr:Reims | fr:Rheims
+fr-saint-etienne,FR,city,Saint-Étienne,"Saint-Étienne, France",fr:Saint-Étienne | fr:Saint-Etienne | fr:Saint Etienne | fr:St-Étienne | fr:St Etienne
+fr-le-havre,FR,city,Le Havre,"Le Havre, France",fr:Le Havre | fr:Havre
+fr-grenoble,FR,city,Grenoble,"Grenoble, France",fr:Grenoble | ar:غرونوبل
+fr-villeurbanne,FR,city,Villeurbanne,"Villeurbanne, France",fr:Villeurbanne | fr:Villeurbane
+fr-saint-denis,FR,city,Saint-Denis,"Saint-Denis, Seine-Saint-Denis, France",fr:Saint-Denis | fr:Saint Denis | fr:St-Denis | fr:St Denis | fr:93200
+fr-paris-01,FR,district,Paris,"Paris 1er Arrondissement, Paris, France",fr:Paris 1er | fr:1er arrondissement | fr:Paris 1 | fr:75001 | fr:Paris Ier | fr:1er arr | en:1st arrondissement | en:Paris 1st
+fr-paris-02,FR,district,Paris,"Paris 2e Arrondissement, Paris, France",fr:Paris 2e | fr:2e arrondissement | fr:Paris 2 | fr:75002 | fr:Paris 2ème | fr:2ème arrondissement | fr:Paris 2eme | fr:2eme arrondissement | fr:Paris II | fr:2e arr | en:2nd arrondissement | en:Paris 2nd
+fr-paris-03,FR,district,Paris,"Paris 3e Arrondissement, Paris, France",fr:Paris 3e | fr:3e arrondissement | fr:Paris 3 | fr:75003 | fr:Paris 3ème | fr:3ème arrondissement | fr:Paris 3eme | fr:3eme arrondissement | fr:Paris III | fr:3e arr | en:3rd arrondissement | en:Paris 3rd
+fr-paris-04,FR,district,Paris,"Paris 4e Arrondissement, Paris, France",fr:Paris 4e | fr:4e arrondissement | fr:Paris 4 | fr:75004 | fr:Paris 4ème | fr:4ème arrondissement | fr:Paris 4eme | fr:4eme arrondissement | fr:Paris IV | fr:4e arr | en:4th arrondissement | en:Paris 4th
+fr-paris-05,FR,district,Paris,"Paris 5e Arrondissement, Paris, France",fr:Paris 5e | fr:5e arrondissement | fr:Paris 5 | fr:75005 | fr:Paris 5ème | fr:5ème arrondissement | fr:Paris 5eme | fr:5eme arrondissement | fr:Paris V | fr:5e arr | en:5th arrondissement | en:Paris 5th
+fr-paris-06,FR,district,Paris,"Paris 6e Arrondissement, Paris, France",fr:Paris 6e | fr:6e arrondissement | fr:Paris 6 | fr:75006 | fr:Paris 6ème | fr:6ème arrondissement | fr:Paris 6eme | fr:6eme arrondissement | fr:Paris VI | fr:6e arr | en:6th arrondissement | en:Paris 6th
+fr-paris-07,FR,district,Paris,"Paris 7e Arrondissement, Paris, France",fr:Paris 7e | fr:7e arrondissement | fr:Paris 7 | fr:75007 | fr:Paris 7ème | fr:7ème arrondissement | fr:Paris 7eme | fr:7eme arrondissement | fr:Paris VII | fr:7e arr | en:7th arrondissement | en:Paris 7th
+fr-paris-08,FR,district,Paris,"Paris 8e Arrondissement, Paris, France",fr:Paris 8e | fr:8e arrondissement | fr:Paris 8 | fr:75008 | fr:Paris 8ème | fr:8ème arrondissement | fr:Paris 8eme | fr:8eme arrondissement | fr:Paris VIII | fr:8e arr | en:8th arrondissement | en:Paris 8th
+fr-paris-09,FR,district,Paris,"Paris 9e Arrondissement, Paris, France",fr:Paris 9e | fr:9e arrondissement | fr:Paris 9 | fr:75009 | fr:Paris 9ème | fr:9ème arrondissement | fr:Paris 9eme | fr:9eme arrondissement | fr:Paris IX | fr:9e arr | en:9th arrondissement | en:Paris 9th
+fr-paris-10,FR,district,Paris,"Paris 10e Arrondissement, Paris, France",fr:Paris 10e | fr:10e arrondissement | fr:Paris 10 | fr:75010 | fr:Paris 10ème | fr:10ème arrondissement | fr:Paris 10eme | fr:10eme arrondissement | fr:Paris X | fr:10e arr | en:10th arrondissement | en:Paris 10th
+fr-paris-11,FR,district,Paris,"Paris 11e Arrondissement, Paris, France",fr:Paris 11e | fr:11e arrondissement | fr:Paris 11 | fr:75011 | fr:Paris 11ème | fr:11ème arrondissement | fr:Paris 11eme | fr:11eme arrondissement | fr:Paris XI | fr:11e arr | en:11th arrondissement | en:Paris 11th
+fr-paris-12,FR,district,Paris,"Paris 12e Arrondissement, Paris, France",fr:Paris 12e | fr:12e arrondissement | fr:Paris 12 | fr:75012 | fr:Paris 12ème | fr:12ème arrondissement | fr:Paris 12eme | fr:12eme arrondissement | fr:Paris XII | fr:12e arr | en:12th arrondissement | en:Paris 12th
+fr-paris-13,FR,district,Paris,"Paris 13e Arrondissement, Paris, France",fr:Paris 13e | fr:13e arrondissement | fr:Paris 13 | fr:75013 | fr:Paris 13ème | fr:13ème arrondissement | fr:Paris 13eme | fr:13eme arrondissement | fr:Paris XIII | fr:13e arr | en:13th arrondissement | en:Paris 13th
+fr-paris-14,FR,district,Paris,"Paris 14e Arrondissement, Paris, France",fr:Paris 14e | fr:14e arrondissement | fr:Paris 14 | fr:75014 | fr:Paris 14ème | fr:14ème arrondissement | fr:Paris 14eme | fr:14eme arrondissement | fr:Paris XIV | fr:14e arr | en:14th arrondissement | en:Paris 14th
+fr-paris-15,FR,district,Paris,"Paris 15e Arrondissement, Paris, France",fr:Paris 15e | fr:15e arrondissement | fr:Paris 15 | fr:75015 | fr:Paris 15ème | fr:15ème arrondissement | fr:Paris 15eme | fr:15eme arrondissement | fr:Paris XV | fr:15e arr | en:15th arrondissement | en:Paris 15th
+fr-paris-16,FR,district,Paris,"Paris 16e Arrondissement, Paris, France",fr:Paris 16e | fr:16e arrondissement | fr:Paris 16 | fr:75016 | fr:Paris 16ème | fr:16ème arrondissement | fr:Paris 16eme | fr:16eme arrondissement | fr:Paris XVI | fr:16e arr | fr:75116 | en:16th arrondissement | en:Paris 16th
+fr-paris-17,FR,district,Paris,"Paris 17e Arrondissement, Paris, France",fr:Paris 17e | fr:17e arrondissement | fr:Paris 17 | fr:75017 | fr:Paris 17ème | fr:17ème arrondissement | fr:Paris 17eme | fr:17eme arrondissement | fr:Paris XVII | fr:17e arr | en:17th arrondissement | en:Paris 17th
+fr-paris-18,FR,district,Paris,"Paris 18e Arrondissement, Paris, France",fr:Paris 18e | fr:18e arrondissement | fr:Paris 18 | fr:75018 | fr:Paris 18ème | fr:18ème arrondissement | fr:Paris 18eme | fr:18eme arrondissement | fr:Paris XVIII | fr:18e arr | en:18th arrondissement | en:Paris 18th
+fr-paris-19,FR,district,Paris,"Paris 19e Arrondissement, Paris, France",fr:Paris 19e | fr:19e arrondissement | fr:Paris 19 | fr:75019 | fr:Paris 19ème | fr:19ème arrondissement | fr:Paris 19eme | fr:19eme arrondissement | fr:Paris XIX | fr:19e arr | en:19th arrondissement | en:Paris 19th
+fr-paris-20,FR,district,Paris,"Paris 20e Arrondissement, Paris, France",fr:Paris 20e | fr:20e arrondissement | fr:Paris 20 | fr:75020 | fr:Paris 20ème | fr:20ème arrondissement | fr:Paris 20eme | fr:20eme arrondissement | fr:Paris XX | fr:20e arr | en:20th arrondissement | en:Paris 20th
+fr-paris-quartier-latin,FR,neighbourhood,Paris,"Quartier Latin, Paris, France",fr:Quartier latin | fr:Le Quartier latin | en:Latin Quarter | es:Barrio Latino | it:Quartiere Latino | ar:الحي اللاتيني
+fr-paris-jussieu,FR,station,Paris,"Jussieu, Paris, France",fr:Jussieu | fr:Métro Jussieu | fr:Metro Jussieu | fr:Place Jussieu
+fr-paris-nation,FR,landmark,Paris,"Place de la Nation, Paris, France",fr:Nation | fr:Place de la Nation | fr:Métro Nation
+fr-paris-bastille,FR,landmark,Paris,"Place de la Bastille, Paris, France",fr:Bastille | fr:Place de la Bastille | fr:Métro Bastille
+fr-paris-oberkampf,FR,neighbourhood,Paris,"Rue Oberkampf, Paris, France",fr:Oberkampf | fr:Quartier Oberkampf | fr:Rue Oberkampf
+fr-paris-montparnasse,FR,station,Paris,"Gare Montparnasse, Paris, France",fr:Montparnasse | fr:Gare Montparnasse | fr:Paris-Montparnasse | fr:Gare de Paris-Montparnasse | fr:Montparnasse Bienvenüe | fr:Montparnasse Bienvenue | en:Montparnasse station
+fr-paris-gare-du-nord,FR,station,Paris,"Gare du Nord, Paris, France",fr:Gare du Nord | fr:Paris-Nord | fr:Gare de Paris-Nord | en:Paris Gare du Nord
+fr-paris-gare-de-lyon,FR,station,Paris,"Gare de Lyon, Paris, France",fr:Gare de Lyon | fr:Paris-Gare-de-Lyon | fr:Paris Gare de Lyon | en:Paris Gare de Lyon
+fr-paris-gare-de-l-est,FR,station,Paris,"Gare de l'Est, Paris, France",fr:Gare de l'Est | fr:Gare de l Est | fr:Paris-Est | fr:Gare de Paris-Est
+fr-paris-saint-lazare,FR,station,Paris,"Gare Saint-Lazare, Paris, France",fr:Gare Saint-Lazare | fr:Saint-Lazare | fr:St Lazare | fr:Paris-Saint-Lazare
+fr-paris-chatelet,FR,station,Paris,"Châtelet - Les Halles, Paris, France",fr:Châtelet | fr:Chatelet | fr:Châtelet-Les Halles | fr:Chatelet Les Halles | fr:Les Halles
+fr-paris-le-marais,FR,neighbourhood,Paris,"Le Marais, Paris, France",fr:Le Marais | fr:Marais | en:The Marais
+fr-paris-montmartre,FR,neighbourhood,Paris,"Montmartre, Paris, France",fr:Montmartre | fr:Butte Montmartre | ar:مونمارتر
+fr-paris-belleville,FR,neighbourhood,Paris,"Belleville, Paris, France",fr:Belleville | fr:Belleville Paris
+fr-la-defense,FR,district,Puteaux,"La Défense, Puteaux, France",fr:La Défense | fr:La Defense | fr:Paris La Défense | fr:Défense | en:La Defense
+fr-saclay,FR,district,Saclay,"Saclay, Essonne, France",fr:Saclay | fr:Plateau de Saclay
+fr-paris-cite-universitaire,FR,campus,Paris,"Cité internationale universitaire de Paris, Paris, France",fr:Cité internationale universitaire de Paris | fr:Cité Universitaire | fr:Cite Universitaire | fr:Cité U | fr:Cite U | fr:CIUP | en:Cité Universitaire
+fr-paris-cdg-airport,FR,station,Roissy-en-France,"Aéroport de Paris-Charles-de-Gaulle, France",fr:Aéroport Charles-de-Gaulle | fr:Aéroport de Paris-Charles-de-Gaulle | fr:Roissy | fr:Roissy-Charles-de-Gaulle | fr:CDG | en:Paris Charles de Gaulle Airport | ar:مطار شارل ديغول
+fr-sorbonne-jussieu,FR,campus,Paris,"Campus Pierre et Marie Curie, Paris, France",fr:Sorbonne Université Jussieu | fr:Sorbonne Université campus Pierre et Marie Curie | fr:Campus Pierre et Marie Curie | fr:Campus Jussieu | fr:Sorbonne Jussieu | fr:Université Pierre et Marie Curie | fr:UPMC | fr:Université Paris 6 | en:Sorbonne University Jussieu campus
+fr-universite-paris-saclay,FR,campus,Orsay,"Université Paris-Saclay, France",fr:Université Paris-Saclay | fr:Universite Paris-Saclay | fr:Paris-Saclay | fr:Paris Saclay | fr:Université Paris-Sud | fr:Paris-Sud | en:Paris-Saclay University
+fr-ecole-polytechnique,FR,campus,Palaiseau,"École polytechnique, Palaiseau, France",fr:École polytechnique | fr:Ecole Polytechnique | fr:Polytechnique | fr:l'X | fr:X Palaiseau
+fr-campus-condorcet,FR,campus,Aubervilliers,"Campus Condorcet, Aubervilliers, France",fr:Campus Condorcet | fr:Condorcet Aubervilliers
+fr-sciences-po,FR,campus,Paris,"Sciences Po, Rue Saint-Guillaume, Paris, France",fr:Sciences Po | fr:Sciences Po Paris | fr:SciencesPo | fr:Institut d'études politiques de Paris | fr:IEP de Paris | fr:IEP Paris | en:Sciences Po
+fr-insa-lyon,FR,campus,Villeurbanne,"Institut National des Sciences Appliquées de Lyon, Villeurbanne, France",fr:INSA Lyon | fr:INSA de Lyon | fr:Institut national des sciences appliquées de Lyon | fr:INSA
+fr-lyon-1-la-doua,FR,campus,Villeurbanne,"Campus de la Doua, Villeurbanne, France",fr:Université Lyon 1 La Doua | fr:Campus de la Doua | fr:La Doua | fr:Campus LyonTech-la Doua | fr:Lyon 1 La Doua | fr:Université Claude Bernard Lyon 1 | fr:UCBL | fr:Lyon 1
+fr-lyon-part-dieu,FR,station,Lyon,"Gare de Lyon-Part-Dieu, Lyon, France",fr:Part-Dieu | fr:Part Dieu | fr:La Part-Dieu | fr:Gare Part-Dieu | fr:Lyon Part-Dieu | fr:Gare de Lyon-Part-Dieu
+fr-lyon-bellecour,FR,landmark,Lyon,"Place Bellecour, Lyon, France",fr:Bellecour | fr:Place Bellecour
+fr-lyon-croix-rousse,FR,neighbourhood,Lyon,"La Croix-Rousse, Lyon, France",fr:Croix-Rousse | fr:La Croix-Rousse | fr:Croix Rousse
+fr-lille-euralille,FR,district,Lille,"Euralille, Lille, France",fr:Euralille | fr:Eura Lille
+fr-marseille-saint-charles,FR,station,Marseille,"Gare de Marseille-Saint-Charles, Marseille, France",fr:Saint-Charles | fr:Gare Saint-Charles | fr:Marseille Saint-Charles | fr:Gare St-Charles | fr:St Charles Marseille
+fr-sophia-antipolis,FR,campus,Valbonne,"Sophia Antipolis, Valbonne, France",fr:Sophia Antipolis | fr:Sophia-Antipolis | fr:Sophia
+fr-saint-martin-d-heres-campus,FR,campus,Saint-Martin-d'Hères,"Domaine Universitaire, Saint-Martin-d'Hères, France",fr:Campus de Saint-Martin-d'Hères | fr:Campus Saint-Martin-d'Hères | fr:Domaine universitaire de Grenoble | fr:Campus de Grenoble | fr:Saint-Martin-d'Hères | fr:Saint Martin d'Heres | fr:Université Grenoble Alpes | fr:UGA
+gb-london,GB,city,London,"London, United Kingdom",en:London | fr:Londres | es:Londres | it:Londra | ar:لندن
+gb-birmingham,GB,city,Birmingham,"Birmingham, West Midlands, United Kingdom",en:Birmingham | en:Brum | ar:برمنغهام
+gb-manchester,GB,city,Manchester,"Manchester, United Kingdom",en:Manchester | ar:مانشستر
+gb-leeds,GB,city,Leeds,"Leeds, United Kingdom",en:Leeds | ar:ليدز
+gb-glasgow,GB,city,Glasgow,"Glasgow, United Kingdom",en:Glasgow | ar:غلاسكو
+gb-liverpool,GB,city,Liverpool,"Liverpool, United Kingdom",en:Liverpool | ar:ليفربول
+gb-sheffield,GB,city,Sheffield,"Sheffield, United Kingdom",en:Sheffield | ar:شيفيلد
+gb-bristol,GB,city,Bristol,"Bristol, United Kingdom",en:Bristol | ar:بريستول
+gb-edinburgh,GB,city,Edinburgh,"Edinburgh, United Kingdom",en:Edinburgh | en:Edinburg | fr:Édimbourg | fr:Edimbourg | es:Edimburgo | it:Edimburgo | ar:إدنبرة | ar:ادنبرة
+gb-leicester,GB,city,Leicester,"Leicester, United Kingdom",en:Leicester | ar:ليستر
+gb-newcastle,GB,city,Newcastle upon Tyne,"Newcastle upon Tyne, United Kingdom",en:Newcastle upon Tyne | en:Newcastle | ar:نيوكاسل
+gb-nottingham,GB,city,Nottingham,"Nottingham, United Kingdom",en:Nottingham | en:Notts
+gb-oxford,GB,city,Oxford,"Oxford, Oxfordshire, United Kingdom",en:Oxford | ar:أكسفورد | ar:اكسفورد
+gb-cambridge,GB,city,Cambridge,"Cambridge, Cambridgeshire, United Kingdom",en:Cambridge | ar:كامبريدج
+gb-london-camden,GB,neighbourhood,London,"Camden Town, London, United Kingdom",en:Camden | en:Camden Town
+gb-london-islington,GB,district,London,"Islington, London, United Kingdom",en:Islington | en:Angel Islington
+gb-london-hackney,GB,district,London,"Hackney, London, United Kingdom",en:Hackney | en:Hackney Central
+gb-london-shoreditch,GB,neighbourhood,London,"Shoreditch, London, United Kingdom",en:Shoreditch | en:Shoreditch London
+gb-london-whitechapel,GB,neighbourhood,London,"Whitechapel, London, United Kingdom",en:Whitechapel
+gb-london-stratford,GB,neighbourhood,London,"Stratford, London, United Kingdom",en:Stratford | en:Stratford London
+gb-london-brixton,GB,neighbourhood,London,"Brixton, London, United Kingdom",en:Brixton
+gb-london-clapham,GB,neighbourhood,London,"Clapham, London, United Kingdom",en:Clapham
+gb-london-greenwich,GB,neighbourhood,London,"Greenwich, London, United Kingdom",en:Greenwich
+gb-london-canary-wharf,GB,district,London,"Canary Wharf, London, United Kingdom",en:Canary Wharf
+gb-london-kings-cross,GB,neighbourhood,London,"King's Cross, London, United Kingdom",en:King's Cross | en:Kings Cross | en:Kings X | en:KX
+gb-london-bloomsbury,GB,neighbourhood,London,"Bloomsbury, London, United Kingdom",en:Bloomsbury
+gb-london-south-kensington,GB,neighbourhood,London,"South Kensington, London, United Kingdom",en:South Kensington | en:South Ken
+gb-london-mile-end,GB,neighbourhood,London,"Mile End, London, United Kingdom",en:Mile End
+gb-london-fulham,GB,neighbourhood,London,"Fulham, London, United Kingdom",en:Fulham
+gb-london-wembley,GB,neighbourhood,London,"Wembley, London, United Kingdom",en:Wembley | en:Wembley Park
+gb-london-ealing,GB,neighbourhood,London,"Ealing, London, United Kingdom",en:Ealing | en:Ealing Broadway
+gb-london-bethnal-green,GB,neighbourhood,London,"Bethnal Green, London, United Kingdom",en:Bethnal Green
+gb-london-peckham,GB,neighbourhood,London,"Peckham, London, United Kingdom",en:Peckham
+gb-london-hammersmith,GB,neighbourhood,London,"Hammersmith, London, United Kingdom",en:Hammersmith
+gb-london-elephant-and-castle,GB,neighbourhood,London,"Elephant and Castle, London, United Kingdom",en:Elephant and Castle | en:Elephant & Castle | en:Elephant
+gb-london-st-pancras,GB,station,London,"St Pancras International, London, United Kingdom",en:St Pancras | en:St Pancras International | en:Saint Pancras | en:London St Pancras | fr:Gare de Saint-Pancras | fr:Saint-Pancras
+gb-london-heathrow,GB,station,London,"Heathrow Airport, London, United Kingdom",en:Heathrow | en:Heathrow Airport | en:London Heathrow | en:LHR | fr:Aéroport de Heathrow | fr:Londres Heathrow | ar:مطار هيثرو
+gb-ucl,GB,campus,London,"University College London, London, United Kingdom",en:University College London | en:UCL
+gb-kcl,GB,campus,London,"King's College London, London, United Kingdom",en:King's College London | en:Kings College London | en:KCL | en:King's College
+gb-imperial,GB,campus,London,"Imperial College London, London, United Kingdom",en:Imperial College London | en:Imperial College | en:Imperial | en:ICL
+gb-lse,GB,campus,London,"London School of Economics and Political Science, London, United Kingdom",en:London School of Economics and Political Science | en:London School of Economics | en:LSE | ar:كلية لندن للاقتصاد
+gb-qmul,GB,campus,London,"Queen Mary University of London, London, United Kingdom",en:Queen Mary University of London | en:Queen Mary | en:QMUL | en:Queen Mary Mile End
+gb-uni-manchester,GB,campus,Manchester,"University of Manchester, Manchester, United Kingdom",en:University of Manchester | en:Manchester University | en:UoM | en:UniMan | ar:جامعة مانشستر
+gb-uni-birmingham,GB,campus,Birmingham,"University of Birmingham, Birmingham, United Kingdom",en:University of Birmingham | en:Birmingham University | en:Birmingham Uni | en:Edgbaston campus | ar:جامعة برمنغهام
+gb-uni-leeds,GB,campus,Leeds,"University of Leeds, Leeds, United Kingdom",en:University of Leeds | en:Leeds University | en:Leeds Uni | ar:جامعة ليدز
+gb-uni-edinburgh,GB,campus,Edinburgh,"University of Edinburgh, Edinburgh, United Kingdom",en:University of Edinburgh | en:Edinburgh University | en:Edinburgh Uni | fr:Université d'Édimbourg | ar:جامعة إدنبرة
+gb-uni-glasgow,GB,campus,Glasgow,"University of Glasgow, Glasgow, United Kingdom",en:University of Glasgow | en:Glasgow University | en:Glasgow Uni | ar:جامعة غلاسكو
+gb-uni-bristol,GB,campus,Bristol,"University of Bristol, Bristol, United Kingdom",en:University of Bristol | en:Bristol University | en:Bristol Uni | ar:جامعة بريستول
+gb-uni-oxford,GB,campus,Oxford,"University of Oxford, Oxford, United Kingdom",en:University of Oxford | en:Oxford University | en:Oxford Uni | fr:Université d'Oxford | ar:جامعة أكسفورد
+gb-uni-cambridge,GB,campus,Cambridge,"University of Cambridge, Cambridge, United Kingdom",en:University of Cambridge | en:Cambridge University | en:Cambridge Uni | fr:Université de Cambridge | ar:جامعة كامبريدج
+gb-manchester-fallowfield,GB,neighbourhood,Manchester,"Fallowfield, Manchester, United Kingdom",en:Fallowfield
+gb-manchester-withington,GB,neighbourhood,Manchester,"Withington, Manchester, United Kingdom",en:Withington
+gb-birmingham-selly-oak,GB,neighbourhood,Birmingham,"Selly Oak, Birmingham, United Kingdom",en:Selly Oak | en:Selly
+gb-leeds-headingley,GB,neighbourhood,Leeds,"Headingley, Leeds, United Kingdom",en:Headingley | en:Headingly
+gb-leeds-hyde-park,GB,neighbourhood,Leeds,"Hyde Park, Leeds, United Kingdom",en:Hyde Park Leeds | en:Hyde Park LS6
+gb-newcastle-jesmond,GB,neighbourhood,Newcastle upon Tyne,"Jesmond, Newcastle upon Tyne, United Kingdom",en:Jesmond
+gb-nottingham-lenton,GB,neighbourhood,Nottingham,"Lenton, Nottingham, United Kingdom",en:Lenton
+gb-bristol-clifton,GB,neighbourhood,Bristol,"Clifton, Bristol, United Kingdom",en:Clifton | en:Clifton Bristol
+gb-edinburgh-marchmont,GB,neighbourhood,Edinburgh,"Marchmont, Edinburgh, United Kingdom",en:Marchmont

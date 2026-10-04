@@ -32,6 +32,8 @@ const finish = {
   idempotency_replay: !!x.replay,
   response_body: response,
   result_user_id: x.result_user_id || null,
+  // agent steps of the request (spec 8.3), written to ai.agent_steps with the execution
+  steps: Array.isArray(x.steps) ? x.steps : [],
   // reason and detail go to ai.executions.error only, never to the client
   error_detail: x.log ? [x.log.reason, x.log.detail].filter(Boolean).join(': ').slice(0, 500) : null,
 };

@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0008 applied)  (exit 0, 0.3 s)
+PASS  evaluate P2_profile_extractor versions 1,2 on qwen3.5:4b  (exit 0, 6815.1 s)
+PASS  Ollama memory placement after qwen3.5:4b (GPU or CPU share)  (exit 0, 0.4 s)
+PASS  report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json  (exit 0, 2.5 s)

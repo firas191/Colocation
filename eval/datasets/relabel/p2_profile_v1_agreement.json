@@ -1,0 +1,77 @@
+{
+ "dataset": "p2_profile_v1",
+ "items": 22,
+ "of": 110,
+ "agreement": {
+  "jurisdiction_code": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "budget_min_minor": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "budget_max_minor": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "currency": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "budget_period": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "anchor_label": {
+   "agree": 21,
+   "n": 22,
+   "rate": 0.955
+  },
+  "max_commute_min": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "move_in_from": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "min_stay_months": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "declared_preferences": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "languages": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  },
+  "must_not_map (non-empty)": {
+   "agree": 22,
+   "n": 22,
+   "rate": 1.0
+  }
+ },
+ "items_fully_agreeing": 21,
+ "disagreements": [
+  {
+   "id": "p2-048",
+   "field": "anchor_label",
+   "first": "nation",
+   "second": "métro nation",
+   "message": "Salut, je cherche une coloc à Paris, n7eb 9rib mel métro Nation, max 700€, men 15 novembre"
+  }
+ ]
+}

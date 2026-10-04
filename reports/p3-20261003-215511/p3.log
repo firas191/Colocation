@@ -1,0 +1,68 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T21:55:13.2508428+01:00
+healthy
+0009
+exit=0 seconds=0.3
+
+===== unload the LLMs (search uses only the embedding model) =====
+command: foreach ($m in $modelList) { docker exec fs-ollama ollama stop $m 2>&1 | Out-Null }
+    docker exec fs-ollama ollama ps
+started: 2026-10-03T21:55:13.5614128+01:00
+NAME    ID    SIZE    PROCESSOR    CONTEXT    UNTIL 
+exit=0 seconds=0.7
+
+===== search latency: 200 requests through the proxy =====
+command: docker @p3 search-bench --n $BenchN
+started: 2026-10-03T21:55:14.3141905+01:00
+ Container flatshare-tests-run-105898236cf6 Creating 
+ Container flatshare-tests-run-105898236cf6 Created 
+210 requests, one every 1.10 s (limit 60/min): about 3.9 min
+{
+ "date": "2026-10-03T20:59:11+00:00",
+ "requests": 200,
+ "ok": 200,
+ "warmup": 10,
+ "published_listings": 123,
+ "interval_s": 1.1,
+ "load": "sequential, one request at a time, paced under the rate limit",
+ "client_ms": {
+  "p50": 300.9,
+  "p95": 421.1,
+  "max": 521.6
+ },
+ "server_ms": {
+  "p50": 247,
+  "p95": 357,
+  "max": 463
+ },
+ "embed_ms_p95": 218,
+ "db_ms": {
+  "p50": 2.13,
+  "p95": 5.44
+ },
+ "ai_executions": {
+  "n": 200,
+  "p50": 247,
+  "p95": 357,
+  "max": 463
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 142,
+   "server_p95": 365
+  },
+  "filters": {
+   "n": 58,
+   "server_p95": 167
+  }
+ },
+ "empty_results": 13,
+ "errors": []
+}
+wrote reports/eval/search-bench-20261003-205911.json
+exit=0 seconds=237.1

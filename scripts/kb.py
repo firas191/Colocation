@@ -25,6 +25,7 @@ import time
 import uuid
 from pathlib import Path
 
+import httpx
 import psycopg
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,7 +139,12 @@ def seed_datasets(conn, force=False):
                           (d["name"], d["kind"], d["version"], d.get("notes"))).fetchone()[0]
         current = {r[0]: (r[1], r[2], r[3], r[4], r[5]) for r in conn.execute(
             "select external_id, query, language, jurisdiction_code, gold, tags from eval.queries where dataset_id = %s", (ds,))}
-        wanted = {q["id"]: (q["query"], q.get("language"), q.get("jurisdiction"), q["gold"], q.get("tags", [])) for q in lines}
+        if d["kind"] == "retrieval":
+            wanted = {q["id"]: (q["query"], q.get("language"), q.get("jurisdiction"), q["gold"], q.get("tags", [])) for q in lines}
+        else:   # prompt golden sets (phase 3): message, context and labels
+            wanted = {q["id"]: (q["message"], (q.get("tags") or [None])[0],
+                                q["context"].get("user_jurisdiction") or q["context"].get("jurisdiction"),
+                                {"labels": q["gold"], "context": q["context"]}, q.get("tags", [])) for q in lines}
         has_runs = conn.execute("select count(*) from eval.runs where dataset_id = %s", (ds,)).fetchone()[0] > 0
         changed = {k for k in wanted if k not in current or tuple(current[k]) != wanted[k]} | (set(current) - set(wanted))
         if changed and has_runs and not force:
@@ -163,8 +169,21 @@ def wait_job(c: Client, uid: str, job_id: str, timeout_s: int):
     last = None
     misses = 0
     seen = 0
+    down_since = None
     while time.time() - t0 < timeout_s:
-        r = c.call("GET", f"/v1/jobs/{job_id}", user_id=uid)
+        try:
+            r = c.call("GET", f"/v1/jobs/{job_id}", user_id=uid)
+            down_since = None
+        except httpx.HTTPError as e:
+            # The stack did not answer (timeout, Docker network or DNS down, PC woke from sleep):
+            # the job keeps running in n8n, so keep polling instead of giving up (F-047).
+            down_since = down_since or time.time()
+            print(f"  poll: no answer ({e.__class__.__name__}: {str(e)[:120]}); retrying in 30 s")
+            if time.time() - down_since > int(os.environ.get("FS_POLL_GIVEUP_S", "1800")):
+                sys.exit(f"no answer from the API for 30 min while waiting for job {job_id}; the job may still be "
+                         "running in n8n (check app.jobs before starting it again)")
+            time.sleep(30)
+            continue
         if r.status_code != 200:
             misses += 1
             print(f"  poll: HTTP {r.status_code} {r.text[:200]}")
@@ -195,8 +214,9 @@ def progress(job_id: str, seen: int, t0: float) -> int:
                        || coalesce(' ' || (l.detail->>'error'), '')
               from kb.ingest_log l where l.job_id = %s and l.id > %s
               union all
-              select 0, 'run ' || (r.config->>'strategy') || ' / ' || (r.config->>'model') || ' / '
-                       || (r.config->>'mode') || ': ' || r.status
+              select 0, 'run ' || coalesce((r.config->>'strategy') || ' / ' || (r.config->>'model') || ' / ' || (r.config->>'mode'),
+                                         (r.config->>'prompt') || ' v' || (r.config->>'version') || ' / ' || (r.config->>'model'))
+                       || ': ' || r.status
               from eval.runs r where r.job_id = %s and r.status <> 'running'
               order by 1""", (job_id, seen, job_id)).fetchall()
     except Exception as e:                       # progress is informative only
@@ -220,19 +240,23 @@ def post_job(path: str, body: dict, timeout_s: int, job_type: str, max_age_h: fl
     c = client()
     with psycopg.connect(dsn(), autocommit=True) as conn:
         uid = operator_id(conn)
-        active = conn.execute("""select id, extract(epoch from now() - coalesce(started_at, created_at)) / 3600
+        active = conn.execute("""select id, extract(epoch from now() - coalesce(started_at, created_at)) / 3600, input
                                  from app.jobs where type = %s and status in ('queued', 'running')
-                                   and input->>'jurisdiction' = %s
+                                   and input->>'jurisdiction' is not distinct from %s
                                  order by created_at""", (job_type, body.get("jurisdiction"))).fetchall()
-        for jid, age_h in active:
+        for jid, age_h, inp in active:
             if age_h > max_age_h:
                 conn.execute("""update app.jobs set status = 'failed', finished_at = now(),
                                   error = 'abandoned: still running after ' || %s || ' h; marked by scripts/kb.py'
                                 where id = %s and status in ('queued', 'running')""", (round(age_h, 1), jid))
                 print(f"job {jid} ({job_type}) was still marked running after {age_h:.1f} h: marked failed (abandoned)")
-            else:
-                print(f"job {jid} ({job_type}) is already running for {age_h * 60:.0f} min: waiting for it instead of starting another")
-                return wait_job(c, uid, str(jid), timeout_s)
+                continue
+            same = all(inp.get(k) == body.get(k) for k in ("prompt", "versions", "models")) if "prompt" in body else True
+            print(f"job {jid} ({job_type}) is already running for {age_h * 60:.0f} min: waiting for it"
+                  + ("" if same else " before starting this one (one evaluation at a time, F-047)"))
+            done = wait_job(c, uid, str(jid), timeout_s)
+            if same:
+                return done
     r = c.call("POST", path, body=body, user_id=uid, idem="kb-" + uuid.uuid4().hex)
     if r.status_code != 202:
         sys.exit(f"{path}: HTTP {r.status_code} {r.text[:500]}")

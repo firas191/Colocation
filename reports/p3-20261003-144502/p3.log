@@ -1,0 +1,178 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-03T14:45:04.2057370+01:00
+healthy
+0008
+exit=0 seconds=0.3
+
+===== evaluate P1_router versions 1,2 on granite4.2:3b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T14:45:04.5528677+01:00
+ Container flatshare-tests-run-f6d4206d00ac Creating 
+ Container flatshare-tests-run-f6d4206d00ac Created 
+/v1/admin/eval/prompt-runs: job 84b23578-1b3f-49e9-8073-f0e6f7136f68 accepted
+      0.2s  job running
+   4927.8s  job succeeded
+   4927.8s  2 evaluation runs finished; last: run P1_router v2 / granite4.2:3b: succeeded
+job 84b23578-1b3f-49e9-8073-f0e6f7136f68: succeeded 
+  items 160  model granite4.2:3b  run_id ade7151d-657a-4cfd-9511-b6b29c11caa7  version 1  json_valid 0  latency_p95_ms 14846  intent_accuracy 0
+  items 160  model granite4.2:3b  run_id cfcb0c2f-8753-4f19-929c-fb6718aac65b  version 2  json_valid 0  latency_p95_ms 16478  intent_accuracy 0
+exit=0 seconds=4931.7
+
+===== evaluate P2_profile_extractor versions 1,2 on granite4.2:3b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T16:07:16.2914117+01:00
+ Container flatshare-tests-run-97456615afba Creating 
+ Container flatshare-tests-run-97456615afba Created 
+/v1/admin/eval/prompt-runs: job 2b6ef567-2613-4ca5-9eae-52a9846493fd accepted
+      0.3s  job running
+  poll: HTTP 503 {"request_id":"1da6c54f-6078-4cd0-a8c3-f9f4f1406703","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: HTTP 503 {"request_id":"5e20aa7f-cdc5-4608-ae5b-2355963f8700","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: HTTP 503 {"request_id":"a27fcbb2-ab47-4335-b2b4-db3b918f36eb","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"3ad54e74-3033-453a-878c-12c78d388eb7","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"0bfe49a9-3b18-41f7-907b-9b1834e1b901","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"2c77d989-3eef-43b3-a8c3-c53de1b6ab3c","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"23121d00-d1ec-4f3e-9e50-ac12729c1779","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"aea22ba6-bf00-416a-8fe7-7fb977a0d58e","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: HTTP 503 {"request_id":"577a1e94-3bce-490c-992a-ee3936af75da","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+  poll: HTTP 503 {"request_id":"0ad13291-b7df-4df7-985a-7d4c560e2ef1","error":{"code":"UPSTREAM_UNAVAILABLE","message":"A backend dependency is unavailable","details":[]}}
+  poll: no answer (ConnectError: [Errno -3] Temporary failure in name resolution); retrying in 30 s
+  poll: no answer (ReadTimeout: timed out); retrying in 30 s
+   4167.9s  job failed
+job 2b6ef567-2613-4ca5-9eae-52a9846493fd: failed Failed query: insert into eval.results (run_id, query_id, retrieved, output, metrics) values ($1::uuid, $2::uuid, '[]'::jsonb, $3::jsonb, $4::jsonb) on conflict (run_id, query_id) do update set output = excluded.output, metrics = excluded.metrics returning run_id
+System.Management.Automation.RemoteException
+exit=1 seconds=4191.8
+
+===== Ollama memory placement after granite4.2:3b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-03T17:17:08.0649174+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+granite4.2:3b    40577dc168a3    2.7 GB    12%/88% CPU/GPU    4096       8 minutes from now    
+exit=0 seconds=4
+
+===== evaluate P1_router versions 1,2 on phi4-mini:3.8b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T17:17:12.0515748+01:00
+ Container flatshare-tests-run-c9dcf939f5fa Creating 
+ Container flatshare-tests-run-c9dcf939f5fa Created 
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/usr/local/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/usr/local/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout: timed out
+System.Management.Automation.RemoteException
+The above exception was the direct cause of the following exception:
+System.Management.Automation.RemoteException
+Traceback (most recent call last):
+  File "/flatshare/scripts/p3.py", line 395, in <module>
+    main()
+  File "/flatshare/scripts/p3.py", line 390, in main
+    {"geo-fetch": geo_fetch, "geo-load": geo_load, "geo-coverage": geo_coverage, "seed": seed, "seed-listings": seed_listings_cmd,
+  File "/flatshare/scripts/p3.py", line 258, in run_eval
+    job = kb.post_job("/v1/admin/eval/prompt-runs", body, args.timeout, "eval_prompts", max_age_h=8)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/flatshare/scripts/kb.py", line 260, in post_job
+    r = c.call("POST", path, body=body, user_id=uid, idem="kb-" + uuid.uuid4().hex)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/flatshare/tests/client/fsclient.py", line 97, in call
+    return self.send(method, url, h, b)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/flatshare/tests/client/fsclient.py", line 93, in send
+    return self.http.request(method, url, headers=headers, content=body)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/usr/local/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout: timed out
+System.Management.Automation.RemoteException
+exit=1 seconds=79.9
+
+===== evaluate P2_profile_extractor versions 1,2 on phi4-mini:3.8b =====
+command: docker @p3 eval --prompt $p --versions $Versions --models $m
+started: 2026-10-03T17:18:31.9114770+01:00
+ Container flatshare-tests-run-a90bf78bc586 Creating 
+ Container flatshare-tests-run-a90bf78bc586 Created 
+/v1/admin/eval/prompt-runs: job cdb3bc44-af22-4ac3-8d1c-1056b52e9d06 accepted
+     30.1s  job running
+   3218.8s  job succeeded
+   3218.8s  2 evaluation runs finished; last: run P2_profile_extractor v1 / phi4-mini:3.8b: succeeded
+job cdb3bc44-af22-4ac3-8d1c-1056b52e9d06: succeeded 
+  f1 0.4641  items 110  model phi4-mini:3.8b  run_id e82ee703-53a1-4602-89e8-3e8eecd97e0f  version 1  json_valid 0.9909  latency_p95_ms 15272  unit_error_items 57
+  f1 0.7468  items 110  model phi4-mini:3.8b  run_id 5d66aeeb-b71d-40ce-83f8-a1402563200c  version 2  json_valid 1  latency_p95_ms 23821  unit_error_items 5
+exit=0 seconds=3256.4
+
+===== Ollama memory placement after phi4-mini:3.8b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-03T18:12:48.3111677+01:00
+NAME              ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+phi4-mini:3.8b    78fad5d182a7    3.1 GB    26%/74% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.4
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @p3 report
+started: 2026-10-03T18:12:48.6851321+01:00
+ Container flatshare-tests-run-89be48571173 Creating 
+ Container flatshare-tests-run-89be48571173 Created 
+wrote reports/eval/prompts-20261003-171250.json and docs/PROMPT_EVAL.md
+exit=0 seconds=3.1

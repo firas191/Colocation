@@ -71,6 +71,27 @@ re-extracts the saved raw HTML pages and lists which stored texts would change.
 A gold set is `eval/datasets/<name>_v<version>.jsonl` listed in `eval/datasets/manifest.json`; once a version has
 evaluation runs its queries cannot change (bump the version).
 
+## Profile, search and prompt evaluation (phase 3)
+
+| Task | Command |
+|---|---|
+| Pull the three LLMs, seed datasets and prompts, fetch exchange rates | `powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step setup` |
+| Gazetteer (Nominatim, once), synthetic listings, embeddings | `... p3.ps1 -Step geo` |
+| P1 and P2 golden sets, versions 1 and 2, on each model; docs/PROMPT_EVAL.md | `... p3.ps1 -Step eval` (options `-Models`, `-Versions`, `-Prompts`) |
+| Search latency (200 requests) | `... p3.ps1 -Step bench` |
+| Re-render docs/PROMPT_EVAL.md | `... p3.ps1 -Step report` |
+| One prompt run from any shell | `docker compose --profile test run --rm --no-deps tests python scripts/p3.py eval --prompt P1_router --versions 2 --models qwen3.5:4b --limit 10` |
+| Activate a prompt version | `docker compose --profile test run --rm --no-deps -v "$PWD/prompts:/flatshare/prompts" tests python scripts/prompts.py activate P1_router 2` |
+| Change the default model | `update app.settings set value = '"granite4.2:3b"' where key = 'llm.default_model';` |
+| Failures of a prompt version | `select category, item_id, left(observed_output, 120) from ai.prompt_failures f join ai.prompt_versions v on v.id = f.prompt_version_id join ai.prompts p on p.id = v.prompt_id where p.name = 'P1_router' and v.version = 1 order by category, item_id;` |
+
+A prompt change is a new file `prompts/<name>/v<N>.md` (D-054); `p3.ps1 -Step eval` (or `-Step setup`, or
+`scripts/prompts.py sync`) stores it as a draft. A version that changes the output shape names its own schema file in
+its front matter (`schema:`, P2 v3, D-066). Evaluate one new version on the default model with
+`... p3.ps1 -Step eval -Models "qwen3.5:4b" -Versions "3"`; the report compares it with the previous version's
+stored run. A version becomes active only by changing `active_version` in `prompt.json` (spec 9.5 step 5).
+Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py reports/eval/prompts-<stamp>.json --version 3`. Adding a place: a row in `geo/places.csv`, then `-Step geo` (only new rows are fetched).
+
 ## API keys
 
 - Keys are created by `db-bootstrap` for `website` and `tests`; secrets are appended to `secrets/api-clients.env`.
@@ -90,3 +111,6 @@ Example: `update app.settings set value = '120' where key = 'gateway.rate_limit_
 - No backup or restore procedure yet (phase 9).
 - A job whose n8n process crashes stays `running` until the job reaper exists (phase 4, DECISIONS D-041).
 - TEI is not in `GET /v1/health` (D-046).
+- No exchange rate for the Tunisian dinar: a TN search with a budget in another currency is not filtered by budget (`fx_rate_unavailable`, D-057).
+- Places not in `geo/places.csv` are not found; no street-address geocoding (D-058).
+- The request text sent to `/v1/profiles/extract` and `/v1/assistant/message` is not stored; PII masking comes in phase 4.

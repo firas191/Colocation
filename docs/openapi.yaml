@@ -226,6 +226,256 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "429": { $ref: "#/components/responses/RateLimited" }
         "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/search:
+    get:
+      operationId: search
+      summary: Structured search over published listings (filters plus optional text)
+      description: |
+        Hybrid search (dense bge-m3 + lexical, fused by reciprocal rank) when q is given, filters only
+        otherwise (nearest first with a point, newest first without). Results carry public fields only:
+        the fuzzed public_location, never the exact address. Money is in minor units of the currency
+        (exponent given with each rent). A budget in another currency than the jurisdiction's is
+        converted with the latest exchange rate not older than fx.max_age_days; without one the budget
+        is not applied and warnings holds fx_rate_unavailable. Warnings are codes: fx_rate_unavailable,
+        place_not_found, place_ambiguous, embedding_unavailable. Requires terms and privacy consent.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: q, in: query, schema: { type: string, maxLength: 300 }, description: "Free text in any language" }
+        - { name: jurisdiction, in: query, schema: { type: string }, description: "Default: the account's jurisdiction" }
+        - { name: max_rent, in: query, schema: { type: string, pattern: "^[0-9]+$" }, description: "Monthly (or weekly, see period) budget in minor units of currency" }
+        - { name: currency, in: query, schema: { type: string, pattern: "^[A-Z]{3}$" }, description: "Default: the jurisdiction's currency" }
+        - { name: period, in: query, schema: { type: string, enum: [month, week] } }
+        - { name: lat, in: query, schema: { type: string } }
+        - { name: lng, in: query, schema: { type: string } }
+        - { name: near, in: query, schema: { type: string, maxLength: 120 }, description: "Place name resolved by the local gazetteer (app.geocode)" }
+        - { name: radius_m, in: query, schema: { type: string }, description: "100 to 100000; default search.default_radius_m around a point or place" }
+        - { name: limit, in: query, schema: { type: string }, description: "1 to 50, default 20" }
+        - { name: use_profile, in: query, schema: { type: string, enum: ["true", "false"] }, description: "Fill missing filters from the saved profile" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SearchResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/profiles/extract:
+    post:
+      operationId: extractProfile
+      summary: Turn a free-text request into a structured search profile (prompt P2, local model)
+      description: |
+        The text is processed by the local language model and is not stored. Preferences that the
+        jurisdiction does not allow are moved to unparsed (warning preference_not_allowed). The anchor is
+        resolved with the local gazetteer. With save=true the profile is stored as PUT /v1/profiles/me
+        would. Errors: EXTRACTION_FAILED (the model answer was invalid twice), UPSTREAM_UNAVAILABLE.
+        Warnings: preference_not_allowed, currency_assumed, currency_unknown, budget_range_reversed,
+        anchor_not_found, anchor_ambiguous. Requires terms and privacy consent.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfileExtractRequest" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProfileExtractResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/profiles/me:
+    put:
+      operationId: putProfile
+      summary: Save or correct the caller's search profile (the whole profile is replaced)
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfileInput" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProfileResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/assistant/message:
+    post:
+      operationId: assistantMessage
+      summary: Free-form message; the orchestrator classifies it (prompt P1) and routes it
+      description: |
+        Phase 3 serves search_listings (profile extraction, then search). Other intents answer with a
+        status code: clarification_needed (with the router's question, in the user's language),
+        not_available_yet (legal_question, post_listing, generate_document, report_problem until their
+        agents exist), unsupported, not_understood. Requires terms and privacy consent.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssistantMessageRequest" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssistantResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/admin/eval/prompt-runs:
+    post:
+      operationId: createPromptEvalRuns
+      summary: Run a prompt's golden set for given versions and models (role admin, asynchronous)
+      description: |
+        Creates a job of type eval_prompts (worker wf.eval.prompts): one eval.runs row per model and version, per-item results, a summary, and one ai.prompt_failures row per failed item and category (spec 9.5).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PromptEvalRunRequest" }
+      responses:
+        "202":
+          description: Job created (or the existing job of a retried request)
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/admin/listings/embed:
+    post:
+      operationId: embedListings
+      summary: Embed every listing that has no embedding (role admin, asynchronous)
+      description: |
+        Creates a job of type listings_embed (worker wf.listings.embed, bge-m3 through Ollama, 16 texts per request, one request at a time).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmptyRequest" }
+      responses:
+        "202":
+          description: Job created (or the existing job of a retried request)
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/admin/fx/refresh:
+    post:
+      operationId: refreshFxRates
+      summary: Fetch the ECB euro reference rates now (role admin, asynchronous)
+      description: |
+        Creates a job of type fx_refresh (worker wf.fx.refresh, also scheduled on weekdays at 17:10). Rates are stored in app.fx_rates with the ECB cited as source.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmptyRequest" }
+      responses:
+        "202":
+          description: Job created (or the existing job of a retried request)
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
 components:
   securitySchemes:
     signedRequest:
@@ -324,7 +574,7 @@ components:
     ErrorCode:
       type: string
       enum: [UNAUTHENTICATED, FORBIDDEN, VALIDATION_FAILED, NOT_FOUND, CONSENT_REQUIRED, RATE_LIMITED,
-             CONFLICT, UPSTREAM_UNAVAILABLE, POLICY_BLOCKED, INTERNAL, PAYLOAD_TOO_LARGE]
+             CONFLICT, UPSTREAM_UNAVAILABLE, POLICY_BLOCKED, INTERNAL, PAYLOAD_TOO_LARGE, EXTRACTION_FAILED]
     ErrorEnvelope:
       type: object
       additionalProperties: false
@@ -471,7 +721,7 @@ components:
           required: [job_id, type, status, status_url]
           properties:
             job_id: { type: string, format: uuid }
-            type: { type: string, enum: [kb_ingest, eval_retrieval] }
+            type: { type: string, enum: [kb_ingest, eval_retrieval, eval_prompts, listings_embed, fx_refresh] }
             status: { $ref: "#/components/schemas/JobStatus" }
             status_url: { type: string, pattern: "^/v1/jobs/[0-9a-f-]{36}$" }
     JobResponse:
@@ -525,3 +775,185 @@ components:
                   language: { type: [string, "null"] }
                   tags: { type: array, items: { type: string } }
                   metrics: { type: object }
+    EmptyRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        limit: { type: integer, minimum: 1, maximum: 5000, description: "listings/embed only" }
+    PromptEvalRunRequest:
+      type: object
+      additionalProperties: false
+      required: [prompt, versions]
+      properties:
+        prompt: { type: string, enum: [P1_router, P2_profile_extractor] }
+        versions: { type: array, minItems: 1, maxItems: 5, items: { type: integer, minimum: 1 } }
+        models: { type: array, minItems: 1, maxItems: 5, items: { type: string }, description: "Default: setting llm.default_model" }
+        dataset: { type: string, description: "Default: p1_router or p2_profile" }
+        dataset_version: { type: integer, minimum: 1, default: 1 }
+        item_ids: { type: array, items: { type: string } }
+        limit: { type: integer, minimum: 1, maximum: 1000 }
+        git_sha: { type: string, maxLength: 80 }
+        label: { type: string, maxLength: 80 }
+    Money:
+      type: object
+      required: [amount_minor, currency, period, monthly_minor, exponent]
+      properties:
+        amount_minor: { type: [integer, "null"] }
+        currency: { type: [string, "null"] }
+        period: { type: string, enum: [month, week] }
+        monthly_minor: { type: [integer, "null"], description: "weekly x 52 / 12, rounded down" }
+        exponent: { type: [integer, "null"], description: "minor units per major unit = 10^exponent" }
+    LatLng:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+    ListingResult:
+      type: object
+      required: [id, rank, kind, title, rent, public_location, is_synthetic]
+      not: { required: [location] }
+      properties:
+        id: { type: string, format: uuid }
+        rank: { type: integer }
+        score: { type: [number, "null"] }
+        dense_rank: { type: [integer, "null"] }
+        lexical_rank: { type: [integer, "null"] }
+        distance_m: { type: [number, "null"], description: "From the search point to the public (fuzzed) point" }
+        kind: { type: string, enum: [room, shared_flat, roommate_wanted] }
+        title: { type: [string, "null"] }
+        description: { type: [string, "null"], description: "First 400 characters" }
+        description_lang: { type: [string, "null"] }
+        rent: { $ref: "#/components/schemas/Money" }
+        deposit_minor: { type: [integer, "null"] }
+        bills_included: { type: [boolean, "null"] }
+        available_from: { type: [string, "null"], format: date }
+        min_stay_months: { type: [integer, "null"] }
+        bedrooms: { type: [integer, "null"] }
+        furnished: { type: [boolean, "null"] }
+        current_flatmates: { type: [integer, "null"] }
+        amenities: { type: [array, "null"], items: { type: string } }
+        house_rules: { type: [object, "null"] }
+        city: { type: [string, "null"] }
+        neighbourhood: { type: [string, "null"] }
+        public_location: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
+        trust: { type: object }
+        is_synthetic: { type: boolean }
+    SearchData:
+      type: object
+      required: [mode, count, results, applied, warnings]
+      properties:
+        mode: { type: string, enum: [hybrid, filters] }
+        count: { type: integer }
+        results: { type: array, items: { $ref: "#/components/schemas/ListingResult" } }
+        applied: { type: object, description: "Filters as applied: jurisdiction, budget (with fx when converted), center, radius_m, place (geocoding result), limit" }
+        warnings: { type: array, items: { type: string, enum: [fx_rate_unavailable, place_not_found, place_ambiguous, embedding_unavailable] } }
+        data_attribution: { type: array, items: { type: string, enum: [openstreetmap] }, description: "Sources the client must credit (OpenStreetMap: place coordinates)" }
+    SearchResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data: { $ref: "#/components/schemas/SearchData" }
+    Preferences:
+      type: object
+      additionalProperties: false
+      properties:
+        smoking: { type: string, enum: ["yes", "no"] }
+        pets: { type: string, enum: ["yes", "no"] }
+        quiet_hours: { type: string, enum: ["yes", "no"] }
+        guests: { type: string, enum: ["yes", "no"] }
+        schedule: { type: string, enum: [early, late, irregular] }
+        cleanliness: { type: string, enum: [high, medium, relaxed] }
+    ProfileInput:
+      type: object
+      additionalProperties: false
+      required: [jurisdiction_code]
+      properties:
+        jurisdiction_code: { type: string }
+        budget_min_minor: { type: [integer, "null"], minimum: 0 }
+        budget_max_minor: { type: [integer, "null"], minimum: 0 }
+        currency: { type: [string, "null"], pattern: "^[A-Z]{3}$", description: "Required when a budget is given" }
+        budget_period: { type: [string, "null"], enum: [month, week, null] }
+        anchor_label: { type: [string, "null"], maxLength: 120 }
+        anchor_lat: { type: [number, "null"] }
+        anchor_lng: { type: [number, "null"] }
+        max_commute_min: { type: [integer, "null"], minimum: 0, maximum: 300 }
+        search_radius_m: { type: [integer, "null"], minimum: 100, maximum: 100000 }
+        move_in_from: { type: [string, "null"], format: date }
+        min_stay_months: { type: [integer, "null"], minimum: 0, maximum: 120 }
+        declared_preferences: { $ref: "#/components/schemas/Preferences" }
+        languages: { type: array, items: { type: string, enum: [ar, aeb, fr, en, de, es, it] } }
+        unparsed: { type: array, items: { type: string } }
+    ProfileResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [id, profile_version, jurisdiction_code, anchor]
+          properties:
+            id: { type: string, format: uuid }
+            profile_version: { type: integer }
+            jurisdiction_code: { type: [string, "null"] }
+            anchor: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
+            anchor_geocode: { type: [object, "null"] }
+    ProfileExtractRequest:
+      type: object
+      additionalProperties: false
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 2000 }
+        jurisdiction: { type: string, description: "Default: the account's jurisdiction" }
+        save: { type: boolean, default: false }
+    ProfileExtractResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [profile, search_jurisdiction, anchor, warnings, saved]
+          properties:
+            profile: { type: object, description: "P2 output after the deterministic checks (prompts/schemas/P2_profile_extractor.schema.json)" }
+            search_jurisdiction: { type: [string, "null"] }
+            anchor: { type: [object, "null"], description: "{status: found | ambiguous | not_found, place, candidates}" }
+            warnings: { type: array, items: { type: string } }
+            saved: { type: [object, "null"] }
+    AssistantMessageRequest:
+      type: object
+      additionalProperties: false
+      required: [text]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 2000 }
+        jurisdiction: { type: string }
+    AssistantResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [intent, status]
+          properties:
+            intent: { type: [string, "null"], enum: [search_listings, post_listing, legal_question, generate_document, report_problem, smalltalk_or_unsupported, null] }
+            status: { type: string, enum: [results, profile_failed, search_failed, clarification_needed, not_available_yet, unsupported, not_understood] }
+            language: { type: [string, "null"] }
+            confidence: { type: [number, "null"] }
+            clarifying_question: { type: [string, "null"] }
+            profile: { type: [object, "null"] }
+            anchor: { type: [object, "null"] }
+            results: { type: array, items: { $ref: "#/components/schemas/ListingResult" } }
+            count: { type: integer }
+            applied: { type: [object, "null"] }
+            warnings: { type: array, items: { type: string } }
+            data_attribution: { type: array, items: { type: string } }

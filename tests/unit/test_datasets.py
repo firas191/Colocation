@@ -23,6 +23,8 @@ def pack_keys():
 def test_manifest_and_queries_are_consistent():
     keys = pack_keys()
     for d in json.loads((DS / "manifest.json").read_text(encoding="utf-8")):
+        if d["kind"] != "retrieval":
+            continue                     # prompt golden sets: tests/unit/test_prompts.py
         lines = [json.loads(l) for l in (DS / d["file"]).read_text(encoding="utf-8").splitlines() if l.strip()]
         ids = [q["id"] for q in lines]
         assert len(ids) == len(set(ids)) >= 40

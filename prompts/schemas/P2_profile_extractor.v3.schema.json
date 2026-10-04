@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:flatshare:prompts:P2_profile_extractor:v3",
+  "title": "P2 profile extractor output, v3 (amounts in major units)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jurisdiction_code",
+    "budget_min",
+    "budget_max",
+    "currency",
+    "budget_period",
+    "anchor_label",
+    "max_commute_min",
+    "move_in_from",
+    "min_stay_months",
+    "declared_preferences",
+    "languages",
+    "unparsed",
+    "field_confidence"
+  ],
+  "properties": {
+    "jurisdiction_code": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "TN",
+        "FR",
+        "GB",
+        null
+      ]
+    },
+    "budget_min": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "budget_max": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "budget_period": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "month",
+        "week",
+        null
+      ]
+    },
+    "anchor_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120
+    },
+    "max_commute_min": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 300
+    },
+    "move_in_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "min_stay_months": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 120
+    },
+    "declared_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "smoking": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "pets": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "quiet_hours": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "guests": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "schedule": {
+          "type": "string",
+          "enum": [
+            "early",
+            "late",
+            "irregular"
+          ]
+        },
+        "cleanliness": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "relaxed"
+          ]
+        }
+      }
+    },
+    "languages": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "enum": [
+          "ar",
+          "aeb",
+          "fr",
+          "en",
+          "de",
+          "es",
+          "it"
+        ]
+      }
+    },
+    "unparsed": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      }
+    },
+    "field_confidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    }
+  }
+}

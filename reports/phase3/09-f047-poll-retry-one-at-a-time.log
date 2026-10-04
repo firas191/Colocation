@@ -1,0 +1,26 @@
+# Sandbox check of F-047 (mock model): job A started; job B started 3 s later; the proxy stopped 4 s after that for 50 s, then restarted.
+# 2026-10-03T11:27:54Z
+===== A: p3.py eval --prompt P1_router --versions 1,2 --models qwen3.5:4b
+job 05cd99c6-4c7e-4dab-9783-ac1f8f58e859 (eval_prompts) was still marked running after 13.7 h: marked failed (abandoned)
+/v1/admin/eval/prompt-runs: job 7c1f44a3-8c3c-46de-83aa-9841cd4440a3 accepted
+      0.4s  job running
+  poll: no answer (ConnectError: [Errno 111] Connection refused); retrying in 30 s
+  poll: no answer (ConnectError: [Errno 111] Connection refused); retrying in 30 s
+     67.4s  job succeeded
+     67.4s  2 evaluation runs finished; last: run P1_router v2 / qwen3.5:4b: succeeded
+job 7c1f44a3-8c3c-46de-83aa-9841cd4440a3: succeeded 
+  items 160  model qwen3.5:4b  run_id d0f971f7-87d1-422f-8de0-ec1af6453002  version 1  json_valid 1  latency_p95_ms 32  intent_accuracy 0.375
+  items 160  model qwen3.5:4b  run_id f19d06db-5917-4f37-b20a-640371d2f0b5  version 2  json_valid 1  latency_p95_ms 21  intent_accuracy 0.375
+===== B: p3.py eval --prompt P2_profile_extractor --versions 1 --models qwen3.5:4b
+job 7c1f44a3-8c3c-46de-83aa-9841cd4440a3 (eval_prompts) is already running for 0 min: waiting for it before starting this one (one evaluation at a time, F-047)
+      0.3s  job running
+  poll: no answer (ConnectError: [Errno 111] Connection refused); retrying in 30 s
+  poll: no answer (ConnectError: [Errno 111] Connection refused); retrying in 30 s
+     64.9s  job succeeded
+     64.9s  2 evaluation runs finished; last: run P1_router v2 / qwen3.5:4b: succeeded
+/v1/admin/eval/prompt-runs: job d9d2d314-d828-4a24-a4c3-71af7c43a748 accepted
+      0.3s  job running
+     11.7s  job succeeded
+     11.7s  1 evaluation runs finished; last: run P2_profile_extractor v1 / qwen3.5:4b: succeeded
+job d9d2d314-d828-4a24-a4c3-71af7c43a748: succeeded 
+  f1 0.3471  items 110  model qwen3.5:4b  run_id db6f785e-bcd3-441d-9d10-312f3199b200  version 1  json_valid 1  latency_p95_ms 28  unit_error_items 0

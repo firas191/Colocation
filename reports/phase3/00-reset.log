@@ -1,0 +1,89 @@
+$ /opt/lab/reset.sh
+# 2026-10-02T21:31:57Z
+== wait for postgres
+127.0.0.1:5432 - accepting connections
+== n8n database and role
+== application database
+Applying: 0001_baseline_schema.sql
+Applied: 0001_baseline_schema.sql in 407.219778ms
+Applying: 0002_gateway.sql
+Applied: 0002_gateway.sql in 12.407544ms
+Applying: 0003_security_fixes.sql
+Applied: 0003_security_fixes.sql in 6.874112ms
+Applying: 0004_settings.sql
+Applied: 0004_settings.sql in 4.405812ms
+Applying: 0005_gateway_check.sql
+Applied: 0005_gateway_check.sql in 3.409242ms
+Applying: 0006_api_finish.sql
+Applied: 0006_api_finish.sql in 1.866745ms
+Applying: 0007_kb_pipeline.sql
+Applied: 0007_kb_pipeline.sql in 21.214029ms
+Applying: 0008_profile_search.sql
+Applied: 0008_profile_search.sql in 23.769711ms
+== reference data
+== role passwords
+== deployment settings
+== API client keys
+created API client 'website' (secret written to /opt/lab/secrets/api-clients.env)
+created API client 'tests' (secret written to /opt/lab/secrets/api-clients.env)
+== done
+== import credentials
+Starting migration AddErrorColumnsToTestRuns1737715421462
+Finished migration AddErrorColumnsToTestRuns1737715421462
+Successfully imported 1 credential.
+== import workflows
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+Successfully imported 1 workflow.
+== import test workflows
+Successfully imported 1 workflow.
+== publish
+Publishing workflow with ID: fsApiEvalPrmt001 (current version)
+Publishing workflow with ID: fsApiEvalRun0001 (current version)
+Publishing workflow with ID: fsApiEvalGet0001 (current version)
+Publishing workflow with ID: fsApiFxRefresh01 (current version)
+Publishing workflow with ID: fsApiKbIngest001 (current version)
+Publishing workflow with ID: fsApiListEmb0001 (current version)
+Publishing workflow with ID: fsApiHealth00001 (current version)
+Publishing workflow with ID: fsApiJobsGet0001 (current version)
+Publishing workflow with ID: fsApiProfExtr001 (current version)
+Publishing workflow with ID: fsApiProfMe00001 (current version)
+Publishing workflow with ID: fsApiSearch00001 (current version)
+Publishing workflow with ID: fsApiUsersSync01 (current version)
+Publishing workflow with ID: fsEvalPrompts001 (current version)
+Publishing workflow with ID: fsEvalRetrieval1 (current version)
+Publishing workflow with ID: fsFxRefresh00001 (current version)
+Publishing workflow with ID: fsGatewayAuth001 (current version)
+Publishing workflow with ID: fsKbIngest000001 (current version)
+Publishing workflow with ID: fsKbIngestSrc001 (current version)
+Publishing workflow with ID: fsListingsEmb001 (current version)
+Publishing workflow with ID: fsLlmCall0000001 (current version)
+Publishing workflow with ID: fsMatchSearch001 (current version)
+Publishing workflow with ID: fsOpsErrorHndl01 (current version)
+Publishing workflow with ID: fsOrchestrator01 (current version)
+Publishing workflow with ID: fsProfileExtr001 (current version)
+Publishing workflow with ID: fsTestFail000001 (current version)
+== done
+n8n ready
+# exit=0
