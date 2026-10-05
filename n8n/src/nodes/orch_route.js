@@ -9,6 +9,14 @@ const step = { agent: 'A0_orchestrator', prompt_version_id: r.prompt_version_id 
   input: { chars: Array.from(v.text).length }, output: r.ok ? r.output : { error_code: r.error_code },
   latency_ms: r.latency_ms, tokens_in: r.tokens_in || 0, tokens_out: r.tokens_out || 0,
   error: r.ok ? null : `${r.error_code}${r.detail ? ': ' + String(r.detail).slice(0, 200) : ''}` };
+// Text service result (language, PII), recorded as its own step; the request text is not stored (D-062).
+const tr = $('Text analysis').first().json || {};
+const tb = tr.body && typeof tr.body === 'object' ? tr.body : null;
+const textStep = { agent: 'A0_text', model: tb ? tb.backend : null, input: { chars: Array.from(v.text).length },
+  output: tb ? { language: tb.language.language, script: tb.language.script, method: tb.language.method,
+    pii_counts: tb.pii ? tb.pii.counts : {}, ner: tb.pii ? tb.pii.ner : false } : null,
+  latency_ms: tb ? Math.round(tb.ms) : null, tokens_in: 0, tokens_out: 0,
+  error: tb ? null : `text service answered ${tr.statusCode || tr.code || 'nothing'}` };
 let route;
 if (!r.ok) route = 4;
 else if (r.output.needs_clarification || r.output.confidence < min) route = 1;
@@ -17,5 +25,6 @@ else if (r.output.intent === 'smalltalk_or_unsupported') route = 3;
 else route = 2;
 const o = r.ok ? r.output : {};
 const hint = ['TN', 'FR', 'GB'].includes(o.jurisdiction_hint) ? o.jurisdiction_hint : null;
-return [{ json: { route, router: o, call_error: !!r.call_error, steps: [step],
+return [{ json: { route, router: o, call_error: !!r.call_error, steps: [textStep, step],
+  detected_language: tb ? tb.language.language : null,
   extract: { text: v.text, jurisdiction: hint || v.jurisdiction, today: v.today } } }];

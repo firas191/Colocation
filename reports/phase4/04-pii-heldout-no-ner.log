@@ -1,0 +1,32 @@
+{
+ "dataset": "pii_heldout_v1.jsonl",
+ "items": 53,
+ "gold_spans": 84,
+ "use_ner": false,
+ "recall_masked": 0.7143,
+ "recall_typed": 0.7143,
+ "precision": 0.9091,
+ "false_positive_spans": 6,
+ "negative_items_with_masking": 1,
+ "recall_by_type": {
+  "ADDRESS": "12/12",
+  "CARD": "4/4",
+  "EMAIL": "8/8",
+  "IBAN": "8/8",
+  "ID": "4/4",
+  "NAME": "0/24",
+  "PHONE": "20/20",
+  "POSTCODE": "4/4"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "8/8",
+  "aeb_latin": "8/8",
+  "ar": "4/8",
+  "en": "16/24",
+  "fr": "16/24",
+  "mixed": "8/12"
+ },
+ "latency_ms_p50": 0.2,
+ "latency_ms_p95": 0.8
+}
+wrote /tmp/claude-0/ev/text-pii-20261004-084531.json

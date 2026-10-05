@@ -1,0 +1,53 @@
+{
+ "p1": {
+  "items": 160,
+  "backend": "lingua",
+  "language_accuracy": 0.8875,
+  "script_accuracy": 1.0,
+  "by_group": {
+   "aeb_arabic": "8/16",
+   "aeb_latin": "19/22",
+   "ar": "14/14",
+   "de": "10/10",
+   "en": "24/24",
+   "es": "9/9",
+   "fr": "33/34",
+   "it": "9/9",
+   "mixed": "16/22"
+  },
+  "confusions": {
+   "aeb->mixed": 7,
+   "mixed->fr": 5,
+   "aeb->ar": 4,
+   "fr->mixed": 1,
+   "mixed->aeb": 1
+  },
+  "latency_ms_p50": 0.5
+ },
+ "p2": {
+  "items": 110,
+  "backend": "lingua",
+  "language_accuracy": 0.7364,
+  "script_accuracy": null,
+  "by_group": {
+   "aeb_arabic": "0/12",
+   "aeb_latin": "13/18",
+   "ar": "10/10",
+   "en": "23/25",
+   "fr": "29/30",
+   "mixed": "6/15"
+  },
+  "confusions": {
+   "aeb->ar": 8,
+   "aeb->mixed": 8,
+   "mixed->en": 4,
+   "mixed->fr": 4,
+   "en->mixed": 2,
+   "aeb->fr": 1,
+   "mixed->aeb": 1,
+   "fr->mixed": 1
+  },
+  "latency_ms_p50": 0.5
+ }
+}
+wrote /tmp/claude-0/ev/text-langid-20261004-090603.json

@@ -1,0 +1,46 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /opt/lab/svcenv/bin/python
+rootdir: /home/claude/flatshare/services/text
+plugins: anyio-4.15.1
+collecting ... collected 32 items
+
+tests/test_text.py::test_script[Je cherche une chambre calme-latin] PASSED [  3%]
+tests/test_text.py::test_script[\u0623\u0628\u062d\u062b \u0639\u0646 \u063a\u0631\u0641\u0629 \u0642\u0631\u064a\u0628\u0629 \u0645\u0646 \u0627\u0644\u062c\u0627\u0645\u0639\u0629-arabic] PASSED [  6%]
+tests/test_text.py::test_script[\u0646\u062d\u0628 studio \u0642\u0631\u064a\u0628 \u0645\u0646 la fac de droit-mixed] PASSED [  9%]
+tests/test_text.py::test_script[1234 5678-other] PASSED                  [ 12%]
+tests/test_text.py::test_arabizi_detected[5allini nchouf el bit ghodwa] PASSED [ 15%]
+tests/test_text.py::test_arabizi_detected[9addech el kra fel chhar] PASSED [ 18%]
+tests/test_text.py::test_arabizi_detected[ena ne5dem bel lil w n7eb bit 9rib] PASSED [ 21%]
+tests/test_text.py::test_not_arabizi[I need a room near the station from March] PASSED [ 25%]
+tests/test_text.py::test_not_arabizi[Chambre meubl\xe9e proche du tram, libre en mars] PASSED [ 28%]
+tests/test_text.py::test_not_arabizi[Studio in Leeds, 2 min walk to campus] PASSED [ 31%]
+tests/test_text.py::test_tunisian_vs_msa_words PASSED                    [ 34%]
+tests/test_text.py::test_mixed_two_languages_with_whole_clauses PASSED   [ 37%]
+tests/test_text.py::test_recognisers[\xe9cris-moi \xe0 sami.test@example.com stp-EMAIL] PASSED [ 40%]
+tests/test_text.py::test_recognisers[mon num\xe9ro +216 22 345 678-PHONE] PASSED [ 43%]
+tests/test_text.py::test_recognisers[appelle 98.765.432 ce soir-PHONE] PASSED [ 46%]
+tests/test_text.py::test_recognisers[call me on 07700 900123-PHONE] PASSED [ 50%]
+tests/test_text.py::test_recognisers[carte 4111 1111 1111 1111 exp 12/29-CARD] PASSED [ 53%]
+tests/test_text.py::test_recognisers[IBAN FR76 3000 6000 0112 3456 7890 189 merci-IBAN] PASSED [ 56%]
+tests/test_text.py::test_recognisers[NI number AB 12 34 56 C-ID] PASSED  [ 59%]
+tests/test_text.py::test_recognisers[mon CIN 07345612-ID] PASSED         [ 62%]
+tests/test_text.py::test_recognisers[j'habite au 12 rue des Oliviers-ADDRESS] PASSED [ 65%]
+tests/test_text.py::test_recognisers[flat at 44 Station Road, M14 6HR-ADDRESS] PASSED [ 68%]
+tests/test_text.py::test_recognisers[\u0627\u0644\u062f\u0627\u0631 \u0641\u064a \u0646\u0647\u062c \u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646 \u0639\u062f\u062f 4-ADDRESS] PASSED [ 71%]
+tests/test_text.py::test_recognisers[je m'appelle Leila Haddad-NAME] PASSED [ 75%]
+tests/test_text.py::test_recognisers[\u0627\u0633\u0645\u064a \u0633\u0627\u0645\u064a-NAME] PASSED [ 78%]
+tests/test_text.py::test_not_pii[loyer 450000 millimes, libre le 15/11/2026, S+2 au 3e \xe9tage] PASSED [ 81%]
+tests/test_text.py::test_not_pii[rent \xa3650 pcm, bills 120, from 01/09/2026] PASSED [ 84%]
+tests/test_text.py::test_not_pii[carte 4111 1111 1111 1112] PASSED       [ 87%]
+tests/test_text.py::test_not_pii[IBAN FR76 3000 6000 0112 3456 7890 188] PASSED [ 90%]
+tests/test_text.py::test_not_pii[ann\xe9e universitaire 2026 2027, 20 min du campus] PASSED [ 93%]
+tests/test_text.py::test_placeholders_are_stable_and_mapping_is_returned PASSED [ 96%]
+tests/test_text.py::test_http PASSED                                     [100%]
+
+=============================== warnings summary ===============================
+../../../../../opt/lab/svcenv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /opt/lab/svcenv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 32 passed, 1 warning in 0.40s =========================

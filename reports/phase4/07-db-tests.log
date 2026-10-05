@@ -1,0 +1,384 @@
+== recreate flatshare_test
+== migrate
+Applying: 0001_baseline_schema.sql
+Applied: 0001_baseline_schema.sql in 375.74221ms
+Applying: 0002_gateway.sql
+Applied: 0002_gateway.sql in 12.720356ms
+Applying: 0003_security_fixes.sql
+Applied: 0003_security_fixes.sql in 6.196877ms
+Applying: 0004_settings.sql
+Applied: 0004_settings.sql in 4.144857ms
+Applying: 0005_gateway_check.sql
+Applied: 0005_gateway_check.sql in 3.344238ms
+Applying: 0006_api_finish.sql
+Applied: 0006_api_finish.sql in 1.440168ms
+Applying: 0007_kb_pipeline.sql
+Applied: 0007_kb_pipeline.sql in 19.065711ms
+Applying: 0008_profile_search.sql
+Applied: 0008_profile_search.sql in 21.147283ms
+Applying: 0009_llm_think_overrides.sql
+Applied: 0009_llm_think_overrides.sql in 1.518227ms
+Applying: 0010_intake_media.sql
+Applied: 0010_intake_media.sql in 10.41047ms
+Applying: 0011_listing_extract.sql
+Applied: 0011_listing_extract.sql in 3.257551ms
+== extension versions
+citext 1.6
+pg_trgm 1.6
+pgcrypto 1.3
+plpgsql 1.0
+postgis 3.4.2
+unaccent 1.1
+vector 0.6.0
+PostgreSQL 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit
+== pgTAP
+db/tests/010_baseline_behaviour.sql .. 
+1..51
+ok 1 - T1 hybrid search: 001 ranks first
+ok 2 - T1 excludes over-budget, out-of-radius, draft and other-jurisdiction listings
+ok 3 - T2 Arabic query finds 002 through the lexical leg
+ok 4 - T3 jurisdiction isolation: FR returns only 006
+ok 5 - T4 EUR budget never matches TND listings
+ok 6 - T5 empty text runs dense-only and returns the 4 published TN listings
+ok 7 - T6 hostile tsquery characters are neutralised
+ok 8 - T7 TN search returns TN and global sources only
+ok 9 - T7 FR source never appears in a TN search
+ok 10 - T8 reliability floor 4 excludes the blog
+ok 11 - T9 bge-m3 vectors queryable
+ok 12 - T9 e5 vectors queryable on the same chunks
+ok 13 - T10 near-duplicate photo found at Hamming distance 1
+ok 14 - T11 rent without currency rejected
+ok 15 - T11 negative rent rejected
+ok 16 - T11 unknown jurisdiction rejected
+ok 17 - T11 budget max < min rejected
+ok 18 - T11 unknown currency rejected
+ok 19 - T12 second active version rejected
+ok 20 - T12 retired version accepted
+ok 21 - T13 Alice sees 1 profile
+ok 22 - T13 Alice sees only her message
+ok 23 - T13 Alice sees 5 published + her draft
+ok 24 - T14 Alice cannot create a profile for Bob
+ok 25 - T15 Bob sees his profile only
+ok 26 - T15 Bob sees published listings only
+ok 27 - T16 no user: no profiles
+ok 28 - T16 no user: no messages
+ok 29 - T17 n8n_worker bypasses RLS
+ok 30 - T18 erase_user(Alice) runs
+ok 31 - T18 profile deleted
+ok 32 - T18 messages blanked
+ok 33 - T18 TN listings archived
+ok 34 - T18 titles removed
+ok 35 - T18 media rows deleted
+ok 36 - T18 one delete_media job per listing
+ok 37 - T18 user row anonymised
+ok 38 - T18 no location left on erased listings
+ok 39 - T18 Bob untouched
+ok 40 - T19 api_user cannot read exact location
+ok 41 - T20 api_user reads public_location
+ok 42 - T21 api_user cannot read trust_reports
+ok 43 - T22 api_user cannot erase
+ok 44 - T23 media of drafts hidden, media of published visible
+ok 45 - T24 n8n_worker reads location
+ok 46 - T24 n8n_worker can erase
+ok 47 - T24 erase by n8n_worker took effect
+ok 48 - n8n_worker has BYPASSRLS
+ok 49 - api_user does not bypass RLS
+ok 50 - n8n_worker is not superuser
+ok 51 - api_user is not superuser
+ok
+db/tests/020_security_fixes.sql ...... 
+1..33
+ok 1 - D-010 Bob sees only his 2 consent rows
+ok 2 - D-010 Alice sees only her consent row
+ok 3 - D-010 Alice cannot record consent for Bob
+ok 4 - D-010 Alice can record her own consent
+ok 5 - D-010 consents cannot be updated (append-only)
+ok 6 - D-010 consents cannot be deleted by api_user
+ok 7 - D-011 api_user cannot insert a published listing
+ok 8 - D-011 api_user cannot set trust_score
+ok 9 - D-011 api_user cannot set is_synthetic
+ok 10 - D-011 api_user can create its own draft
+ok 11 - D-011 api_user cannot create a listing owned by someone else
+ok 12 - D-011 api_user cannot publish by update
+ok 13 - D-011 api_user cannot write trust fields
+ok 14 - D-011 api_user can edit its own title
+ok 15 - D-011 Bob cannot edit Alice's listing (0 rows)
+ok 16 - D-011 api_user cannot hard-delete a listing
+ok 17 - D-012 api_user cannot write assistant messages
+ok 18 - D-012 api_user cannot write messages as another user
+ok 19 - D-012 api_user can write its own user message
+ok 20 - D-012 messages cannot be edited
+ok 21 - D-013 no function in app/kb/ai/eval/sec is executable by PUBLIC
+ok 22 - D-013 api_user can execute exactly three functions
+ok 23 - D-013 api_user cannot run the duplicate-photo lookup
+ok 24 - D-013 default privileges: n8n_worker can write new tables
+ok 25 - D-013 default privileges: api_user gets nothing on new tables
+ok 26 - D-014 erase_user runs
+ok 27 - D-014 media deletion job carries the storage keys
+ok 28 - D-014 generated PDFs are queued for deletion
+ok 29 - D-014 generated document rows removed
+ok 30 - D-014 report text and reporter removed
+ok 31 - D-014 queued job cancelled and its input scrubbed
+ok 32 - D-014 execution rows unlinked
+ok 33 - D-014 stored responses removed
+ok
+db/tests/030_gateway.sql ............. 
+1..41
+ok 1 - create_api_client returns a fss_ secret of 64 hex chars
+ok 2 - valid signed request accepted
+ok 3 - same request id again is rejected as a replay
+ok 4 - altered body rejected
+ok 5 - altered path rejected
+ok 6 - altered method rejected
+ok 7 - altered X-User-Id rejected
+ok 8 - altered idempotency key rejected
+ok 9 - altered query rejected
+ok 10 - altered client ip rejected
+ok 11 - signature made with another secret rejected
+ok 12 - uppercase hex signature rejected (format is lowercase hex)
+ok 13 - correctly signed but 301 s old: rejected
+ok 14 - correctly signed but 305 s in the future: rejected
+ok 15 - 290 s old: still inside the window
+ok 16 - non-numeric timestamp rejected
+ok 17 - unknown key id rejected
+ok 18 - deactivated key rejected even with a correct signature
+ok 19 - newline in a signed field rejected
+ok 20 - request id must be a uuid
+ok 21 - body that is not base64 rejected
+ok 22 - missing signature rejected
+ok 23 - GET with empty body and no optional headers accepted
+ok 24 - another valid request
+ok 25 - old nonces are purged
+ok 26 - api_user cannot call verify_request
+ok 27 - n8n_worker cannot read client secrets
+ok 28 - n8n_worker cannot issue keys
+ok 29 - n8n_worker can call verify_request
+ok 30 - vector get_no_body verifies
+ok 31 - vector post_json_unicode verifies
+ok 32 - vector query_repeated_reserved verifies
+ok 33 - vector path_param verifies
+ok 34 - idempotency: first use is new
+ok 35 - idempotency: concurrent retry sees in_progress
+ok 36 - idempotency: same key, different body is a conflict
+ok 37 - idempotency: finished request replays the stored response
+ok 38 - idempotency: same key on another route is a conflict
+ok 39 - idempotency: keys are scoped per client and user
+ok 40 - idempotency: stale in_progress row is taken over
+ok 41 - idempotency: released key can be reused
+ok
+db/tests/040_settings_context.sql .... 
+1..11
+ok 1 - no user id: user is null
+ok 2 - malformed user id: null, no exception
+ok 3 - unknown user id: null
+ok 4 - known user: role returned
+ok 5 - latest consent row per purpose wins (withdrawal respected)
+ok 6 - gateway settings included
+ok 7 - only gateway.* settings exposed to the gateway
+ok 8 - erased user flagged as deleted
+ok 9 - settings keys must be dotted lowercase
+ok 10 - api_user cannot read settings
+ok 11 - n8n_worker can call gateway_context
+ok
+db/tests/050_gateway_check.sql ....... 
+1..12
+ok 1 - first hit in a window is 1
+ok 2 - second hit is 2
+ok 3 - keys are independent
+ok 4 - bucket expires after two windows
+ok 5 - gateway_check verifies a good signature
+ok 6 - user counter counts verified requests
+ok 7 - user counter ignores failed signatures
+ok 8 - ip counter counts every request, including failed ones
+ok 9 - user context returned with the check
+ok 10 - failed signature: counted on the network IP bucket
+ok 11 - failed signature: spoofed X-Client-Ip bucket untouched
+ok 12 - api_user cannot call gateway_check
+ok
+db/tests/060_api_finish.sql .......... 
+1..8
+ok 1 - finish a 201 request
+ok 2 - 2xx completes the idempotency record
+ok 3 - result user id stored for erasure
+ok 4 - execution row written
+ok 5 - finish a 503 request with a malformed user id
+ok 6 - 5xx releases the key so the client can retry
+ok 7 - 5xx logged as failed with the error code
+ok 8 - n8n_worker can read the migration version
+ok
+db/tests/070_kb_pipeline.sql ......... 
+1..37
+ok 1 - Latin: lower case, accents removed
+ok 2 - Arabic: harakat removed, hamza-alef unified
+ok 3 - Arabic: alef maqsura to ya, tatweel removed, madda alef unified
+ok 4 - NFKC: Arabic presentation form decomposed
+ok 5 - query: stop words dropped, normalised, OR-joined
+ok 6 - query: Arabic stop words dropped
+ok 7 - query of stop words only is empty
+ok 8 - first fetch creates version 1
+ok 9 - same cleaned text: unchanged, no new version
+ok 10 - every fetch keeps its raw bytes
+ok 11 - raw bytes and their sha256 stored
+ok 12 - changed text: version 2
+ok 13 - old version superseded, one current
+ok 14 - empty cleaned text rejected
+ok 15 - two chunks stored
+ok 16 - chunk content is cut from the document by its span
+ok 17 - heading path and article ref kept
+ok 18 - span beyond the text rejected
+ok 19 - storing again replaces that strategy's chunks
+ok 20 - old chunks of the strategy are gone
+ok 21 - chunk the superseded version (for the search test)
+ok 22 - chunk the blog
+ok 23 - chunk the global document
+ok 24 - chunk the other jurisdiction
+ok 25 - unknown model rejected
+ok 26 - wrong dimension rejected by vector(1024)
+ok 27 - embeddings stored for all five chunks
+ok 28 - lexical: only current versions of the jurisdiction (+global), law ranked first
+ok 29 - minimum reliability filters the blog out
+ok 30 - global sources are included; Arabic lexical match
+ok 31 - dense: every current chunk of ZY and global is a candidate, other jurisdictions and old versions are not
+ok 32 - hybrid returns the dense similarity
+ok 33 - gold resolved to 0-based offsets
+ok 34 - ambiguous start quote and missing quote are reported
+ok 35 - timed search reports milliseconds
+ok 36 - n8n_worker can search
+ok 37 - api_user cannot write the knowledge base
+ok
+db/tests/080_profile_search.sql ...... 
+1..65
+ok 1 - TND has 3 decimals (millimes)
+ok 2 - JPY has none (code is case-insensitive)
+ok 3 - EUR has 2
+ok 4 - 450 dinars are 450000 millimes, not 450 (the x1000 trap)
+ok 5 - one millime
+ok 6 - 12.50 EUR
+ok 7 - yen: minor unit = major unit
+ok 8 - more decimals than the currency has: rejected (NULL)
+ok 9 - fractional yen: rejected
+ok 10 - unknown currency: NULL
+ok 11 - three rates stored, unknown currency skipped
+ok 12 - same pair and date: updated
+ok 13 - direct rate
+ok 14 - inverse rate
+ok 15 - cross rate through EUR
+ok 16 - cross rate labelled as derived
+ok 17 - no rate for TND: NULL, never a guess
+ok 18 - rate older than fx.max_age_days: not used
+ok 19 - rate published after the date: not used
+ok 20 - same currency
+ok 21 - 100.00 EUR = 16000 JPY (exponent 2 to 0)
+ok 22 - 1000 JPY = 6.25 EUR (exponent 0 to 2)
+ok 23 - 100.00 GBP to USD through EUR, rounded to the cent
+ok 24 - a TND test rate
+ok 25 - 450 TND (450000 millimes) to EUR cents: exponent 3 to 2
+ok 26 - weekly rent 150.00 GBP is 650.00 GBP per month (x 52 / 12)
+ok 27 - public point is 150 to 400 m from the exact point
+ok 28 - other updates keep the public point
+ok 29 - the public point cannot be set to the exact point directly
+ok 30 - a new exact point draws a new public point
+ok 31 - two listings at the same address get different public points
+ok 32 - no exact point, no public point
+ok 33 - normaliser: accents, case, punctuation, spaces
+ok 34 - found by a normalised name
+ok 35 - found by the Arabic name
+ok 36 - a known name inside a longer text
+ok 37 - a name shared by two places is ambiguous
+ok 38 - both candidates returned
+ok 39 - the full name resolves the ambiguity
+ok 40 - unknown place: not_found
+ok 41 - places of other jurisdictions are not used
+ok 42 - empty text: not_found
+ok 43 - filters only: published listings of the jurisdiction, newest first
+ok 44 - budget filter in minor units
+ok 45 - a budget in another currency is converted to the jurisdiction currency (1000.00 EUR to millimes)
+ok 46 - no usable rate: budget not applied and a warning code returned
+ok 47 - ... and the results are not filtered by a guessed amount
+ok 48 - place name resolved and used as the centre of a radius
+ok 49 - ambiguous place: warning, no distance filter
+ok 50 - text search (lexical leg) without a vector
+ok 51 - text given: hybrid mode
+ok 52 - results never carry the exact location
+ok 53 - results carry the public point and the synthetic flag
+ok 54 - unknown jurisdiction
+ok 55 - profile saved; anchor label geocoded
+ok 56 - saving again updates the profile and its version
+ok 57 - the request text is not stored
+ok 58 - the active version by default
+ok 59 - a given version on request
+ok 60 - request with two agent steps recorded
+ok 61 - tokens of the steps summed on the execution
+ok 62 - steps in order
+ok 63 - user role reads the monthly rent
+ok 64 - extraction context available
+ok 65 - granite4.2 is told not to think (F-048)
+ok
+db/tests/090_intake_media.sql ........ 
+1..37
+ok 1 - unknown jurisdiction: refused
+ok 2 - draft created for the owner, jurisdiction code upper-cased
+ok 3 - another user cannot add media
+ok 4 - unknown listing
+ok 5 - GIF refused, oversized declared size refused; each error names its file
+ok 6 - unknown kind refused
+ok 7 - three upload slots
+ok 8 - keys are uploads/<listing>/<upload id>.<ext>, extension from the declared type
+ok 9 - per-listing limit counts pending uploads
+ok 10 - an expired pending upload no longer counts
+ok 11 - and is marked expired
+ok 12 - photo stored
+ok 13 - GPS 0.0045 deg north of the listing: about 500 m, rounded to 100 m
+ok 14 - GPS coordinates are not stored
+ok 15 - only whether GPS was present
+ok 16 - moderation blurred; pHash stored as 64 bits
+ok 17 - upload marked processed and linked
+ok 18 - same file twice in one listing: rejected
+ok 19 - and the upload records why
+ok 20 - near duplicate found at Hamming distance 2
+ok 21 - flagged as another owner's photo
+ok 22 - nothing blurred: moderation ok
+ok 23 - no GPS: no distance
+ok 24 - not the owner: nothing
+ok 25 - owner sees the stored photo
+ok 26 - owner view contains no GPS coordinate
+ok 27 - job started
+ok 28 - lease from jobs.lease_s for this type (1800 s)
+ok 29 - a running job cannot be started twice
+ok 30 - transient failure: queued again, first retry after 30 s
+ok 31 - due for retry
+ok 32 - second attempt
+ok 33 - second retry after 60 s (backoff doubles)
+(00000000-0000-0000-0000-0000000000a1,listing_analyze,running,{},,,3,3,,,"2026-10-04 10:11:10.094829+00","2026-10-04 10:11:10.094829+00",,,"2026-10-04 10:41:10.094829+00","down again")
+ok 34 - reaper: lease expired on the last attempt, job failed
+ok 35 - with the reason
+(00000000-0000-0000-0000-0000000000a2,other,running,{},,,1,3,,,"2026-10-04 10:11:10.094829+00","2026-10-04 10:11:10.094829+00",,,"2026-10-04 10:26:10.094829+00",)
+ok 36 - non-transient failure: fails at once
+ok 37 - api_user cannot read upload slots
+ok
+db/tests/100_listing_extract.sql ..... 
+1..19
+ok 1 - the extraction context carries the rent ranges
+ok 2 - TND range from the setting
+ok 3 - extraction stored
+ok 4 - rent with scope and period
+ok 5 - scalar fields
+ok 6 - amenities sorted
+ok 7 - house rules
+ok 8 - language and place words
+ok 9 - the exact address stays inside extraction, with the time it was stored
+ok 10 - the owner's view shows the rent scope
+{"ok": true, "listing_id": "550b27e3-ba67-459c-a58c-3924e8049a34"}
+ok 11 - rent cleared, kind kept, period back to month
+ok 12 - unknown currency refused
+ok 13 - unknown listing
+ok 14 - a published listing is not overwritten
+ok 15 - rent_scope is a closed list
+ok 16 - one execution per call, request id = job id
+ok 17 - with its steps
+ok 18 - a step error fails the execution
+ok 19 - api_user cannot store an extraction
+ok
+All tests successful.
+Files=10, Tests=314,  1 wallclock secs ( 0.05 usr  0.01 sys +  0.18 cusr  0.08 csys =  0.32 CPU)
+Result: PASS

@@ -1,0 +1,847 @@
+{
+  "id": "fsListingAnalyz1",
+  "name": "wf.listing.analyze",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "d29ecfff-8580-51d4-b274-67d5ced76eb5",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "7f2e6de9-9c2a-54d0-a8f8-091486fdf918",
+      "name": "Start job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with j as (select * from app.job_start($1::uuid))\nselect j.id as job_id, j.input, j.attempts, j.max_attempts,\n  (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url,\n  coalesce((select jsonb_agg(jsonb_build_object('upload_id', u.id, 'kind', u.kind, 'key', u.storage_key) order by u.created_at)\n            from app.media_uploads u\n            where u.listing_id = (j.input->>'listing_id')::uuid and u.status in ('pending', 'expired', 'processing')), '[]'::jsonb) as uploads\nfrom j",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "51ef53e2-cff2-5ae7-aa4b-09628a39fe01",
+      "name": "Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Plan\": one item per waiting file. Photos go to wf.intake.photos; other kinds\n// are left pending until their intake workflows exist (voice, video and PDF later in phase 4).\nconst s = $input.first().json;\nif (!s.job_id) return [];                                   // job not queued any more (already running or done)\nconst photos = (s.uploads || []).filter((u) => u.kind === 'photo');\nif (!photos.length) return [{ json: { none: true } }];\nreturn photos.map((u) => ({ json: { job_id: s.job_id, listing_id: s.input.listing_id, upload_id: u.upload_id, key: u.key,\n  media_url: s.media_url } }));\n"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "42b565d1-9655-50f4-b8d4-1e57449e4e0a",
+      "name": "Job failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        400
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Job failed\": a step failed in a way the worker did not plan for. The job ends as\n// failed (not retried), with the redacted error, so it never stays \"running\".\n// Text of the error carried by an item on a node's error output.\n// n8n puts either a string or an object {message, description, ...} in json.error.\nfunction errorText(json) {\n  const e = json && (json.error !== undefined ? json.error : json);\n  if (e == null) return '';\n  if (typeof e === 'string') return e;\n  const parts = [e.message, e.description, e.cause && e.cause.message].filter((x) => typeof x === 'string' && x);\n  return parts.length ? parts.join(' | ') : JSON.stringify(e);\n}\n// Postgres error details echo the offending value, e.g. Key (email)=(a@b.c).\n// Values are removed before anything is logged.\nfunction redactPg(msg) {\n  return String(msg || '').replace(/\\)=\\([^)]*\\)/g, ')=(redacted)');\n}\nif (typeof module !== 'undefined') module.exports = { errorText, redactPg };\n\nconst s = $('Start job').first().json;\nconst msg = redactPg(errorText($input.first().json)).slice(0, 500) || 'worker step failed without a message';\nreturn [{ json: { params: [s.job_id, 'failed', JSON.stringify({ failed_step: true }), msg, false] } }];\n"
+      }
+    },
+    {
+      "id": "3fa7796f-9a99-5d24-ae2e-29faea202d57",
+      "name": "Any photo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "194a89c6-a823-5996-aa73-c1d2ec8790ba",
+              "leftValue": "={{ !$json.none }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "9d0fc99d-316b-587a-9f70-9d793efa0079",
+      "name": "Loop files",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "bb78f584-b1f3-5995-ac86-668b36c79fec",
+      "name": "Intake photo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsIntakePhotos01",
+          "mode": "id",
+          "cachedResultName": "wf.intake.photos"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "8bb05884-22c6-575f-9802-3d5c302fa858",
+      "name": "Summarize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Summarize\": job output, the raw uploads to delete, and whether to retry.\n// Raw uploads carry EXIF (GPS, device) and unblurred faces: they are deleted once a decision is stored\n// (processed or rejected). Missing files stay pending; a transient failure retries the job (spec 5.6).\nconst s = $('Start job').first().json;\nconst results = $input.all().map((i) => i.json).filter((r) => r && r.upload_id);\nconst count = (st) => results.filter((r) => r.status === st).length;\nconst transient = count('transient');\nconst output = { listing_id: s.input.listing_id, processed: count('processed'), rejected: count('rejected'),\n  missing: count('missing'), transient, files: results.map(({ key, ...r }) => r) };\nconst del = results.filter((r) => ['processed', 'rejected'].includes(r.status)).map((r) => r.key);\nreturn [{ json: { job_id: s.job_id, output, delete_keys: del, transient,\n  error: transient ? `${transient} file(s) not processed: ${results.find((r) => r.status === 'transient').error}` : null,\n  delete_url: `${String(s.media_url).replace(/\\/+$/, '')}/v1/storage/delete` } }];\n"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "ca2d1432-4f1c-5956-91da-b81f8351ef3f",
+      "name": "Delete raw uploads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.delete_url }}",
+        "options": {
+          "timeout": "={{ 30000 }}",
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ keys: $json.delete_keys.length ? $json.delete_keys : ['none/none'] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fsCredSvcToken01",
+          "name": "Compute services token"
+        }
+      }
+    },
+    {
+      "id": "fed3333d-55f0-549c-ba72-091629cd5f68",
+      "name": "Extract input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Extract input\"\nconst s = $('Summarize').first().json;\nreturn [{ json: { listing_id: s.output.listing_id, job_id: s.job_id } }];\n"
+      }
+    },
+    {
+      "id": "e80b0aa9-a220-5fa3-8fbb-16362239f3cc",
+      "name": "Extract listing",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsListingExtr001",
+          "mode": "id",
+          "cachedResultName": "wf.listing.extract"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "965aa4b2-659d-5639-8e40-6478e86cae26",
+      "name": "Extracted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        -450
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95ec6fe2-212c-52ad-9397-bca27076f944",
+              "leftValue": "={{ $json.status === 'extracted' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "1cc5d1b9-334b-5abf-ae45-5533d5539283",
+      "name": "Auto publish",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2200,
+        -550
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.listing_auto_publish($1::uuid) as r",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f8d06607-de88-5664-b1be-fcfc8b910ff0",
+      "name": "Embed now?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2420,
+        -550
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d92871a2-2696-5a6a-9606-cac903eed335",
+              "leftValue": "={{ !!($json.r && $json.r.published && $json.r.embed_text) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "dcbf6f9e-6953-54aa-a977-96fb52d5e0da",
+      "name": "Embedding request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -650
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Embedding request\": the newly published listing's text for bge-m3 (the same text as\n// app.listings_to_embed), so it is found by meaning at once (D-083).\nconst r = $input.first().json.r || {};\nconst cfg = r.embed || {};\nreturn [{ json: { listing_id: $('Extract listing').first().json.listing_id, model: cfg['ollama.embed_model'] || 'bge-m3',\n  url: `${String(cfg['ollama.base_url'] || '').replace(/\\/+$/, '')}/api/embed`,\n  body: { model: cfg['ollama.embed_model'] || 'bge-m3', input: [r.embed_text], truncate: true } } }];\n"
+      }
+    },
+    {
+      "id": "6ad7ce47-5c87-52a6-8361-8fcc743d3982",
+      "name": "Embed listing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        -650
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "options": {
+          "timeout": "={{ 60000 }}",
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e036dea7-c1ed-590b-96b2-6dd6fc9007f8",
+      "name": "Embedding rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        -650
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Embedding rows\": Ollama answer -> rows for app.store_listing_embeddings. A failed embedding\n// leaves the listing published without a vector: the text search still finds it, and the embed job fills it later.\nconst q = $('Embedding request').first().json;\nconst res = $input.first().json || {};\nlet b = res.body !== undefined ? res.body : res;\nif (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }\nconst v = (b && b.embeddings && b.embeddings[0]) || null;\nif (!Array.isArray(v) || v.length !== 1024) return [{ json: { skip: true, error: `embedding: ${res.statusCode || 'no answer'}` } }];\nreturn [{ json: { skip: false, params: [q.model, JSON.stringify([{ id: q.listing_id, v: `[${v.join(',')}]` }])] } }];\n"
+      }
+    },
+    {
+      "id": "7363222a-b93d-51e9-a6e4-8518d5fd8230",
+      "name": "Store vector?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3300,
+        -650
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "16475f3d-e6ed-5399-a84d-f2cf86a1a7a1",
+              "leftValue": "={{ !$json.skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "bc08645d-5897-598e-8c5d-b22181677549",
+      "name": "Store vector",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3520,
+        -700
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.store_listing_embeddings($1, $2::jsonb) as stored",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f5503e8e-8006-5033-967e-15d3732798c9",
+      "name": "Finish input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.analyze > \"Finish input\": parameters of app.job_finish.\n// The job fails and is retried when a photo or the extraction hit a transient failure (model or\n// service unavailable, spec 5.6). A non-transient extraction failure (invalid output twice) fails\n// the job without retry; photos already stored stay stored and a new analysis repeats the extraction.\nconst x = $('Summarize').first().json;\nconst d = $('Delete raw uploads').first().json || {};\nconst e = $('Extract listing').first().json || {};\n// Automatic publication (D-083, setting listing.auto_publish): its result, when it ran.\nlet pub = null;\ntry { pub = ($('Auto publish').first().json || {}).r || null; } catch (err) { pub = null; }\nconst output = { ...x.output, raw_deleted: x.delete_keys.length ? (d.statusCode === 200 ? x.delete_keys.length : 0) : 0,\n  extraction: { status: e.status || 'failed', issues: e.issues || [], rent_scope: e.rent_scope ?? null, error: e.error || null },\n  publication: pub ? { published: !!pub.published, reason: pub.reason || null, missing: pub.missing || [] } : null };\nif (x.delete_keys.length && d.statusCode !== 200) output.raw_delete_error = `media service answered ${d.statusCode || 'nothing'}`;\nconst transient = !!x.transient || (e.ok === false && !!e.transient);\nconst errors = [x.error, e.ok === false ? e.error : null].filter(Boolean);\nconst failed = transient || e.ok === false;\nreturn [{ json: { params: [x.job_id, failed ? 'failed' : 'succeeded', JSON.stringify(output), errors.join('; ') || null, transient] } }];\n"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "e9b769e4-d19c-509e-8ea1-a0a12faabe23",
+      "name": "Finish job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3960,
+        -300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id, status, attempts, next_attempt_at from app.job_finish($1::uuid, $2, $3::jsonb, $4, $5::boolean)",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "93cb1132-a728-5e5f-a99a-25ef41e11c99",
+      "name": "Finish failed job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        880,
+        400
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id, status, attempts, next_attempt_at from app.job_finish($1::uuid, $2, $3::jsonb, $4, $5::boolean)",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Start job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start job": {
+      "main": [
+        [
+          {
+            "node": "Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan": {
+      "main": [
+        [
+          {
+            "node": "Any photo?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any photo?": {
+      "main": [
+        [
+          {
+            "node": "Loop files",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop files": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Intake photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake photo": {
+      "main": [
+        [
+          {
+            "node": "Loop files",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Delete raw uploads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete raw uploads": {
+      "main": [
+        [
+          {
+            "node": "Extract input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract input": {
+      "main": [
+        [
+          {
+            "node": "Extract listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract listing": {
+      "main": [
+        [
+          {
+            "node": "Extracted?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extracted?": {
+      "main": [
+        [
+          {
+            "node": "Auto publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finish input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto publish": {
+      "main": [
+        [
+          {
+            "node": "Embed now?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed now?": {
+      "main": [
+        [
+          {
+            "node": "Embedding request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finish input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embedding request": {
+      "main": [
+        [
+          {
+            "node": "Embed listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed listing": {
+      "main": [
+        [
+          {
+            "node": "Embedding rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embedding rows": {
+      "main": [
+        [
+          {
+            "node": "Store vector?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store vector?": {
+      "main": [
+        [
+          {
+            "node": "Store vector",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finish input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store vector": {
+      "main": [
+        [
+          {
+            "node": "Finish input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finish input": {
+      "main": [
+        [
+          {
+            "node": "Finish job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job failed": {
+      "main": [
+        [
+          {
+            "node": "Finish failed job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "worker"
+    },
+    {
+      "name": "intake"
+    }
+  ]
+}

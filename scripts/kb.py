@@ -141,6 +141,10 @@ def seed_datasets(conn, force=False):
             "select external_id, query, language, jurisdiction_code, gold, tags from eval.queries where dataset_id = %s", (ds,))}
         if d["kind"] == "retrieval":
             wanted = {q["id"]: (q["query"], q.get("language"), q.get("jurisdiction"), q["gold"], q.get("tags", [])) for q in lines}
+        elif d["kind"] == "vision":   # photo golden sets (phase 4, D-082): the query is the object key of the processed photo
+            wanted = {q["id"]: (f"eval/p7/{q['id']}.jpg", None, None,
+                                {"labels": q["gold"], "context": {"file": q["file"], "sha256": q["sha256"]}}, q.get("tags", []))
+                      for q in lines}
         else:   # prompt golden sets (phase 3): message, context and labels
             wanted = {q["id"]: (q["message"], (q.get("tags") or [None])[0],
                                 q["context"].get("user_jurisdiction") or q["context"].get("jurisdiction"),

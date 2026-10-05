@@ -1,0 +1,7 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.2 s)
+PASS  Text service is up and uses its models  (exit 0, 0.8 s)
+PASS  language ID: P1 and P2 golden sets  (exit 0, 1.7 s)
+PASS  PII masking: pii_v1 with NER  (exit 0, 7.6 s)
+PASS  PII masking: pii_heldout_v1 with NER  (exit 0, 3.9 s)
+PASS  PII masking: pii_v1 without NER  (exit 0, 1.2 s)
+PASS  PII masking: pii_heldout_v1 without NER  (exit 0, 1 s)

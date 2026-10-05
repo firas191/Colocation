@@ -62,7 +62,8 @@
 	# 1 MiB. Declared sizes are refused up front with 413; a chunked body that
 	# grows past the limit is cut by request_body (older Caddy versions then
 	# report it as an upstream error, see docs/FAILURES.md F-009).
-	request_body {
+	@api_body not path /{$S3_BUCKET:flatshare-media}/uploads/*
+	request_body @api_body {
 		max_size 1MiB
 	}
 	header {
@@ -75,6 +76,20 @@
 	# size check runs first and the parameterised rewrites before the general one
 	# whatever Caddy's directive-sorting rules are (FAILURES F-026).
 	route {
+		# Presigned uploads (D-071): PUT only, only under uploads/ of the media bucket, up to
+		# 100 MiB, passed to Garage with the Host header unchanged (the signature covers it).
+		# Anything else under the bucket path falls through to the 404 below.
+		@upload {
+			method PUT
+			path /{$S3_BUCKET:flatshare-media}/uploads/*
+			query X-Amz-Signature=*
+		}
+		handle @upload {
+			request_body {
+				max_size 100MiB
+			}
+			reverse_proxy {$STORAGE_UPSTREAM:garage:3900}
+		}
 		@too_large expression `{http.request.header.Content-Length} != "" && int({http.request.header.Content-Length}) > 1048576`
 		handle @too_large {
 			header Content-Type application/json
@@ -93,6 +108,14 @@
 				rewrite @jobs_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0010{uri}
 				@eval_run_get path_regexp ^/v1/admin/eval/runs/[^/]+$
 				rewrite @eval_run_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011{uri}
+				@listing_get path_regexp ^/v1/listings/[^/]+$
+				rewrite @listing_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0019{uri}
+				@listing_presign path_regexp ^/v1/listings/[^/]+/media/presign$
+				rewrite @listing_presign /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001a{uri}
+				@listing_analyze path_regexp ^/v1/listings/[^/]+/analyze$
+				rewrite @listing_analyze /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001b{uri}
+				@trace_get path_regexp ^/v1/admin/traces/[^/]+$
+				rewrite @trace_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001d{uri}
 				@not_rewritten not path /webhook/*
 				rewrite @not_rewritten /webhook{uri}
 				import n8n_upstream

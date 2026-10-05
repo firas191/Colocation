@@ -1,0 +1,5 @@
+.......................s................................................ [ 61%]
+..............................................                           [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_health_and_failures.py:160: checks raw n8n behaviour without the proxy
+117 passed, 1 skipped in 246.28s (0:04:06)

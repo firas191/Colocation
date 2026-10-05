@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:flatshare:prompts:P3_listing_extractor:v3",
+  "title": "P3 listing extractor output from v3: as v1 and v2, with issues capped at 3 short notes (F-058)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "rent_amount",
+    "rent_currency",
+    "rent_period",
+    "rent_scope",
+    "deposit_amount",
+    "deposit_currency",
+    "bills_included",
+    "available_from",
+    "bedrooms",
+    "furnished",
+    "amenities",
+    "house_rules",
+    "address_text",
+    "city",
+    "neighbourhood",
+    "issues",
+    "field_confidence"
+  ],
+  "properties": {
+    "kind": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "room",
+        "shared_flat",
+        "roommate_wanted",
+        null
+      ]
+    },
+    "rent_amount": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "rent_currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "rent_period": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "month",
+        "week",
+        null
+      ]
+    },
+    "rent_scope": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "per_room",
+        "per_person",
+        "whole_flat",
+        "unknown",
+        null
+      ]
+    },
+    "deposit_amount": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "deposit_currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "bills_included": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "available_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "bedrooms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 20
+    },
+    "furnished": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "amenities": {
+      "type": "array",
+      "maxItems": 21,
+      "items": {
+        "type": "string",
+        "enum": [
+          "wifi",
+          "washing_machine",
+          "air_conditioning",
+          "heating",
+          "parking",
+          "balcony",
+          "terrace",
+          "garden",
+          "elevator",
+          "dishwasher",
+          "equipped_kitchen",
+          "private_bathroom",
+          "desk",
+          "fridge",
+          "oven",
+          "microwave",
+          "tv",
+          "pool",
+          "gym",
+          "security",
+          "concierge"
+        ]
+      }
+    },
+    "house_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "smoking": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "pets": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "guests": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "parties": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        }
+      }
+    },
+    "address_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 80
+    },
+    "neighbourhood": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 80
+    },
+    "issues": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 120
+      }
+    },
+    "field_confidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    }
+  }
+}

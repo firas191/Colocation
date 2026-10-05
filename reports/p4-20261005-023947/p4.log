@@ -1,0 +1,35 @@
+
+===== photos: candidates from Wikimedia Commons into D:\Projects\coloc\photo_bench (CC0, public domain, CC BY, CC BY-SA only) =====
+command: docker @prun scripts/photos.py fetch --out /photo_bench
+started: 2026-10-05T02:39:49.3811450+01:00
+ Container flatshare-tests-run-ca173ea47be9 Creating 
+ Container flatshare-tests-run-ca173ea47be9 Created 
+bedroom   bedroom apartment interior               kept 10
+bedroom   student room dormitory                   kept 10
+bedroom   hostel room bunk beds                    kept 5
+bedroom   guest room bed interior                  kept 10
+download failed for File:Empty apartment in Berlin with fitted kitchen and chair 3.jpg: HTTPStatusError
+download failed for File:Empty apartment in Berlin with fitted kitchen and chair 2.jpg: HTTPStatusError
+download failed for File:Empty apartment in Berlin with fitted kitchen, chair and plant.jpg: HTTPStatusError
+download failed for File:Open-shelved compact black and white kitchen with subway tiling.jpg: HTTPStatusError
+download failed for File:Open-shelved compact black and white kitchen with subway tiling 2.jpg: HTTPStatusError
+kitchen   apartment kitchen interior               kept 10
+kitchen   small kitchen flat                       kept 10
+download failed for File:Mrs. Marianna Costanzo in the living room of her apartment on Waverly Place8d11560v.jpg: HTTPStatusError
+download failed for File:Mrs. Marianna Costanzo in the living room of her apartment on Waverly Place.8d11561v.jpg: HTTPStatusError
+living    living room apartment interior           kept 10
+living    salon appartement                        kept 10
+download failed for File:Bathroom of the grand apartment at Ch├óteau de Dampierre (Aube) ΓÇô La Vie ├á la campagne, 1924.jpg: HTTPStatusError
+bathroom  bathroom interior apartment              kept 10
+download failed for File:1895ShurleffStudioILLMonthly.jpg: HTTPStatusError
+download failed for File:Marseille studio icade.jpg: HTTPStatusError
+other     studio apartment interior                kept 10
+other     apartment hallway corridor interior      kept 1
+other     apartment balcony                        kept 10
+download failed for File:Apartment building fa├ºade on The Terrace 218.jpg: HTTPStatusError
+negative  apartment building facade                kept 10
+download failed for File:Photograph, Photograph of a Floor Plan of an Apartment Building Designed by Hector Guimard (No. 8), 1911 (CH 18387433-2).jpg: HTTPStatusError
+download failed for File:Photograph, Floor Plan for an Apartment Building, 1911 (CH 18387417-2).jpg: HTTPStatusError
+negative  apartment floor plan                     kept 9
+manifest: 125 photos; skipped {'licence': 1, 'type': 43, 'small': 13, 'seen': 0, 'error': 13}
+exit=0 seconds=167.4

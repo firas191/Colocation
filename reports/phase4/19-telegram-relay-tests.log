@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /tmp/claude-0/tv/bin/python
+rootdir: /home/claude/flatshare/services/telegram
+plugins: anyio-4.15.1
+collecting ... collected 4 items
+
+tests/test_poller.py::test_updates_handed_over_in_order_and_confirmed PASSED [ 25%]
+tests/test_poller.py::test_n8n_down_retries_the_same_update PASSED       [ 50%]
+tests/test_poller.py::test_token_never_logged PASSED                     [ 75%]
+tests/test_poller.py::test_no_token_is_idle PASSED                       [100%]
+
+============================== 4 passed in 0.06s ===============================

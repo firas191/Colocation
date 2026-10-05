@@ -56,8 +56,16 @@ psql -v ON_ERROR_STOP=1 -X -q -d "$FLATSHARE_DB" \
   -v ollama="${OLLAMA_BASE_URL:-http://ollama:11434}" \
   -v model="${EMBED_MODEL:-bge-m3}" \
   -v s3h="${S3_HEALTH_URL:-http://garage:3903/health}" \
-  -v tei="${TEI_BASE_URL:-http://tei:80}" <<'SQL'
+  -v tei="${TEI_BASE_URL:-http://tei:80}" \
+  -v media="${MEDIA_URL:-http://media:8000}" \
+  -v text="${TEXT_URL:-http://text:8000}" \
+  -v asr="${ASR_URL:-http://asr:8000}" \
+  -v api="${API_URL:-http://proxy:8080}" <<'SQL'
+update app.settings set value = to_jsonb(:'api'::text)    where key = 'services.api_url';
 update app.settings set value = to_jsonb(:'ollama'::text) where key = 'ollama.base_url';
+update app.settings set value = to_jsonb(:'media'::text)  where key = 'services.media_url';
+update app.settings set value = to_jsonb(:'text'::text)   where key = 'services.text_url';
+update app.settings set value = to_jsonb(:'asr'::text)    where key = 'services.asr_url';
 update app.settings set value = to_jsonb(:'tei'::text)    where key = 'kb.tei_base_url';
 update app.settings set value = to_jsonb(:'model'::text)  where key = 'ollama.embed_model';
 update app.settings set value = to_jsonb(:'s3h'::text)    where key = 's3.health_url';

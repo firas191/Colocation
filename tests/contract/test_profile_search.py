@@ -295,11 +295,12 @@ def test_assistant_routes_a_search(client, qx, db):
     # the mock's profile: 450 TND (currency assumed), anchor found; default radius 5 km
     assert d["anchor"]["status"] == "found" and d["applied"]["jurisdiction"] == "QX"
     assert ids(j) == [L_CHEAP]
-    steps = db.execute("""select s.agent, s.prompt_version_id is not null, s.input from ai.agent_steps s
+    steps = db.execute("""select s.agent, s.prompt_version_id is not null, s.input, s.output from ai.agent_steps s
                           join ai.executions e on e.id = s.execution_id where e.request_id = %s order by s.step_index""",
                        (j["request_id"],)).fetchall()
-    assert [s[0] for s in steps] == ["A0_orchestrator", "A2_profile", "A2_profile", "A3_match"]
-    assert steps[0][1] and steps[1][1]
+    assert [s[0] for s in steps] == ["A0_text", "A0_orchestrator", "A2_profile", "A2_profile", "A3_match"]
+    assert steps[0][3]["language"] == "fr" and steps[0][3]["pii_counts"] == {}           # Text service (phase 4, D-074)
+    assert steps[1][1] and steps[2][1]
     assert all("text" not in (s[2] or {}) for s in steps)                # request text is not stored in traces
 
 

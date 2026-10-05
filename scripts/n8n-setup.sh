@@ -9,6 +9,7 @@ N8N="${N8N_BIN:-n8n}"
 WF_DIR="${WF_DIR:-/flatshare/n8n/workflows}"
 WF_TEST_DIR="${WF_TEST_DIR:-/flatshare/n8n/workflows-test}"
 : "${N8N_WORKER_DB_PASSWORD:?}"
+: "${INTERNAL_SERVICE_TOKEN:?}"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -31,6 +32,18 @@ cat > "$TMP/credentials.json" <<EOF
     "maxConnections": 20,
     "allowUnauthorizedCerts": false
   }
+},
+{
+  "id": "fsCredSvcToken01",
+  "name": "Compute services token",
+  "type": "httpHeaderAuth",
+  "data": { "name": "X-Internal-Token", "value": "${INTERNAL_SERVICE_TOKEN}" }
+},
+{
+  "id": "fsCredTelegram01",
+  "name": "Telegram bot",
+  "type": "telegramApi",
+  "data": { "accessToken": "${TELEGRAM_BOT_TOKEN:-not-configured}", "baseUrl": "${TELEGRAM_API_BASE:-https://api.telegram.org}" }
 }]
 EOF
 

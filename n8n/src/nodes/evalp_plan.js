@@ -6,7 +6,7 @@ const row = $input.first().json;
 if (!row.job_id) throw new Error('job not found or already finished');
 const inp = row.input;
 if (!row.dataset_id) throw new Error(`dataset ${inp.dataset} v${inp.dataset_version} not found`);
-const want = { P1_router: 'routing', P2_profile_extractor: 'extraction' }[inp.prompt];
+const want = { P1_router: 'routing', P2_profile_extractor: 'extraction', P3_listing_extractor: 'extraction', P7_photo_analyzer: 'vision' }[inp.prompt];
 if (row.kind !== want) throw new Error(`dataset ${inp.dataset} is of kind ${row.kind}, prompt ${inp.prompt} needs ${want}`);
 const found = (row.versions || []).map((v) => v.version);
 const missing = inp.versions.filter((v) => !found.includes(v));

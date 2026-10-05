@@ -1,0 +1,67 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-04T23:08:23.8204864+01:00
+healthy
+unhealthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions (prompts\*\v*.md) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-04T23:08:24.1661746+01:00
+ Container flatshare-tests-run-91e2609e643d Creating 
+ Container flatshare-tests-run-91e2609e643d Created 
+prompt registry up to date
+exit=0 seconds=1.8
+
+===== evaluate P3_listing_extractor version 3 on qwen3.5:4b (waits up to 8 h) =====
+command: docker @run scripts/p3.py eval --prompt P3_listing_extractor --versions $v --models $m --timeout 28800
+started: 2026-10-04T23:08:25.9596129+01:00
+ Container flatshare-tests-run-f5193d5a25d8 Creating 
+ Container flatshare-tests-run-f5193d5a25d8 Created 
+/v1/admin/eval/prompt-runs: job cc5e9785-9edb-433c-a564-45ee3769f801 accepted
+      0.2s  job running
+   4805.7s  job succeeded
+   4805.7s  1 evaluation runs finished; last: run P3_listing_extractor v3 / qwen3.5:4b: succeeded
+job cc5e9785-9edb-433c-a564-45ee3769f801: succeeded 
+  f1 0.6679  items 100  model qwen3.5:4b  run_id 92b08b11-3576-41a2-a615-8e97db87cc88  version 3  f1_checked 0.6542  json_valid 1  latency_p95_ms 54978  unit_error_items 9  unit_error_items_checked 1
+exit=0 seconds=4810.3
+
+===== evaluate P3_listing_extractor version 4 on qwen3.5:4b (waits up to 8 h) =====
+command: docker @run scripts/p3.py eval --prompt P3_listing_extractor --versions $v --models $m --timeout 28800
+started: 2026-10-05T00:28:36.2770394+01:00
+ Container flatshare-tests-run-abb69188964b Creating 
+ Container flatshare-tests-run-abb69188964b Created 
+/v1/admin/eval/prompt-runs: job e12b6e31-5841-485f-9d32-8c4aa43357e5 accepted
+      0.3s  job running
+   2092.7s  job succeeded
+   2092.8s  1 evaluation runs finished; last: run P3_listing_extractor v4 / qwen3.5:4b: succeeded
+job e12b6e31-5841-485f-9d32-8c4aa43357e5: succeeded 
+  f1 0.8524  items 100  model qwen3.5:4b  run_id 2c66827a-5bbf-4445-8ef7-faf0b3ba9e24  version 4  f1_checked 0.8489  json_valid 1  latency_p95_ms 25991  unit_error_items 0  unit_error_items_checked 0
+exit=0 seconds=2095.3
+
+===== Ollama memory placement after qwen3.5:4b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-05T01:03:31.5621542+01:00
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
+
+===== prompts: active versions from prompts\*\prompt.json =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-05T01:03:31.9149982+01:00
+ Container flatshare-tests-run-b68ccc6ee92a Creating 
+ Container flatshare-tests-run-b68ccc6ee92a Created 
+prompt registry up to date
+exit=0 seconds=1.8
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @run scripts/p3.py report
+started: 2026-10-05T01:03:33.7425464+01:00
+ Container flatshare-tests-run-4ae634df2c57 Creating 
+ Container flatshare-tests-run-4ae634df2c57 Created 
+wrote reports/eval/prompts-20261005-000335.json and docs/PROMPT_EVAL.md
+exit=0 seconds=3.8

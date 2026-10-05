@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+rootdir: /home/claude/flatshare/tests/contract
+plugins: anyio-4.13.0
+collecting ... collected 9 items
+
+test_listing_extract.py::test_text_only_listing_can_be_analyzed PASSED   [ 11%]
+test_listing_extract.py::test_extraction_stored_with_minor_units_and_trace PASSED [ 22%]
+test_listing_extract.py::test_scale_error_is_caught_by_the_range_check PASSED [ 33%]
+test_listing_extract.py::test_invalid_answer_fails_the_job_without_retry PASSED [ 44%]
+test_listing_extract.py::test_p3_eval_validation PASSED                  [ 55%]
+test_listing_extract.py::test_p3_eval_scores_model_answer_and_checked_answer PASSED [ 66%]
+test_listing_extract.py::test_answer_cut_at_the_token_limit_is_reported_as_truncated PASSED [ 77%]
+test_listing_extract.py::test_dispatcher_starts_every_due_job PASSED     [ 88%]
+test_listing_extract.py::test_model_down_job_is_retried PASSED           [100%]
+
+============================== 9 passed in 49.80s ==============================

@@ -1226,6 +1226,157 @@ missed-budget pattern, not the injection. Decision: D-068.
 
 After the fixes (F-051, F-052), `verify.ps1` on the PC (2026-10-04, 02:50 local) passed every step, contract tests 100 passed and 11 skipped, and `p3.ps1 -Step report` wrote `docs/PROMPT_EVAL.md` with active versions P1_router v2 and P2_profile_extractor v3 (copied into the repository unchanged; the tables above match it).
 
+## T-41 Phase 4 in the sandbox so far (2026-10-04): Text service, Media service, listing intake and extraction - PASS, with mocks for the model and object storage
+
+Sandbox: PostgreSQL 16 with pgTAP, n8n 2.41.3 native, the Media and Text services running from their code (Python 3.12 venv),
+moto as the S3 stand-in, the Ollama mock (`tests/mocks/deps_mock.py`). Nothing here measures a model or real photos.
+Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `01` to `04` | PII masking without NER, D-075: pii_v1 recall 0.970, 0.970, 1.000 over three runs (precision 0.907, 0.985, 0.990); held-out set, scored once after the tuning: recall 0.714, precision 0.909, names without a cue 0 of 24 |
+| `05-langid-lingua-sandbox.log` | language ID with lingua, D-074: P1 set language 0.8875, script 1.0; P2 set 0.7364, Tunisian in Arabic script 0 of 12 |
+| `06-listing-extract-contract.log` | 8 passed: text-only analysis; extraction stored in minor units (450 dinars -> 450000) with scope, bedrooms, furnished, bills, amenities, house rules; phone number counted and flagged, never stored; agent step `A1_extract` recorded with its prompt version and no listing text; a scale error from the mock (450000 dinars) nulled by the range check with `rent_out_of_range`; invalid output fails the job without retry; model down retried; P3 golden-set run on a 2-item set scores the model answer (1 unit error) and the checked answer (0); two jobs due in the same minute both run (F-054, reproduced on the old dispatcher first) |
+| `07-db-tests.log` | pgTAP 314 tests in 10 files pass; new file `100_listing_extract.sql` (19): rent ranges in the extraction context, stored fields, owner view, second analysis replaces values, unknown currency and published listing refused, closed list of scopes, job agent steps, api_user cannot store. Migration 0011 also rolled back and applied again |
+| `08-unit-tests.log`, `08b-build-check.log` | 29 passed (prompt registry with P3 v1 and v2, P3 gold valid against the schema, v2 examples valid, JS schema validator agrees with jsonschema on P3, report renders the P3 table); workflow JSON up to date. Before this, one unit test had been failing since 4.3 without my noticing (F-053) |
+| `09-contract-proxy.log` | full suite through the proxy: 96 passed, 1 skipped (raw n8n check). Includes the 4.3 photo intake tests and the 4.2 orchestrator test |
+| `10-p3-range-check-on-gold.log` | the range check on the golden labels with a scale error on every rent and deposit: x1000 / x100 and /1000 / /100: 86 items wrong before, 0 after; x10: 73 still wrong after; /10: 58 (D-076) |
+| `11-media-service-tests.log`, `12-text-service-tests.log` | 27 and 32 passed (unit and API tests of the two services, synthetic images) |
+| `13-js-unit-tests.log` | node tests: 107 pass, including `n8n/tests/listing_check.test.js` (range check, weekly rents, deposits, every P3 gold label unchanged by the checks and scored exact, unit errors before and after the checks, injection and discriminatory scoring) |
+
+During the module runs, one run right after a workflow re-import still failed two extraction tests with the bug I had just fixed
+(the result node read the wrong node, `store: no answer`); the next two runs, one of them right after another re-import, passed.
+I did not find why that run used the old node code.
+
+Not measured here: P3 on a real model (the mock follows keyword rules), GlotLID and the NER model, the Media detectors on real
+photos, presigned uploads through Garage. These run on the owner's PC: `scripts\windows\p4.ps1` (setup, text-eval, p3-eval, report)
+and `verify.ps1`.
+
+## T-42 Text service with its models on the owner's PC (2026-10-04) - GlotLID and NER measured
+
+After F-056 and F-057, `p4.ps1 -Step setup` downloaded GlotLID v3 (`cis-lmu/glotlid` revision 85cd671, 1,687,095,004 bytes) and the
+NER model (`Davlan/xlm-roberta-base-ner-hrl` revision 253f557, 1,114,941,057 bytes); `selfcheck.py` confirmed both in use
+(`glotlid-v3`, `ner: true`). `p4.ps1 -Step text-eval` (reports `reports/eval/text-*-20261004-1631*.json` on the PC):
+
+| Measure | Sandbox, no model (T-41) | PC, with the models |
+|---|---|---|
+| Language, P1 set (160) | 0.8875 (lingua) | 0.925 (GlotLID); script 1.0 |
+| Language, P2 set (110) | 0.7364 | 0.8091 |
+| Tunisian in Arabic script, P1 / P2 | 8/16 / 0/12 | 12/16 / 7/12 |
+| Code-switched, P1 / P2 | not recorded here | 16/22 / 4/15 |
+| PII pii_v1 with NER: recall / precision | 1.000 / 0.990 (no NER) | 1.000 / 0.990 |
+| PII held-out with NER: recall / precision | 0.714 / 0.984 (no NER) | 0.976 / 0.977 (names 22/24; the two misses are English) |
+| PII held-out without NER on the PC | | 0.714 / 0.984, the sandbox figure reproduced |
+| Masking latency p50 / p95 | | 45.7 / 83.8 ms with NER, 1.6 / 2.1 ms without |
+
+The held-out recall with NER is under the spec's 0.98 target by 0.004 (2 of 84 spans). Language ID p50 2.8 ms.
+GlotLID is the backend from now on (D-074 said the choice would follow these numbers).
+
+P3 evaluation on the PC: stopped, see F-058; no P3 result yet.
+
+## T-43 Telegram channel in the sandbox (2026-10-05) - PASS, with a mock Telegram API and the Ollama mock (D-079)
+
+Sandbox as in T-41, plus the mock Telegram Bot API (`tests/mocks/deps_mock.py telegram 8098`) and the long-polling relay
+(`services/telegram/poller.py`) running against it. Path under test: mock Telegram -> relay -> internal n8n webhook ->
+`wf.channel.telegram` -> public API through the proxy, signed as the internal client `telegram` -> reply through the mock.
+No real Telegram account, bot token or model is involved. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `16-db-tests.log` | pgTAP 326 tests in 11 files pass; new file `110_telegram_channel.sql` (12): a request signed inside the database passes `sec.verify_request` (UTF-8 body), request id and user id are covered by the signature, only active internal clients can be signed for, `api_user` cannot call the signer, consents recorded with the latest row winning and every change kept, unknown purpose refused, trace steps in order, unknown request gives an empty trace |
+| `17-unit-tests.log` | 29 passed (no change in count; the secret scan covers the new files) |
+| `18-js-unit-tests.log` | node tests: 115 pass, 0 fail; new `n8n/tests/telegram.test.js` (4): every language (fr, en, ar) has every text, issue and rule; values escaped for Telegram HTML unless marked raw; money in main units per currency; language taken from Telegram and API errors turned into plain words |
+| `19-telegram-relay-tests.log` | relay: 4 passed: updates handed over in order and confirmed, the same update retried while n8n is down, the token never appears in logs (checked on the captured log output), no token means the relay idles |
+| `20-contract-proxy-telegram.log` | full suite through the proxy: 111 passed, 1 skipped (raw n8n check, `direct_only`). Includes `test_telegram.py` (11) and `test_me_and_traces.py` (3) |
+
+What the 11 Telegram contract tests check: nothing is stored before the user taps "yes" (no user row, buttons shown, "no" stops
+the button spinner and creates nothing); consent creates the user through `POST /v1/me/consents` like any client; a search message
+goes through `wf.orchestrator` with channel `api` and the reply is HTML; `/pays`, `/moi` and `/trace` for a non-admin; voice notes
+get a plain "not yet" answer; an admin's `/trace` lists the workflow, the agents and the prompt versions of their last request;
+`/annonce` with a photo creates a listing, uploads the photo, runs the analysis job and replies with the extracted fields
+(350.000 DT -> 350000 minor units, 1 photo accepted); `/annonce` without text gets the usage line; `/stop` withdraws every consent
+and the next message asks for consent again; the same `update_id` twice gives one reply; the internal webhook refuses a wrong
+token and is not reachable through the proxy.
+
+After the sandbox container was recycled, the Telegram tests failed: the mock restarted its update numbering and the bot took
+the new updates for ones it had already handled (F-060). Fixed (handled ids per bot) and run again with P3 v4 active (D-080):
+
+| Log | Result |
+|---|---|
+| `22-db-tests.log` | pgTAP 328 tests in 11 files pass (2 new: same update id from the same bot kept once, from another bot kept) |
+| `23-unit-tests.log` | 29 passed |
+| `24-js-unit-tests.log` | node tests 115 pass, 0 fail; workflow JSON up to date |
+| `25-telegram-relay-tests.log` | relay: 5 passed (new: the bot is named by a 16-character hash, never the token) |
+| `21-contract-proxy-p3v4-f060.log` | full suite through the proxy: 112 passed, 1 skipped (raw n8n check). Telegram 12 (new: the same update id from another bot gets a reply) |
+
+`20-contract-proxy-telegram.log` and logs 16 to 19 are the run before F-060.
+
+Not measured here: the bot against the real Telegram API (needs the owner's bot token on the PC), reply quality with the real
+model, and how long a listing analysis takes on the PC while someone waits in the chat. These run on the PC after delivery.
+
+## T-44 P3 listing extractor v3 and v4 on the owner's PC (2026-10-04/05) - v4 active (D-080)
+
+`p4.ps1 -Step p3-eval` after `verify.ps1 -SkipOutages` (all steps PASS, `reports\verify-20261004-224648`), with the Text, Media
+and TEI containers stopped to leave memory to Ollama. qwen3.5:4b, 52% CPU / 48% GPU (`ollama ps`), golden set p3_listing v1,
+100 items, one job per version. Log `reports\p4-20261004-230822\p4.log`; per-item results
+`reports\eval\prompts-20261005-000335.json`; tables in `docs/PROMPT_EVAL.md` (all on the PC).
+
+| | v3 (run 92b08b11) | v4 (run 2c66827a) |
+|---|---|---|
+| Job time | 4,806 s | 2,093 s |
+| JSON valid / cut at the 800-token limit | 100 / 0 | 100 / 0 |
+| Field F1, model answer / after checks | 0.668 / 0.654 | 0.852 / 0.849 |
+| Precision / recall | 0.558 / 0.831 | 0.837 / 0.869 |
+| Exact items | 0 | 13 |
+| Unit errors (items), after checks | 9, 1 | 0, 0 |
+| Rents nulled by the range check | 13 | 3 (all three injected rents of 0 or 1) |
+| Invented rent on the 15 no-price items | 0 | 0 |
+| Rent scope accuracy | 0.776 | 0.824 |
+| Injection items fully correct (strict) | 1 of 6 | 1 of 6 |
+| Discriminatory items with an extra house rule | 4 of 6 | 4 of 6 (none carries the criterion; D-080) |
+| Latency p50 / p95 | 48.3 / 55.0 s | 20.4 / 26.0 s |
+
+Paired bootstrap, field F1 v4 - v3: +0.185 [+0.162, +0.208]. F-058 is closed: no answer of either version reached the limit.
+Reading of the injection, discriminatory and range-check rows in D-080.
+
+## T-45 P7 photo analysis and the near-duplicate threshold, in the sandbox (2026-10-05) - PASS with the mock model; P7 not run on a real model yet
+
+Sandbox as in T-41. The Ollama mock cannot see: it picks its P7 answer from the photo's mean colour, so these runs check the
+plumbing, the checks and the scoring, not P7's quality. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `26-phash-pairs.log`, `.json` | pHash threshold on the 50 photos of p7_photos v1 (real Wikimedia photos, staged from the PC), the Media service's own hashing: precision 1.0 at every distance up to 16 (closest unrelated pair 18 of 1,225); recall 0.49 at 6, 0.70 at 12, 0.81 at 16; per edit, within 6: resize 50/50, JPEG quality 30 50/50, brightness 49/50, 3° rotation 25/50, 90% crop 10/50, screenshot border 0/50, mirror 0/50. Same room photographed twice: 18, 18, 26, 30. Default raised to 12 (D-082) |
+| `27-db-tests.log` | pgTAP 337 in 12 files; new `120_photo_analysis.sql` (9): analysis stored under `analysis.vision` next to the Media report, replaced by a later one, unknown status refused, unknown photo, vision on by default, photo golden sets allowed, api_user refused. Migration 0013 rolled back and applied again (after F-061) |
+| `28-unit-tests.log` | 35 passed; new: the photo fetch (licence filter, manifest, no repeat), the P7 golden set (coverage, vocabulary, licences, blind re-label, adjudicated values stored) |
+| `29-js-unit-tests.log` | node 125 pass, 0 fail; new `photo_check.test.js` (5): tidy answers, people words in four languages, findings only from what photos show, images kept on the retry, P7 scoring (accuracy, hallucinations, abstentions); workflow JSON up to date |
+| `30-media-service-tests.log` | 29 passed; new: the vision copy (size, type, 404, 422) and evaluation photos (EXIF removed, only under `eval/`, invalid base64) |
+| `31-contract-proxy-p7.log` | full suite through the proxy: 117 passed, 1 skipped (raw n8n check). New `test_photo_analysis.py` (5): a photo analysed in the job and compared with the text (TV, air conditioning and desk seen, not in the text: suggested, not added); free text about a person dropped, flag kept; a failed analysis keeps the photo and flags the listing; vision switched off; a P7 golden-set run over v1 and v2 with the summary and the failure categories |
+
+Seen once more in the sandbox: the first request right after a workflow re-import ran the old validation code (P7 refused as
+unknown prompt); the next request ran the new one (as noted in T-41; cause not found, sandbox only so far).
+
+Wikimedia download on the PC (`photos-fetch`, 2026-10-05): 125 candidate photos kept; 13 downloads failed with an HTTP
+error (status not logged), 43 files skipped as not JPEG or PNG, 13 as smaller than 600 px, 1 for its licence.
+
+Not measured: P7 on the real model (field accuracy, hallucination rate, time per photo, image tokens): the photo set is
+being reconsidered by the owner (more realistic photos), so the PC run waits for that decision.
+
+## T-46 Availability date check and automatic publication (2026-10-05) - PASS in the sandbox; date check measured on the PC answers (D-083)
+
+Sandbox as in T-41, with the Ollama mock. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `33-date-check.log` | `eval/runners/date_check.js` on the P3 v3 and v4 answers of T-44 (prompts export of 2026-10-05 from the PC): the 70 golden-set texts with a date all pass the check; v3: 11 invented dates, 10 removed (p3-045 kept), 57 correct dates, none removed; v4: 11 invented, 10 removed (p3-072 kept), 62 correct, none removed. Wrong dates where the text has one (10 in v3, 5 in v4) are not touched |
+| `32-db-tests.log` | pgTAP 348 in 13 files; new `130_listing_auto_publish.sql` (11): off by default, published when on, point from the gazetteer and fuzzed public point, title from the first line, marked not checked, text to embed returned, only drafts, a listing without rent or place stays a draft with what is missing stored, api_user refused |
+| `34-js-unit-tests.log` | node 121 pass, 0 fail; new test: a date is kept only when the text says when (French, English, Arabic and Tunisian examples; no gold date of the 70 is lost); workflow JSON up to date |
+| `35-unit-tests.log` | 35 passed (unchanged) |
+| `36-contract-proxy-publish.log` | full suite through the proxy: 123 passed, 1 skipped (raw n8n check). New `test_listing_publish.py` (6): a date the text does not give is removed with the issue; a date the text gives is kept; off by default; with the setting on, a listing with rent and place is published, gets its vector, is found by `GET /v1/search` and is logged; without a place it stays a draft with `missing: [place]`; through Telegram, `/annonce` with a known place is published and the bot says so, without one the bot says what is missing |
+
+Not measured: the date check on answers of the real model in the bot (only the golden-set answers above), and the
+automatic publication on the PC (to be tried by the owner with the setting on).
+
 ---
 
 ## Not run

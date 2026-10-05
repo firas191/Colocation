@@ -1,0 +1,14 @@
+{
+  "name": "P3_listing_extractor",
+  "agent": "A1 intake",
+  "role": "Turn the text of a rental listing into structured fields: kind, rent with currency, period and scope, deposit, bills, availability date, bedrooms, furnished, amenities, house rules and location words (spec 2.4 journey B step 3). Amounts in main units; code converts them and checks plausible ranges (D-066, D-076).",
+  "schema": "schemas/P3_listing_extractor.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "default_currency"
+  ],
+  "golden_set": "p3_listing",
+  "active_version": 4
+}

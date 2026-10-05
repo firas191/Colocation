@@ -197,6 +197,68 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "429": { $ref: "#/components/responses/RateLimited" }
         "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me/consents:
+    post:
+      operationId: recordConsents
+      summary: Record the calling user's consent decisions (spec 13.4; no consent needed to call it)
+      description: |
+        One row per purpose is added to the consent log; the latest row per purpose is the user's current choice.
+        Returns the current choice per purpose and the purposes still required (terms, privacy).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - $ref: "#/components/parameters/XClientIp"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConsentsRequest" }
+      responses:
+        "200":
+          description: Consents recorded
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConsentsResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/admin/traces/{request_id}:
+    get:
+      operationId: getTrace
+      summary: Every execution and agent step recorded for one request id or job id (admins; spec 8.3)
+      description: |
+        Workflows, status, timings and tokens, with each agent step's prompt name and version, model, input summary and
+        output. Steps never hold the user's raw text. Unknown or malformed id: 404.
+      parameters:
+        - { name: request_id, in: path, required: true, schema: { type: string } }
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+      responses:
+        "200":
+          description: The trace
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TraceResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
   /v1/jobs/{id}:
     get:
       operationId: getJob
@@ -404,6 +466,149 @@ paths:
               schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listings:
+    post:
+      operationId: createListing
+      summary: Create a draft listing from the owner's text (consents terms, privacy)
+      description: |
+        The text is stored as the description. Extraction (P3), photos and checks run in POST /v1/listings/{id}/analyze.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingCreateRequest" }
+      responses:
+        "201":
+          description: Draft created
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingCreatedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listings/{id}:
+    get:
+      operationId: getListing
+      summary: Owner view of a listing (fields, processed media without GPS, upload states)
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: The listing
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listings/{id}/media/presign:
+    post:
+      operationId: presignListingMedia
+      summary: Presigned upload URLs for photos, audio, video or PDFs (owner; consents terms, privacy, media_processing)
+      description: |
+        One PUT URL per file, valid media.upload_expires_s seconds (600), signed for the proxy host; the client
+        uploads with the returned Content-Type header. Kinds, declared types and sizes are checked here, the real
+        type when the file is analysed.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PresignRequest" }
+      responses:
+        "200":
+          description: Upload URLs
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PresignResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listings/{id}/analyze:
+    post:
+      operationId: analyzeListing
+      summary: Analyze the listing text and the uploaded files (owner; consents terms, privacy, media_processing; asynchronous)
+      description: |
+        Creates a job of type listing_analyze (worker wf.listing.analyze). Photos: type and size checks, EXIF read
+        then stripped (GPS never stored), faces, text and screens blurred, SHA-256 and perceptual hash, near-duplicate
+        lookup. Raw uploads are deleted once processed or rejected. Then the text extraction (P3, wf.listing.extract):
+        kind, rent with currency, period and scope, deposit, bills, date, bedrooms, furnished, amenities, house rules,
+        place words; a rent outside the plausible range for its currency is not stored (issue rent_out_of_range).
+        The fields and the issues appear in GET /v1/listings/{id}. Accepted when the listing has text or files
+        waiting. Transient failures are retried with backoff.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmptyRequest" }
+      responses:
+        "202":
+          description: Job created (or the existing job of a retried request)
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "409": { $ref: "#/components/responses/Conflict" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "429": { $ref: "#/components/responses/RateLimited" }
@@ -633,6 +838,58 @@ components:
                         reachable: { type: boolean }
                         embed_model: { type: string }
                         embed_model_present: { type: boolean }
+    ConsentsRequest:
+      type: object
+      additionalProperties: false
+      required: [consents, policy_version]
+      properties:
+        consents:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: object
+            additionalProperties: false
+            required: [purpose, granted]
+            properties:
+              purpose: { type: string, enum: [terms, privacy, cloud_llm_processing, media_processing, marketing] }
+              granted: { type: boolean }
+        policy_version: { type: string, minLength: 1, maxLength: 40 }
+        source: { type: string, enum: [web, telegram, api] }
+    ConsentsResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [consents, consent_required]
+          properties:
+            consents: { type: object, additionalProperties: { $ref: "#/components/schemas/Consent" } }
+            consent_required: { type: array, items: { type: string } }
+    TraceResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [request_id, executions]
+          properties:
+            request_id: { type: string }
+            executions:
+              type: array
+              items:
+                type: object
+                required: [workflow, status, steps]
+                properties:
+                  workflow: { type: string }
+                  status: { type: string }
+                  steps: { type: array, items: { type: object } }
     UserSyncRequest:
       type: object
       additionalProperties: false
@@ -708,6 +965,125 @@ components:
         configs: { type: array, minItems: 1, maxItems: 48, items: { $ref: "#/components/schemas/EvalConfig" } }
         git_sha: { type: string, maxLength: 80 }
         label: { type: string, maxLength: 80 }
+    ListingCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [text, jurisdiction_code]
+      properties:
+        text: { type: string, minLength: 1, maxLength: 5000 }
+        jurisdiction_code: { type: string, pattern: "^[A-Za-z]{2}$" }
+        kind: { type: string, enum: [room, shared_flat, roommate_wanted] }
+        title: { type: string, maxLength: 120 }
+    ListingCreatedResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          additionalProperties: false
+          required: [listing_id, status, next]
+          properties:
+            listing_id: { type: string, format: uuid }
+            status: { type: string, enum: [draft] }
+            next:
+              type: object
+              properties: { upload: { type: string }, analyze: { type: string } }
+    ListingResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [listing_id, status, jurisdiction_code, media, uploads]
+          properties:
+            listing_id: { type: string, format: uuid }
+            status: { type: string }
+            jurisdiction_code: { type: string }
+            rent_minor: { type: [integer, "null"] }
+            currency: { type: [string, "null"] }
+            rent_period: { type: [string, "null"], enum: [month, week, null] }
+            rent_scope: { type: [string, "null"], enum: [per_room, per_person, whole_flat, unknown, null] }
+            extraction:
+              type: object
+              description: Result of the last extraction (P3) - model answer, issue codes, field confidence, exact address; `publication` when the automatic publication ran (D-083)
+            media:
+              type: array
+              items:
+                type: object
+                required: [media_id, kind, moderation, analysis]
+                properties:
+                  media_id: { type: string, format: uuid }
+                  kind: { type: string }
+                  moderation: { type: string, enum: [pending, ok, blurred, rejected] }
+                  analysis:
+                    type: object
+                    description: |
+                      The Media service report (source size, EXIF summary without GPS, capture metrics, blur counts, near duplicates)
+                      and, for photos, `vision`: the P7 analysis (D-081). `vision.status` is analyzed or failed; when analyzed,
+                      `fields` (room_type, beds, bed_kinds, furniture, appliances, bathroom_fixtures, windows, natural_light,
+                      condition, condition_signs, furnished, readable_text, people_visible; a value may be "not_visible"),
+                      `flags` (person_in_photo, text_readable_after_blur, not_a_room, condition_to_check), `issues`,
+                      `field_confidence` and the prompt version. Free text that names a person is never stored.
+            uploads:
+              type: array
+              items:
+                type: object
+                required: [upload_id, kind, status]
+                properties:
+                  upload_id: { type: string, format: uuid }
+                  kind: { type: string }
+                  status: { type: string, enum: [pending, processing, rejected, expired] }
+                  error_code: { type: [string, "null"] }
+    PresignRequest:
+      type: object
+      additionalProperties: false
+      required: [files]
+      properties:
+        files:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, content_type, bytes]
+            properties:
+              kind: { type: string, enum: [photo, audio, video, pdf] }
+              content_type: { type: string, maxLength: 100 }
+              bytes: { type: integer, minimum: 1, maximum: 104857600 }
+    PresignResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          additionalProperties: false
+          required: [uploads, next]
+          properties:
+            next: { type: object }
+            uploads:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [upload_id, kind, content_type, method, url, headers, expires_at]
+                properties:
+                  upload_id: { type: string, format: uuid }
+                  kind: { type: string }
+                  content_type: { type: string }
+                  method: { type: string, enum: [PUT] }
+                  url: { type: string }
+                  headers: { type: object }
+                  expires_at: { type: string }
     JobAcceptedResponse:
       type: object
       additionalProperties: false
@@ -721,7 +1097,7 @@ components:
           required: [job_id, type, status, status_url]
           properties:
             job_id: { type: string, format: uuid }
-            type: { type: string, enum: [kb_ingest, eval_retrieval, eval_prompts, listings_embed, fx_refresh] }
+            type: { type: string, enum: [kb_ingest, eval_retrieval, eval_prompts, listings_embed, fx_refresh, listing_analyze] }
             status: { $ref: "#/components/schemas/JobStatus" }
             status_url: { type: string, pattern: "^/v1/jobs/[0-9a-f-]{36}$" }
     JobResponse:
@@ -785,10 +1161,10 @@ components:
       additionalProperties: false
       required: [prompt, versions]
       properties:
-        prompt: { type: string, enum: [P1_router, P2_profile_extractor] }
+        prompt: { type: string, enum: [P1_router, P2_profile_extractor, P3_listing_extractor, P7_photo_analyzer] }
         versions: { type: array, minItems: 1, maxItems: 5, items: { type: integer, minimum: 1 } }
         models: { type: array, minItems: 1, maxItems: 5, items: { type: string }, description: "Default: setting llm.default_model" }
-        dataset: { type: string, description: "Default: p1_router or p2_profile" }
+        dataset: { type: string, description: "Default: the prompt's golden set (p1_router, p2_profile, p3_listing, p7_photos)" }
         dataset_version: { type: integer, minimum: 1, default: 1 }
         item_ids: { type: array, items: { type: string } }
         limit: { type: integer, minimum: 1, maximum: 1000 }

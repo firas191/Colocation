@@ -1,0 +1,421 @@
+{
+  "id": "fsListingExtr001",
+  "name": "wf.listing.extract",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "080492e5-2cc2-5b31-83a1-28dc23132941",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "6cbb7bda-7cfb-50b9-9968-f1e45ce0c203",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select l.id as listing_id, l.description as text, l.jurisdiction_code,\n  to_char((now() at time zone j.timezone)::date, 'YYYY-MM-DD') as today, app.extraction_context(l.jurisdiction_code) as ctx,\n  (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,\n  (select coalesce(jsonb_agg(m.analysis->'vision' order by m.created_at), '[]'::jsonb) from app.listing_media m\n    where m.listing_id = l.id and m.kind = 'photo' and m.analysis ? 'vision') as photos\nfrom app.listings l join app.jurisdictions j on j.code = l.jurisdiction_code where l.id = $1::uuid",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "8a8067da-b767-5ac4-8c52-7eb7a506149c",
+      "name": "Has text?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "366e5e3a-1f7c-5761-9d27-46a01d4148cb",
+              "leftValue": "={{ !!($json.text || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "9253c3c4-bb5c-56a2-858c-f1dbe2367f3c",
+      "name": "Text analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ String($json.text_url).replace(/\\/+$/, '') + '/v1/analyze' }}",
+        "options": {
+          "timeout": "={{ 20000 }}",
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, mask: true, use_ner: true }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fsCredSvcToken01",
+          "name": "Compute services token"
+        }
+      }
+    },
+    {
+      "id": "42b880d1-97b2-55ba-8478-127d30411d00",
+      "name": "Call input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.extract > \"Call input\"\n// Input: the listing's text, jurisdiction and today's date there, and the Text service's answer.\n// Output: the wf.llm.call input for P3 (active version unless the caller asks for one).\nconst s = $('Start').first().json;\nconst c = $('Context').first().json;\nreturn [{ json: { prompt: 'P3_listing_extractor', version: s.version ?? null, model: s.model || null,\n  vars: { message: c.text, jurisdiction: c.jurisdiction_code, today: c.today, default_currency: (c.ctx || {}).default_currency },\n  meta: { listing_id: c.listing_id } } }];\n"
+      }
+    },
+    {
+      "id": "a5ce0d23-c01f-5a9b-b169-43d535b116b0",
+      "name": "Extract",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsLlmCall0000001",
+          "mode": "id",
+          "cachedResultName": "wf.llm.call"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "2bb32b00-5b48-5695-bb07-f36b2c2c3b4f",
+      "name": "Check listing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.extract > \"Check listing\"\n// Deterministic checks after P3 (spec 9.4, D-076, D-077): plausible rent ranges (lib/listing_check.js),\n// main units to minor units with the currency exponent, one currency per listing, and issue codes\n// for what the owner must confirm, including what the photos show against the text (P7, lib/photo_check.js).\n// The model's answer and the checked fields are both kept in app.listings.extraction; the agent step\n// records the call without the listing text.\n// Deterministic checks after P3 (spec 9.4 post-validation, D-076). The model gives amounts in main\n// units. A rent outside the plausible range for its currency (main units per month; weekly rents\n// are compared as 52/12 of a week) is set to null with an issue: this catches scale errors such as\n// 1,225,000 dinars for 1,225 (spec 3.1). A deposit is checked against the same range; 0 is\n// accepted. Issues added here are codes, never sentences (spec 17.1).\n//\n// out: the validated P3 output; ranges: {currency: [min, max]} from the setting listing.rent_range;\n// fallbackCurrency: the jurisdiction's currency, used when an amount has none; text: the listing text,\n// for the date check (optional: without it the date is not checked).\n// An availability date is kept only when the text says something about when (a date, a month, a weekday,\n// \"libre\", \"dispo\", \"now\", \"توا\"...): with nothing of the kind the model invented it, usually today (D-083).\n// Returns {fields, issues, changed}: fields is a copy of out with the checks applied.\nconst MONTHS = 'janvier|janv|fevrier|fevr|fev|mars|avril|avr|mai|juin|juillet|juil|aout|septembre|sept|octobre|oct|novembre|nov|decembre|dec|' +\n  'january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|november|december';\nconst WHEN_WORDS = 'libre|libres|dispo|dispos|disponible|disponibles|disponibilite|immediat|immediate|immediatement|de suite|tout de suite|' +\n  'des maintenant|maintenant|a partir|a compter|rentree|semaine prochaine|mois prochain|debut|mi|fin|lundi|mardi|mercredi|jeudi|vendredi|' +\n  'samedi|dimanche|available|availability|from|now|immediately|asap|move in|move-in|next week|next month|monday|tuesday|wednesday|' +\n  'thursday|friday|saturday|sunday|tawa|tawwa|taw|mel|men|ba3d|awel|ekher|jenfi|fifri|avril|juan|juillet|out';\nconst WHEN_RE = new RegExp(`(?<![\\\\p{L}\\\\p{N}])(${MONTHS}|${WHEN_WORDS})(?![\\\\p{L}\\\\p{N}])`, 'iu');\nconst DATE_RE = /(?<![\\d])\\d{1,2}\\s*[\\/.-]\\s*\\d{1,2}(\\s*[\\/.-]\\s*\\d{2,4})?(?![\\d])|(?<![\\d])(19|20)\\d{2}(?![\\d])|(?<![\\d])\\d{1,2}\\s*(er|eme|e|st|nd|rd|th)(?![\\p{L}])/iu;\nconst WHEN_AR = /جانفي|فيفري|مارس|أفريل|افريل|ماي|جوان|جويلية|أوت|اوت|سبتمبر|أكتوبر|اكتوبر|نوفمبر|ديسمبر|يناير|فبراير|أبريل|ابريل|مايو|يونيو|يوليو|أغسطس|اغسطس|متوفر|متوفرة|متاح|متاحة|توا|حالا|فورا|فوري|فورية|مباشرة|ابتداء|ابتداءً|بداية|نهاية|الشهر|الأسبوع|الاسبوع|السبت|الأحد|الاحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الاربعاء|الخميس|الجمعة/;\n\nfunction dateMentioned(text) {\n  const t = String(text || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  return WHEN_RE.test(t) || DATE_RE.test(t) || WHEN_AR.test(String(text || ''));\n}\n\nfunction checkListing(out, ranges, fallbackCurrency, text) {\n  if (!out || typeof out !== 'object') return { fields: out, issues: [], changed: [] };\n  const f = JSON.parse(JSON.stringify(out));\n  const issues = [];\n  const changed = [];\n  const R = ranges || {};\n  if (f.rent_amount !== null && f.rent_amount !== undefined) {\n    if (!f.rent_currency) { f.rent_currency = fallbackCurrency || null; issues.push('rent_currency_assumed'); changed.push('rent_currency'); }\n    if (!f.rent_period) { f.rent_period = 'month'; changed.push('rent_period'); }\n    if (!f.rent_scope) { f.rent_scope = 'unknown'; changed.push('rent_scope'); }\n    const r = R[f.rent_currency];\n    const monthly = f.rent_period === 'week' ? (f.rent_amount * 52) / 12 : f.rent_amount;\n    if (!r) issues.push('rent_range_unknown');\n    else if (monthly < r[0] || monthly > r[1]) {\n      issues.push('rent_out_of_range');\n      f.rent_amount = null; f.rent_currency = null; f.rent_period = null; f.rent_scope = null;\n      changed.push('rent_amount');\n    }\n  }\n  if (f.deposit_amount !== null && f.deposit_amount !== undefined) {\n    if (!f.deposit_currency) { f.deposit_currency = f.rent_currency || fallbackCurrency || null; changed.push('deposit_currency'); }\n    const r = R[f.deposit_currency];\n    if (r && f.deposit_amount !== 0 && (f.deposit_amount < r[0] || f.deposit_amount > r[1])) {\n      issues.push('deposit_out_of_range');\n      f.deposit_amount = null; f.deposit_currency = null;\n      changed.push('deposit_amount');\n    }\n  }\n  if (text !== undefined && f.available_from && !dateMentioned(text)) {\n    issues.push('available_from_not_in_text');\n    f.available_from = null;\n    changed.push('available_from');\n  }\n  if (Array.isArray(f.amenities)) f.amenities = [...new Set(f.amenities)].sort();\n  return { fields: f, issues, changed };\n}\n\n// Main units to minor units with the currency exponent (app.currencies), for storage.\nfunction toMinorUnits(amount, currency, exponents) {\n  if (amount === null || amount === undefined || !currency || !exponents ||\n      !Object.prototype.hasOwnProperty.call(exponents, currency)) return null;\n  const n = Number(amount);\n  return Number.isFinite(n) && n >= 0 ? Math.round(n * Math.pow(10, Number(exponents[currency]))) : null;\n}\n\nif (typeof module !== 'undefined') module.exports = { checkListing, toMinorUnits, dateMentioned };\n\n// Deterministic checks after P7 (spec 11.2, D-081), shared by wf.intake.photos, wf.listing.extract and the\n// evaluation. The model describes one photo; the code tidies the answer, raises review flags, drops free text\n// that talks about people, and compares the photos with what the listing text says.\n\nconst P7_LISTS = {\n  bed_kinds: ['single', 'double', 'bunk', 'sofa_bed'],\n  furniture: ['wardrobe', 'chest_of_drawers', 'nightstand', 'desk', 'chair', 'sofa', 'armchair', 'table', 'shelves'],\n  appliances: ['fridge', 'oven', 'hob', 'microwave', 'washing_machine', 'dishwasher', 'tv', 'air_conditioning', 'radiator'],\n  bathroom_fixtures: ['shower', 'bathtub', 'toilet', 'washbasin'],\n  condition_signs: ['damp_or_mould', 'cracks_or_peeling', 'stains', 'damaged_floor', 'unfinished_works'],\n};\nconst P7_SCALARS = ['room_type', 'beds', 'windows', 'natural_light', 'condition', 'furnished', 'readable_text', 'people_visible'];\n\n// Words that describe a person (English, French, Arabic, Tunisian in Latin script). Free text from the model that\n// contains one is not stored: the rule is to describe the room only (spec 11.2).\nconst PEOPLE_RE = /(?<!\\p{L})(man|men|woman|women|girl|girls|boy|boys|person|persons|people|child|children|kid|kids|baby|guy|lady|ladies|gentleman|student|students|tenant|tenants|owner|homme|hommes|femme|femmes|fille|filles|gar[cç]on|gar[cç]ons|personne|personnes|enfant|enfants|b[ée]b[ée]|dame|monsieur|[ée]tudiante?s?|locataire|propri[ée]taire|rajel|mra|tfol|tofla)(?!\\p{L})|رجل|امرأة|إمرأة|سيدة|بنت|ولد|طفل|شخص|أشخاص|طالب/iu;\n\nfunction mentionsPeople(text) {\n  return PEOPLE_RE.test(String(text || ''));\n}\n\n// Model answer (already valid against the version's schema) -> {fields, flags, dropped}.\nfunction checkPhoto(out) {\n  const fields = {};\n  for (const k of P7_SCALARS) fields[k] = out[k] === undefined ? null : out[k];\n  for (const [k, allowed] of Object.entries(P7_LISTS)) {\n    const v = Array.isArray(out[k]) ? out[k] : [];\n    fields[k] = allowed.filter((x) => v.includes(x));            // closed list, no duplicates, fixed order\n  }\n  const dropped = [];\n  let issues = Array.isArray(out.issues) ? out.issues.map(String) : [];\n  const kept = issues.filter((t) => !mentionsPeople(t));\n  if (kept.length < issues.length) dropped.push('issues_about_people');\n  issues = kept;\n  let description = typeof out.description === 'string' ? out.description : null;\n  if (description !== null && mentionsPeople(description)) { dropped.push('description_about_people'); description = null; }\n  const conf = {};\n  for (const [k, v] of Object.entries(out.field_confidence || {})) {\n    if (k in fields && typeof v === 'number' && v >= 0 && v <= 1) conf[k] = v;\n  }\n  const flags = [];\n  if (fields.people_visible === true) flags.push('person_in_photo');\n  if (fields.readable_text === true) flags.push('text_readable_after_blur');\n  if (fields.room_type === 'not_a_room') flags.push('not_a_room');\n  if (fields.condition === 'poor' || fields.condition_signs.includes('damp_or_mould')) flags.push('condition_to_check');\n  return { fields, issues, description, field_confidence: conf, flags, dropped };\n}\n\n// What a photo shows, in the P3 amenity vocabulary (lib/listing_check.js, P3 rule 7).\nconst TO_LISTING_AMENITY = { fridge: 'fridge', oven: 'oven', microwave: 'microwave', washing_machine: 'washing_machine',\n  dishwasher: 'dishwasher', tv: 'tv', air_conditioning: 'air_conditioning', radiator: 'heating', desk: 'desk' };\n\nfunction photoAmenities(f) {\n  const seen = new Set();\n  for (const x of [...(f.appliances || []), ...(f.furniture || [])]) if (TO_LISTING_AMENITY[x]) seen.add(TO_LISTING_AMENITY[x]);\n  return [...seen].sort();\n}\n\n// listing: checked P3 fields {furnished, amenities}; photos: the stored analysis.vision of each photo.\n// -> {issues, amenities_seen_not_in_text, analyzed, failed}. Only positive evidence is used: a photo that does not\n// show a washing machine says nothing about the flat, so the absence of an object is never a contradiction.\nfunction photoFindings(listing, photos, minConfidence = 0.5) {\n  const ok = (photos || []).filter((p) => p && p.status === 'analyzed' && p.fields);\n  const failed = (photos || []).filter((p) => p && p.status === 'failed').length;\n  const sure = (p, k) => p.field_confidence === undefined || p.field_confidence[k] === undefined || p.field_confidence[k] >= minConfidence;\n  const issues = [];\n  const listed = new Set((listing && listing.amenities) || []);\n  const seen = new Set();\n  for (const p of ok) for (const a of photoAmenities(p.fields)) seen.add(a);\n  const extra = [...seen].filter((a) => !listed.has(a)).sort();\n  if (extra.length) issues.push('photos_show_amenities_not_in_text');\n  const rooms = ok.filter((p) => ['bedroom', 'living_room', 'studio'].includes(p.fields.room_type));\n  if (listing && listing.furnished === false && rooms.some((p) => p.fields.furnished === 'yes' && sure(p, 'furnished'))) {\n    issues.push('photos_contradict_furnished');\n  }\n  if (listing && listing.furnished === true && rooms.length && rooms.every((p) => p.fields.furnished === 'no' && sure(p, 'furnished'))) {\n    issues.push('photos_contradict_furnished');\n  }\n  if (ok.some((p) => (p.flags || []).includes('text_readable_after_blur'))) issues.push('photo_text_readable');\n  if (ok.some((p) => (p.flags || []).includes('not_a_room'))) issues.push('photo_not_a_room');\n  if (failed) issues.push('photo_analysis_failed');\n  return { issues: [...new Set(issues)], amenities_seen_not_in_text: extra, analyzed: ok.length, failed };\n}\n\nif (typeof module !== 'undefined') module.exports = { P7_LISTS, P7_SCALARS, mentionsPeople, checkPhoto, photoAmenities, photoFindings };\n\nconst r = $input.first().json;\nconst c = $('Context').first().json;\nconst ctx = c.ctx || {};\nconst tr = $('Text analysis').first().json || {};\nconst tb = tr.body && typeof tr.body === 'object' ? tr.body : null;\nconst step = { agent: 'A1_extract', prompt_version_id: r.prompt_version_id || null, model: r.model || null,\n  input: { chars: Array.from(String(c.text || '')).length, jurisdiction: c.jurisdiction_code },\n  output: r.ok ? r.output : { error_code: r.error_code }, latency_ms: r.latency_ms, tokens_in: r.tokens_in || 0,\n  tokens_out: r.tokens_out || 0, error: r.ok ? null : `${r.error_code}${r.detail ? ': ' + String(r.detail).slice(0, 200) : ''}` };\nif (!r.ok) {\n  return [{ json: { ok: false, store: false, listing_id: c.listing_id, transient: !!r.call_error,\n    error: r.call_error ? 'model unavailable' : `extraction failed: ${r.error_code}`, steps: [step] } }];\n}\nconst check = checkListing(r.output, ctx.rent_ranges || {}, ctx.default_currency || null, c.text || '');\nconst x = check.fields;\nconst issues = [...check.issues];\nconst exps = ctx.currencies || {};\nlet currency = x.rent_currency || null;\nlet rent_minor = toMinorUnits(x.rent_amount, x.rent_currency, exps);\nif (x.rent_amount !== null && rent_minor === null) { issues.push('rent_currency_unknown'); currency = null; }\nlet deposit_minor = toMinorUnits(x.deposit_amount, x.deposit_currency, exps);\nif (deposit_minor !== null && currency && x.deposit_currency !== currency) { issues.push('deposit_currency_differs'); deposit_minor = null; }\nif (deposit_minor !== null && !currency) currency = x.deposit_currency;\nif (rent_minor === null) issues.push('rent_missing');\nelse if (x.rent_scope === 'whole_flat' || x.rent_scope === 'unknown') issues.push(`rent_scope_${x.rent_scope}`);\n// Photos against the text (P7, D-081): only what the photos show, never what they do not show.\nconst pf = photoFindings({ furnished: x.furnished, amenities: x.amenities || [] }, c.photos || []);\nissues.push(...pf.issues);\nconst pii = tb && tb.pii ? tb.pii.counts || {} : null;\nif (pii && ((pii.PHONE || 0) + (pii.EMAIL || 0)) > 0) issues.push('contact_details_in_text');\nconst fields = { kind: x.kind, rent_minor, currency: rent_minor === null && deposit_minor === null ? null : currency,\n  rent_period: rent_minor === null ? null : x.rent_period, rent_scope: rent_minor === null ? null : x.rent_scope,\n  deposit_minor, bills_included: x.bills_included, available_from: x.available_from, bedrooms: x.bedrooms,\n  furnished: x.furnished, amenities: x.amenities || [], house_rules: x.house_rules || {}, city: x.city, neighbourhood: x.neighbourhood };\nconst extraction = { prompt_version_id: r.prompt_version_id, model: r.model, model_output: r.output, address_text: x.address_text,\n  issues: [...new Set(issues)], model_issues: x.issues || [], field_confidence: x.field_confidence || {},\n  checks_changed: check.changed, language: tb ? tb.language : null, pii_counts: pii,\n  photos: { analyzed: pf.analyzed, failed: pf.failed, amenities_seen_not_in_text: pf.amenities_seen_not_in_text } };\nreturn [{ json: { ok: true, store: true, listing_id: c.listing_id, steps: [step],\n  params: [c.listing_id, JSON.stringify({ fields, description_lang: tb ? tb.language.language : null, extraction })],\n  summary: { issues: extraction.issues, rent_minor, currency: fields.currency, rent_scope: fields.rent_scope } } }];\n"
+      }
+    },
+    {
+      "id": "3579ec14-e442-56be-8b4f-662c9f2928fb",
+      "name": "Store?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1540,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d98f3677-2939-526e-9ef7-ece982d15d58",
+              "leftValue": "={{ $json.store }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "5b4bac36-1991-5510-9fda-2b5ac964adaa",
+      "name": "Store extraction",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        -200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.store_listing_extraction($1::uuid, $2::jsonb) as r",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5d053cad-9465-56d2-ade7-ad876c2f248f",
+      "name": "Record steps",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1980,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.record_job_steps(nullif($1, '')::uuid, 'wf.listing.extract', $2, $3::jsonb) as execution_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Check listing').first().json.steps) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "043925b2-3ea9-56e9-88c8-3a5bc0b6e9b8",
+      "name": "Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.listing.extract > \"Result\": {ok, status, listing_id, issues, transient, error, steps}.\n// status: extracted, no_text (nothing to extract), failed (model or storage); transient failures are\n// retried by the analyze job (spec 5.6).\nconst c = $('Context').first().json;\nif (!c.text || !String(c.text).trim()) {\n  return [{ json: { ok: true, status: 'no_text', listing_id: c.listing_id, issues: [], transient: false, error: null, steps: [] } }];\n}\nconst x = $('Check listing').first().json;\nif (!x.ok) return [{ json: { ok: false, status: 'failed', listing_id: x.listing_id, issues: [], transient: x.transient, error: x.error, steps: x.steps } }];\nconst st = ($('Store extraction').first().json || {}).r || {};\nif (!st.ok) {\n  return [{ json: { ok: false, status: 'failed', listing_id: x.listing_id, issues: [], transient: false,\n    error: `store: ${st.error_code || 'no answer'}${st.message ? ' (' + st.message + ')' : ''}`, steps: x.steps } }];\n}\nreturn [{ json: { ok: true, status: 'extracted', listing_id: x.listing_id, ...x.summary, transient: false, error: null, steps: x.steps } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Has text?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has text?": {
+      "main": [
+        [
+          {
+            "node": "Text analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text analysis": {
+      "main": [
+        [
+          {
+            "node": "Call input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call input": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Check listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check listing": {
+      "main": [
+        [
+          {
+            "node": "Store?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store?": {
+      "main": [
+        [
+          {
+            "node": "Store extraction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store extraction": {
+      "main": [
+        [
+          {
+            "node": "Record steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record steps": {
+      "main": [
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    },
+    {
+      "name": "intake"
+    }
+  ]
+}

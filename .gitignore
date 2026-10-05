@@ -14,3 +14,6 @@ flatshare.bundle
 
 # fetched source texts and raw bytes (third-party content, re-fetchable; DECISIONS D-044)
 kb/packs/*/documents/
+
+# detector and speech models are downloaded at build or run time (models.lock), not committed
+services/*/models/

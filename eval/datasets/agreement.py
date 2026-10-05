@@ -1,7 +1,7 @@
 """Agreement between the labels of a golden set and a blind re-label of a sample (spec 9.5:
 re-label a random 20% without looking at the first labels and report the agreement).
 
-    python eval/datasets/agreement.py p1_router_v1   # or p2_profile_v1
+    python eval/datasets/agreement.py p1_router_v1   # or p2_profile_v1, p3_listing_v1
 
 Reads <name>.jsonl (first labels) and relabel/<name>_relabel.jsonl (second labels, made from
 relabel/<name>_blind.jsonl, which holds only id, message and context). Prints per-field
@@ -47,10 +47,23 @@ def fields_p2(g: dict) -> dict:
     return out
 
 
+def fields_p3(g: dict) -> dict:
+    out = {k: g[k] for k in ("kind", "rent_amount", "rent_currency", "rent_period", "rent_scope", "deposit_amount",
+                             "deposit_currency", "bills_included", "available_from", "bedrooms", "furnished")}
+    out["amenities"] = sorted(g["amenities"])
+    out["house_rules"] = json.dumps(g["house_rules"], sort_keys=True)
+    for k in ("address_text", "city", "neighbourhood"):
+        out[k] = (g[k] or "").strip().lower() or None
+    return out
+
+
+FIELDS = {"p1": fields_p1, "p2": fields_p2, "p3": fields_p3}
+
+
 def main(name: str):
     first = load(HERE / f"{name}.jsonl")
     second = load(HERE / "relabel" / f"{name}_relabel.jsonl")
-    fx = fields_p1 if name.startswith("p1") else fields_p2
+    fx = FIELDS[name[:2]]
     ids = sorted(second)
     per, disagreements = {}, []
     for i in ids:
@@ -67,13 +80,16 @@ def main(name: str):
            "items_fully_agreeing": sum(all(fx(first[i]["gold"])[k] == fx(second[i]["gold"])[k] for k in per) for i in ids)}
     if name.startswith("p1"):
         out["intent_kappa"] = round(kappa([first[i]["gold"]["intent"] for i in ids], [second[i]["gold"]["intent"] for i in ids]), 3)
+    if name.startswith("p3"):
+        out["kind_kappa"] = round(kappa([str(first[i]["gold"]["kind"]) for i in ids], [str(second[i]["gold"]["kind"]) for i in ids]), 3)
     out["disagreements"] = disagreements
     (HERE / "relabel" / f"{name}_agreement.json").write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{name}: {len(ids)} of {len(first)} items re-labelled blind; {out['items_fully_agreeing']} agree on every field")
     for k, v in out["agreement"].items():
         print(f"  {k:28s} {v['agree']:3d}/{v['n']:<3d} {v['rate']:.3f}")
-    if "intent_kappa" in out:
-        print(f"  intent Cohen's kappa          {out['intent_kappa']:.3f}")
+    for k in ("intent_kappa", "kind_kappa"):
+        if k in out:
+            print(f"  {k.split('_')[0]} Cohen's kappa{' ' * (14 - len(k.split('_')[0]))}{out[k]:.3f}")
     for d in disagreements:
         print(f"  - {d['id']} {d['field']}: {d['first']!r} vs {d['second']!r}  | {d['message'][:110]}")
 

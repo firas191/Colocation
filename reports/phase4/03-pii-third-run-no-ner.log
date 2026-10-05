@@ -1,0 +1,31 @@
+{
+ "items": 127,
+ "gold_spans": 200,
+ "use_ner": false,
+ "recall_masked": 1.0,
+ "recall_typed": 1.0,
+ "precision": 0.9901,
+ "false_positive_spans": 2,
+ "negative_items_with_masking": 2,
+ "recall_by_type": {
+  "ADDRESS": "30/30",
+  "CARD": "5/5",
+  "EMAIL": "20/20",
+  "IBAN": "15/15",
+  "ID": "20/20",
+  "NAME": "55/55",
+  "PHONE": "50/50",
+  "POSTCODE": "5/5"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "20/20",
+  "aeb_latin": "20/20",
+  "ar": "25/25",
+  "en": "45/45",
+  "fr": "65/65",
+  "mixed": "25/25"
+ },
+ "latency_ms_p50": 0.2,
+ "latency_ms_p95": 0.7
+}
+wrote /tmp/claude-0/ev/text-pii-20261004-084503.json

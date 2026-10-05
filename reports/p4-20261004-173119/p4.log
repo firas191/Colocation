@@ -1,0 +1,241 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-04T17:31:21.3756475+01:00
+healthy
+healthy
+exit=0 seconds=0.2
+
+===== Text service is up and uses its models =====
+command: docker exec fs-text python selfcheck.py
+started: 2026-10-04T17:31:21.6201022+01:00
+{"langid_backend": "glotlid-v3", "language": {"language": "fr", "script": "latin", "confidence": 0.986, "method": "glotlid-v3"}, "ner": true, "ner_error": null, "counts": {"NAME": 1}, "ms": 662.9}
+exit=0 seconds=0.8
+
+===== language ID: P1 and P2 golden sets =====
+command: docker @run eval/runners/text_eval.py langid @u --label "pc langid"
+started: 2026-10-04T17:31:22.4418890+01:00
+ Container flatshare-tests-run-8413ecd5c7c1 Creating 
+ Container flatshare-tests-run-8413ecd5c7c1 Created 
+{
+ "p1": {
+  "items": 160,
+  "backend": "glotlid-v3",
+  "language_accuracy": 0.925,
+  "script_accuracy": 1.0,
+  "by_group": {
+   "aeb_arabic": "12/16",
+   "aeb_latin": "22/22",
+   "ar": "14/14",
+   "de": "9/10",
+   "en": "24/24",
+   "es": "9/9",
+   "fr": "33/34",
+   "it": "9/9",
+   "mixed": "16/22"
+  },
+  "confusions": {
+   "mixed->fr": 4,
+   "aeb->mixed": 2,
+   "aeb->ar": 2,
+   "fr->other": 1,
+   "mixed->en": 1,
+   "mixed->aeb": 1,
+   "de->other": 1
+  },
+  "latency_ms_p50": 2.8
+ },
+ "p2": {
+  "items": 110,
+  "backend": "glotlid-v3",
+  "language_accuracy": 0.8091,
+  "script_accuracy": null,
+  "by_group": {
+   "aeb_arabic": "7/12",
+   "aeb_latin": "14/18",
+   "ar": "10/10",
+   "en": "24/25",
+   "fr": "30/30",
+   "mixed": "4/15"
+  },
+  "confusions": {
+   "aeb->mixed": 7,
+   "mixed->en": 4,
+   "mixed->fr": 4,
+   "aeb->other": 2,
+   "mixed->aeb": 2,
+   "mixed->other": 1,
+   "en->mixed": 1
+  },
+  "latency_ms_p50": 2.9
+ }
+}
+wrote /flatshare/reports/eval/text-langid-20261004-163123.json
+exit=0 seconds=1.7
+
+===== PII masking: pii_v1 with NER =====
+command: docker @run eval/runners/text_eval.py pii @u --label "pc pii_v1 ner"
+started: 2026-10-04T17:31:24.1030726+01:00
+ Container flatshare-tests-run-c4f653603720 Creating 
+ Container flatshare-tests-run-c4f653603720 Created 
+{
+ "dataset": "pii_v1.jsonl",
+ "items": 127,
+ "gold_spans": 200,
+ "use_ner": true,
+ "ner_active": true,
+ "ner_errors": [],
+ "recall_masked": 1.0,
+ "recall_typed": 1.0,
+ "precision": 0.9901,
+ "false_positive_spans": 2,
+ "negative_items_with_masking": 2,
+ "recall_by_type": {
+  "ADDRESS": "30/30",
+  "CARD": "5/5",
+  "EMAIL": "20/20",
+  "IBAN": "15/15",
+  "ID": "20/20",
+  "NAME": "55/55",
+  "PHONE": "50/50",
+  "POSTCODE": "5/5"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "20/20",
+  "aeb_latin": "20/20",
+  "ar": "25/25",
+  "en": "45/45",
+  "fr": "65/65",
+  "mixed": "25/25"
+ },
+ "latency_ms_p50": 45.7,
+ "latency_ms_p95": 83.8
+}
+wrote /flatshare/reports/eval/text-pii-20261004-163124.json
+exit=0 seconds=7.6
+
+===== PII masking: pii_heldout_v1 with NER =====
+command: docker @run eval/runners/text_eval.py pii @u --dataset pii_heldout_v1.jsonl --label "pc heldout ner"
+started: 2026-10-04T17:31:31.7160636+01:00
+ Container flatshare-tests-run-87d2ecd69591 Creating 
+ Container flatshare-tests-run-87d2ecd69591 Created 
+{
+ "dataset": "pii_heldout_v1.jsonl",
+ "items": 53,
+ "gold_spans": 84,
+ "use_ner": true,
+ "ner_active": true,
+ "ner_errors": [],
+ "recall_masked": 0.9762,
+ "recall_typed": 0.9643,
+ "precision": 0.9765,
+ "false_positive_spans": 2,
+ "negative_items_with_masking": 0,
+ "recall_by_type": {
+  "ADDRESS": "12/12",
+  "CARD": "4/4",
+  "EMAIL": "8/8",
+  "IBAN": "8/8",
+  "ID": "4/4",
+  "NAME": "22/24",
+  "PHONE": "20/20",
+  "POSTCODE": "4/4"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "8/8",
+  "aeb_latin": "8/8",
+  "ar": "8/8",
+  "en": "22/24",
+  "fr": "24/24",
+  "mixed": "12/12"
+ },
+ "latency_ms_p50": 44.2,
+ "latency_ms_p95": 48.8
+}
+wrote /flatshare/reports/eval/text-pii-20261004-163132.json
+exit=0 seconds=3.9
+
+===== PII masking: pii_v1 without NER =====
+command: docker @run eval/runners/text_eval.py pii @u --no-ner --label "pc pii_v1 no-ner"
+started: 2026-10-04T17:31:35.5854197+01:00
+ Container flatshare-tests-run-6bf761bbff50 Creating 
+ Container flatshare-tests-run-6bf761bbff50 Created 
+{
+ "dataset": "pii_v1.jsonl",
+ "items": 127,
+ "gold_spans": 200,
+ "use_ner": false,
+ "ner_active": false,
+ "ner_errors": [],
+ "recall_masked": 1.0,
+ "recall_typed": 1.0,
+ "precision": 0.9901,
+ "false_positive_spans": 2,
+ "negative_items_with_masking": 2,
+ "recall_by_type": {
+  "ADDRESS": "30/30",
+  "CARD": "5/5",
+  "EMAIL": "20/20",
+  "IBAN": "15/15",
+  "ID": "20/20",
+  "NAME": "55/55",
+  "PHONE": "50/50",
+  "POSTCODE": "5/5"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "20/20",
+  "aeb_latin": "20/20",
+  "ar": "25/25",
+  "en": "45/45",
+  "fr": "65/65",
+  "mixed": "25/25"
+ },
+ "latency_ms_p50": 1.6,
+ "latency_ms_p95": 2.1
+}
+wrote /flatshare/reports/eval/text-pii-20261004-163136.json
+exit=0 seconds=1.2
+
+===== PII masking: pii_heldout_v1 without NER =====
+command: docker @run eval/runners/text_eval.py pii @u --no-ner --dataset pii_heldout_v1.jsonl --label "pc heldout no-ner"
+started: 2026-10-04T17:31:36.7449271+01:00
+ Container flatshare-tests-run-58b68f8f5f7f Creating 
+ Container flatshare-tests-run-58b68f8f5f7f Created 
+{
+ "dataset": "pii_heldout_v1.jsonl",
+ "items": 53,
+ "gold_spans": 84,
+ "use_ner": false,
+ "ner_active": false,
+ "ner_errors": [],
+ "recall_masked": 0.7143,
+ "recall_typed": 0.7143,
+ "precision": 0.9836,
+ "false_positive_spans": 1,
+ "negative_items_with_masking": 0,
+ "recall_by_type": {
+  "ADDRESS": "12/12",
+  "CARD": "4/4",
+  "EMAIL": "8/8",
+  "IBAN": "8/8",
+  "ID": "4/4",
+  "NAME": "0/24",
+  "PHONE": "20/20",
+  "POSTCODE": "4/4"
+ },
+ "recall_by_language": {
+  "aeb_arabic": "8/8",
+  "aeb_latin": "8/8",
+  "ar": "4/8",
+  "en": "16/24",
+  "fr": "16/24",
+  "mixed": "8/12"
+ },
+ "latency_ms_p50": 1.6,
+ "latency_ms_p95": 2.2
+}
+wrote /flatshare/reports/eval/text-pii-20261004-163137.json
+exit=0 seconds=1

@@ -26,8 +26,9 @@ function render(text, vars) {
 
 // prompt: {template, output_schema, params, model}; vars: template variables (message is
 // sanitised here); cfg: {base_url, default_model, num_ctx, keep_alive, seed, timeout_ms,
-// model_overrides: {model: {think: false, ...}}}; model: optional override.
-function buildRequest(prompt, vars, cfg, model) {
+// model_overrides: {model: {think: false, ...}}}; model: optional override; images: optional
+// base64 JPEGs sent with the user message (Ollama "images", P7 photo analysis, D-081).
+function buildRequest(prompt, vars, cfg, model, images) {
   const parts = splitTemplate(prompt.template);
   const v = { ...vars };
   if (v.message !== undefined) v.message = sanitizeUntrusted(v.message);
@@ -47,6 +48,7 @@ function buildRequest(prompt, vars, cfg, model) {
     options,
     messages: [{ role: 'system', content: render(parts.system, v) }, { role: 'user', content: render(parts.user, v) }],
   };
+  if (images && images.length) body.messages[1].images = images;
   if (prompt.output_schema) body.format = prompt.output_schema;
   if (over.think !== undefined) body.think = over.think;
   return { url: `${String(cfg.base_url).replace(/\/+$/, '')}/api/chat`, body, model: useModel };
@@ -89,6 +91,7 @@ function readResponse(res) {
   return {
     http_status: status,
     content: b.message ? b.message.content : null,
+    done_reason: b.done_reason || null,     // 'length' = the answer hit num_predict and was cut (F-058)
     // models that think by default put their reasoning here and may leave content empty (F-048)
     thinking_chars: b.message && typeof b.message.thinking === 'string' ? b.message.thinking.length : 0,
     error: b.error || (status && status >= 400 ? `HTTP ${status}` : null),

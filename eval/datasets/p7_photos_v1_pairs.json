@@ -1,0 +1,7 @@
+{"note": "Pairs found among the downloaded candidates (photo_bench manifest): the same room photographed twice. Reported with their pHash distance by eval/runners/phash_pairs.py; only the first file of each pair is in the golden set.",
+ "pairs": [
+  {"a": "c-28e2415ea287.jpg", "b": "c-79e6a7086fc7.jpg", "kind": "same scene, small shift of the camera"},
+  {"a": "c-50d63991aa45.jpg", "b": "c-8b2293aa5a5c.jpg", "kind": "same bathroom, other framing"},
+  {"a": "c-01c110fe7ad1.jpg", "b": "c-5b65bdba6bd7.jpg", "kind": "same bedroom, other angle"},
+  {"a": "c-28145d807ac0.jpg", "b": "c-fff7c8a5b9b5.jpg", "kind": "same bedroom, other angle"}
+ ]}

@@ -1,0 +1,6 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.3 s)
+PASS  prompts: store new versions (prompts\*\v*.md)  (exit 0, 1.5 s)
+FAIL  evaluate P3_listing_extractor versions 1,2 on qwen3.5:4b  (exit 1, 14411.9 s)
+PASS  Ollama memory placement after qwen3.5:4b (GPU or CPU share)  (exit 0, 0.8 s)
+PASS  prompts: active versions from prompts\*\prompt.json  (exit 0, 3.1 s)
+PASS  report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json  (exit 0, 5.9 s)

@@ -1,0 +1,1 @@
+FAIL  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 1, 0.3 s)

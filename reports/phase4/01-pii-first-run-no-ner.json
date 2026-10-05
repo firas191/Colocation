@@ -1,0 +1,2353 @@
+{
+ "date": "20261004-082551",
+ "label": "sandbox-first-run",
+ "summary": {
+  "items": 127,
+  "gold_spans": 200,
+  "use_ner": false,
+  "recall_masked": 0.97,
+  "recall_typed": 0.97,
+  "precision": 0.907,
+  "false_positive_spans": 20,
+  "negative_items_with_masking": 8,
+  "recall_by_type": {
+   "ADDRESS": "30/30",
+   "CARD": "5/5",
+   "EMAIL": "20/20",
+   "IBAN": "15/15",
+   "ID": "20/20",
+   "NAME": "50/55",
+   "PHONE": "49/50",
+   "POSTCODE": "5/5"
+  },
+  "recall_by_language": {
+   "aeb_arabic": "20/20",
+   "aeb_latin": "20/20",
+   "ar": "25/25",
+   "en": "45/45",
+   "fr": "59/65",
+   "mixed": "25/25"
+  },
+  "latency_ms_p50": 0.2,
+  "latency_ms_p95": 0.6
+ },
+ "items": [
+  {
+   "id": "pii-001",
+   "lang": "fr",
+   "masked_text": "Bonjour, je m'appelle [NAME_1], vous pouvez me joindre au [PHONE_1] pour la chambre.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Salma Ben Salah",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0021656483272",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-002",
+   "lang": "fr",
+   "masked_text": "Contactez [NAME_1] au [PHONE_1] ou par mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Lina",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "53313246",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "karim.gharbi83@example.org",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-003",
+   "lang": "fr",
+   "masked_text": "L'appartement est au [ADDRESS_1], 3e étage, loyer 650 euros.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "107 rue de Marseille",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-004",
+   "lang": "fr",
+   "masked_text": "Pour la caution, virement sur [IBAN_1] avant le 1er novembre.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "FR76 2004 1010 0526 6350 3465 408",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-005",
+   "lang": "fr",
+   "masked_text": "Mon numéro de sécurité sociale est [ID_1], c'est pour le dossier.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "2 61 01 79 342 606 30",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-006",
+   "lang": "fr",
+   "masked_text": "Vous pouvez payer par carte [CARD_1], expiration [PHONE_1].",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4248961325478508",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "09/28",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-007",
+   "lang": "fr",
+   "masked_text": "Je suis Amira Taylor, étudiant à l'INSAT, mon CIN [ID_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Amira Taylor",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "18485967",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-008",
+   "lang": "fr",
+   "masked_text": "Appelez [NAME_1] au [PHONE_1] après 18h.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Lefebvre",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0688463956",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-009",
+   "lang": "en",
+   "masked_text": "Hi, my name is [NAME_1] and my number is [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Amira Brown",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "07684 74802",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-010",
+   "lang": "en",
+   "masked_text": "The flat is at [ADDRESS_1], [POSTCODE_1], rent £650 pcm.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "296 Mill Lane",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "SW1A 1AA",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-011",
+   "lang": "en",
+   "masked_text": "Please send the deposit to [IBAN_1] and email me at [EMAIL_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "GB13NWBK60161398845564",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "karim.brown39@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-012",
+   "lang": "en",
+   "masked_text": "My National Insurance number is [ID_1] if the agency needs it.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "SH 72 89 29 B",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-013",
+   "lang": "en",
+   "masked_text": "Text [NAME_1] on [PHONE_1] to arrange a viewing.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Ines",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "07631 20834",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-014",
+   "lang": "ar",
+   "masked_text": "اسمي [NAME_1] ورقم هاتفي [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "إيناس حداد",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "25 204 672",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-015",
+   "lang": "ar",
+   "masked_text": "الشقة في [ADDRESS_1] قرب المحطة، الكراء 500 دينار.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج ابن خلدون عدد 36",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-016",
+   "lang": "ar",
+   "masked_text": "رقم بطاقة التعريف [ID_1] والبريد [EMAIL_1].",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "05051998",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "karim.taylor23@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-017",
+   "lang": "aeb_arabic",
+   "masked_text": "كلمني على [PHONE_1] ولا ابعثلي على [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "91.174.484",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "rania.jlassi46@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-018",
+   "lang": "aeb_arabic",
+   "masked_text": "الدار في [ADDRESS_1]، اسأل على السيد [NAME_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج مرسيليا عدد 30",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "نور",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-019",
+   "lang": "aeb_latin",
+   "masked_text": "slm, ena esmi [NAME_1], 9oli 3al [PHONE_1] ken t7eb tchouf el bit.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Thomas",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "56170703",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-020",
+   "lang": "aeb_latin",
+   "masked_text": "el bit fi [ADDRESS_1], kra 400 dt.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "nahj el hourriya 3adad 21",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-021",
+   "lang": "aeb_latin",
+   "masked_text": "ab3ath el caution 3la [IBAN_1] w ab3athli capture.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN5910006392468150664662",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-022",
+   "lang": "mixed",
+   "masked_text": "Salut, n7eb nchouf el chambre, mon numéro [PHONE_1], w esmi [NAME_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "22.115.508",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Lina",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-023",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el dar fi [ADDRESS_1], appelle [NAME_1] 3al [PHONE_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "40 avenue de la Liberté",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Julien",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "91958837",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-024",
+   "lang": "fr",
+   "masked_text": "Bonjour, je m'appelle [NAME_1], vous pouvez me joindre au [PHONE_1] pour la chambre.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Emily Mansouri",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0021642117635",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-025",
+   "lang": "fr",
+   "masked_text": "Contactez [NAME_1] au [PHONE_1] ou par mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Nour",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "28.740.469",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "rania.trabelsi83@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-026",
+   "lang": "fr",
+   "masked_text": "L'appartement est au [ADDRESS_1], 3e étage, loyer 650 euros.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "23 avenue Habib Bourguiba",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-027",
+   "lang": "fr",
+   "masked_text": "Pour la caution, virement sur [IBAN_1] avant le 1er novembre.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "FR7620041010051972290120718",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-028",
+   "lang": "fr",
+   "masked_text": "Mon numéro de sécurité sociale est [ID_1], c'est pour le dossier.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "198098633541760",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-029",
+   "lang": "fr",
+   "masked_text": "Vous pouvez payer par carte [CARD_1], expiration [PHONE_1].",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4853-2542-3548-5979",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "09/28",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-030",
+   "lang": "fr",
+   "masked_text": "Je suis Salma Bouzid, étudiant à l'INSAT, mon CIN [ID_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Salma Bouzid",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "11858841",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-031",
+   "lang": "fr",
+   "masked_text": "Appelez [NAME_1] au [PHONE_1] après 18h.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Bouzid",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+33 6 91 63 96 71",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-032",
+   "lang": "en",
+   "masked_text": "Hi, my name is [NAME_1] and my number is [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "James Taylor",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+44 7404 48508",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-033",
+   "lang": "en",
+   "masked_text": "The flat is at [ADDRESS_1], [POSTCODE_1], rent £650 pcm.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "162 Oxford Road",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "SW1A 1AA",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-034",
+   "lang": "en",
+   "masked_text": "Please send the deposit to [IBAN_1] and email me at [EMAIL_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "GB53 NWBK 6016 1392 3675 72",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "youssef.smith12@example.org",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-035",
+   "lang": "en",
+   "masked_text": "My National Insurance number is [ID_1] if the agency needs it.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "JK 10 73 55 A",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-036",
+   "lang": "en",
+   "masked_text": "Text [NAME_1] on [PHONE_1] to arrange a viewing.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Youssef",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0752442669",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-037",
+   "lang": "ar",
+   "masked_text": "اسمي [NAME_1] ورقم هاتفي [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "إيناس المنصوري",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "93865089",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-038",
+   "lang": "ar",
+   "masked_text": "الشقة في [ADDRESS_1] قرب المحطة، الكراء 500 دينار.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "شارع الحبيب بورقيبة عدد 84",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-039",
+   "lang": "ar",
+   "masked_text": "رقم بطاقة التعريف [ID_1] والبريد [EMAIL_1].",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "03495205",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "nour.jlassi53@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-040",
+   "lang": "aeb_arabic",
+   "masked_text": "كلمني على [PHONE_1] ولا ابعثلي على [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "48.476.974",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sophie.bouzid9@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-041",
+   "lang": "aeb_arabic",
+   "masked_text": "الدار في [ADDRESS_1]، اسأل على السيد [NAME_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج ابن خلدون عدد 22",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "أميرة",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-042",
+   "lang": "aeb_latin",
+   "masked_text": "slm, ena esmi [NAME_1], 9oli 3al [PHONE_1] ken t7eb tchouf el bit.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Emily",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0021621767989",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-043",
+   "lang": "aeb_latin",
+   "masked_text": "el bit fi [ADDRESS_1], kra 400 dt.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "nahj marseille 3adad 50",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-044",
+   "lang": "aeb_latin",
+   "masked_text": "ab3ath el caution 3la [IBAN_1] w ab3athli capture.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN5910006784629959121105",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-045",
+   "lang": "mixed",
+   "masked_text": "Salut, n7eb nchouf el chambre, mon numéro [PHONE_1], w esmi [NAME_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "0021645723563",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "James",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-046",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el dar fi [ADDRESS_1], appelle [NAME_1] 3al [PHONE_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "46 avenue Habib Bourguiba",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Rania",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "91 754 202",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-047",
+   "lang": "fr",
+   "masked_text": "Bonjour, je m'appelle [NAME_1], vous pouvez me joindre au [PHONE_1] pour la chambre.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Sophie Lefebvre",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "96938824",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-048",
+   "lang": "fr",
+   "masked_text": "Contactez [NAME_1] au [PHONE_1] ou par mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Emily",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "27.643.790",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "karim.trabelsi5@example.org",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-049",
+   "lang": "fr",
+   "masked_text": "L'appartement est au [ADDRESS_1], 3e étage, loyer 650 euros.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "17 rue des Jasmins",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-050",
+   "lang": "fr",
+   "masked_text": "Pour la caution, virement sur [IBAN_1] avant le 1er novembre.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "FR76 2004 1010 0518 9692 9644 593",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-051",
+   "lang": "fr",
+   "masked_text": "Mon numéro de sécurité sociale est [ID_1], c'est pour le dossier.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "281041828476595",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-052",
+   "lang": "fr",
+   "masked_text": "Vous pouvez payer par carte [CARD_1], expiration [PHONE_1].",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4168-3986-1763-9966",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "09/28",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-053",
+   "lang": "fr",
+   "masked_text": "Je suis Claire Mansouri, étudiant à l'INSAT, mon CIN [ID_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Claire Mansouri",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "05987129",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-054",
+   "lang": "fr",
+   "masked_text": "Appelez [NAME_1] au [PHONE_1] après 18h.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Chaabane",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0654414847",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-055",
+   "lang": "en",
+   "masked_text": "Hi, my name is [NAME_1] and my number is [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Karim Smith",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+44 7496 74910",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-056",
+   "lang": "en",
+   "masked_text": "The flat is at [ADDRESS_1], [POSTCODE_1], rent £650 pcm.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "38 Mill Lane",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "B15 2TT",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-057",
+   "lang": "en",
+   "masked_text": "Please send the deposit to [IBAN_1] and email me at [EMAIL_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "GB52 NWBK 6016 1392 6361 83",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "aziz.chaabane47@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-058",
+   "lang": "en",
+   "masked_text": "My National Insurance number is [ID_1] if the agency needs it.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "SH 91 15 51 A",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-059",
+   "lang": "en",
+   "masked_text": "Text [NAME_1] on [PHONE_1] to arrange a viewing.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Sophie",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0716121812",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-060",
+   "lang": "ar",
+   "masked_text": "اسمي [NAME_1] ورقم هاتفي [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "كريم الجلاصي",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "94 703 865",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-061",
+   "lang": "ar",
+   "masked_text": "الشقة في [ADDRESS_1] قرب المحطة، الكراء 500 دينار.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج مرسيليا عدد 68",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-062",
+   "lang": "ar",
+   "masked_text": "رقم بطاقة التعريف [ID_1] والبريد [EMAIL_1].",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "06282564",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "hamza.taylor99@example.org",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-063",
+   "lang": "aeb_arabic",
+   "masked_text": "كلمني على [PHONE_1] ولا ابعثلي على [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "21 036 801",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "karim.chaabane19@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-064",
+   "lang": "aeb_arabic",
+   "masked_text": "الدار في [ADDRESS_1]، اسأل على السيد [NAME_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج مرسيليا عدد 30",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "كريم",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-065",
+   "lang": "aeb_latin",
+   "masked_text": "slm, ena esmi [NAME_1], 9oli 3al [PHONE_1] ken t7eb tchouf el bit.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Aziz",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "53.819.636",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-066",
+   "lang": "aeb_latin",
+   "masked_text": "el bit fi [ADDRESS_1], kra 400 dt.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "nahj marseille 3adad 37",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-067",
+   "lang": "aeb_latin",
+   "masked_text": "ab3ath el caution 3la [IBAN_1] w ab3athli capture.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6627 7534 1661 7804",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-068",
+   "lang": "mixed",
+   "masked_text": "Salut, n7eb nchouf el chambre, mon numéro [PHONE_1], w esmi [NAME_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "40 768 502",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Hamza",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-069",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el dar fi [ADDRESS_1], appelle [NAME_1] 3al [PHONE_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "16 avenue Habib Bourguiba",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Amira",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0021646587688",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-070",
+   "lang": "fr",
+   "masked_text": "Bonjour, je m'appelle [NAME_1], vous pouvez me joindre au [PHONE_1] pour la chambre.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Sami Dupont",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0021641659666",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-071",
+   "lang": "fr",
+   "masked_text": "Contactez [NAME_1] au [PHONE_1] ou par mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Youssef",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 91 570 590",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "camille.jlassi23@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-072",
+   "lang": "fr",
+   "masked_text": "L'appartement est au [ADDRESS_1], 3e étage, loyer 650 euros.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "107 rue de Marseille",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-073",
+   "lang": "fr",
+   "masked_text": "Pour la caution, virement sur [IBAN_1] avant le 1er novembre.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "FR76 2004 1010 0579 7862 4879 630",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-074",
+   "lang": "fr",
+   "masked_text": "Mon numéro de sécurité sociale est [ID_1], c'est pour le dossier.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "165035683299201",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-075",
+   "lang": "fr",
+   "masked_text": "Vous pouvez payer par carte [CARD_1], expiration [PHONE_1].",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4412-7905-3329-9731",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "09/28",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-076",
+   "lang": "fr",
+   "masked_text": "Je suis Ines Brown, étudiant à l'INSAT, mon CIN [ID_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Ines Brown",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "07127299",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-077",
+   "lang": "fr",
+   "masked_text": "Appelez [NAME_1] au [PHONE_1] après 18h.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Haddad",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0673168254",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-078",
+   "lang": "en",
+   "masked_text": "Hi, my name is [NAME_1] and my number is [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Youssef Taylor",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "0794445800",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-079",
+   "lang": "en",
+   "masked_text": "The flat is at [ADDRESS_1], [POSTCODE_1], rent £650 pcm.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "284 Kings Avenue",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "LS6 2AB",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-080",
+   "lang": "en",
+   "masked_text": "Please send the deposit to [IBAN_1] and email me at [EMAIL_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "GB05NWBK60161336295840",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "julien.dupont66@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-081",
+   "lang": "en",
+   "masked_text": "My National Insurance number is [ID_1] if the agency needs it.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "WL 25 51 97 A",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-082",
+   "lang": "en",
+   "masked_text": "Text [NAME_1] on [PHONE_1] to arrange a viewing.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Rania",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "07018 83552",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-083",
+   "lang": "ar",
+   "masked_text": "اسمي [NAME_1] ورقم هاتفي [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "رانية المنصوري",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "43.028.142",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-084",
+   "lang": "ar",
+   "masked_text": "الشقة في [ADDRESS_1] قرب المحطة، الكراء 500 دينار.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج ابن خلدون عدد 44",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-085",
+   "lang": "ar",
+   "masked_text": "رقم بطاقة التعريف [ID_1] والبريد [EMAIL_1].",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "05878291",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sami.dupont34@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-086",
+   "lang": "aeb_arabic",
+   "masked_text": "كلمني على [PHONE_1] ولا ابعثلي على [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "56591565",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "mehdi.martin59@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-087",
+   "lang": "aeb_arabic",
+   "masked_text": "الدار في [ADDRESS_1]، اسأل على السيد [NAME_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج ابن خلدون عدد 8",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "يوسف",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-088",
+   "lang": "aeb_latin",
+   "masked_text": "slm, ena esmi [NAME_1], 9oli 3al [PHONE_1] ken t7eb tchouf el bit.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Amira",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "53538673",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-089",
+   "lang": "aeb_latin",
+   "masked_text": "el bit fi [ADDRESS_1], kra 400 dt.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "nahj el hourriya 3adad 17",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-090",
+   "lang": "aeb_latin",
+   "masked_text": "ab3ath el caution 3la [IBAN_1] w ab3athli capture.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6427 1020 0388 8069",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-091",
+   "lang": "mixed",
+   "masked_text": "Salut, n7eb nchouf el chambre, mon numéro [PHONE_1], w esmi [NAME_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "92598696",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Rania",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-092",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el dar fi [ADDRESS_1], appelle [NAME_1] 3al [PHONE_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "75 rue des Jasmins",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Sophie",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "52.711.186",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-093",
+   "lang": "fr",
+   "masked_text": "Bonjour, je m'appelle [NAME_1], vous pouvez me joindre au [PHONE_1] pour la chambre.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Sami Chaabane",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 94 262 618",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-094",
+   "lang": "fr",
+   "masked_text": "Contactez [NAME_1] au [PHONE_1] ou par mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Hamza",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "29453948",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "thomas.trabelsi1@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-095",
+   "lang": "fr",
+   "masked_text": "L'appartement est au [ADDRESS_1], 3e étage, loyer 650 euros.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "81 rue des Jasmins",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-096",
+   "lang": "fr",
+   "masked_text": "Pour la caution, virement sur [IBAN_1] avant le 1er novembre.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "FR7620041010054878834597083",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-097",
+   "lang": "fr",
+   "masked_text": "Mon numéro de sécurité sociale est [ID_1], c'est pour le dossier.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "2 74 06 45 764 698 55",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-098",
+   "lang": "fr",
+   "masked_text": "Vous pouvez payer par carte [CARD_1], expiration [PHONE_1].",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4815-9367-0342-4293",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "09/28",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-099",
+   "lang": "fr",
+   "masked_text": "Je suis James Haddad, étudiant à l'INSAT, mon CIN [ID_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "James Haddad",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "05295787",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-100",
+   "lang": "fr",
+   "masked_text": "Appelez [NAME_1] au [ID_1] 82 après 18h.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Dupont",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "06 84 87 20 82",
+     "masked": false,
+     "type_ok": false
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-101",
+   "lang": "en",
+   "masked_text": "Hi, my name is [NAME_1] and my number is [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Youssef Ben Salah",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "07269 58642",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-102",
+   "lang": "en",
+   "masked_text": "The flat is at [ADDRESS_1], [POSTCODE_1], rent £650 pcm.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "299 Kings Avenue",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "M14 6HR",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-103",
+   "lang": "en",
+   "masked_text": "Please send the deposit to [IBAN_1] and email me at [EMAIL_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "GB97NWBK60161390114731",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sophie.trabelsi32@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-104",
+   "lang": "en",
+   "masked_text": "My National Insurance number is [ID_1] if the agency needs it.",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "JK 31 11 59 D",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-105",
+   "lang": "en",
+   "masked_text": "Text [NAME_1] on [PHONE_1] to arrange a viewing.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Ines",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "07458 81642",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-106",
+   "lang": "ar",
+   "masked_text": "اسمي [NAME_1] ورقم هاتفي [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "سامي الطرابلسي",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "99807339",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-107",
+   "lang": "ar",
+   "masked_text": "الشقة في [ADDRESS_1] قرب المحطة، الكراء 500 دينار.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج ابن خلدون عدد 50",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-108",
+   "lang": "ar",
+   "masked_text": "رقم بطاقة التعريف [ID_1] والبريد [EMAIL_1].",
+   "gold": [
+    {
+     "type": "ID",
+     "text": "15162131",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sami.bouzid79@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-109",
+   "lang": "aeb_arabic",
+   "masked_text": "كلمني على [PHONE_1] ولا ابعثلي على [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "0021622581746",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "james.lefebvre24@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-110",
+   "lang": "aeb_arabic",
+   "masked_text": "الدار في [ADDRESS_1]، اسأل على السيد [NAME_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "نهج مرسيليا عدد 54",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "نور",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-111",
+   "lang": "aeb_latin",
+   "masked_text": "slm, ena esmi [NAME_1], 9oli 3al [PHONE_1] ken t7eb tchouf el bit.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Salma",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "27.984.658",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-112",
+   "lang": "aeb_latin",
+   "masked_text": "el bit fi [ADDRESS_1], kra 400 dt.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "nahj marseille 3adad 69",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-113",
+   "lang": "aeb_latin",
+   "masked_text": "ab3ath el caution 3la [IBAN_1] w ab3athli capture.",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6506 8376 0059 2168",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-114",
+   "lang": "mixed",
+   "masked_text": "Salut, n7eb nchouf el chambre, mon numéro [PHONE_1], w esmi [NAME_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "93.668.937",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Camille",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-115",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el dar fi [ADDRESS_1], appelle [NAME_1] 3al [PHONE_1].",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "54 rue Victor Hugo",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "NAME",
+     "text": "Oliver",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 41 770 035",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-116",
+   "lang": "fr",
+   "masked_text": "Chambre meublée à [PHONE_1] millimes par mois, libre le 15/11/2026, 3 chambres, S+2 au 2e étage.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "450000",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-117",
+   "lang": "fr",
+   "masked_text": "Budget entre [PHONE_1] et [PHONE_2] euros, dès janvier [PHONE_3], Paris [PHONE_4], 20 minutes du métro.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "1 200",
+     "source": "phonenumbers:GB"
+    },
+    {
+     "type": "PHONE",
+     "text": "1 500",
+     "source": "phonenumbers:GB"
+    },
+    {
+     "type": "PHONE",
+     "text": "2027",
+     "source": "phonenumbers:GB"
+    },
+    {
+     "type": "PHONE",
+     "text": "75013",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-118",
+   "lang": "fr",
+   "masked_text": "Studio de 25 m2 à Lac 2, loyer 900 DT charges comprises, caution 2 mois.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-119",
+   "lang": "en",
+   "masked_text": "Room in Fallowfield, £170 pw, bills included, available from 01/09/2026, 2 flatmates aged 22 and 24.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-120",
+   "lang": "en",
+   "masked_text": "The house has 4 bedrooms, 2 bathrooms, rent [PHONE_1] pounds a month, built in [PHONE_2].",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "2400",
+     "source": "phonenumbers:GB"
+    },
+    {
+     "type": "PHONE",
+     "text": "1995",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-121",
+   "lang": "ar",
+   "masked_text": "شقة بثلاث غرف في المنزه 6، الكراء [PHONE_1] دينار، متاحة من 1 ديسمبر [PHONE_2].",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "1200",
+     "source": "phonenumbers:GB"
+    },
+    {
+     "type": "PHONE",
+     "text": "2026",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-122",
+   "lang": "aeb_arabic",
+   "masked_text": "نلوج على بيت ب 350 دينار قريب من الفاك، من 15 نوفمبر، لمدة 9 شهر.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-123",
+   "lang": "aeb_latin",
+   "masked_text": "n7eb bit fi Ennasr 2, kra 500 alf, men awel decembre, 20 min mel ESPRIT.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-124",
+   "lang": "aeb_latin",
+   "masked_text": "bit b 380 dt, fama wifi, 2 colocataires, l'année universitaire [PHONE_1].",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "2026 2027",
+     "source": "phonenumbers:TN"
+    }
+   ]
+  },
+  {
+   "id": "pii-125",
+   "lang": "mixed",
+   "masked_text": "Bonjour, el studio b [PHONE_1] dt, 45 m2, men 1er janvier, appartement n° 12 au 3e étage.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "1.200",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-126",
+   "lang": "en",
+   "masked_text": "Order [ID_1] confirmed? No, just checking the 8 rooms listing and the [PHONE_1] lease.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "ID",
+     "text": "12345678",
+     "source": "tn_cin"
+    },
+    {
+     "type": "PHONE",
+     "text": "2026",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  },
+  {
+   "id": "pii-127",
+   "lang": "fr",
+   "masked_text": "Référence de l'annonce [PHONE_1], prix 480 euros, code postal [PHONE_2] Lyon.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "PHONE",
+     "text": "20261104",
+     "source": "phonenumbers:TN"
+    },
+    {
+     "type": "PHONE",
+     "text": "69003",
+     "source": "phonenumbers:GB"
+    }
+   ]
+  }
+ ]
+}

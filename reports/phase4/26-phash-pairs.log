@@ -1,0 +1,13 @@
+threshold  0: precision 1.0  recall 0.2625  (tp 105, fp 0, fn 295)
+threshold  2: precision 1.0  recall 0.3525  (tp 141, fp 0, fn 259)
+threshold  4: precision 1.0  recall 0.4275  (tp 171, fp 0, fn 229)
+threshold  6: precision 1.0  recall 0.4875  (tp 195, fp 0, fn 205)
+threshold  8: precision 1.0  recall 0.565  (tp 226, fp 0, fn 174)
+threshold 10: precision 1.0  recall 0.63  (tp 252, fp 0, fn 148)
+threshold 12: precision 1.0  recall 0.7  (tp 280, fp 0, fn 120)
+threshold 14: precision 1.0  recall 0.7525  (tp 301, fp 0, fn 99)
+threshold 16: precision 1.0  recall 0.81  (tp 324, fp 0, fn 76)
+threshold 20: precision 0.9838  recall 0.9125  (tp 365, fp 6, fn 35)
+by edit: {"crop_90": {"n": 50, "min": 4, "median": 10, "max": 20, "within_6": 10}, "crop_75": {"n": 50, "min": 12, "median": 20, "max": 36, "within_6": 0}, "resize_50": {"n": 50, "min": 0, "median": 0, "max": 2, "within_6": 50}, "jpeg_q30": {"n": 50, "min": 0, "median": 0, "max": 2, "within_6": 50}, "brighter_20": {"n": 50, "min": 0, "median": 2, "max": 10, "within_6": 49}, "rotate_3": {"n": 50, "min": 2, "median": 8, "max": 16, "within_6": 25}, "border_screenshot": {"n": 50, "min": 10, "median": 18, "max": 32, "within_6": 0}, "mirror": {"n": 50, "min": 26, "median": 32, "max": 38, "within_6": 0}, "combined": {"n": 50, "min": 4, "median": 10, "max": 22, "within_6": 11}}
+unrelated: {"min": 18, "p1": 22, "median": 32, "same_group_min": 20}
+same room, two photos: [["same scene, small shift of the camera", 18], ["same bathroom, other framing", 18], ["same bedroom, other angle", 30], ["same bedroom, other angle", 26]]

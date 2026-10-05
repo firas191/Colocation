@@ -1,0 +1,701 @@
+TAP version 13
+# Subtest: relevance: overlap of at least half of the shorter span
+ok 1 - relevance: overlap of at least half of the shorter span
+  ---
+  duration_ms: 2.110947
+  type: 'test'
+  ...
+# Subtest: hit, recall, mrr and ndcg with per-gold credit
+ok 2 - hit, recall, mrr and ndcg with per-gold credit
+  ---
+  duration_ms: 0.563749
+  type: 'test'
+  ...
+# Subtest: nothing retrieved, and queries without usable gold
+ok 3 - nothing retrieved, and queries without usable gold
+  ---
+  duration_ms: 0.264143
+  type: 'test'
+  ...
+# Subtest: P1: correct output scores every field
+ok 4 - P1: correct output scores every field
+  ---
+  duration_ms: 1.969725
+  type: 'test'
+  ...
+# Subtest: P1: acceptable secondary intent, Arabic family, invalid output, injection and leak
+ok 5 - P1: acceptable secondary intent, Arabic family, invalid output, injection and leak
+  ---
+  duration_ms: 0.301945
+  type: 'test'
+  ...
+# Subtest: P1: summary rates, clarification precision and recall, per intent F1
+ok 6 - P1: summary rates, clarification precision and recall, per intent F1
+  ---
+  duration_ms: 0.885965
+  type: 'test'
+  ...
+# Subtest: P2: exact output is all true positives
+ok 7 - P2: exact output is all true positives
+  ---
+  duration_ms: 1.310325
+  type: 'test'
+  ...
+# Subtest: P2: x1000 error, invented and missed values, anchor containment
+ok 8 - P2: x1000 error, invented and missed values, anchor containment
+  ---
+  duration_ms: 0.485688
+  type: 'test'
+  ...
+# Subtest: P2: invented budget on a no-budget request; invalid output counts as all missed
+ok 9 - P2: invented budget on a no-budget request; invalid output counts as all missed
+  ---
+  duration_ms: 2.054231
+  type: 'test'
+  ...
+# Subtest: percentile is nearest-rank
+ok 10 - percentile is nearest-rank
+  ---
+  duration_ms: 0.17321
+  type: 'test'
+  ...
+# Subtest: golden sets: sizes and coverage required by spec 9.5
+ok 11 - golden sets: sizes and coverage required by spec 9.5
+  ---
+  duration_ms: 0.226241
+  type: 'test'
+  ...
+# Subtest: golden sets: every gold label is a valid output and scores perfectly against itself
+ok 12 - golden sets: every gold label is a valid output and scores perfectly against itself
+  ---
+  duration_ms: 9.746031
+  type: 'test'
+  ...
+# Subtest: splitPieces cuts at whitespace and covers the text exactly
+ok 13 - splitPieces cuts at whitespace and covers the text exactly
+  ---
+  duration_ms: 2.070362
+  type: 'test'
+  ...
+# Subtest: pieceOffsets converts UTF-8 byte offsets and trims leading spaces
+ok 14 - pieceOffsets converts UTF-8 byte offsets and trims leading spaces
+  ---
+  duration_ms: 1.600802
+  type: 'test'
+  ...
+# Subtest: countTokens counts tokens fully inside a span
+ok 15 - countTokens counts tokens fully inside a span
+  ---
+  duration_ms: 0.30375
+  type: 'test'
+  ...
+# Subtest: strategy A: 500/50 windows, exact spans, last window ends at the last token
+ok 16 - strategy A: 500/50 windows, exact spans, last window ends at the last token
+  ---
+  duration_ms: 1.721847
+  type: 'test'
+  ...
+# Subtest: structure: headings with folded titles, articles, heading paths
+ok 17 - structure: headings with folded titles, articles, heading paths
+  ---
+  duration_ms: 1.542197
+  type: 'test'
+  ...
+# Subtest: structure: Arabic articles and markdown headings
+ok 18 - structure: Arabic articles and markdown headings
+  ---
+  duration_ms: 0.535626
+  type: 'test'
+  ...
+# Subtest: strategy B: small articles merged under the same title, never across titles; refs and embed text
+ok 19 - strategy B: small articles merged under the same title, never across titles; refs and embed text
+  ---
+  duration_ms: 0.731941
+  type: 'test'
+  ...
+# Subtest: strategy B: a long article is split at sentence boundaries, every piece within the limit
+ok 20 - strategy B: a long article is split at sentence boundaries, every piece within the limit
+  ---
+  duration_ms: 2.204723
+  type: 'test'
+  ...
+# Subtest: strategy B: one sentence longer than the limit is cut into token windows
+ok 21 - strategy B: one sentence longer than the limit is cut into token windows
+  ---
+  duration_ms: 1.346902
+  type: 'test'
+  ...
+# Subtest: normalizeText: NFKC, NBSP, zero-width, soft hyphen, blank lines
+ok 22 - normalizeText: NFKC, NBSP, zero-width, soft hyphen, blank lines
+  ---
+  duration_ms: 2.344495
+  type: 'test'
+  ...
+# Subtest: htmlToText: headings, paragraphs, lists, entities; scripts and nav dropped
+ok 23 - htmlToText: headings, paragraphs, lists, entities; scripts and nav dropped
+  ---
+  duration_ms: 4.475557
+  type: 'test'
+  ...
+# Subtest: htmlToText: select a container by id, nested same tags balanced
+ok 24 - htmlToText: select a container by id, nested same tags balanced
+  ---
+  duration_ms: 2.669817
+  type: 'test'
+  ...
+# Subtest: decodeBytes: charset from header, from meta, default utf-8
+ok 25 - decodeBytes: charset from header, from meta, default utf-8
+  ---
+  duration_ms: 1.983427
+  type: 'test'
+  ...
+# Subtest: pdfPagesToText: running header/footer and page numbers removed, wrapped lines joined
+ok 26 - pdfPagesToText: running header/footer and page numbers removed, wrapped lines joined
+  ---
+  duration_ms: 1.436455
+  type: 'test'
+  ...
+# Subtest: sentenceStarts: abbreviations, numbers and lower-case continuations are not boundaries
+ok 27 - sentenceStarts: abbreviations, numbers and lower-case continuations are not boundaries
+  ---
+  duration_ms: 2.549523
+  type: 'test'
+  ...
+# Subtest: robots: specific group beats *, longest rule wins, Allow wins a tie, wildcards
+ok 28 - robots: specific group beats *, longest rule wins, Allow wins a tie, wildcards
+  ---
+  duration_ms: 1.568931
+  type: 'test'
+  ...
+# Subtest: robots: decisions from the HTTP status (RFC 9309)
+ok 29 - robots: decisions from the HTTP status (RFC 9309)
+  ---
+  duration_ms: 0.590216
+  type: 'test'
+  ...
+# Subtest: splitUrl: scheme, host, path and query without the URL class
+ok 30 - splitUrl: scheme, host, path and query without the URL class
+  ---
+  duration_ms: 1.671915
+  type: 'test'
+  ...
+# Subtest: decodeBytes: windows-1256 and iso-8859-6 decoded from tables, without ICU (F-029)
+ok 31 - decodeBytes: windows-1256 and iso-8859-6 decoded from tables, without ICU (F-029)
+  ---
+  duration_ms: 1.012632
+  type: 'test'
+  ...
+# Subtest: normalizeText removes characters outside the BMP so JS and PostgreSQL offsets agree (F-030)
+ok 32 - normalizeText removes characters outside the BMP so JS and PostgreSQL offsets agree (F-030)
+  ---
+  duration_ms: 0.333262
+  type: 'test'
+  ...
+# Subtest: htmlToText drops struck-through (repealed) wording
+ok 33 - htmlToText drops struck-through (repealed) wording
+  ---
+  duration_ms: 0.36202
+  type: 'test'
+  ...
+# Subtest: cutBetween keeps the article between markers; missing start fails, missing end keeps the rest
+ok 34 - cutBetween keeps the article between markers; missing start fails, missing end keeps the rest
+  ---
+  duration_ms: 0.484835
+  type: 'test'
+  ...
+# Subtest: decodeBytes: header says utf-8, bytes are windows-1256 as the meta says (F-032, Caddy/Go default header)
+ok 35 - decodeBytes: header says utf-8, bytes are windows-1256 as the meta says (F-032, Caddy/Go default header)
+  ---
+  duration_ms: 0.72725
+  type: 'test'
+  ...
+# Subtest: decodeBytes: UTF-8 page with a Latin-1 template keeps the UTF-8 text, stray bytes read as windows-1252 (F-032)
+ok 36 - decodeBytes: UTF-8 page with a Latin-1 template keeps the UTF-8 text, stray bytes read as windows-1252 (F-032)
+  ---
+  duration_ms: 0.61343
+  type: 'test'
+  ...
+# Subtest: decodeBytes: valid UTF-8 untouched; mostly-invalid bytes with only utf-8 declared fail (F-032)
+ok 37 - decodeBytes: valid UTF-8 untouched; mostly-invalid bytes with only utf-8 declared fail (F-032)
+  ---
+  duration_ms: 0.459629
+  type: 'test'
+  ...
+# Subtest: utf8Scan follows RFC 3629: overlong forms, surrogates and > U+10FFFF are invalid
+ok 38 - utf8Scan follows RFC 3629: overlong forms, surrogates and > U+10FFFF are invalid
+  ---
+  duration_ms: 0.243522
+  type: 'test'
+  ...
+# Subtest: decodeBytes: Latin-1 bytes inside HTML comments do not count against a short UTF-8 page (F-036)
+ok 39 - decodeBytes: Latin-1 bytes inside HTML comments do not count against a short UTF-8 page (F-036)
+  ---
+  duration_ms: 1.214277
+  type: 'test'
+  ...
+# Subtest: htmlToText: a ">" inside a quoted attribute does not end the tag (F-037)
+ok 40 - htmlToText: a ">" inside a quoted attribute does not end the tag (F-037)
+  ---
+  duration_ms: 3.083346
+  type: 'test'
+  ...
+# Subtest: scriptProblem: Latin-looking garbage from an Arabic PDF without Unicode fonts is caught (F-038)
+ok 41 - scriptProblem: Latin-looking garbage from an Arabic PDF without Unicode fonts is caught (F-038)
+  ---
+  duration_ms: 2.994225
+  type: 'test'
+  ...
+# Subtest: htmlToText: a <br> inside a heading does not split it (F-039)
+ok 42 - htmlToText: a <br> inside a heading does not split it (F-039)
+  ---
+  duration_ms: 0.233885
+  type: 'test'
+  ...
+# Subtest: htmlToText: source line breaks are spaces, <pre> keeps them (F-039)
+ok 43 - htmlToText: source line breaks are spaces, <pre> keeps them (F-039)
+  ---
+  duration_ms: 0.310612
+  type: 'test'
+  ...
+# Subtest: vector get_no_body: canonical query and signature match the Python client
+ok 44 - vector get_no_body: canonical query and signature match the Python client
+  ---
+  duration_ms: 2.446799
+  type: 'test'
+  ...
+# Subtest: vector post_json_unicode: canonical query and signature match the Python client
+ok 45 - vector post_json_unicode: canonical query and signature match the Python client
+  ---
+  duration_ms: 0.247466
+  type: 'test'
+  ...
+# Subtest: vector query_repeated_reserved: canonical query and signature match the Python client
+ok 46 - vector query_repeated_reserved: canonical query and signature match the Python client
+  ---
+  duration_ms: 0.211798
+  type: 'test'
+  ...
+# Subtest: vector path_param: canonical query and signature match the Python client
+ok 47 - vector path_param: canonical query and signature match the Python client
+  ---
+  duration_ms: 0.177693
+  type: 'test'
+  ...
+# Subtest: canonicalQuery rejects nested values (qs-style a[b]=1)
+ok 48 - canonicalQuery rejects nested values (qs-style a[b]=1)
+  ---
+  duration_ms: 1.546545
+  type: 'test'
+  ...
+# Subtest: canonicalQuery of nothing is empty
+ok 49 - canonicalQuery of nothing is empty
+  ---
+  duration_ms: 0.147909
+  type: 'test'
+  ...
+# Subtest: canonicalQuery sorts by encoded key and keeps value order
+ok 50 - canonicalQuery sorts by encoded key and keeps value order
+  ---
+  duration_ms: 0.194958
+  type: 'test'
+  ...
+# Subtest: buildPath fills and encodes parameters
+ok 51 - buildPath fills and encodes parameters
+  ---
+  duration_ms: 0.16685
+  type: 'test'
+  ...
+# Subtest: header returns the first non-empty value
+ok 52 - header returns the first non-empty value
+  ---
+  duration_ms: 0.356081
+  type: 'test'
+  ...
+# Subtest: correlationId is a v4-shaped uuid
+ok 53 - correlationId is a v4-shaped uuid
+  ---
+  duration_ms: 2.132014
+  type: 'test'
+  ...
+# Subtest: errorText handles strings, objects and nesting
+ok 54 - errorText handles strings, objects and nesting
+  ---
+  duration_ms: 0.247703
+  type: 'test'
+  ...
+# Subtest: redactPg removes values from Postgres key details
+ok 55 - redactPg removes values from Postgres key details
+  ---
+  duration_ms: 0.198994
+  type: 'test'
+  ...
+# Subtest: a rent inside the range is kept; a scale error is set to null with an issue
+ok 56 - a rent inside the range is kept; a scale error is set to null with an issue
+  ---
+  duration_ms: 2.715762
+  type: 'test'
+  ...
+# Subtest: weekly rents are compared per month; missing currency, period and scope are filled
+ok 57 - weekly rents are compared per month; missing currency, period and scope are filled
+  ---
+  duration_ms: 0.287449
+  type: 'test'
+  ...
+# Subtest: deposits: 0 accepted, out of range nulled; amenities deduplicated and sorted
+ok 58 - deposits: 0 accepted, out of range nulled; amenities deduplicated and sorted
+  ---
+  duration_ms: 0.168345
+  type: 'test'
+  ...
+# Subtest: main units to minor units
+ok 59 - main units to minor units
+  ---
+  duration_ms: 0.197983
+  type: 'test'
+  ...
+# Subtest: every gold label passes the checks unchanged and scores exact
+ok 60 - every gold label passes the checks unchanged and scores exact
+  ---
+  duration_ms: 7.208313
+  type: 'test'
+  ...
+# Subtest: scoring: unit errors before and after the checks, invented rent, injection, discriminatory house rules
+ok 61 - scoring: unit errors before and after the checks, invented rent, injection, discriminatory house rules
+  ---
+  duration_ms: 1.354504
+  type: 'test'
+  ...
+# Subtest: an invalid answer predicts nothing
+ok 62 - an invalid answer predicts nothing
+  ---
+  duration_ms: 0.305468
+  type: 'test'
+  ...
+# Subtest: schema: valid P1 output
+ok 63 - schema: valid P1 output
+  ---
+  duration_ms: 1.975989
+  type: 'test'
+  ...
+# Subtest: schema: type, enum, required, additional property, range
+ok 64 - schema: type, enum, required, additional property, range
+  ---
+  duration_ms: 0.533532
+  type: 'test'
+  ...
+# Subtest: schema: integer vs number, null unions, patterns, nested objects and arrays
+ok 65 - schema: integer vs number, null unions, patterns, nested objects and arrays
+  ---
+  duration_ms: 0.344624
+  type: 'test'
+  ...
+# Subtest: request: template rendered, schema as format, options, per-model override
+ok 66 - request: template rendered, schema as format, options, per-model override
+  ---
+  duration_ms: 0.91665
+  type: 'test'
+  ...
+# Subtest: request: user text cannot close the message block; missing variables fail
+ok 67 - request: user text cannot close the message block; missing variables fail
+  ---
+  duration_ms: 0.538274
+  type: 'test'
+  ...
+# Subtest: parse: fences, invalid JSON, schema errors; retry body
+ok 68 - parse: fences, invalid JSON, schema errors; retry body
+  ---
+  duration_ms: 0.562989
+  type: 'test'
+  ...
+# Subtest: response: Ollama fields and HTTP errors
+ok 69 - response: Ollama fields and HTTP errors
+  ---
+  duration_ms: 0.259451
+  type: 'test'
+  ...
+# Subtest: response: thinking length is reported (F-048)
+ok 70 - response: thinking length is reported (F-048)
+  ---
+  duration_ms: 0.156683
+  type: 'test'
+  ...
+# Subtest: main units to minor units with the currency exponent
+ok 71 - main units to minor units with the currency exponent
+  ---
+  duration_ms: 1.950707
+  type: 'test'
+  ...
+# Subtest: no currency: the fallback currency; unknown currency: no amount; v2 output unchanged
+ok 72 - no currency: the fallback currency; unknown currency: no amount; v2 output unchanged
+  ---
+  duration_ms: 0.305554
+  type: 'test'
+  ...
+# Subtest: every P2 gold profile written in main units scores perfectly after conversion
+ok 73 - every P2 gold profile written in main units scores perfectly after conversion
+  ---
+  duration_ms: 6.769795
+  type: 'test'
+  ...
+# Subtest: every language has every text, issue and rule
+ok 74 - every language has every text, issue and rule
+  ---
+  duration_ms: 1.816089
+  type: 'test'
+  ...
+# Subtest: values are escaped for Telegram HTML, raw values only when asked
+ok 75 - values are escaped for Telegram HTML, raw values only when asked
+  ---
+  duration_ms: 0.310809
+  type: 'test'
+  ...
+# Subtest: money in main units per currency
+ok 76 - money in main units per currency
+  ---
+  duration_ms: 0.234273
+  type: 'test'
+  ...
+# Subtest: language from Telegram, API errors in plain words
+ok 77 - language from Telegram, API errors in plain words
+  ---
+  duration_ms: 0.294462
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_eval_prompt_runs_create.json: Code nodes compile and node references resolve
+ok 78 - wf.api.admin_eval_prompt_runs_create.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 2.198
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_eval_runs_create.json: Code nodes compile and node references resolve
+ok 79 - wf.api.admin_eval_runs_create.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.819781
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_eval_runs_get.json: Code nodes compile and node references resolve
+ok 80 - wf.api.admin_eval_runs_get.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.475523
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_fx_refresh.json: Code nodes compile and node references resolve
+ok 81 - wf.api.admin_fx_refresh.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.46018
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_kb_ingest.json: Code nodes compile and node references resolve
+ok 82 - wf.api.admin_kb_ingest.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 1.715
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_listings_embed.json: Code nodes compile and node references resolve
+ok 83 - wf.api.admin_listings_embed.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.655538
+  type: 'test'
+  ...
+# Subtest: wf.api.admin_traces_get.json: Code nodes compile and node references resolve
+ok 84 - wf.api.admin_traces_get.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.476111
+  type: 'test'
+  ...
+# Subtest: wf.api.health.json: Code nodes compile and node references resolve
+ok 85 - wf.api.health.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.557023
+  type: 'test'
+  ...
+# Subtest: wf.api.jobs_get.json: Code nodes compile and node references resolve
+ok 86 - wf.api.jobs_get.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.797041
+  type: 'test'
+  ...
+# Subtest: wf.api.listings_analyze.json: Code nodes compile and node references resolve
+ok 87 - wf.api.listings_analyze.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.668342
+  type: 'test'
+  ...
+# Subtest: wf.api.listings_create.json: Code nodes compile and node references resolve
+ok 88 - wf.api.listings_create.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.643764
+  type: 'test'
+  ...
+# Subtest: wf.api.listings_get.json: Code nodes compile and node references resolve
+ok 89 - wf.api.listings_get.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.281847
+  type: 'test'
+  ...
+# Subtest: wf.api.listings_presign.json: Code nodes compile and node references resolve
+ok 90 - wf.api.listings_presign.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.749376
+  type: 'test'
+  ...
+# Subtest: wf.api.me_consents.json: Code nodes compile and node references resolve
+ok 91 - wf.api.me_consents.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.615074
+  type: 'test'
+  ...
+# Subtest: wf.api.profiles_extract.json: Code nodes compile and node references resolve
+ok 92 - wf.api.profiles_extract.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.584265
+  type: 'test'
+  ...
+# Subtest: wf.api.profiles_me.json: Code nodes compile and node references resolve
+ok 93 - wf.api.profiles_me.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.627011
+  type: 'test'
+  ...
+# Subtest: wf.api.search.json: Code nodes compile and node references resolve
+ok 94 - wf.api.search.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.710683
+  type: 'test'
+  ...
+# Subtest: wf.api.users_sync.json: Code nodes compile and node references resolve
+ok 95 - wf.api.users_sync.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.506084
+  type: 'test'
+  ...
+# Subtest: wf.channel.telegram.api.json: Code nodes compile and node references resolve
+ok 96 - wf.channel.telegram.api.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.290636
+  type: 'test'
+  ...
+# Subtest: wf.channel.telegram.json: Code nodes compile and node references resolve
+ok 97 - wf.channel.telegram.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 7.584553
+  type: 'test'
+  ...
+# Subtest: wf.eval.prompts.json: Code nodes compile and node references resolve
+ok 98 - wf.eval.prompts.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 2.358921
+  type: 'test'
+  ...
+# Subtest: wf.eval.retrieval.json: Code nodes compile and node references resolve
+ok 99 - wf.eval.retrieval.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.776652
+  type: 'test'
+  ...
+# Subtest: wf.fx.refresh.json: Code nodes compile and node references resolve
+ok 100 - wf.fx.refresh.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.345184
+  type: 'test'
+  ...
+# Subtest: wf.gateway.auth.json: Code nodes compile and node references resolve
+ok 101 - wf.gateway.auth.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.60722
+  type: 'test'
+  ...
+# Subtest: wf.intake.photos.json: Code nodes compile and node references resolve
+ok 102 - wf.intake.photos.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.321451
+  type: 'test'
+  ...
+# Subtest: wf.jobs.dispatch.json: Code nodes compile and node references resolve
+ok 103 - wf.jobs.dispatch.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.101443
+  type: 'test'
+  ...
+# Subtest: wf.kb.ingest.json: Code nodes compile and node references resolve
+ok 104 - wf.kb.ingest.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.499954
+  type: 'test'
+  ...
+# Subtest: wf.kb.ingest_source.json: Code nodes compile and node references resolve
+ok 105 - wf.kb.ingest_source.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 4.617363
+  type: 'test'
+  ...
+# Subtest: wf.listing.analyze.json: Code nodes compile and node references resolve
+ok 106 - wf.listing.analyze.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.405884
+  type: 'test'
+  ...
+# Subtest: wf.listing.extract.json: Code nodes compile and node references resolve
+ok 107 - wf.listing.extract.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.529341
+  type: 'test'
+  ...
+# Subtest: wf.listings.embed.json: Code nodes compile and node references resolve
+ok 108 - wf.listings.embed.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.335098
+  type: 'test'
+  ...
+# Subtest: wf.llm.call.json: Code nodes compile and node references resolve
+ok 109 - wf.llm.call.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 1.364182
+  type: 'test'
+  ...
+# Subtest: wf.match.search.json: Code nodes compile and node references resolve
+ok 110 - wf.match.search.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.35396
+  type: 'test'
+  ...
+# Subtest: wf.ops.error_handler.json: Code nodes compile and node references resolve
+ok 111 - wf.ops.error_handler.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.11148
+  type: 'test'
+  ...
+# Subtest: wf.orchestrator.json: Code nodes compile and node references resolve
+ok 112 - wf.orchestrator.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 1.065333
+  type: 'test'
+  ...
+# Subtest: wf.profile.extract.json: Code nodes compile and node references resolve
+ok 113 - wf.profile.extract.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.500564
+  type: 'test'
+  ...
+# Subtest: wf.test.fail.json: Code nodes compile and node references resolve
+ok 114 - wf.test.fail.json: Code nodes compile and node references resolve
+  ---
+  duration_ms: 0.103235
+  type: 'test'
+  ...
+# Subtest: parameterised routes: Caddyfile rewrites use the webhook ids of the workflows
+ok 115 - parameterised routes: Caddyfile rewrites use the webhook ids of the workflows
+  ---
+  duration_ms: 5.846985
+  type: 'test'
+  ...
+1..115
+# tests 115
+# suites 0
+# pass 115
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 882.907457
+workflow JSON is up to date

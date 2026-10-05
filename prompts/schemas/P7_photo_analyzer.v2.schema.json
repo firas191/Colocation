@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:flatshare:prompts:P7_photo_analyzer:v2",
+  "title": "P7 photo analyzer output from v2: closed lists, 'not_visible' for what the photo does not show, a confidence per filled field, at most 3 short issues (spec 9.4, 11.2)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "room_type",
+    "beds",
+    "bed_kinds",
+    "furniture",
+    "appliances",
+    "bathroom_fixtures",
+    "windows",
+    "natural_light",
+    "condition",
+    "condition_signs",
+    "furnished",
+    "readable_text",
+    "people_visible",
+    "issues",
+    "field_confidence"
+  ],
+  "properties": {
+    "room_type": {
+      "type": "string",
+      "enum": [
+        "bedroom",
+        "living_room",
+        "kitchen",
+        "bathroom",
+        "dining_room",
+        "studio",
+        "hallway",
+        "balcony_or_terrace",
+        "office",
+        "other_room",
+        "not_a_room"
+      ]
+    },
+    "beds": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        "not_visible"
+      ]
+    },
+    "bed_kinds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "single",
+          "double",
+          "bunk",
+          "sofa_bed"
+        ]
+      },
+      "maxItems": 4
+    },
+    "furniture": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "wardrobe",
+          "chest_of_drawers",
+          "nightstand",
+          "desk",
+          "chair",
+          "sofa",
+          "armchair",
+          "table",
+          "shelves"
+        ]
+      },
+      "maxItems": 9
+    },
+    "appliances": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "fridge",
+          "oven",
+          "hob",
+          "microwave",
+          "washing_machine",
+          "dishwasher",
+          "tv",
+          "air_conditioning",
+          "radiator"
+        ]
+      },
+      "maxItems": 9
+    },
+    "bathroom_fixtures": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "shower",
+          "bathtub",
+          "toilet",
+          "washbasin"
+        ]
+      },
+      "maxItems": 4
+    },
+    "windows": {
+      "type": [
+        "integer",
+        "string"
+      ],
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        "not_visible"
+      ]
+    },
+    "natural_light": {
+      "type": "string",
+      "enum": [
+        "good",
+        "some",
+        "none",
+        "not_visible"
+      ]
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "good",
+        "fair",
+        "poor",
+        "not_visible"
+      ]
+    },
+    "condition_signs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "damp_or_mould",
+          "cracks_or_peeling",
+          "stains",
+          "damaged_floor",
+          "unfinished_works"
+        ]
+      },
+      "maxItems": 5
+    },
+    "furnished": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "partly",
+        "no",
+        "not_visible"
+      ]
+    },
+    "readable_text": {
+      "type": "boolean"
+    },
+    "people_visible": {
+      "type": "boolean"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 120
+      },
+      "maxItems": 3
+    },
+    "field_confidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    }
+  }
+}

@@ -16,19 +16,25 @@ import prompt_report  # noqa: E402
 JS = r"""
 const fs = require('fs');
 const m = require(process.argv[1] + '/eval/lib/prompt_metrics.js');
+const c = require(process.argv[1] + '/n8n/src/lib/listing_check.js');
 const rd = (f) => fs.readFileSync(process.argv[1] + '/eval/datasets/' + f, 'utf8').split('\n').filter(Boolean).map(JSON.parse);
 const out = {};
 for (const [name, rows, score, summ] of [['P1_router', rd('p1_router_v1.jsonl'), 'scoreP1', 'summarizeP1'],
-                                         ['P2_profile_extractor', rd('p2_profile_v1.jsonl'), 'scoreP2', 'summarizeP2']]) {
+                                         ['P2_profile_extractor', rd('p2_profile_v1.jsonl'), 'scoreP2', 'summarizeP2'],
+                                         ['P3_listing_extractor', rd('p3_listing_v1.jsonl'), 'scoreP3', 'summarizeP3']]) {
   out[name] = {};
   for (const v of [1, 2]) {
     const items = rows.map((r, i) => {
       let o;
       if (name === 'P1_router') { o = { ...r.gold, confidence: 0.9, clarifying_question: null }; delete o.acceptable_intents;
         if (v === 1 && i % 4 === 0) o.intent = 'smalltalk_or_unsupported'; }
+      else if (name === 'P3_listing_extractor') { o = { ...r.gold, issues: [], field_confidence: {} };
+        if (v === 1 && i % 5 === 0 && o.rent_amount) o.rent_amount = o.rent_amount * 1000; }
       else { o = { ...r.gold.profile, unparsed: r.gold.must_not_map, field_confidence: {} };
         if (v === 1 && i % 5 === 0 && o.budget_max_minor) o.budget_max_minor = o.budget_max_minor / 1000; }
-      const met = name === 'P1_router' ? m.scoreP1(o, r.gold, { tags: r.tags }) : m.scoreP2(o, r.gold, r.tags);
+      const met = name === 'P1_router' ? m.scoreP1(o, r.gold, { tags: r.tags })
+        : name === 'P3_listing_extractor' ? m.scoreP3(o, c.checkListing(o, { TND: [30, 10000], EUR: [50, 10000], GBP: [50, 10000] }, null), r.gold, r.tags)
+        : m.scoreP2(o, r.gold, r.tags);
       return { id: r.id, tags: r.tags, metrics: met, output: o, raw: JSON.stringify(o), latency_ms: 100 + i };
     });
     const s = m[summ](items.map((x) => ({ metrics: x.metrics, tags: x.tags, latency_ms: x.latency_ms, attempts: 1 })));
@@ -72,3 +78,11 @@ def test_report_renders_tables_and_paired_differences():
     assert line.split(":")[1].strip().startswith("+")
     p2v1 = next(l for l in md.splitlines() if l.startswith("| m | v1 |") and "of" in l)
     assert int(p2v1.split("|")[9]) > 0                                      # unit errors counted in v1
+    # P3: rents x1000 on every fifth item in v1 are unit errors in the model answer, removed by the range check
+    assert "## P3 listing extractor" in md
+    sec = md.split("## P3 listing extractor")[1]
+    p3v1 = next(l for l in sec.splitlines() if l.startswith("| m | v1 |"))
+    cells = [c.strip() for c in p3v1.split("|")]
+    n_scaled = sum(1 for i, x in enumerate(res["P3_listing_extractor"]["1"]["items"]) if i % 5 == 0 and x["output"]["rent_amount"])
+    assert n_scaled > 10 and cells[10] == str(n_scaled) and cells[11] == "0" and cells[12] == str(n_scaled)
+    assert next(l for l in sec.splitlines() if l.startswith("| m | v2 |")).split("|")[7].strip() == "1"

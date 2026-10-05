@@ -57,6 +57,7 @@ if ((Test-Path "flatshare.bundle") -and (Get-Command git -ErrorAction SilentlyCo
   } | Out-Null
 }
 if (-not (Test-Path ".env")) { & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 | Out-Null }
+else { Step "add settings introduced by later phases to .env (existing lines unchanged)" { & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -AddMissing } | Out-Null }
 
 # Docker Desktop must be running; without this check the GPU step silently falls back to CPU
 # and the version step passes with an empty server version (FAILURES F-021).
@@ -215,6 +216,15 @@ Step "workflow JSON matches n8n/build.py" {
 
 $pytestArgs = @("pytest", "-v", "-rs", "tests/unit", "tests/contract")
 if ($SkipOutages) { $pytestArgs += @("-k", "not down and not unreachable") }
+Step "PHASE 4: Media service tests in its container (photo pipeline: validation, EXIF, hashes, blur, storage)" {
+  docker compose @files run --rm --no-deps media python -m pytest -q -p no:cacheprovider tests
+} | Out-Null
+Step "PHASE 4: Text service tests in its container (language ID, PII masking)" {
+  docker compose @files run --rm --no-deps -e TEXT_WARM=0 text python -m pytest -q -p no:cacheprovider tests
+} | Out-Null
+Step "PHASE 4: Telegram relay tests in its container (order, retry, no token in logs)" {
+  docker compose @files run --rm --no-deps telegram python -m pytest -q -p no:cacheprovider tests
+} | Out-Null
 Step "start the test fixture server (ingestion tests)" { docker compose @files --profile test up -d fixtures } | Out-Null
 Step "PHASE 1 and 2: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)" {
   docker compose @files --profile test run --rm --no-deps tests @pytestArgs

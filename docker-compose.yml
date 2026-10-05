@@ -144,6 +144,9 @@ services:
       APP_DB_HOST: postgres
       FLATSHARE_DB: ${FLATSHARE_DB:-flatshare}
       N8N_IMPORT_TEST_WORKFLOWS: ${N8N_IMPORT_TEST_WORKFLOWS:-0}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}        # the bot's token from @BotFather (docs/RUNBOOK.md); empty = no bot
+      TELEGRAM_API_BASE: https://api.telegram.org
     volumes:
       - ./:/flatshare:ro
       - n8n_data:/home/node/.n8n
@@ -187,10 +190,55 @@ services:
     environment:
       N8N_UPSTREAM: n8n:5678
       PROXY_PORT: "8080"
+      STORAGE_UPSTREAM: garage:3900
+      S3_BUCKET: ${S3_BUCKET:-flatshare-media}
     ports:
       - "${PROXY_BIND:-127.0.0.1}:${PROXY_PORT:-8080}:8080"
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    restart: unless-stopped
+
+  # Compute services (spec 5.1): stateless HTTP on the compose network only, every
+  # route except /health needs X-Internal-Token (spec 5.4 item 4). n8n calls them.
+  media:
+    build: { context: ./services, dockerfile: media/Dockerfile }
+    image: flatshare/media:0.1.0
+    container_name: fs-media
+    depends_on:
+      garage: { condition: service_healthy }
+    environment:
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
+      S3_ENDPOINT: http://garage:3900
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:8080}
+      S3_REGION: garage
+      S3_BUCKET: ${S3_BUCKET:-flatshare-media}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+    restart: unless-stopped
+
+  text:
+    build: { context: ./services, dockerfile: text/Dockerfile }
+    image: flatshare/text:0.1.0
+    container_name: fs-text
+    environment:
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
+    volumes:
+      - text_models:/models          # GlotLID and the NER model, fetched by p4.ps1 -Step setup
+    restart: unless-stopped
+
+  # Telegram long-polling relay (D-079): asks Telegram for new messages and hands them to n8n. It only opens
+  # outgoing connections, so nothing here is reachable from the internet. Idle while TELEGRAM_BOT_TOKEN is empty.
+  telegram:
+    build: { context: ./services, dockerfile: telegram/Dockerfile }
+    image: flatshare/telegram-relay:0.1.0
+    container_name: fs-telegram
+    depends_on:
+      n8n: { condition: service_healthy }
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_API_BASE: https://api.telegram.org
+      N8N_TELEGRAM_URL: http://n8n:5678/webhook/telegram/update
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
     restart: unless-stopped
 
   # Queue mode (main + workers) is for the load tests of phase 9. Nothing on the
@@ -221,7 +269,7 @@ services:
   # outage tests can stop and start containers; do not enable it elsewhere.
   tests:
     build: ./infra/tests
-    image: flatshare/tests:py3.12.14
+    image: flatshare/tests:py3.12.14-p4
     profiles: ["test"]
     environment:
       FS_API_BASE: http://proxy:8080
@@ -237,6 +285,7 @@ services:
       FS_OUTAGE_STORAGE_STOP: docker stop fs-garage
       FS_OUTAGE_STORAGE_START: docker start fs-garage
       FS_FIXTURES_BASE: http://fixtures:8081
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}   # eval/runners/text_eval.py --url http://text:8000
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"          # progress lines appear while a long job runs (F-028)
       PYTEST_ADDOPTS: "-p no:cacheprovider"
@@ -246,6 +295,7 @@ services:
     working_dir: /flatshare
 
 volumes:
+  text_models:
   tei_data:
   pgdata:
   garage_meta:

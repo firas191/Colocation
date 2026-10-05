@@ -1,0 +1,91 @@
+{
+ "dataset": "p3_listing_v1",
+ "date": "2026-10-04",
+ "by": "Claude (main session), after reading both labels and the guide",
+ "agreement_before": "relabel/p3_listing_v1_agreement.json (computed before these changes)",
+ "changes": [
+  {
+   "id": "p3-013",
+   "field": "amenities",
+   "before": [
+    "garden"
+   ],
+   "after": [
+    "garden",
+    "wifi"
+   ],
+   "reason": "home internet (internet, fibre, ADSL) counts as wifi (guide clarified after the blind re-label)",
+   "in_blind_sample": true
+  },
+  {
+   "id": "p3-051",
+   "field": "amenities",
+   "before": [
+    "dishwasher",
+    "washing_machine"
+   ],
+   "after": [
+    "dishwasher",
+    "washing_machine",
+    "wifi"
+   ],
+   "reason": "home internet (internet, fibre, ADSL) counts as wifi (guide clarified after the blind re-label)",
+   "in_blind_sample": true
+  },
+  {
+   "id": "p3-069",
+   "field": "amenities",
+   "before": [
+    "garden",
+    "washing_machine"
+   ],
+   "after": [
+    "garden",
+    "washing_machine",
+    "wifi"
+   ],
+   "reason": "home internet (internet, fibre, ADSL) counts as wifi (guide clarified after the blind re-label)",
+   "in_blind_sample": false
+  },
+  {
+   "id": "p3-021",
+   "field": "furnished",
+   "before": false,
+   "after": null,
+   "reason": "'fergha'/'فارغة' can mean vacant or unfurnished: furnished null (guide clarified after the blind re-label)",
+   "in_blind_sample": false
+  },
+  {
+   "id": "p3-025",
+   "field": "furnished",
+   "before": false,
+   "after": null,
+   "reason": "'fergha'/'فارغة' can mean vacant or unfurnished: furnished null (guide clarified after the blind re-label)",
+   "in_blind_sample": true
+  },
+  {
+   "id": "p3-028",
+   "field": "furnished",
+   "before": false,
+   "after": null,
+   "reason": "'fergha'/'فارغة' can mean vacant or unfurnished: furnished null (guide clarified after the blind re-label)",
+   "in_blind_sample": true
+  },
+  {
+   "id": "p3-032",
+   "field": "furnished",
+   "before": false,
+   "after": null,
+   "reason": "'fergha'/'فارغة' can mean vacant or unfurnished: furnished null (guide clarified after the blind re-label)",
+   "in_blind_sample": true
+  },
+  {
+   "id": "p3-025",
+   "field": "kind",
+   "before": "room",
+   "after": "room",
+   "reason": "kept: an owner letting a room in the home they live in is 'room'; 'roommate_wanted' is for tenants looking for a flatmate (guide clarified)",
+   "in_blind_sample": true
+  }
+ ]
+}

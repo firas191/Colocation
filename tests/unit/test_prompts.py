@@ -1,4 +1,4 @@
-"""Prompt registry files, output schemas and the P1/P2 golden sets (phase 3)."""
+"""Prompt registry files, output schemas and the P1/P2/P3 golden sets (phases 3 and 4)."""
 import json
 import random
 import shutil
@@ -17,6 +17,7 @@ import prompts  # noqa: E402
 DS = ROOT / "eval" / "datasets"
 S1 = json.loads((ROOT / "prompts/schemas/P1_router.schema.json").read_text(encoding="utf-8"))
 S2 = json.loads((ROOT / "prompts/schemas/P2_profile_extractor.schema.json").read_text(encoding="utf-8"))
+S3 = json.loads((ROOT / "prompts/schemas/P3_listing_extractor.schema.json").read_text(encoding="utf-8"))
 
 
 def rows(name):
@@ -29,7 +30,7 @@ def test_prompt_files_pass_the_registry_check():
 
 def test_few_shot_examples_are_not_golden_items():
     """Examples in the templates must not leak golden-set messages (the score would be inflated)."""
-    msgs = {r["message"] for r in rows("p1_router_v1.jsonl")} | {r["message"] for r in rows("p2_profile_v1.jsonl")}
+    msgs = {r["message"] for n in ("p1_router_v1.jsonl", "p2_profile_v1.jsonl", "p3_listing_v1.jsonl") for r in rows(n)}
     for p in prompts.all_prompts():
         for v in p["versions"]:
             for m in msgs:
@@ -45,6 +46,10 @@ def test_gold_labels_validate_against_the_output_schemas():
     for r in rows("p2_profile_v1.jsonl"):
         out = {**r["gold"]["profile"], "unparsed": r["gold"]["must_not_map"], "field_confidence": {}}
         assert not list(v2.iter_errors(out)), r["id"]
+    v3 = Draft202012Validator(S3)
+    for r in rows("p3_listing_v1.jsonl"):
+        assert not list(v3.iter_errors({**r["gold"], "issues": [], "field_confidence": {}})), r["id"]
+        assert r["gold"]["amenities"] == sorted(r["gold"]["amenities"]), r["id"]
 
 
 def test_golden_set_coverage():
@@ -54,10 +59,14 @@ def test_golden_set_coverage():
     assert len(groups) >= 6 and sum("injection" in r["tags"] for r in p1) >= 15
     assert sum("unit_trap" in r["tags"] for r in p2) >= 20
     assert {r["context"]["jurisdiction"] for r in p2} == {"TN", "FR", "GB"}
+    p3 = rows("p3_listing_v1.jsonl")                                          # spec 9.5: 100, 20 unit traps, 20 non-Latin
+    assert len(p3) >= 100 and sum("unit_trap" in r["tags"] for r in p3) >= 20
+    assert sum(bool(__import__("re").search(r"[\u0600-\u06ff]", r["message"])) for r in p3) >= 20
+    assert {r["context"]["jurisdiction"] for r in p3} == {"TN", "FR", "GB"}
 
 
 def test_relabel_sample_is_blind_and_complete():
-    for name in ("p1_router_v1", "p2_profile_v1"):
+    for name in ("p1_router_v1", "p2_profile_v1", "p3_listing_v1"):
         blind = [json.loads(l) for l in (DS / "relabel" / f"{name}_blind.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
         relab = [json.loads(l) for l in (DS / "relabel" / f"{name}_relabel.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
         total = len(rows(f"{name}.jsonl"))
@@ -76,7 +85,8 @@ def test_schema_lite_agrees_with_jsonschema():
     mutations = [None, 1, 1.5, -3, "x", "", "2026-13-01", "TND", "tnd", [], ["fr"], ["zz"], {}, {"smoking": "no"},
                  {"gender": "f"}, True, 400.0, 10 ** 13]
     cases = []
-    for schema, base in ((S1, base1), (S2, base2)):
+    base3 = {**rows("p3_listing_v1.jsonl")[0]["gold"], "issues": [], "field_confidence": {}}
+    for schema, base in ((S1, base1), (S2, base2), (S3, base3)):
         for k in base:
             for m in mutations:
                 cases.append((schema, {**base, k: m}))
@@ -111,3 +121,23 @@ def test_p2_v3_has_its_own_schema_with_main_unit_amounts():
             x = g.pop(k)
             g[k[:-6]] = None if x is None else x / 10 ** exp
         assert not list(v.iter_errors({**g, "unparsed": [], "field_confidence": {}})), r["id"]
+
+
+def test_p3_versions_and_examples():
+    """P3 v1 is the direct baseline, v2 adds the normalisation rules (spec 9.3); v2's examples are valid outputs."""
+    import re
+    p3 = next(p for p in prompts.all_prompts() if p["name"] == "P3_listing_extractor")
+    by_v = {v["version"]: v for v in p3["versions"]}
+    assert set(by_v) == {1, 2, 3, 4}
+    assert "millimes" not in by_v[1]["template"] and "millimes" in by_v[2]["template"]
+    assert "millimes" not in by_v[3]["template"] and "millimes" in by_v[4]["template"]      # v3 = v1, v4 = v2, short output
+    for n in (3, 4):                                                                     # F-058
+        assert by_v[n]["params"]["num_predict"] >= 800 and by_v[n]["output_schema"]["properties"]["issues"]["maxItems"] == 3
+        assert "compact JSON on one line" in by_v[n]["template"]
+    for n in (2, 4):
+        v = Draft202012Validator(by_v[n]["output_schema"])
+        ex = re.findall(r"-> (\{.*\})\n", by_v[n]["template"])
+        assert len(ex) == 6
+        for e in ex:
+            o = json.loads(e)
+            assert not list(v.iter_errors(o)) and o["amenities"] == sorted(o["amenities"])

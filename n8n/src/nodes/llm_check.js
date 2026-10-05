@@ -19,9 +19,14 @@ if (r.error || r.content == null) {
   return [{ json: { retry: false, tokens_in, tokens_out, load_ms, result: { ...common, ok: false, error_code: 'call_failed',
     detail: r.error || 'empty answer', call_error: true, raw: null, output: null } } }];
 }
-const parsed = (!String(r.content).trim() && r.thinking_chars)
+let parsed = (!String(r.content).trim() && r.thinking_chars)
   ? { ok: false, error_code: 'thinking_only', detail: `empty answer after ${r.thinking_chars} characters of thinking` }
   : parseOutput(r.content, b.schema, validate, describe);
+// An answer cut at the token limit (Ollama done_reason 'length') is reported as such; it is still retried once,
+// since the retry prompt names the problem (F-058).
+if (!parsed.ok && r.done_reason === 'length') {
+  parsed = { ok: false, error_code: 'truncated', detail: `answer cut at the output limit (num_predict) after ${r.tokens_out} tokens: write a shorter answer` };
+}
 if (parsed.ok) {
   return [{ json: { retry: false, tokens_in, tokens_out, load_ms, result: { ...common, ok: true, output: parsed.value, raw: r.content } } }];
 }

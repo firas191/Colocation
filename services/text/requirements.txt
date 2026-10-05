@@ -1,0 +1,20 @@
+# Text service (phase 4). Versions read on PyPI 2026-10-04 (docs/research/PHASE4_COMPONENTS.md).
+# huggingface-hub stays below 2.0: tokenizers 0.23.x (needed by transformers 5.18.0) requires <2.0 (F-056).
+fastapi==0.142.2
+uvicorn==0.54.0
+pydantic==2.13.5
+numpy==2.4.6
+phonenumbers==9.0.40
+schwifty==2026.7.3
+python-stdnum==2.2
+lingua-language-detector==2.2.0
+fasttext==0.9.3
+transformers==5.18.0
+# transformers 5 builds the XLM-R tokenizer from sentencepiece.bpe.model with these two; without them it
+# falls back to a tiktoken reader and the NER model does not load (F-057)
+sentencepiece==0.2.2
+protobuf==7.36.2
+huggingface-hub==1.33.0
+# tests run inside the image (verify.ps1)
+pytest==9.1.1
+httpx==0.28.1

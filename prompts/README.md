@@ -24,5 +24,7 @@ primary metric without a regression on injection or protected-attribute cases.
 
 | Prompt | Agent | Versions | Active |
 |---|---|---|---|
-| P1_router | A0 orchestrator | v1 zero-shot baseline; v2 rules, guardrails, 8 few-shot examples | 1 |
-| P2_profile_extractor | A2 profile | v1 baseline without unit rules; v2 money, date and preference rules, 5 few-shot examples | 1 |
+| P1_router | A0 orchestrator | v1 zero-shot baseline; v2 rules, guardrails, 8 few-shot examples; v3 clarifying-question path | 2 |
+| P2_profile_extractor | A2 profile | v1 baseline without unit rules; v2 money, date and preference rules, 5 few-shot examples; v3 amounts in main units (D-066) | 3 |
+| P3_listing_extractor | A1 intake | v1 direct (field list only); v2 normalisation rules (millimes, S+n, T3, scope, bills, deposits in months, dates), 6 few-shot examples; amounts in main units, range check in code (D-076); v3 and v4: v1 and v2 with a short output (F-058) | 4 (D-080) |
+| P7_photo_analyzer | A1 intake | v1 open description plus closed lists, every field answered; v2 no free description, "not_visible", a confidence per filled field, rules on people and text (D-081). Image input; contradictions with the listing text computed in code | 1 (not evaluated yet) |

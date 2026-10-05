@@ -1,0 +1,9 @@
+{
+  "name": "P7_photo_analyzer",
+  "agent": "A1 intake",
+  "role": "Describe one listing photo as room facts (spec 11.2 step 5, 9.4 P7): room type, beds, furniture, appliances, bathroom fixtures, windows and daylight, condition and its visible signs, furnished, whether text can still be read and whether a person is in view. Runs on the blurred copy. Contradictions with the listing text are computed in code, not by the model (D-081).",
+  "schema": "schemas/P7_photo_analyzer.schema.json",
+  "variables": [],
+  "golden_set": "p7_photos",
+  "active_version": 1
+}

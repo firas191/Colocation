@@ -1,0 +1,1 @@
+PASS  photos: candidates from Wikimedia Commons into D:\Projects\coloc\photo_bench (CC0, public domain, CC BY, CC BY-SA only)  (exit 0, 167.4 s)

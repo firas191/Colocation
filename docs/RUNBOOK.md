@@ -92,6 +92,53 @@ its front matter (`schema:`, P2 v3, D-066). Evaluate one new version on the defa
 stored run. A version becomes active only by changing `active_version` in `prompt.json` (spec 9.5 step 5).
 Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py reports/eval/prompts-<stamp>.json --version 3`. Adding a place: a row in `geo/places.csv`, then `-Step geo` (only new rows are fetched).
 
+## Intake and multimodality (phase 4)
+
+| Task | Command |
+|---|---|
+| Seed the P3 golden set and prompts; download GlotLID and the NER model into the `text_models` volume | `powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step setup` |
+| Text service evaluation: PII masking (two sets, with and without NER), language ID (P1 and P2 sets) | `... p4.ps1 -Step text-eval` |
+| P3 golden set, one job per version, on the default model; docs/PROMPT_EVAL.md | `... p4.ps1 -Step p3-eval` (options `-Models`, `-Versions`, default 3,4) |
+| Room photos for P7 from Wikimedia Commons into `..\photo_bench` (not committed, D-069) | `... p4.ps1 -Step photos-fetch` |
+| P7 golden set and prompts; the 50 labelled photos through the Media service into `eval/p7/`; vision check | `... p4.ps1 -Step p7-setup` |
+| P7 v1 and v2 on the 50 photos (one job per version); pHash threshold on the same photos | `... p4.ps1 -Step p7-eval` (option `-P7Versions`), then `-Step report` |
+| What P7 said about a photo | `GET /v1/listings/{id}`, `media[].analysis.vision`; listing issues starting with `photo` in `extraction.issues` |
+| Turn photo analysis off (no usable vision model) | `update app.settings set value = 'false' where key = 'vision.enabled';` |
+| Publish listings automatically after the analysis (testing and demonstration only: skips the owner's confirmation and the trust check, D-083) | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.settings set value = 'true' where key = 'listing.auto_publish';"`; back to `'false'` before real users |
+| Why a listing was not published automatically | `GET /v1/listings/{id}`, `extraction.publication.missing` (`rent`, `place`); the bot says it too |
+| An availability date removed by the check | `extraction.issues` has `available_from_not_in_text`; the model's value is in `extraction.model_output.available_from` |
+| Near-duplicate threshold | `select value from app.settings where key = 'media.phash_max_distance';` (12 since D-082) |
+| Analyze one listing by hand | `POST /v1/listings`, then `POST /v1/listings/{id}/analyze`; result in `GET /v1/listings/{id}` (`extraction.issues`) |
+| Plausible rent ranges | `select value from app.settings where key = 'listing.rent_range';` (main units per month, D-076) |
+| Model calls of a job | `select s.agent, s.model, s.latency_ms, s.error from ai.executions e join ai.agent_steps s on s.execution_id = e.id where e.request_id = '<job id>';` |
+
+## Telegram bot (D-079)
+
+Set it up once:
+
+1. In Telegram, open **@BotFather**, send `/newbot`, choose a display name and a user name ending in `bot`. BotFather answers with a token.
+2. Put the token in `.env` (never in a chat, a commit or a screenshot): `TELEGRAM_BOT_TOKEN=<token>`.
+3. Optional, so the commands appear in Telegram's menu: send `/setcommands` to @BotFather, pick the bot, and paste
+   ```
+   annonce - publier une annonce (texte, photo en légende)
+   pays - changer de pays (TN, FR, GB)
+   moi - mes informations
+   aide - aide
+   stop - retirer mon accord
+   trace - étapes de ma dernière demande (admins)
+   ```
+4. Run `verify.ps1` (it loads the token into n8n's Telegram credential and starts the `fs-telegram` relay). Then open the bot in Telegram and send `/start`.
+
+| Task | Command |
+|---|---|
+| Is the relay running? | `docker logs fs-telegram --tail 20` (it never logs the token) |
+| Make your account an admin (for `/trace`) | send `/moi` to the bot, then `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.users set role = 'admin' where external_auth_id = 'telegram:<your Telegram id>';"` |
+| What the bot did with a message | n8n editor, workflow `wf.channel.telegram`, Executions tab |
+| Stop the bot | `docker stop fs-telegram` (messages wait at Telegram for up to 24 h) |
+| New token | change `.env`, run `verify.ps1` again |
+
+Every message goes through the same API as a website would, so its trace is in `ai.executions` like any request. Telegram users who have not accepted the consent message get only that message back.
+
 ## API keys
 
 - Keys are created by `db-bootstrap` for `website` and `tests`; secrets are appended to `secrets/api-clients.env`.

@@ -1,0 +1,119 @@
+{
+ "dataset": "p7_photos v1",
+ "date": "2026-10-05",
+ "note": "Disagreements between the first labels and the blind re-label of 10 photos (p7_photos_v1_relabel.jsonl) settled by three guide rules, applied to every photo each rule covers. Agreement before adjudication: room_type 10/10; other scalar fields 8 to 10 of 10 strict, 9 to 10 of 10 counting each other's alternatives; sure-object Jaccard 0.833.",
+ "changes": [
+  {
+   "id": "p7-029",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": null
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-031",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": [
+     "some"
+    ]
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-033",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": [
+     "some"
+    ]
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-034",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": [
+     "some"
+    ]
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-037",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": null
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-040",
+   "field": "natural_light",
+   "before": {
+    "value": "none",
+    "alt": null
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "natural_light without a window in view: 'none' only when a lamp is visible or it is clearly night; otherwise null"
+  },
+  {
+   "id": "p7-010",
+   "field": "condition",
+   "before": {
+    "value": null,
+    "alt": null
+   },
+   "after": {
+    "value": "good",
+    "alt": [
+     "fair"
+    ]
+   },
+   "rule": "condition is judged from what is visible; glare or darkness makes it null only when walls and floor cannot be seen"
+  },
+  {
+   "id": "p7-036",
+   "field": "beds",
+   "before": {
+    "value": 0,
+    "alt": null
+   },
+   "after": {
+    "value": null,
+    "alt": null
+   },
+   "rule": "beds: null when clutter or objects could hide a bed, 0 only when the floor area is visible"
+  }
+ ]
+}

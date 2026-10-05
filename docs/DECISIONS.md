@@ -319,6 +319,192 @@ Measured on the owner's PC on 2026-10-04, qwen3.5:4b, v3 against the stored v2 r
 
 **P1 v3 stays inactive; v2 remains active.** Intent accuracy 0.925 against 0.919 is one item, p1-102, which is close in meaning to the new example (D-067); without p1-074 and p1-102 both versions score 0.9304. Clarification recall rose from 0.400 to 0.600, but two of the three gains are those two items, and p1-027 was lost. Language accuracy fell from 0.825 to 0.756 (11 Modern Standard Arabic messages now labelled Tunisian, likely an effect of the new Arabic-script Tunisian example, not tested) and jurisdiction-hint accuracy from 0.812 to 0.738 (11 more hints given where the message has none). Injection pass is unchanged (0.944, the same p1-094) and there are no leaks. With no real intent gain and two regressions on fields the orchestrator passes on, v2 is kept. The run stays stored as a negative result for the prompt library (spec 9.8).
 
+### D-069 Phase 4 evaluation data
+
+Chosen by the owner on 2026-10-04.
+
+- **Speech (ASR benchmark).** Public sets first, so the benchmark can run without waiting: samples from the test splits of `linagora/linto-dataset-audio-ar-tn` (Tunisian, including the TunSwitch code-switched and Tunisian-only subsets) and `google/fleurs` (`fr_fr`, `en_us`, `ar_eg`), both CC-BY-4.0, downloaded on the owner's PC (Hugging Face is not reachable from the sandbox). Plus about 30 voice notes recorded by the owner and two other speakers with their consent, written as search requests with a budget, a place and a date, for the measure that matters here (spec 11.1: extracted budget, location and date after P2). Recordings, transcripts and consent records stay in `D:\Projects\coloc\voice_bench`, outside the repository; only scores are committed. This is a deviation from spec 11.1 ("own recordings", 60 clips, 3 speakers): the 60-clip minimum is met with public clips, and the own recordings are fewer.
+- **Photos (P7 and duplicate detection).** Openly licensed interior photos from Wikimedia Commons, fetched on the PC with each file's licence, author and source URL recorded; files whose licence is not CC0, public domain, CC BY or CC BY-SA are skipped. Labels are written by Claude from the images, with a blind 20% re-label, like the P1/P2 golden sets (D-055); no human check yet. Near-duplicate pairs are made from these photos by deterministic edits (crop, resize, recompression, brightness, small rotation) and unrelated pairs from different photos. Being cleaner than real listing photos, this set probably overstates accuracy; reports say so.
+
+### D-070 Media service: what a photo goes through
+
+The Media service (`services/media`, FastAPI, compute only) processes one photo per call (spec 11.2 steps 1 to 4):
+- **Type** is sniffed from the bytes (`filetype`), not taken from the name or declared type. Accepted: JPEG, PNG, WebP. HEIC is refused because the only Pillow plugin for it ships GPL-licensed binaries (docs/research/PHASE4_COMPONENTS.md); phones can export JPEG. Animated images and GIFs are refused.
+- **Size and pixels** are checked before decoding: 15 MiB per photo (setting `media.max_bytes`), 40 megapixels, longest side 10,000 px, shortest 64 px; Pillow's decompression-bomb warning is raised as an error.
+- **EXIF** (capture time, make, model, software, GPS) is read for the trust check, then dropped: the stored JPEG is rebuilt from pixels without EXIF, ICC profile, comment or XMP (Pillow keeps a JPEG comment by default otherwise). Orientation is applied first.
+- **Hashes:** SHA-256 of the uploaded bytes (exact duplicates; unique per listing) and a 64-bit pHash of the upright image *before* blurring, so someone else's copy of the photo still matches after our blurring.
+- **Blurring** (pixelate then blur, with padding): faces (YuNet), text regions (PP-OCRv3 DB detector; covers documents and screens that show text) and screens (YOLOX-S, COCO classes tv, laptop, cell phone). All three models come from the OpenCV model zoo under MIT or Apache-2.0 licences, are downloaded at image build time and checked against `services/media/models.lock`. AGPL or non-commercial alternatives (Ultralytics YOLO, EAST, InsightFace weights, PyMuPDF) are not used.
+- **Metrics** for the capture coach later: variance of the Laplacian on a copy whose long side is 1,024 px, mean brightness, shares of very dark and very bright pixels.
+
+Not measured yet: detector recall on real photos (the photo set of D-069 measures faces and text where present), and the text detector on Arabic script (trained on English and Chinese). The pHash threshold starts at 6 (spec) and is measured on the near-duplicate pairs (4.5).
+
+### D-071 Uploads go straight to object storage, signed for the proxy
+
+`POST /v1/listings/{id}/media/presign` creates upload slots in `app.media_uploads` (the database checks ownership, listing state, kind, declared type and size, and at most 20 files per listing) and returns one presigned PUT URL per file, valid 10 minutes. The Media service signs them with the S3 credentials, for the public proxy address (`S3_PUBLIC_ENDPOINT`, `http://localhost:8080` by default), because an S3 signature covers the Host header the client sends. The proxy passes only signed PUTs under `/<bucket>/uploads/` to Garage (100 MiB limit there, 1 MiB for the API), with the Host header unchanged; anything else under the bucket path is a 404. Keys are `uploads/<listing>/<upload id>.<ext>`; processed copies go to `media/<listing>/<upload id>.jpg`.
+
+`POST /v1/listings/{id}/analyze` starts a `listing_analyze` job. Each photo goes through `wf.intake.photos`; a photo is stored, rejected (with the Media service's reason code) or left pending (not uploaded yet). Once a decision is stored, the raw upload is deleted, because it still carries EXIF (GPS, device) and unblurred faces. The Media service therefore holds storage credentials and reads and writes objects; it still writes no database table and calls no model, which is what the spec's boundary rule (5.1) is about.
+
+`POST /v1/listings` creates a draft from the owner's text, and `GET /v1/listings/{id}` is the owner's view. Extraction (P3) and vision (P7) are later steps of the same job.
+
+### D-072 Photo GPS is never stored
+
+The spec says to use EXIF for the trust check and never expose GPS. Exposure is easier to rule out if the coordinates are never stored: `app.store_listing_photo` keeps only whether GPS was present and, when the listing has an exact location, the distance between the two rounded to 100 m (`analysis.exif.gps_distance_m`). That is what the trust agent needs ("photo taken far from the address"). The coordinates exist only in the Media service's answer to n8n and in the raw upload, which is deleted.
+
+### D-073 Job retries and the reaper (spec 5.6; deferred from D-041)
+
+Migration 0010 adds `next_attempt_at`, `lease_until` and `last_error` to `app.jobs` and four functions: `app.job_start` (claims a queued job, sets a lease from `jobs.lease_s`), `app.job_finish` (a transient failure with attempts left goes back to the queue; the delay starts at `jobs.backoff_s`, 30 s, and doubles), `app.jobs_reap` (a running job past its lease is queued again or, on its last attempt, failed with "timeout") and `app.jobs_due`. `wf.jobs.dispatch` runs every minute: reaper, then starts the due jobs of the types that use these functions. Only `listing_analyze` does so far; the older job types keep their single attempt until they are moved over. A transient failure is one where the Media service did not answer or answered 5xx; a rejected file is not a failure.
+
+### D-074 Language identification in the Text service
+
+The Text service (`services/text`) identifies language and script before P1 (spec 9.7) with the labels of the P1 guide. Latin-script Tunisian (arabizi) has no published model label (no `aeb_Latn` in GlotLID or elsewhere), so a rule detects it: digits used as letters inside words and a short list of frequent Tunisian words. Other text goes to a statistical backend: GlotLID v3 when its model file is present (it has `aeb_Arab`, published F1 0.912), otherwise lingua (no Tunisian label; a Tunisian-word list then separates Tunisian from MSA in Arabic script). Mixed text is found clause by clause (two languages each over 30% of the words).
+
+Measured in the sandbox with lingua (reports/phase4/05-langid-lingua-sandbox.log): P1 golden set language accuracy 0.8875, script 1.0; P2 golden set 0.7364, with Tunisian in Arabic script 0/12 (all labelled MSA). The word lists were written after reading the P1 set, so its figure is optimistic; the P2 figure shows the weak point. GlotLID is measured on the PC (it is a 1.7 GB download from Hugging Face, not reachable from the sandbox); the backend is chosen on those numbers. The orchestrator records the result as an `A0_text` agent step (language, script, PII counts; no text). It does not feed P1 yet: that would change P1's inputs, which is a new prompt version.
+
+### D-075 PII masking: patterns plus a NER model, measured on two sets
+
+Recognisers (spec 13.2): e-mail; phone (`phonenumbers` for TN, FR, GB, at least 8 digits, not part of a longer digit run); card (Luhn); IBAN (`schwifty`); IDs (French NIR with `stdnum`, UK NINO pattern, Tunisian CIN as 8 digits near an ID word or starting with 0 or 1: no library exists for it); addresses (house number and street word in French and English, street word and name in Arabic and arabizi, UK postcodes); names (cue phrases, titles, and a NER model). Placeholders are stable within a request and the mapping is returned to the caller, never stored by the service.
+
+Two synthetic, template-built sets (`eval/datasets/pii_v1.jsonl`, 127 messages, 200 spans; `pii_heldout_v1.jsonl`, 53 messages, 84 spans, written after the tuning with new sentence shapes). Runs without the NER model (reports/phase4/01 to 04):
+
+| Run | Set | Recall | Precision | Change |
+|---|---|---|---|---|
+| 1 | pii_v1 | 0.970 | 0.907 | first version |
+| 2 | pii_v1 | 0.970 | 0.985 | phone matching VALID instead of POSSIBLE: fewer prices taken for phones, but 6 real-looking mobile numbers lost; "je suis" name cue; 8-digit groups inside longer numbers |
+| 3 | pii_v1 | 1.000 | 0.990 | POSSIBLE again with at least 8 digits and no two-year pairs |
+| 4 | held-out | 0.714 | 0.909 | scored once: names without a cue phrase 0 of 24 |
+
+Patterns alone cannot find names that are not introduced by a cue, so the spec's NER model is needed. `Davlan/xlm-roberta-base-ner-hrl` (AFL-3.0; Arabic, French and English among its languages) runs in the Text service with CPU-only PyTorch; it is downloaded on the PC (`fetch_models.py`) and measured there on both sets. Until it meets the 0.98 recall target on the held-out set, the masking must not be trusted for a cloud call; no cloud call exists (D-002).
+
+### D-076 P3 output shape and the rent range check
+
+The spec's starting shape for P3 (9.4) nests rent and deposit and asks for minor units. P3 uses a flat schema (`prompts/schemas/P3_listing_extractor.schema.json`) with amounts in the currency's main unit (`rent_amount: 450` for 450 dinars), for the reason of D-066: P2 v2 made power-of-ten errors when the model converted to minor units, and code does the conversion with `app.currencies`. Three additions to the spec's fields: `per_person` as a rent scope (Tunisian and French listings often say "each pays"), and `city` and `neighbourhood`, which the listing table already has. The model's answer is kept in `app.listings.extraction.model_output`.
+
+Post-validation (spec 9.4) is code, `n8n/src/lib/listing_check.js`, used both by the workflow and by the evaluation. A rent outside the plausible monthly range of its currency (weekly rents compared as 52/12 of a week) is set to null with the issue `rent_out_of_range`; a deposit is checked against the same range. The ranges are a setting, `listing.rent_range`: TND 30 to 10,000, EUR 50 to 10,000, GBP 50 to 10,000 (main units per month). These are **chosen values, not market statistics**: they are wide enough for every rent in the golden set (TND 150 to 1,800, EUR 320 to 1,950, GBP 390 to about 2,400 a month) and narrow enough that multiplying or dividing any of those rents by 10 to the power of the currency exponent (1,000 for TND, 100 for EUR and GBP) falls outside. Checked by scoring the golden labels with that error on every rent and deposit (`reports/phase4/10-p3-range-check-on-gold.log`): 86 items with a unit error before the check, 0 after, in both directions. A factor of 10 is mostly not caught (73 of 86 items still wrong after the check when multiplied by 10, 58 when divided): a range cannot separate 450 from 4,500 dinars. The evaluation reports F1 and unit errors both on the model's answer and after the check.
+
+### D-077 Storing the extraction (migration 0011)
+
+- `app.store_listing_extraction` writes the extracted fields to the listing (draft, processing or pending review only). Until owners can edit fields (the owner edit endpoint is not built yet), the extraction is the only writer of these columns, and a new analysis replaces them. When owner edits exist, owner values must win; this is noted for that phase.
+- `rent_scope` is a new column. A `whole_flat` or `unknown` rent is stored with its scope and the issue `rent_scope_whole_flat` or `rent_scope_unknown`, for the owner to give the price of the room. Search still compares `rent_monthly_minor` with the budget whatever the scope; restricting search to `per_room` and `per_person` rents is left to the publication step, where the issues are resolved.
+- One currency per listing (the table has one column): a deposit in another currency than the rent is dropped with `deposit_currency_differs`.
+- The exact address (`address_text`) stays inside `extraction`, never in a public column, like the exact location (spec 4.4).
+- The Text service runs on the listing text first: its language goes to `description_lang`, and when it finds a phone number or an e-mail address the issue `contact_details_in_text` is added. Only counts are kept, never the values.
+- `POST /v1/listings/{id}/analyze` now accepts a listing with text and no file (before, it needed a waiting file).
+- Job workers record their model calls: `app.record_job_steps` writes one `ai.executions` row (request id = job id, channel `job`) with its `ai.agent_steps` (spec 8.3, 9.1). The extraction step is `A1_extract`, with the prompt version id and no listing text.
+- A non-transient extraction failure (invalid output twice) fails the job without retry; a model that does not answer is a transient failure and the job is retried (D-073).
+
+### D-078 P3 golden set and its adjudication
+
+`eval/datasets/p3_listing_v1.jsonl`: 100 synthetic listings written for the set and labelled from `eval/datasets/guides/p3_listing.md` by a model-based annotator (as D-055); composition in `eval/datasets/README.md`. A second model-based annotator labelled a random 20 blind. Before adjudication 15 of 20 items agreed on every field; kind 19/20 (Cohen's kappa 0.924), furnished 17/20, amenities 18/20, the 13 other fields 20/20. The five disagreements came from three points the guide did not settle (Tunisian `fergha`, internet without the word wifi, an owner letting a room in the home they live in). I settled them in the guide and applied the rule to every item it covers, 7 label changes listed in `relabel/p3_listing_v1_adjudication.json`; the agreement file keeps the numbers from before. As for P1 and P2, both annotators are models, so this shows the guide leaves little room to such an annotator, not human agreement; no native speaker has checked the Tunisian items (spec 9.7).
+
+### D-079 Telegram channel: long polling, consent first, the public API as its only door
+
+The spec names a Telegram bot as the second channel and the test client before the website (5.1, 8.4 `wf.channel.telegram`). Choices:
+
+- **Long polling, not a webhook.** Telegram's webhook needs a public HTTPS address, so a tunnel into n8n from the internet. A small relay (`services/telegram/poller.py`, container `fs-telegram`) asks Telegram for new updates with long polling and hands each one, unchanged, to the internal webhook `/webhook/telegram/update` (X-Internal-Token; the proxy never maps it). Only outgoing connections, so nothing is exposed. The relay confirms an update to Telegram only after n8n accepted it, and n8n handles an `update_id` once per bot (`app.telegram_updates`, keyed by a hash of the bot token the relay sends, F-060), so a restart loses nothing and repeats nothing. The relay holds no logic: everything the bot does is in n8n, where it can be shown. n8n's own Telegram Trigger node only works with webhooks. On a server with a public address the webhook becomes the better choice and the workflow stays the same.
+- **The bot is an API client.** `wf.channel.telegram` calls the public API through the proxy, signed as the client `telegram`, like the website will: signature, consent and rate limits apply to it, and the bot tests the API. Its secret never leaves the database: `sec.sign_internal` signs only for clients marked internal and only n8n_worker may call it. A Telegram user is `external_auth_id = telegram:<user id>`, created through `POST /v1/users/sync`.
+- **Consent before anything.** Every update from a user without terms and privacy consent gets the consent request (two buttons) and nothing else; the request names Telegram's servers as part of the path. One button records terms, privacy and media_processing with source `telegram` through `POST /v1/me/consents`; `/stop` records the withdrawal. The bot never stores message text itself; the API's rules apply (D-062).
+- **Two routes from spec 6.2 added for it:** `POST /v1/me/consents` and `GET /v1/admin/traces/:request_id` (admins; the `/trace` command shows the steps, prompt versions, models and times of the user's last request or listing job).
+- **Scope of this version:** text messages to the assistant, `/annonce` (text, optionally one photo as its caption) through create, presign, upload and analyze with the result read back, `/pays`, `/moi`, `/stop`, `/trace`. Voice notes answer "coming" until the ASR service exists. Replies in French, English or Arabic from Telegram's language setting. All Telegram users share the per-IP rate limit (the bot's requests come from one address); the per-user limit applies to each user.
+
+### D-080 P3 listing extractor: version 4 active
+
+Owner's PC, qwen3.5:4b, golden set p3_listing v1 (100 listings), one run per version (T-44). Version 4 is v2's rules and six examples with v3's short output (F-058); version 3 is the direct baseline with the short output.
+
+| | v3 | v4 |
+|---|---|---|
+| JSON valid / answers cut at the limit | 100 / 0 | 100 / 0 |
+| Field F1 (model answer / after the range check) | 0.668 / 0.654 | 0.852 / 0.849 |
+| Precision / recall | 0.558 / 0.831 | 0.837 / 0.869 |
+| Unit errors on rent or deposit (items; after the check) | 9 (1) | 0 (0) |
+| Rent scope accuracy | 0.776 | 0.824 |
+| Latency p50 / p95 | 48.3 / 55.0 s | 20.4 / 26.0 s |
+| Tokens in / out (average) | 428 / 415 | 2,521 / 144 |
+
+Paired bootstrap, field F1 v4 - v3: +0.185, 95% interval [+0.162, +0.208]. v4 is better on every tag and on every field but one: `kind` (room, shared flat, roommate wanted) drops from 0.790 to 0.740. Its weakest tags are Tunisian in Arabic script (F1 0.722, 10 items) and in Latin script (0.774, 15) and listings without a price (0.775). Version 4 is active (`prompts/P3_listing_extractor/prompt.json`). v4 is faster although its prompt is about six times longer in tokens: it writes about a third as many tokens, and on this GPU generating tokens is what takes the time.
+
+What v4 still gets wrong, read in the answers:
+
+- **Injection.** 6 listings contain an instruction to the model. v4 followed it in 3 (p3-010, p3-056: rent 0; p3-080: rent 1 and bills included). The range check nulled all three rents, so no stored listing has a rent of 0 or 1, but p3-080's `bills_included: true` came from the injected text and passes the checks. The other two items counted as injection failures (p3-002, p3-030) did not follow the instruction; they fail on an invented date and an invented `bills_included`. Injection pass is 1 of 6 for both versions by the strict metric.
+- **The range check lowers F1 slightly** (0.852 to 0.849) on purpose: when it nulls a rent it also nulls the currency, period and scope that go with it (D-076), and in those three items those were right.
+- **Discriminatory listings.** 4 of the 6 got a house rule the labels do not have. The house-rule keys are a closed list (smoking, pets, guests, parties), so no answer could carry "girls only", "Tunisians only" or "no couples"; what v4 added is `pets: no` (3 items) and `smoking: no` (1), which the texts do not say. These are invented values, not the discriminatory criterion; the report column was renamed to say what it counts.
+- **Invented values remain the largest failure category** (66 items with at least one, against 99 for v3), then missed values (56).
+
+Not measured: other models on P3; a second run of each version (one run each, so run-to-run spread is unknown); a native-speaker check of the Tunisian items (D-078).
+
+### D-081 P7 photo analysis: same model, blurred copy, room facts only, contradictions in code
+
+Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
+
+- **Model.** qwen3.5:4b, the model already loaded for P1 to P3: Ollama's library lists its input as "Text, Image"
+  (https://ollama.com/library/qwen3.5, read 2026-10-05). A second vision model would not fit next to it in the GTX 1650's
+  4 GB. `p4.ps1 -Step p7-setup` checks on the PC that `ollama show` lists the vision capability.
+- **What the model sees.** The stored copy (EXIF removed, faces, text regions and screens blurred, D-070), sent by the
+  Media service as a JPEG whose long side is 1,024 px (setting `vision.max_side`; `POST /v1/images/vision`). The image
+  goes through the same `wf.llm.call` as the text prompts (Ollama `images` on the user message), so schema validation,
+  the retry and the trace are shared. Image tokens on the PC are not measured yet (T-46).
+- **Output.** Closed lists that a listing can use (room type, beds and kinds, furniture, appliances, bathroom fixtures,
+  windows, daylight, condition and its signs, furnished) and two flags: `readable_text` (text still readable after
+  blurring: the blur missed something) and `people_visible` (yes or no, nothing else about the person). v1 is the spec's
+  baseline (an open description plus every field answered); v2 removes the free description, allows "not_visible" and
+  asks a confidence per filled field. v1 is active until the evaluation says otherwise (spec 9.5).
+- **Checks in code** (`n8n/src/lib/photo_check.js`): lists reduced to the vocabulary, free text that names a person
+  (English, French, Arabic, Tunisian words) dropped and reported in `dropped`, review flags. The answer is stored in
+  `listing_media.analysis.vision` (`app.store_photo_analysis`).
+- **Contradictions with the listing are computed in code, not by the model.** The spec lists them in the P7 schema.
+  Giving the listing text to the vision prompt would put user-written text (an injection surface, D-076) next to the
+  image, and the comparison is simple and testable as code: after P3, `photoFindings` compares the photos with the
+  checked fields. Only positive evidence counts: a photo that does not show a washing machine says nothing about the
+  flat. Issues: `photos_show_amenities_not_in_text` (with the list; the amenities are suggestions, the owner confirms),
+  `photos_contradict_furnished` (only answers with confidence 0.5 or more), `photo_text_readable`, `photo_not_a_room`,
+  `photo_analysis_failed`.
+- **Failure.** A failed analysis does not reject the photo: it is stored as failed and the listing gets
+  `photo_analysis_failed` for review (spec 8.4 A1). Setting `vision.enabled` turns the step off.
+- **Not built:** the verified-room proof (spec 11.2, optional badge); later in phase 4 if time allows.
+
+### D-082 P7 evaluation and the near-duplicate threshold
+
+- **Golden set** `p7_photos v1`: 50 photos chosen from 125 Wikimedia Commons candidates (D-069), labelled from the
+  blurred 1,024 px copies with `eval/datasets/guides/p7_photos.md`; composition in `eval/datasets/README.md`. Labels allow
+  null (not determinable), `*` (not scored), alternative values and "maybe" objects, so that a reading a careful person
+  could also make is not counted wrong. A random 10 were re-labelled blind by a second model-based annotator: room type
+  10 of 10, other fields 8 to 10 of 10 (9 to 10 counting alternatives), object Jaccard 0.833; three guide rules settled
+  the conflicts, 8 labels changed.
+- **Metrics** (`eval/lib/prompt_metrics.js` scoreP7): field accuracy over determinable fields (the primary metric),
+  hallucination rate (objects listed that are not in the photo), unsupported answers (a value where the photo does not
+  allow one), abstentions, people described in free text, confident wrong fields. Promotion (spec 9.5): v2 replaces v1
+  only if field accuracy rises and neither the hallucination rate nor people described gets worse.
+- **Near-duplicate threshold.** `eval/runners/phash_pairs.py` hashes the 50 photos with the Media service's own code
+  (pHash before blurring) against 9 edits of each and all 1,225 pairs of different photos (T-45). At the spec's starting
+  distance of 6: precision 1.0, recall 0.49 (resizes and recompressions all caught; a 90% crop 10 of 50, a 3° rotation
+  25 of 50, a screenshot border 0 of 50). The closest pair of different photos is at 18. Distance 12 gives recall 0.70 with
+  6 bits of margin under that pair; 16 gives 0.81 with 2. **Default raised to 12** (migration 0013 moves only an unchanged
+  default). Not measured: precision on a large catalogue, where more unrelated pairs will come close; a match is a review
+  flag (D-072), not a rejection. Mirrored copies (distance 26 to 38), heavy crops and screenshots with borders need another
+  method; not built. Two different photos of the same room are 18 to 30 apart, so they are not reported as duplicates.
+
+### D-083 Availability date check on P3 answers; automatic publication for testing
+
+- **Date check.** On the owner's PC, P3 v4 wrote an availability date in 11 of 100 golden-set answers where the text
+  gives none (T-44); in the bot it gave today's date to a listing that said nothing about when. `checkListing`
+  (`n8n/src/lib/listing_check.js`) now removes `available_from` when the text has no sign of a time: a written date
+  (15/10, 2026-10-15), a month name, or a word such as "dispo", "libre", "immédiatement", "available", "from", or their
+  Arabic and Tunisian forms (فوري, متوفر, توا...). The issue `available_from_not_in_text` is added and the model's value
+  stays in `model_output`. Measured on the stored v3 and v4 answers (`eval/runners/date_check.js`,
+  `reports/phase4/33-date-check.log`): it removes 10 of 11 invented dates for each version, removes no correct date
+  (57 in v3, 62 in v4), and all 70 gold-date texts pass it. It cannot catch an invented date when the text has a time
+  word for something else (v3 p3-045, v4 p3-072 "dispo"), and it does not judge whether a date it keeps is right
+  (10 wrong dates in v3, 5 in v4, unchanged).
+- **Automatic publication** (`app.listing_auto_publish`, migration 0014; setting `listing.auto_publish`, **off by
+  default**). The analysis creates a draft; spec 2.4 journey B has the owner confirm the fields and the trust check run
+  before publication, and neither exists yet (phase 5). To show search working with a listing sent through the bot,
+  this setting publishes a draft as soon as its analysis is done, if it has a rent with a currency and a neighbourhood
+  or city that the local gazetteer finds in the listing's jurisdiction. The point used is the place's centre; the
+  public point is fuzzed by the existing trigger. The title is the text's first line (up to 80 characters). The listing
+  is embedded at once so semantic search finds it. It is marked `extraction.publication = {mode: auto, checked: false}`
+  and logged in `app.audit_log` (`listing_auto_published`). When something is missing it stays a draft and the bot says
+  what is missing. This skips the owner's confirmation and the trust check: it is for the sandbox, the demonstration
+  and tests, and must be off for real users. Removed or replaced when the confirmation step is built (phase 5).
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

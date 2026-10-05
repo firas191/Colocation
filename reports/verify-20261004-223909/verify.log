@@ -1,0 +1,37 @@
+verify.ps1 run 20261004-223909 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-10-04T22:39:09.5616287+01:00
+local commits found: history left as it is
+159db50 phase 3 : Profile and search
+adf454d knowledge base
+9b4ff3b fix(kb): HTML source line breaks are spaces (F-039)
+b45249b feat(eval): gold set v1 (48 TN questions); fix(kb): comments in charset count, quoted ">" in tags, script check
+f2a47e1 fix(kb): tests independent of tokenizer and global corpus; no-network run fails the job
+exit=0 seconds=1.1
+
+===== add settings introduced by later phases to .env (existing lines unchanged) =====
+command: & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -AddMissing
+started: 2026-10-04T22:39:10.6569095+01:00
+added to .env: nothing
+exit=0 seconds=0.5
+
+===== Docker engine is running =====
+command: docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}"
+started: 2026-10-04T22:39:11.1599977+01:00
+server 29.8.1 os Docker Desktop
+exit=0 seconds=1.5
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-10-04T22:39:12.6314660+01:00

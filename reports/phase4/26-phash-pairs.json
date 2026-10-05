@@ -1,0 +1,356 @@
+{
+ "photos": 50,
+ "near_pairs": 400,
+ "mirror_pairs": 50,
+ "unrelated_pairs": 1225,
+ "unrelated_distance": {
+  "min": 18,
+  "p1": 22,
+  "median": 32,
+  "same_group_min": 20
+ },
+ "closest_unrelated": [
+  {
+   "a": "p7-006",
+   "b": "p7-029",
+   "same_group": false,
+   "distance": 18
+  },
+  {
+   "a": "p7-013",
+   "b": "p7-020",
+   "same_group": false,
+   "distance": 18
+  },
+  {
+   "a": "p7-002",
+   "b": "p7-010",
+   "same_group": true,
+   "distance": 20
+  },
+  {
+   "a": "p7-003",
+   "b": "p7-016",
+   "same_group": false,
+   "distance": 20
+  },
+  {
+   "a": "p7-011",
+   "b": "p7-035",
+   "same_group": false,
+   "distance": 20
+  },
+  {
+   "a": "p7-020",
+   "b": "p7-027",
+   "same_group": true,
+   "distance": 20
+  },
+  {
+   "a": "p7-002",
+   "b": "p7-006",
+   "same_group": true,
+   "distance": 22
+  },
+  {
+   "a": "p7-002",
+   "b": "p7-024",
+   "same_group": false,
+   "distance": 22
+  },
+  {
+   "a": "p7-005",
+   "b": "p7-025",
+   "same_group": false,
+   "distance": 22
+  },
+  {
+   "a": "p7-007",
+   "b": "p7-030",
+   "same_group": false,
+   "distance": 22
+  }
+ ],
+ "by_edit": {
+  "crop_90": {
+   "n": 50,
+   "min": 4,
+   "median": 10,
+   "max": 20,
+   "within_6": 10
+  },
+  "crop_75": {
+   "n": 50,
+   "min": 12,
+   "median": 20,
+   "max": 36,
+   "within_6": 0
+  },
+  "resize_50": {
+   "n": 50,
+   "min": 0,
+   "median": 0,
+   "max": 2,
+   "within_6": 50
+  },
+  "jpeg_q30": {
+   "n": 50,
+   "min": 0,
+   "median": 0,
+   "max": 2,
+   "within_6": 50
+  },
+  "brighter_20": {
+   "n": 50,
+   "min": 0,
+   "median": 2,
+   "max": 10,
+   "within_6": 49
+  },
+  "rotate_3": {
+   "n": 50,
+   "min": 2,
+   "median": 8,
+   "max": 16,
+   "within_6": 25
+  },
+  "border_screenshot": {
+   "n": 50,
+   "min": 10,
+   "median": 18,
+   "max": 32,
+   "within_6": 0
+  },
+  "mirror": {
+   "n": 50,
+   "min": 26,
+   "median": 32,
+   "max": 38,
+   "within_6": 0
+  },
+  "combined": {
+   "n": 50,
+   "min": 4,
+   "median": 10,
+   "max": 22,
+   "within_6": 11
+  }
+ },
+ "thresholds": [
+  {
+   "threshold": 0,
+   "tp": 105,
+   "fp": 0,
+   "fn": 295,
+   "precision": 1.0,
+   "recall": 0.2625,
+   "f1": 0.4158
+  },
+  {
+   "threshold": 1,
+   "tp": 105,
+   "fp": 0,
+   "fn": 295,
+   "precision": 1.0,
+   "recall": 0.2625,
+   "f1": 0.4158
+  },
+  {
+   "threshold": 2,
+   "tp": 141,
+   "fp": 0,
+   "fn": 259,
+   "precision": 1.0,
+   "recall": 0.3525,
+   "f1": 0.5213
+  },
+  {
+   "threshold": 3,
+   "tp": 141,
+   "fp": 0,
+   "fn": 259,
+   "precision": 1.0,
+   "recall": 0.3525,
+   "f1": 0.5213
+  },
+  {
+   "threshold": 4,
+   "tp": 171,
+   "fp": 0,
+   "fn": 229,
+   "precision": 1.0,
+   "recall": 0.4275,
+   "f1": 0.5989
+  },
+  {
+   "threshold": 5,
+   "tp": 171,
+   "fp": 0,
+   "fn": 229,
+   "precision": 1.0,
+   "recall": 0.4275,
+   "f1": 0.5989
+  },
+  {
+   "threshold": 6,
+   "tp": 195,
+   "fp": 0,
+   "fn": 205,
+   "precision": 1.0,
+   "recall": 0.4875,
+   "f1": 0.6555
+  },
+  {
+   "threshold": 7,
+   "tp": 195,
+   "fp": 0,
+   "fn": 205,
+   "precision": 1.0,
+   "recall": 0.4875,
+   "f1": 0.6555
+  },
+  {
+   "threshold": 8,
+   "tp": 226,
+   "fp": 0,
+   "fn": 174,
+   "precision": 1.0,
+   "recall": 0.565,
+   "f1": 0.722
+  },
+  {
+   "threshold": 9,
+   "tp": 226,
+   "fp": 0,
+   "fn": 174,
+   "precision": 1.0,
+   "recall": 0.565,
+   "f1": 0.722
+  },
+  {
+   "threshold": 10,
+   "tp": 252,
+   "fp": 0,
+   "fn": 148,
+   "precision": 1.0,
+   "recall": 0.63,
+   "f1": 0.773
+  },
+  {
+   "threshold": 11,
+   "tp": 252,
+   "fp": 0,
+   "fn": 148,
+   "precision": 1.0,
+   "recall": 0.63,
+   "f1": 0.773
+  },
+  {
+   "threshold": 12,
+   "tp": 280,
+   "fp": 0,
+   "fn": 120,
+   "precision": 1.0,
+   "recall": 0.7,
+   "f1": 0.8235
+  },
+  {
+   "threshold": 13,
+   "tp": 280,
+   "fp": 0,
+   "fn": 120,
+   "precision": 1.0,
+   "recall": 0.7,
+   "f1": 0.8235
+  },
+  {
+   "threshold": 14,
+   "tp": 301,
+   "fp": 0,
+   "fn": 99,
+   "precision": 1.0,
+   "recall": 0.7525,
+   "f1": 0.8588
+  },
+  {
+   "threshold": 15,
+   "tp": 301,
+   "fp": 0,
+   "fn": 99,
+   "precision": 1.0,
+   "recall": 0.7525,
+   "f1": 0.8588
+  },
+  {
+   "threshold": 16,
+   "tp": 324,
+   "fp": 0,
+   "fn": 76,
+   "precision": 1.0,
+   "recall": 0.81,
+   "f1": 0.895
+  },
+  {
+   "threshold": 17,
+   "tp": 324,
+   "fp": 0,
+   "fn": 76,
+   "precision": 1.0,
+   "recall": 0.81,
+   "f1": 0.895
+  },
+  {
+   "threshold": 18,
+   "tp": 344,
+   "fp": 2,
+   "fn": 56,
+   "precision": 0.9942,
+   "recall": 0.86,
+   "f1": 0.9223
+  },
+  {
+   "threshold": 19,
+   "tp": 344,
+   "fp": 2,
+   "fn": 56,
+   "precision": 0.9942,
+   "recall": 0.86,
+   "f1": 0.9223
+  },
+  {
+   "threshold": 20,
+   "tp": 365,
+   "fp": 6,
+   "fn": 35,
+   "precision": 0.9838,
+   "recall": 0.9125,
+   "f1": 0.9468
+  }
+ ],
+ "same_room_pairs": [
+  {
+   "a": "c-28e2415ea287.jpg",
+   "b": "c-79e6a7086fc7.jpg",
+   "kind": "same scene, small shift of the camera",
+   "distance": 18
+  },
+  {
+   "a": "c-50d63991aa45.jpg",
+   "b": "c-8b2293aa5a5c.jpg",
+   "kind": "same bathroom, other framing",
+   "distance": 18
+  },
+  {
+   "a": "c-01c110fe7ad1.jpg",
+   "b": "c-5b65bdba6bd7.jpg",
+   "kind": "same bedroom, other angle",
+   "distance": 30
+  },
+  {
+   "a": "c-28145d807ac0.jpg",
+   "b": "c-fff7c8a5b9b5.jpg",
+   "kind": "same bedroom, other angle",
+   "distance": 26
+  }
+ ]
+}

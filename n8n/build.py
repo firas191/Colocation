@@ -98,9 +98,13 @@ def code_node(wf, name, src, pos=None, subst=None, on_error=None):
                    pos, **extra)
 
 
+SVC_CRED = {"httpHeaderAuth": {"id": "fsCredSvcToken01", "name": "Compute services token"}}
+
+
 def http_node(wf, name, method, url, pos=None, body=None, fmt="text", full=False, never_error=False,
-              timeout="={{ 30000 }}", headers=None, on_error=None):
-    """HTTP Request node. body: expression producing a JSON string. fmt: text | file | json."""
+              timeout="={{ 30000 }}", headers=None, on_error=None, svc=False):
+    """HTTP Request node. body: expression producing a JSON string. fmt: text | file | json.
+    svc=True: sends X-Internal-Token from the n8n credential (compute services, spec 5.4 item 4)."""
     params = {"method": method, "url": url,
               "options": {"timeout": timeout,
                           "redirect": {"redirect": {"followRedirects": True, "maxRedirects": 5}},
@@ -114,15 +118,19 @@ def http_node(wf, name, method, url, pos=None, body=None, fmt="text", full=False
     if body is not None:
         params.update({"sendBody": True, "contentType": "json", "specifyBody": "json", "jsonBody": body})
     extra = {"onError": on_error} if on_error else {}
+    if svc:
+        params.update({"authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth"})
+        extra["credentials"] = SVC_CRED
     return wf.node(name, "n8n-nodes-base.httpRequest", 4.2, params, pos, **extra)
 
 
-def exec_wf(wf, name, wid, wname, wait=True, pos=None, on_error=None):
+def exec_wf(wf, name, wid, wname, wait=True, pos=None, on_error=None, each=False):
+    """each=True starts one sub-workflow execution per input item (the workers assume one item, F-054)."""
     extra = {"onError": on_error} if on_error else {}
     return wf.node(name, "n8n-nodes-base.executeWorkflow", 1.2, {
         "source": "database",
         "workflowId": {"__rl": True, "value": wid, "mode": "id", "cachedResultName": wname},
-        "mode": "once",
+        "mode": "each" if each else "once",
         "options": {"waitForSubWorkflow": wait},
     }, pos, **extra)
 
@@ -693,10 +701,16 @@ def llm_call():
     wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
     pg_node(wf, "Load prompt",
             "select ai.prompt_for($1, nullif($2, '')::int) as prompt_row,"
-            " (select jsonb_object_agg(key, value) from app.settings where key like 'llm.%' or key = 'ollama.base_url') as cfg",
+            " (select jsonb_object_agg(key, value) from app.settings where key like 'llm.%' or key = 'ollama.base_url'"
+            "   or key like 'vision.%' or key = 'services.media_url') as cfg",
             "={{ [ $json.prompt, $json.version === null || $json.version === undefined ? '' : String($json.version) ] }}",
             [220, 0], on_error=None)
-    code_node(wf, "Build request", "llm_build.js", [440, 0])
+    # P7: the photo comes from the Media service as a small JPEG of the stored (blurred) copy (D-081).
+    if_node(wf, "Image?", "={{ !!($('Start').first().json.image && $('Start').first().json.image.key) }}", [330, 150])
+    http_node(wf, "Load image", "POST", "={{ String($json.cfg['services.media_url']).replace(/\\/+$/, '') + '/v1/images/vision' }}",
+              [440, 250], body="={{ JSON.stringify({ key: $('Start').first().json.image.key, max_side: Number($json.cfg['vision.max_side'] || 1024) }) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 60000 }}", svc=True, on_error="continueRegularOutput")
+    code_node(wf, "Build request", "llm_build.js", [660, 0])
     if_node(wf, "Call model?", "={{ !$json.skip }}", [660, 0])
     http_node(wf, "Call model", "POST", "={{ $json.url }}", [880, -100], body="={{ JSON.stringify($json.body) }}",
               fmt="json", full=True, never_error=True, timeout="={{ $json.timeout_ms }}", on_error="continueRegularOutput")
@@ -708,7 +722,10 @@ def llm_call():
     code_node(wf, "Check retry", "llm_check.js", [1760, -200], subst={"__ATTEMPT__": "2"})
     code_node(wf, "Result", "llm_result.js", [1980, 0])
     wf.link("Start", "Load prompt")
-    wf.link("Load prompt", "Build request")
+    wf.link("Load prompt", "Image?")
+    wf.link("Image?", "Load image", 0)
+    wf.link("Image?", "Build request", 1)
+    wf.link("Load image", "Build request")
     wf.link("Build request", "Call model?")
     wf.link("Call model?", "Call model", 0)
     wf.link("Call model?", "Result", 1)
@@ -956,8 +973,14 @@ def orchestrator():
                   "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0015")
     code_node(wf, "Validate body", "orch_validate.js", [880, -100])
     if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
-    pg_node(wf, "Context", "select coalesce((select (value #>> '{}')::float from app.settings where key = 'router.min_confidence'), 0.6) as min_confidence",
+    pg_node(wf, "Context", "select coalesce((select (value #>> '{}')::float from app.settings where key = 'router.min_confidence'), 0.6) as min_confidence,"
+            " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url",
             None, [1320, -200], on_error=None)
+    # Text service before P1 (spec 8.2 A0, 9.7): language identification and PII count. A failure here is
+    # recorded in the trace and does not stop the request (phase 4, D-074).
+    http_node(wf, "Text analysis", "POST", "={{ $json.text_url.replace(/\\/+$/, '') + '/v1/analyze' }}", [1430, -350],
+              body="={{ JSON.stringify({ text: $('Validate body').first().json.text, mask: true, use_ner: true }) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 10000 }}", svc=True, on_error="continueRegularOutput")
     code_node(wf, "Router input", "orch_p1_input.js", [1540, -200])
     exec_wf(wf, "Classify", LLM_CALL_WF, "wf.llm.call", pos=[1760, -200])
     code_node(wf, "Decide route", "orch_route.js", [1980, -200])
@@ -975,7 +998,8 @@ def orchestrator():
     wf.link("Validate body", "Valid?")
     wf.link("Valid?", "Context", 0)
     wf.link("Valid?", "Envelope", 1)
-    wf.link("Context", "Router input")
+    wf.link("Context", "Text analysis")
+    wf.link("Text analysis", "Router input")
     wf.link("Router input", "Classify")
     wf.link("Classify", "Decide route")
     wf.link("Decide route", "Route by intent")
@@ -1097,11 +1121,509 @@ def admin_fx_refresh():
                               "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0018", "fx_validate.js", FX_WF, "wf.fx.refresh")
 
 
+
+# ---------------------------------------------------------------- phase 4: listings and media intake
+LISTING_GET_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0019"        # parameterised routes: see infra/caddy/Caddyfile
+LISTING_PRESIGN_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001a"
+LISTING_ANALYZE_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001b"
+ME_CONSENTS_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001c"
+TRACE_GET_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001d"        # parameterised: see infra/caddy/Caddyfile
+MEDIA_CONSENTS = ["terms", "privacy", "media_processing"]      # spec 11.1 privacy, 13.4
+ANALYZE_WF = "fsListingAnalyz1"
+INTAKE_PHOTOS_WF = "fsIntakePhotos01"
+LISTING_EXTRACT_WF = "fsListingExtr001"
+SETTINGS_SQL = ("select (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url,"
+                " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,"
+                " (select value #>> '{}' from app.settings where key = 'services.asr_url') as asr_url")
+ANALYZE_START_SQL = """with j as (select * from app.job_start($1::uuid))
+select j.id as job_id, j.input, j.attempts, j.max_attempts,
+  (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url,
+  coalesce((select jsonb_agg(jsonb_build_object('upload_id', u.id, 'kind', u.kind, 'key', u.storage_key) order by u.created_at)
+            from app.media_uploads u
+            where u.listing_id = (j.input->>'listing_id')::uuid and u.status in ('pending', 'expired', 'processing')), '[]'::jsonb) as uploads
+from j"""
+JOB_FINISH_SQL = "select id, status, attempts, next_attempt_at from app.job_finish($1::uuid, $2, $3::jsonb, $4, $5::boolean)"
+
+
+def api_listings_create():
+    wf = endpoint("fsApiListCreate1", "wf.api.listings_create", "POST", "v1/listings",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0018", {"idempotent": True})
+    code_node(wf, "Validate body", "listings_create_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Create listing", "select app.listing_create($1::uuid, $2::jsonb) as r", "={{ $json.params }}", [1320, -200], on_error=None)
+    code_node(wf, "Build result", "listings_create_result.js", [1540, -200])
+    respond_tail(wf, 1760)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Create listing", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Create listing", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_listings_get():
+    wf = endpoint("fsApiListGet0001", "wf.api.listings_get", "GET", "v1/listings/:id", LISTING_GET_HOOK)
+    pg_node(wf, "Load", "select app.listing_owner_view(app.try_uuid($1), app.try_uuid($2)) as v",
+            "={{ [ $json.ctx.user_id, $json.ctx.params.id || '' ] }}", [880, -100], on_error=None)
+    code_node(wf, "Build result", "listings_get_result.js", [1100, -100])
+    respond_tail(wf, 1320)
+    wf.link("Gateway ok?", "Load", 0)
+    wf.link("Load", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_listings_presign():
+    wf = endpoint("fsApiListPresig1", "wf.api.listings_presign", "POST", "v1/listings/:id/media/presign", LISTING_PRESIGN_HOOK,
+                  {"idempotent": True, "required_consents": MEDIA_CONSENTS})
+    code_node(wf, "Validate body", "listings_presign_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Settings", SETTINGS_SQL, None, [1320, -200], on_error=None)
+    pg_node(wf, "Create slots", "select app.media_upload_create($1::uuid, app.try_uuid($2), $3::jsonb) as r",
+            "={{ $('Validate body').first().json.params }}", [1540, -200], on_error=None)
+    code_node(wf, "Slots", "listings_presign_slots.js", [1760, -200])
+    if_node(wf, "Slots ok?", "={{ !$json.reject }}", [1980, -200])
+    http_node(wf, "Presign", "POST", "={{ $json.url }}", [2200, -300], body="={{ JSON.stringify($json.body) }}",
+              fmt="text", full=True, never_error=True, timeout="={{ 15000 }}", svc=True)
+    code_node(wf, "Build result", "listings_presign_result.js", [2420, -300])
+    respond_tail(wf, 2640)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Settings", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Settings", "Create slots")
+    wf.link("Create slots", "Slots")
+    wf.link("Slots", "Slots ok?")
+    wf.link("Slots ok?", "Presign", 0)
+    wf.link("Slots ok?", "Envelope", 1)
+    wf.link("Presign", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_listings_analyze():
+    wf = endpoint("fsApiListAnalyz1", "wf.api.listings_analyze", "POST", "v1/listings/:id/analyze", LISTING_ANALYZE_HOOK,
+                  {"idempotent": True, "required_consents": MEDIA_CONSENTS})
+    code_node(wf, "Validate body", "listings_analyze_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Check listing",
+            "select l.id, l.status, l.owner_id = app.try_uuid($1) as mine,"
+            " (select count(*) from app.media_uploads u where u.listing_id = l.id and u.status in ('pending', 'expired')) as pending,"
+            " coalesce(btrim(l.description), '') <> '' as has_text"
+            " from (select app.try_uuid($2) as id) k left join app.listings l on l.id = k.id",
+            "={{ $json.params }}", [1320, -200], on_error=None)
+    code_node(wf, "Job input", "listings_analyze_job.js", [1540, -200])
+    if_node(wf, "Accept?", "={{ $json.ok }}", [1760, -200])
+    pg_node(wf, "Create job", CREATE_JOB_SQL, "={{ $json.params }}", [1980, -300], on_error=None, always_output=True)
+    if_node(wf, "Newly created?", "={{ $json.created === true }}", [2200, -300])
+    exec_wf(wf, "Start worker", ANALYZE_WF, "wf.listing.analyze", wait=False, pos=[2420, -400])
+    code_node(wf, "Accepted", "listings_analyze_accepted.js", [2640, -300])
+    respond_tail(wf, 2860)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Check listing", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Check listing", "Job input")
+    wf.link("Job input", "Accept?")
+    wf.link("Accept?", "Create job", 0)
+    wf.link("Accept?", "Envelope", 1)
+    wf.link("Create job", "Newly created?")
+    wf.link("Newly created?", "Start worker", 0)
+    wf.link("Newly created?", "Accepted", 1)
+    wf.link("Start worker", "Accepted")
+    wf.link("Accepted", "Envelope")
+    return wf
+
+
+def api_me_consents():
+    """POST /v1/me/consents (spec 6.2, 13.4): record consent; no consent needed to call it."""
+    wf = endpoint("fsApiMeConsent01", "wf.api.me_consents", "POST", "v1/me/consents", ME_CONSENTS_HOOK,
+                  {"idempotent": True, "required_consents": []})
+    code_node(wf, "Validate body", "me_consents_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Record", "select app.record_consents($1::uuid, $2::jsonb) as c", "={{ $json.params }}", [1320, -200], on_error=None)
+    code_node(wf, "Build result", "me_consents_result.js", [1540, -200])
+    respond_tail(wf, 1760)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Record", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Record", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_admin_traces_get():
+    """GET /v1/admin/traces/:request_id (spec 6.2, 8.3), admins only."""
+    return get_by_id_endpoint("fsApiTraceGet001", "wf.api.admin_traces_get", "/v1/admin/traces/:id", TRACE_GET_HOOK, ["admin"],
+                              "select ai.trace(app.try_uuid($1)) as t", "trace_get_result.js")
+
+
+def intake_photos():
+    """A1 intake for one uploaded photo (spec 8.4 wf.intake.photos, 11.2 steps 1 to 4 and the duplicate lookup)."""
+    wf = WF(INTAKE_PHOTOS_WF, "wf.intake.photos", tags=["agent", "intake"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    code_node(wf, "Request", "intake_photo_request.js", [220, 0])
+    http_node(wf, "Process", "POST", "={{ $json.url }}", [440, 0], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 120000 }}", svc=True, on_error="continueRegularOutput")
+    code_node(wf, "Outcome", "intake_photo_outcome.js", [660, 0])
+    wf.node("Action", "n8n-nodes-base.switch", 3.2, {
+        "mode": "expression", "numberOutputs": 3,
+        "output": "={{ ({store: 0, reject: 1})[$json.action] ?? 2 }}", "options": {}}, [880, 0])
+    pg_node(wf, "Store photo", "select app.store_listing_photo($1::uuid, $2::jsonb) as r,"
+            " coalesce((select value::text from app.settings where key = 'vision.enabled'), 'true') = 'true' as vision",
+            "={{ [ $json.upload_id, JSON.stringify($json.report) ] }}", [1100, -200], on_error=None, retries=1)
+    # Step 5 and 6 of spec 11.2: P7 on the stored copy; a failed analysis is stored as failed (D-081).
+    if_node(wf, "Analyze photo?", "={{ !!($json.r && $json.r.ok && $json.vision) }}", [1320, -200])
+    code_node(wf, "Vision input", "photo_vision_vars.js", [1540, -350])
+    exec_wf(wf, "Analyze photo", LLM_CALL_WF, "wf.llm.call", pos=[1760, -350], on_error="continueRegularOutput")
+    code_node(wf, "Check photo", "photo_vision_post.js", [1980, -350])
+    pg_node(wf, "Store analysis", "select app.store_photo_analysis($1::uuid, $2::jsonb) as r",
+            "={{ [ $json.media_id, JSON.stringify($json.analysis) ] }}", [2200, -350], on_error="continueRegularOutput", retries=1)
+    pg_node(wf, "Record steps", "select app.record_job_steps(nullif($1, '')::uuid, 'wf.intake.photos', $2, $3::jsonb) as execution_id",
+            "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Check photo').first().json.steps) ] }}",
+            [2420, -350], on_error="continueRegularOutput")
+    pg_node(wf, "Reject upload", "select app.media_upload_reject($1::uuid, $2, $3) as r",
+            "={{ [ $json.upload_id, $json.code, $json.message ] }}", [1100, 0], on_error=None, retries=1)
+    code_node(wf, "Result", "intake_photo_result.js", [2640, 0])
+    wf.link("Start", "Request")
+    wf.link("Request", "Process")
+    wf.link("Process", "Outcome")
+    wf.link("Outcome", "Action")
+    wf.link("Action", "Store photo", 0)
+    wf.link("Action", "Reject upload", 1)
+    wf.link("Action", "Result", 2)
+    wf.link("Store photo", "Analyze photo?")
+    wf.link("Analyze photo?", "Vision input", 0)
+    wf.link("Analyze photo?", "Result", 1)
+    wf.link("Vision input", "Analyze photo")
+    wf.link("Analyze photo", "Check photo")
+    wf.link("Check photo", "Store analysis")
+    wf.link("Store analysis", "Record steps")
+    wf.link("Record steps", "Result")
+    wf.link("Reject upload", "Result")
+    return wf
+
+
+EXTRACT_CONTEXT_SQL = """select l.id as listing_id, l.description as text, l.jurisdiction_code,
+  to_char((now() at time zone j.timezone)::date, 'YYYY-MM-DD') as today, app.extraction_context(l.jurisdiction_code) as ctx,
+  (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,
+  (select coalesce(jsonb_agg(m.analysis->'vision' order by m.created_at), '[]'::jsonb) from app.listing_media m
+    where m.listing_id = l.id and m.kind = 'photo' and m.analysis ? 'vision') as photos
+from app.listings l join app.jurisdictions j on j.code = l.jurisdiction_code where l.id = $1::uuid"""
+
+
+def listing_extract():
+    """A1 extraction (spec 8.4 wf.listing.extract, 9.3 P3): listing text -> checked structured fields.
+    Input {listing_id, job_id?, model?, version?}; output see listing_extract_result.js."""
+    wf = WF(LISTING_EXTRACT_WF, "wf.listing.extract", tags=["agent", "intake"], settings={"saveDataSuccessExecution": "all"})
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", EXTRACT_CONTEXT_SQL, "={{ [ $json.listing_id ] }}", [220, 0], on_error=None)
+    if_node(wf, "Has text?", "={{ !!($json.text || '').trim() }}", [440, 0])
+    # Language and PII counts of the listing text (Text service); a failure does not stop the extraction.
+    http_node(wf, "Text analysis", "POST", "={{ String($json.text_url).replace(/\\/+$/, '') + '/v1/analyze' }}", [660, -100],
+              body="={{ JSON.stringify({ text: $json.text, mask: true, use_ner: true }) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 20000 }}", svc=True, on_error="continueRegularOutput")
+    code_node(wf, "Call input", "listing_extract_vars.js", [880, -100])
+    exec_wf(wf, "Extract", LLM_CALL_WF, "wf.llm.call", pos=[1100, -100])
+    code_node(wf, "Check listing", "listing_extract_post.js", [1320, -100])
+    if_node(wf, "Store?", "={{ $json.store }}", [1540, -100])
+    pg_node(wf, "Store extraction", "select app.store_listing_extraction($1::uuid, $2::jsonb) as r", "={{ $json.params }}",
+            [1760, -200], on_error=None, retries=1)
+    pg_node(wf, "Record steps", "select app.record_job_steps(nullif($1, '')::uuid, 'wf.listing.extract', $2, $3::jsonb) as execution_id",
+            "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Check listing').first().json.steps) ] }}",
+            [1980, -100], on_error="continueRegularOutput")
+    code_node(wf, "Result", "listing_extract_result.js", [2200, 0])
+    wf.link("Start", "Context")
+    wf.link("Context", "Has text?")
+    wf.link("Has text?", "Text analysis", 0)
+    wf.link("Has text?", "Result", 1)
+    wf.link("Text analysis", "Call input")
+    wf.link("Call input", "Extract")
+    wf.link("Extract", "Check listing")
+    wf.link("Check listing", "Store?")
+    wf.link("Store?", "Store extraction", 0)
+    wf.link("Store?", "Record steps", 1)
+    wf.link("Store extraction", "Record steps")
+    wf.link("Record steps", "Result")
+    return wf
+
+
+def listing_analyze():
+    """Job worker for POST /v1/listings/:id/analyze: photos (4.3), then the text extraction P3 (4.4).
+    Retries transient failures (spec 5.6)."""
+    E = "continueErrorOutput"
+    wf = WF(ANALYZE_WF, "wf.listing.analyze", tags=["worker", "intake"], settings={"saveDataSuccessExecution": "all"})
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Start job", ANALYZE_START_SQL, "={{ [ $json.id ] }}", [220, 0], on_error=None, always_output=True)
+    code_node(wf, "Plan", "analyze_plan.js", [440, 0], on_error=E)
+    code_node(wf, "Job failed", "analyze_failed.js", [660, 400])
+    if_node(wf, "Any photo?", "={{ !$json.none }}", [660, 0])
+    wf.node("Loop files", "n8n-nodes-base.splitInBatches", 3, {"batchSize": 1, "options": {}}, [880, -100])
+    exec_wf(wf, "Intake photo", INTAKE_PHOTOS_WF, "wf.intake.photos", wait=True, pos=[1100, 0], on_error=E)
+    code_node(wf, "Summarize", "analyze_summary.js", [1100, -300], on_error=E)
+    http_node(wf, "Delete raw uploads", "POST", "={{ $json.delete_url }}", [1320, -300],
+              body="={{ JSON.stringify({ keys: $json.delete_keys.length ? $json.delete_keys : ['none/none'] }) }}",
+              fmt="text", full=True, never_error=True, timeout="={{ 30000 }}", svc=True, on_error="continueRegularOutput")
+    wf.node("Extract input", "n8n-nodes-base.code", 2, {"mode": "runOnceForAllItems", "language": "javaScript", "jsCode":
+            "// wf.listing.analyze > \"Extract input\"\nconst s = $('Summarize').first().json;\n"
+            "return [{ json: { listing_id: s.output.listing_id, job_id: s.job_id } }];\n"}, [1540, -300])
+    exec_wf(wf, "Extract listing", LISTING_EXTRACT_WF, "wf.listing.extract", wait=True, pos=[1760, -300], on_error=E)
+    # Automatic publication for tests and demos (D-083): only after a successful extraction; the function checks the setting.
+    if_node(wf, "Extracted?", "={{ $json.status === 'extracted' }}", [1980, -450])
+    pg_node(wf, "Auto publish", "select app.listing_auto_publish($1::uuid) as r", "={{ [ $json.listing_id ] }}", [2200, -550],
+            on_error="continueRegularOutput")
+    if_node(wf, "Embed now?", "={{ !!($json.r && $json.r.published && $json.r.embed_text) }}", [2420, -550])
+    code_node(wf, "Embedding request", "analyze_embed_request.js", [2640, -650])
+    http_node(wf, "Embed listing", "POST", "={{ $json.url }}", [2860, -650], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 60000 }}", on_error="continueRegularOutput")
+    code_node(wf, "Embedding rows", "analyze_embed_store.js", [3080, -650])
+    if_node(wf, "Store vector?", "={{ !$json.skip }}", [3300, -650])
+    pg_node(wf, "Store vector", "select app.store_listing_embeddings($1, $2::jsonb) as stored", "={{ $json.params }}",
+            [3520, -700], on_error="continueRegularOutput")
+    code_node(wf, "Finish input", "analyze_finish.js", [3740, -300], on_error=E)
+    pg_node(wf, "Finish job", JOB_FINISH_SQL, "={{ $json.params }}", [3960, -300], on_error=None, retries=2)
+    pg_node(wf, "Finish failed job", JOB_FINISH_SQL, "={{ $json.params }}", [880, 400], on_error=None, retries=2)
+    wf.link("Start", "Start job")
+    wf.link("Start job", "Plan")
+    wf.link("Plan", "Any photo?", 0)
+    wf.link("Plan", "Job failed", 1)
+    wf.link("Any photo?", "Loop files", 0)
+    wf.link("Any photo?", "Summarize", 1)
+    wf.link("Loop files", "Summarize", 0)      # done: every result
+    wf.link("Loop files", "Intake photo", 1)   # one file at a time
+    wf.link("Intake photo", "Loop files", 0)
+    wf.link("Intake photo", "Job failed", 1)
+    wf.link("Summarize", "Delete raw uploads", 0)
+    wf.link("Summarize", "Job failed", 1)
+    wf.link("Delete raw uploads", "Extract input")
+    wf.link("Extract input", "Extract listing")
+    wf.link("Extract listing", "Extracted?", 0)
+    wf.link("Extracted?", "Auto publish", 0)
+    wf.link("Extracted?", "Finish input", 1)
+    wf.link("Auto publish", "Embed now?")
+    wf.link("Embed now?", "Embedding request", 0)
+    wf.link("Embed now?", "Finish input", 1)
+    wf.link("Embedding request", "Embed listing")
+    wf.link("Embed listing", "Embedding rows")
+    wf.link("Embedding rows", "Store vector?")
+    wf.link("Store vector?", "Store vector", 0)
+    wf.link("Store vector?", "Finish input", 1)
+    wf.link("Store vector", "Finish input")
+    wf.link("Extract listing", "Job failed", 1)
+    wf.link("Finish input", "Finish job", 0)
+    wf.link("Finish input", "Job failed", 1)
+    wf.link("Job failed", "Finish failed job")
+    return wf
+
+
+def jobs_dispatch():
+    """Scheduled every minute: the reaper (stuck jobs) and the retries that are due (spec 5.6)."""
+    wf = WF("fsJobsDispatch01", "wf.jobs.dispatch", tags=["worker", "jobs"])
+    wf.node("Every minute", "n8n-nodes-base.scheduleTrigger", 1.2, {"rule": {"interval": [{"field": "minutes", "minutesInterval": 1}]}}, [0, 0])
+    pg_node(wf, "Reap", "select count(*) as reaped from app.jobs_reap()", None, [220, 0], on_error=None)
+    pg_node(wf, "Due", "select id, type from app.jobs_due(5)", None, [440, 0], on_error=None)
+    code_node(wf, "Dispatch", "jobs_dispatch.js", [660, 0])
+    exec_wf(wf, "Start analyze", ANALYZE_WF, "wf.listing.analyze", wait=False, pos=[880, 0], each=True)
+    wf.link("Every minute", "Reap")
+    wf.link("Reap", "Due")
+    wf.link("Due", "Dispatch")
+    wf.link("Dispatch", "Start analyze")
+    return wf
+
+# ---------- Telegram channel (D-079) -------------------------------------------------
+TG_CHANNEL_WF = "fsChannelTgram01"
+TG_API_WF = "fsChannelTgApi01"
+TG_CRED = {"telegramApi": {"id": "fsCredTelegram01", "name": "Telegram bot"}}
+TG_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0e01"     # internal: /webhook/telegram/update, not under /v1 (the proxy never maps it)
+TG_CONTEXT_SQL = """with fresh as (
+  insert into app.telegram_updates (bot, update_id) values ($3, $1) on conflict do nothing returning update_id),
+trimmed as (delete from app.telegram_updates where received_at < now() - interval '2 days')
+select exists (select 1 from fresh) as fresh, u.id as user_id, u.role, u.jurisdiction_code,
+  coalesce((select jsonb_object_agg(c.purpose, c.granted) from (select distinct on (purpose) purpose, granted
+              from app.consents where user_id = u.id order by purpose, granted_at desc, id desc) c), '{}'::jsonb) as consents,
+  (select x.rid from (select e.request_id as rid, e.started_at as t from ai.executions e
+                       where e.user_id = u.id and e.workflow = 'wf.orchestrator'
+                      union all select j.id, j.created_at from app.jobs j where j.requested_by = u.id and j.type = 'listing_analyze') x
+    order by x.t desc limit 1) as last_request_id,
+  (select jsonb_object_agg(key, value) from app.settings where key like 'telegram.%') as cfg,
+  (select value #>> '{}' from app.settings where key = 'services.api_url') as api_url
+from (select 1) one left join app.users u on u.external_auth_id = $2 and u.deleted_at is null"""
+
+
+def tg_node(wf, name, params, pos):
+    return wf.node(name, "n8n-nodes-base.telegram", 1.2, params, pos, credentials=TG_CRED)
+
+
+def tg_send(wf, name, pos, chat="={{ $json.chat_id }}", text="={{ $json.text }}"):
+    return tg_node(wf, name, {"resource": "message", "operation": "sendMessage", "chatId": chat, "text": text,
+                              "additionalFields": {"appendAttribution": False, "parse_mode": "HTML"}}, pos)
+
+
+def tg_api():
+    """Sub-workflow: one signed call to the public API as the 'telegram' client (D-079). The body is the JSON string that was
+    signed; n8n parses and re-serialises it, which gives the same bytes for JSON.stringify output (checked by the contract
+    tests: any difference fails the signature). Sent as "raw", the response came back as an unread stream (F-059).
+    Input {method, path, user_id?, body?, idem?}; output {status, body, request_id, error_code}."""
+    wf = WF(TG_API_WF, "wf.channel.telegram.api", tags=["channel", "telegram"], settings={"saveDataSuccessExecution": "all"})
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    code_node(wf, "Prepare", "tg_api_prepare.js", [220, 0])
+    pg_node(wf, "Sign", "with r as (select gen_random_uuid()::text as rid)"
+            " select r.rid, sec.sign_internal('telegram', $1, $2, r.rid, nullif($3, ''), nullif($4, ''), $5) as s,"
+            " (select value #>> '{}' from app.settings where key = 'services.api_url') as api_url from r",
+            "={{ [ $json.method, $json.path, $json.user_id, $json.idem, $json.body_text ] }}", [440, 0], on_error=None)
+    code_node(wf, "Request", "tg_api_request.js", [660, 0])
+    if_node(wf, "With body?", "={{ $json.has_body }}", [880, 0])
+    common = {"url": "={{ $json.url }}", "method": "={{ $json.method }}", "sendHeaders": True, "specifyHeaders": "json",
+              "jsonHeaders": "={{ JSON.stringify($json.headers) }}",
+              "options": {"timeout": 300000, "response": {"response": {"fullResponse": True, "neverError": True, "responseFormat": "json"}}}}
+    wf.node("Call API with body", "n8n-nodes-base.httpRequest", 4.2,
+            {**common, "sendBody": True, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ $json.body_text }}"},
+            [1100, -100], onError="continueRegularOutput")
+    wf.node("Call API", "n8n-nodes-base.httpRequest", 4.2, common, [1100, 100], onError="continueRegularOutput")
+    code_node(wf, "Result", "tg_api_result.js", [1320, 0])
+    for a, b in (("Start", "Prepare"), ("Prepare", "Sign"), ("Sign", "Request"), ("Request", "With body?"),
+                 ("Call API with body", "Result"), ("Call API", "Result")):
+        wf.link(a, b)
+    wf.link("With body?", "Call API with body", 0)
+    wf.link("With body?", "Call API", 1)
+    return wf
+
+
+def tg_channel():
+    """wf.channel.telegram (spec 8.4): one Telegram update handed over by the long-polling relay (D-079).
+    Consent first; then commands, the assistant, listings with a photo, traces for admins."""
+    wf = WF(TG_CHANNEL_WF, "wf.channel.telegram", tags=["channel", "telegram"], settings={"saveDataSuccessExecution": "all"})
+    wf.node("Webhook", "n8n-nodes-base.webhook", 2.1, {"httpMethod": "POST", "path": "telegram/update", "authentication": "headerAuth",
+            "responseMode": "onReceived", "options": {}}, [0, 0], webhookId=TG_HOOK, credentials=SVC_CRED)
+    code_node(wf, "Parse update", "tg_parse.js", [220, 0])
+    pg_node(wf, "Context", TG_CONTEXT_SQL, "={{ [ $json.update_id, $json.ext_id, $json.bot ] }}", [440, 0], on_error=None)
+    code_node(wf, "Plan", "tg_plan.js", [660, 0])
+    wf.node("Action", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 8, "output": "={{ $json.route }}",
+                                                   "options": {}}, [880, 0])
+    tg_send(wf, "Send message", [3300, 0])
+    # 1 consent request with two buttons
+    tg_node(wf, "Ask for consent", {"resource": "message", "operation": "sendMessage", "chatId": "={{ $json.chat_id }}",
+            "text": "={{ $json.text }}", "replyMarkup": "inlineKeyboard",
+            "inlineKeyboard": {"rows": [{"row": {"buttons": [
+                {"text": "={{ $json.accept_label }}", "additionalFields": {"callback_data": "consent:yes"}},
+                {"text": "={{ $json.refuse_label }}", "additionalFields": {"callback_data": "consent:no"}}]}}]},
+            "additionalFields": {"appendAttribution": False, "parse_mode": "HTML"}}, [1100, -700])
+    # 2 consent given / 3 refused or withdrawn
+    for r, y in ((2, -500), (3, -300)):
+        tg_node(wf, f"Answer button {r}", {"resource": "callback", "operation": "answerQuery", "queryId": "={{ $json.callback_id }}",
+                "additionalFields": {}}, [1100, y])
+        wf.nodes[-1]["onError"] = "continueRegularOutput"     # /stop has no button to answer
+    code_node(wf, "Call: sync user", "tg_call.js", [1320, -500], subst={"__CALL__": "sync user"})
+    exec_wf(wf, "API: sync user", TG_API_WF, "wf.channel.telegram.api", pos=[1540, -500])
+    code_node(wf, "Call: record consent", "tg_call.js", [1760, -500], subst={"__CALL__": "record consent"})
+    exec_wf(wf, "API: record consent", TG_API_WF, "wf.channel.telegram.api", pos=[1980, -500])
+    code_node(wf, "Done: consent", "tg_simple_done.js", [2200, -500], subst={"__NAME__": "Done: consent"})
+    if_node(wf, "Has account?", "={{ !!$('Plan').first().json.user_id }}", [1320, -300])
+    code_node(wf, "Call: withdraw consent", "tg_call.js", [1540, -350], subst={"__CALL__": "record consent"})
+    exec_wf(wf, "API: withdraw consent", TG_API_WF, "wf.channel.telegram.api", pos=[1760, -350])
+    code_node(wf, "Done: withdrawn", "tg_simple_done.js", [1980, -350], subst={"__NAME__": "Done: withdrawn"})
+    code_node(wf, "No account", "tg_simple_done.js", [1540, -250], subst={"__NAME__": "No account"})
+    # 4 country
+    code_node(wf, "Call: set country", "tg_call.js", [1100, -150], subst={"__CALL__": "sync user"})
+    exec_wf(wf, "API: set country", TG_API_WF, "wf.channel.telegram.api", pos=[1320, -150])
+    code_node(wf, "Done: country", "tg_simple_done.js", [1540, -150], subst={"__NAME__": "Done: country"})
+    # 5 assistant
+    tg_node(wf, "Typing", {"resource": "message", "operation": "sendChatAction", "chatId": "={{ $json.chat_id }}", "action": "typing"}, [1100, 0])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
+    code_node(wf, "Call: ask assistant", "tg_call.js", [1320, 0], subst={"__CALL__": "ask assistant"})
+    exec_wf(wf, "API: ask assistant", TG_API_WF, "wf.channel.telegram.api", pos=[1540, 0])
+    code_node(wf, "Format answer", "tg_answer_format.js", [1760, 0])
+    # 6 trace
+    code_node(wf, "Call: trace", "tg_call.js", [1100, 150], subst={"__CALL__": "trace"})
+    exec_wf(wf, "API: trace", TG_API_WF, "wf.channel.telegram.api", pos=[1320, 150])
+    code_node(wf, "Format trace", "tg_trace_format.js", [1540, 150])
+    # 7 listing: create, photo (download, presign, upload), analyze, wait for the job, read the listing
+    tg_node(wf, "Typing (listing)", {"resource": "message", "operation": "sendChatAction", "chatId": "={{ $json.chat_id }}",
+            "action": "typing"}, [1100, 400])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
+    code_node(wf, "Call: create listing", "tg_call.js", [1320, 400], subst={"__CALL__": "create listing"})
+    exec_wf(wf, "API: create listing", TG_API_WF, "wf.channel.telegram.api", pos=[1540, 400])
+    if_node(wf, "Created?", "={{ $json.status === 201 }}", [1760, 400])
+    code_node(wf, "Listing error", "tg_error_reply.js", [1980, 650], subst={"__NAME__": "Listing error"})
+    if_node(wf, "Photo?", "={{ !!$('Plan').first().json.photo_file_id }}", [1980, 400])
+    tg_node(wf, "Download photo", {"resource": "file", "operation": "get", "fileId": "={{ $('Plan').first().json.photo_file_id }}",
+            "download": True, "additionalFields": {}}, [2200, 300])
+    code_node(wf, "Call: presign", "tg_call.js", [2420, 300], subst={"__CALL__": "presign"})
+    exec_wf(wf, "API: presign", TG_API_WF, "wf.channel.telegram.api", pos=[2640, 300])
+    code_node(wf, "Upload request", "tg_upload_request.js", [2860, 300])
+    wf.node("Upload photo", "n8n-nodes-base.httpRequest", 4.2, {
+        "method": "PUT", "url": "={{ $json.url }}", "sendHeaders": True, "specifyHeaders": "json",
+        "jsonHeaders": "={{ JSON.stringify($json.headers) }}", "sendBody": True, "contentType": "binaryData", "inputDataFieldName": "data",
+        "options": {"timeout": 120000, "response": {"response": {"fullResponse": True, "neverError": True, "responseFormat": "text",
+                                                                  "outputPropertyName": "data"}}}}, [3080, 300])
+    code_node(wf, "Call: analyze", "tg_call.js", [2200, 500], subst={"__CALL__": "analyze"})
+    exec_wf(wf, "API: analyze", TG_API_WF, "wf.channel.telegram.api", pos=[2420, 500])
+    if_node(wf, "Accepted?", "={{ $json.status === 202 }}", [2640, 500])
+    wf.node("Wait notice", "n8n-nodes-base.code", 2, {"mode": "runOnceForAllItems", "language": "javaScript", "jsCode": code("tg_wait_notice.js")}, [2860, 500])
+    tg_send(wf, "Send wait notice", [3080, 500])
+    wf.node("Wait 10 s", "n8n-nodes-base.wait", 1.1, {"resume": "timeInterval", "amount": 10, "unit": "seconds"}, [3300, 500],
+            webhookId="5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0e02")
+    code_node(wf, "Call: job", "tg_call.js", [3520, 500], subst={"__CALL__": "job"})
+    exec_wf(wf, "API: job", TG_API_WF, "wf.channel.telegram.api", pos=[3740, 500])
+    code_node(wf, "Job state", "tg_job_state.js", [3960, 500])
+    wf.node("Finished?", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 3, "output": "={{ $json.state }}",
+                                                      "options": {}}, [4180, 500])
+    code_node(wf, "Call: get listing", "tg_call.js", [4400, 400], subst={"__CALL__": "get listing"})
+    exec_wf(wf, "API: get listing", TG_API_WF, "wf.channel.telegram.api", pos=[4620, 400])
+    code_node(wf, "Format listing", "tg_listing_format.js", [4840, 500])
+    tg_send(wf, "Send listing", [5060, 500])
+
+    for a, b in (("Webhook", "Parse update"), ("Parse update", "Context"), ("Context", "Plan"), ("Plan", "Action")):
+        wf.link(a, b)
+    wf.link("Action", "Send message", 0)
+    wf.link("Action", "Ask for consent", 1)
+    wf.link("Action", "Answer button 2", 2)
+    wf.link("Action", "Answer button 3", 3)
+    wf.link("Action", "Call: set country", 4)
+    wf.link("Action", "Typing", 5)
+    wf.link("Action", "Call: trace", 6)
+    wf.link("Action", "Typing (listing)", 7)
+    for a, b in (("Answer button 2", "Call: sync user"), ("Call: sync user", "API: sync user"), ("API: sync user", "Call: record consent"),
+                 ("Call: record consent", "API: record consent"), ("API: record consent", "Done: consent"), ("Done: consent", "Send message"),
+                 ("Answer button 3", "Has account?"), ("Call: withdraw consent", "API: withdraw consent"),
+                 ("API: withdraw consent", "Done: withdrawn"), ("Done: withdrawn", "Send message"), ("No account", "Send message"),
+                 ("Call: set country", "API: set country"), ("API: set country", "Done: country"), ("Done: country", "Send message"),
+                 ("Typing", "Call: ask assistant"), ("Call: ask assistant", "API: ask assistant"), ("API: ask assistant", "Format answer"),
+                 ("Format answer", "Send message"),
+                 ("Call: trace", "API: trace"), ("API: trace", "Format trace"), ("Format trace", "Send message"),
+                 ("Typing (listing)", "Call: create listing"), ("Call: create listing", "API: create listing"),
+                 ("API: create listing", "Created?"), ("Listing error", "Send message"),
+                 ("Download photo", "Call: presign"), ("Call: presign", "API: presign"), ("API: presign", "Upload request"),
+                 ("Upload request", "Upload photo"), ("Upload photo", "Call: analyze"),
+                 ("Call: analyze", "API: analyze"), ("API: analyze", "Accepted?"), ("Wait notice", "Send wait notice"),
+                 ("Send wait notice", "Wait 10 s"), ("Wait 10 s", "Call: job"), ("Call: job", "API: job"), ("API: job", "Job state"),
+                 ("Job state", "Finished?"), ("Call: get listing", "API: get listing"), ("API: get listing", "Format listing"),
+                 ("Format listing", "Send listing")):
+        wf.link(a, b)
+    wf.link("Has account?", "Call: withdraw consent", 0)
+    wf.link("Has account?", "No account", 1)
+    wf.link("Created?", "Photo?", 0)
+    wf.link("Created?", "Listing error", 1)
+    wf.link("Photo?", "Download photo", 0)
+    wf.link("Photo?", "Call: analyze", 1)
+    wf.link("Accepted?", "Wait notice", 0)
+    wf.link("Accepted?", "Listing error", 1)
+    wf.link("Finished?", "Call: get listing", 0)
+    wf.link("Finished?", "Wait 10 s", 1)
+    wf.link("Finished?", "Format listing", 2)
+    return wf
+
+
+
 BUILDS = {
     "workflows": [gateway, health, users_sync, error_handler, admin_kb_ingest, kb_ingest, kb_ingest_source,
                   jobs_get, admin_eval_runs_create, eval_retrieval, admin_eval_runs_get,
                   llm_call, eval_prompts, profile_extract, match_search, api_search, api_profiles_extract, api_profiles_me,
-                  orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh],
+                  orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
+                  api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
+                  listing_extract, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
     "workflows-test": [test_fail],
 }
 

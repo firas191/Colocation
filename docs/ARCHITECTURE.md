@@ -1,4 +1,4 @@
-# Architecture (state after phase 2)
+# Architecture (services as of phase 4; request paths as of phase 2)
 
 This file describes what exists. The target architecture is in FLATSHARE_BACKEND_SPEC.md
 sections 5 and 8; deviations are in DECISIONS.md.
@@ -11,12 +11,15 @@ sections 5 and 8; deviations are in DECISIONS.md.
 | `n8n` + `n8n-runners` | All API logic: gateway, endpoints, error handler. Code nodes run in the external runner | proxy; editor on host 127.0.0.1:5678 |
 | `postgres` | One server, two databases: `flatshare` (app, kb, ai, eval, sec schemas) and `n8n` (n8n's own data) | compose network |
 | `garage` | S3-compatible object storage (bucket created at start) | compose network |
-| `ollama` | Embeddings (bge-m3), later local LLMs and vision | compose network |
+| `ollama` | Embeddings (bge-m3); the local LLM qwen3.5:4b for P1 to P3 and, with images, P7 (D-081) | compose network |
+| `media` (FastAPI) | Photo processing (type, size, EXIF strip, hashes, blurring, metrics), presigned uploads, the smaller copy of a photo for P7 (`/v1/images/vision`), evaluation photos (`/v1/eval/photos`, keys under `eval/` only). Compute only; reads and writes objects, no database (D-070, D-071) | compose network, internal token |
+| `text` (FastAPI) | Language identification (GlotLID) and PII masking with optional NER (D-074, D-075) | compose network, internal token |
+| `telegram` | Long-polling relay from the Telegram Bot API to n8n's internal webhook (D-079) | outgoing only |
 | `tei` (Text Embeddings Inference, CPU) | multilingual-e5-large embeddings and the XLM-RoBERTa tokenizer used for chunking | compose network |
 | one-shot: `db-bootstrap`, `n8n-setup`, `ollama-pull` | migrations, role passwords, settings, API keys; credential and workflow import; model pull | — |
 | profiles: `queue` (Redis), `test` (test runner, fixture file server) | load tests later; contract and ingestion tests | — |
 
-Not built yet: ASR, Media, Text services (phase 4), 3D worker (phase 10), Telegram channel.
+Not built yet: ASR service (phase 4), video frames and PDF text in the Media service (phase 4), 3D worker (phase 10).
 
 ## Request path
 

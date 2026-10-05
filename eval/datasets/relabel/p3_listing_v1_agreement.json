@@ -1,0 +1,145 @@
+{
+ "dataset": "p3_listing_v1",
+ "items": 20,
+ "of": 100,
+ "agreement": {
+  "kind": {
+   "agree": 19,
+   "n": 20,
+   "rate": 0.95
+  },
+  "rent_amount": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "rent_currency": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "rent_period": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "rent_scope": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "deposit_amount": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "deposit_currency": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "bills_included": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "available_from": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "bedrooms": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "furnished": {
+   "agree": 17,
+   "n": 20,
+   "rate": 0.85
+  },
+  "amenities": {
+   "agree": 18,
+   "n": 20,
+   "rate": 0.9
+  },
+  "house_rules": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "address_text": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "city": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  },
+  "neighbourhood": {
+   "agree": 20,
+   "n": 20,
+   "rate": 1.0
+  }
+ },
+ "items_fully_agreeing": 15,
+ "kind_kappa": 0.924,
+ "disagreements": [
+  {
+   "id": "p3-013",
+   "field": "amenities",
+   "first": [
+    "garden"
+   ],
+   "second": [
+    "garden",
+    "wifi"
+   ],
+   "message": "غرفة واسعة في منزل مع حديقة بنابل، الإيجار 300 د شهريا شامل الماء والكهرباء والإنترنت، والضمان 300 د. العنوان: 14 نهج الياسمين. متاحة من 1 نوفمبر. يسمح بالزيارات."
+  },
+  {
+   "id": "p3-025",
+   "field": "kind",
+   "first": "room",
+   "second": "roommate_wanted",
+   "message": "عندي بيت فارغة في داري في حمام سوسة، نحب نكريها لواحد خدام ولا طالب. 230 دينار. ما نحبش الحفلات. الدار فيها جنينة و باركينغ. متاحة من الشهر الجاي."
+  },
+  {
+   "id": "p3-025",
+   "field": "furnished",
+   "first": false,
+   "second": null,
+   "message": "عندي بيت فارغة في داري في حمام سوسة، نحب نكريها لواحد خدام ولا طالب. 230 دينار. ما نحبش الحفلات. الدار فيها جنينة و باركينغ. متاحة من الشهر الجاي."
+  },
+  {
+   "id": "p3-028",
+   "field": "furnished",
+   "first": false,
+   "second": null,
+   "message": "Nlawej 3la coloc yo5ou bit fel dar m3ana fi Bardo, el bit fergha w kbira. Prix en privé. Ma fammech soirées fel dar 😅"
+  },
+  {
+   "id": "p3-032",
+   "field": "furnished",
+   "first": false,
+   "second": null,
+   "message": "Salem, 3andi bit fergha fel appart S+3 mte3na fi Jardins d'El Menzah, nlawjou 3la 3abd ye5dem wala yo9ra. Loyer 380d + caution 380d. Dispo 15 octobre. Fama balcon w chauffage central."
+  },
+  {
+   "id": "p3-051",
+   "field": "amenities",
+   "first": [
+    "dishwasher",
+    "washing_machine"
+   ],
+   "second": [
+    "dishwasher",
+    "washing_machine",
+    "wifi"
+   ],
+   "message": "Colocation Paris 13e — chambre de 12 m² dans un T4, 790 € CC. Dispo 1er novembre. Meublée, fibre, lave-linge, lave-vaisselle."
+  }
+ ]
+}

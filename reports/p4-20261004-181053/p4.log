@@ -1,0 +1,52 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-04T18:10:55.7055856+01:00
+healthy
+unhealthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions (prompts\*\v*.md) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-04T18:10:55.9761419+01:00
+ Container flatshare-tests-run-57f293eb947d Creating 
+ Container flatshare-tests-run-57f293eb947d Created 
+prompt registry up to date
+exit=0 seconds=1.5
+
+===== evaluate P3_listing_extractor versions 1,2 on qwen3.5:4b =====
+command: docker @run scripts/p3.py eval --prompt P3_listing_extractor --versions $Versions --models $m
+started: 2026-10-04T18:10:57.4694628+01:00
+ Container flatshare-tests-run-bd4b3825602b Creating 
+ Container flatshare-tests-run-bd4b3825602b Created 
+/v1/admin/eval/prompt-runs: job b0924fbf-a738-49c1-8746-afa39afcbe41 accepted
+      0.3s  job running
+job b0924fbf-a738-49c1-8746-afa39afcbe41 did not finish within 14400 s
+System.Management.Automation.RemoteException
+exit=1 seconds=14411.9
+
+===== Ollama memory placement after qwen3.5:4b (GPU or CPU share) =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-04T22:11:09.4112751+01:00
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.8
+
+===== prompts: active versions from prompts\*\prompt.json =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-04T22:11:10.1985681+01:00
+ Container flatshare-tests-run-3e4446c5ed57 Creating 
+ Container flatshare-tests-run-3e4446c5ed57 Created 
+prompt registry up to date
+exit=0 seconds=3.1
+
+===== report: docs\PROMPT_EVAL.md and reports\eval\prompts-*.json =====
+command: docker @run scripts/p3.py report
+started: 2026-10-04T22:11:13.3568048+01:00
+ Container flatshare-tests-run-24bd36cc4ee2 Creating 
+ Container flatshare-tests-run-24bd36cc4ee2 Created 
+wrote reports/eval/prompts-20261004-211115.json and docs/PROMPT_EVAL.md
+exit=0 seconds=5.9

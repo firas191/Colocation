@@ -1,0 +1,1949 @@
+{
+ "date": "20261004-163123",
+ "label": "pc langid",
+ "p1": {
+  "items": 160,
+  "backend": "glotlid-v3",
+  "language_accuracy": 0.925,
+  "script_accuracy": 1.0,
+  "by_group": {
+   "aeb_arabic": "12/16",
+   "aeb_latin": "22/22",
+   "ar": "14/14",
+   "de": "9/10",
+   "en": "24/24",
+   "es": "9/9",
+   "fr": "33/34",
+   "it": "9/9",
+   "mixed": "16/22"
+  },
+  "confusions": {
+   "mixed->fr": 4,
+   "aeb->mixed": 2,
+   "aeb->ar": 2,
+   "fr->other": 1,
+   "mixed->en": 1,
+   "mixed->aeb": 1,
+   "de->other": 1
+  },
+  "latency_ms_p50": 2.8,
+  "items_detail": [
+   {
+    "id": "p1-001",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-002",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-003",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-004",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-005",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-006",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-007",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-008",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-009",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-010",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-011",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-012",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-013",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-014",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-015",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-016",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-017",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-018",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-019",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-020",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-021",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-022",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-023",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-024",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-025",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-026",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-027",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-028",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-029",
+    "gold": "fr",
+    "pred": "other",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-030",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-031",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-032",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-033",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-034",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-035",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-036",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-037",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-038",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-039",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-040",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-041",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-042",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-043",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-044",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-045",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-046",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-047",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-048",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-049",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-050",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-051",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-052",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-053",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-054",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-055",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-056",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-057",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-058",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-059",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-060",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-061",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-062",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-063",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-064",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-065",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-066",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-067",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-068",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-069",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-070",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-071",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-072",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-073",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-074",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-075",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-076",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-077",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-078",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-079",
+    "gold": "aeb",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-080",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-081",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-082",
+    "gold": "aeb",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-083",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-084",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-085",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-086",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-087",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-088",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-089",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-090",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-091",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-092",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-093",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-094",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-095",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-096",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-097",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-098",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-099",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-100",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-101",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-102",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-103",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-104",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-105",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-106",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-107",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-108",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-109",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-110",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-111",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p1-112",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-113",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "mixed",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-114",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-115",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-116",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-117",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-118",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-119",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "mixed",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-120",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p1-121",
+    "gold": "mixed",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-122",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "mixed",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-123",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-124",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p1-125",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-126",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-127",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-128",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-129",
+    "gold": "mixed",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p1-130",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-131",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p1-132",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p1-133",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-134",
+    "gold": "de",
+    "pred": "other",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-135",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-136",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-137",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-138",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-139",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-140",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-141",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-142",
+    "gold": "de",
+    "pred": "de",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-143",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-144",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-145",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-146",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-147",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-148",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-149",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-150",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-151",
+    "gold": "es",
+    "pred": "es",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-152",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-153",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-154",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-155",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-156",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-157",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-158",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-159",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p1-160",
+    "gold": "it",
+    "pred": "it",
+    "script": "latin",
+    "method": "glotlid-v3"
+   }
+  ]
+ },
+ "p2": {
+  "items": 110,
+  "backend": "glotlid-v3",
+  "language_accuracy": 0.8091,
+  "script_accuracy": null,
+  "by_group": {
+   "aeb_arabic": "7/12",
+   "aeb_latin": "14/18",
+   "ar": "10/10",
+   "en": "24/25",
+   "fr": "30/30",
+   "mixed": "4/15"
+  },
+  "confusions": {
+   "aeb->mixed": 7,
+   "mixed->en": 4,
+   "mixed->fr": 4,
+   "aeb->other": 2,
+   "mixed->aeb": 2,
+   "mixed->other": 1,
+   "en->mixed": 1
+  },
+  "latency_ms_p50": 2.9,
+  "items_detail": [
+   {
+    "id": "p2-001",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-002",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-003",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-004",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-005",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-006",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-007",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-008",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-009",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-010",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-011",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-012",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-013",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p2-014",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-015",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-016",
+    "gold": "mixed",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-017",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-018",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-019",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-020",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-021",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-022",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-023",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-024",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-025",
+    "gold": "mixed",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-026",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-027",
+    "gold": "aeb",
+    "pred": "other",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-028",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-029",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-030",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-031",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-032",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-033",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-034",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-035",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-036",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-037",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-038",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-039",
+    "gold": "mixed",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-040",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-041",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-042",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-043",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-044",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-045",
+    "gold": "mixed",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-046",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-047",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-048",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p2-049",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-050",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-051",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-052",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-053",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-054",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-055",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-056",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-057",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-058",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-059",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-060",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-061",
+    "gold": "mixed",
+    "pred": "other",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-062",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-063",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-064",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-065",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-066",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-067",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-068",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-069",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-070",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-071",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-072",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-073",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-074",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-075",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-076",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-077",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-078",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-079",
+    "gold": "mixed",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-080",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-081",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-082",
+    "gold": "en",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-083",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-084",
+    "gold": "mixed",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-085",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-086",
+    "gold": "aeb",
+    "pred": "other",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-087",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-088",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-089",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-090",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-091",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-092",
+    "gold": "ar",
+    "pred": "ar",
+    "script": "arabic",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-093",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "latin",
+    "method": "arabizi_rules+clauses"
+   },
+   {
+    "id": "p2-094",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-095",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-096",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-097",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-098",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "mixed",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-099",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-100",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-101",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-102",
+    "gold": "mixed",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-103",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-104",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-105",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-106",
+    "gold": "aeb",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   },
+   {
+    "id": "p2-107",
+    "gold": "en",
+    "pred": "en",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-108",
+    "gold": "fr",
+    "pred": "fr",
+    "script": "latin",
+    "method": "glotlid-v3"
+   },
+   {
+    "id": "p2-109",
+    "gold": "aeb",
+    "pred": "mixed",
+    "script": "arabic",
+    "method": "glotlid-v3+clauses"
+   },
+   {
+    "id": "p2-110",
+    "gold": "mixed",
+    "pred": "aeb",
+    "script": "latin",
+    "method": "arabizi_rules"
+   }
+  ]
+ }
+}

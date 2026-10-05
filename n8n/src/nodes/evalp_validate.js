@@ -1,13 +1,13 @@
 // wf.api.admin_eval_prompt_runs_create > "Validate body"
 // POST /v1/admin/eval/prompt-runs  (role admin)
-// Body: {prompt (P1_router | P2_profile_extractor), versions: [int] (required), models: [string]
+// Body: {prompt (P1_router | P2_profile_extractor | P3_listing_extractor | P7_photo_analyzer), versions: [int] (required), models: [string]
 //        (default: llm.default_model), dataset (default: the prompt's golden set),
 //        dataset_version (default 1), item_ids: [string] or limit (a subset, for smoke tests),
 //        git_sha, label}
 const gw = $input.first().json;
 const b = gw.ctx.body;
 const details = [];
-const PROMPTS = { P1_router: 'p1_router', P2_profile_extractor: 'p2_profile' };
+const PROMPTS = { P1_router: 'p1_router', P2_profile_extractor: 'p2_profile', P3_listing_extractor: 'p3_listing', P7_photo_analyzer: 'p7_photos' };
 const allowed = ['prompt', 'versions', 'models', 'dataset', 'dataset_version', 'item_ids', 'limit', 'git_sha', 'label'];
 for (const key of Object.keys(b)) if (!allowed.includes(key)) details.push({ field: key, issue: 'unknown_field' });
 if (!Object.prototype.hasOwnProperty.call(PROMPTS, b.prompt)) details.push({ field: 'prompt', issue: 'unknown' });

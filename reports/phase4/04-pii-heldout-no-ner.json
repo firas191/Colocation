@@ -1,0 +1,996 @@
+{
+ "date": "20261004-084531",
+ "label": "sandbox-heldout",
+ "summary": {
+  "dataset": "pii_heldout_v1.jsonl",
+  "items": 53,
+  "gold_spans": 84,
+  "use_ner": false,
+  "recall_masked": 0.7143,
+  "recall_typed": 0.7143,
+  "precision": 0.9091,
+  "false_positive_spans": 6,
+  "negative_items_with_masking": 1,
+  "recall_by_type": {
+   "ADDRESS": "12/12",
+   "CARD": "4/4",
+   "EMAIL": "8/8",
+   "IBAN": "8/8",
+   "ID": "4/4",
+   "NAME": "0/24",
+   "PHONE": "20/20",
+   "POSTCODE": "4/4"
+  },
+  "recall_by_language": {
+   "aeb_arabic": "8/8",
+   "aeb_latin": "8/8",
+   "ar": "4/8",
+   "en": "16/24",
+   "fr": "16/24",
+   "mixed": "8/12"
+  },
+  "latency_ms_p50": 0.2,
+  "latency_ms_p95": 0.8
+ },
+ "items": [
+  {
+   "id": "pii-h001",
+   "lang": "fr",
+   "masked_text": "Pour visiter, Hamza Smith sera sur [ADDRESS_1], son portable : [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Hamza Smith",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 56 218 801",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "ADDRESS",
+     "text": "place samedi",
+     "source": "fr_street_name"
+    }
+   ]
+  },
+  {
+   "id": "pii-h002",
+   "lang": "fr",
+   "masked_text": "Écrivez à [EMAIL_1] en précisant la date d'entrée.",
+   "gold": [
+    {
+     "type": "EMAIL",
+     "text": "RANIA.SMITH37@EXAMPLE.TN",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h003",
+   "lang": "fr",
+   "masked_text": "Adresse : [ADDRESS_1], appartement 4, digicode 1234.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "54 rue des Jasmins",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h004",
+   "lang": "fr",
+   "masked_text": "Le propriétaire, Thomas Jlassi, préfère les virements : [IBAN_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Thomas Jlassi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6025 6546 4420 3279",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h005",
+   "lang": "en",
+   "masked_text": "Rania Taylor here, still looking for a flatmate. WhatsApp [PHONE_1] anytime.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Rania Taylor",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "07873 02879",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h006",
+   "lang": "en",
+   "masked_text": "Landlord details: Camille Bouzid, [ADDRESS_1], [POSTCODE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Camille Bouzid",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ADDRESS",
+     "text": "146 Victoria Street",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "SW1A 1AA",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h007",
+   "lang": "en",
+   "masked_text": "Pay the holding fee with card [CARD_1] or bank transfer.",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4341-9006-1061-2971",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h008",
+   "lang": "ar",
+   "masked_text": "للاتصال بالمالك أميرة الطرابلسي [NAME_1] [PHONE_1] مساء.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "أميرة الطرابلسي",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "29 459 444",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "NAME",
+     "text": "على الرقم",
+     "source": "cue"
+    }
+   ]
+  },
+  {
+   "id": "pii-h009",
+   "lang": "aeb_arabic",
+   "masked_text": "ابعث الفلوس على [IBAN_1] وكلمني على [PHONE_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN5910006004850425037320",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 55 495 999",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h010",
+   "lang": "aeb_latin",
+   "masked_text": "5alli num mte3ek, mte3i [PHONE_1], w el mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "26 244 593",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sophie.taylor80@example.tn",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h011",
+   "lang": "mixed",
+   "masked_text": "Bonsoir, ana Emily, el CIN mte3i [ID_1] pour le contrat.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Emily",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "07421943",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h012",
+   "lang": "mixed",
+   "masked_text": "Salut, b3athtlek el adresse: [ADDRESS_1], 9rib mel pharmacie.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "29 boulevard de l'Environnement",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h013",
+   "lang": "fr",
+   "masked_text": "Pour visiter, Claire Lefebvre sera sur [ADDRESS_1], son portable : [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Claire Lefebvre",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "55138420",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "ADDRESS",
+     "text": "place samedi",
+     "source": "fr_street_name"
+    }
+   ]
+  },
+  {
+   "id": "pii-h014",
+   "lang": "fr",
+   "masked_text": "Écrivez à [EMAIL_1] en précisant la date d'entrée.",
+   "gold": [
+    {
+     "type": "EMAIL",
+     "text": "KARIM.CHAABANE44@EXAMPLE.TN",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h015",
+   "lang": "fr",
+   "masked_text": "Adresse : [ADDRESS_1], appartement 4, digicode 1234.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "41 rue de Marseille",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h016",
+   "lang": "fr",
+   "masked_text": "Le propriétaire, Thomas Martin, préfère les virements : [IBAN_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Thomas Martin",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "IBAN",
+     "text": "TN5910006587080086185705",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h017",
+   "lang": "en",
+   "masked_text": "Emily Trabelsi here, still looking for a flatmate. WhatsApp [PHONE_1] anytime.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Emily Trabelsi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "0715764517",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h018",
+   "lang": "en",
+   "masked_text": "Landlord details: Nour Brown, [ADDRESS_1], [POSTCODE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Nour Brown",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ADDRESS",
+     "text": "136 Kings Avenue",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "B15 2TT",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h019",
+   "lang": "en",
+   "masked_text": "Pay the holding fee with card [CARD_1] or bank transfer.",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4787-8297-6950-1308",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h020",
+   "lang": "ar",
+   "masked_text": "للاتصال بالمالك مهدي حداد على الرقم [PHONE_1] مساء.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "مهدي حداد",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "23974670",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h021",
+   "lang": "aeb_arabic",
+   "masked_text": "ابعث الفلوس على [IBAN_1] وكلمني على [PHONE_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6459 3243 1976 9024",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 48 432 786",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h022",
+   "lang": "aeb_latin",
+   "masked_text": "5alli num mte3ek, mte3i [PHONE_1], w el mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "+216 50 386 030",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "emily.trabelsi57@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h023",
+   "lang": "mixed",
+   "masked_text": "Bonsoir, ana Karim, el CIN mte3i [ID_1] pour le contrat.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Karim",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "18763631",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h024",
+   "lang": "mixed",
+   "masked_text": "Salut, b3athtlek el adresse: [ADDRESS_1], 9rib mel pharmacie.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "34 rue des Jasmins",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h025",
+   "lang": "fr",
+   "masked_text": "Pour visiter, Ines Gharbi sera sur [ADDRESS_1], son portable : [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Ines Gharbi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 52 055 877",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "ADDRESS",
+     "text": "place samedi",
+     "source": "fr_street_name"
+    }
+   ]
+  },
+  {
+   "id": "pii-h026",
+   "lang": "fr",
+   "masked_text": "Écrivez à [EMAIL_1] en précisant la date d'entrée.",
+   "gold": [
+    {
+     "type": "EMAIL",
+     "text": "YOUSSEF.SMITH15@EXAMPLE.ORG",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h027",
+   "lang": "fr",
+   "masked_text": "Adresse : [ADDRESS_1], appartement 4, digicode 1234.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "78 rue de Marseille",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h028",
+   "lang": "fr",
+   "masked_text": "Le propriétaire, Julien Brown, préfère les virements : [IBAN_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Julien Brown",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "IBAN",
+     "text": "TN5910006641614546345459",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h029",
+   "lang": "en",
+   "masked_text": "Mehdi Jlassi here, still looking for a flatmate. WhatsApp [PHONE_1] anytime.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Mehdi Jlassi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "+44 7308 34678",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h030",
+   "lang": "en",
+   "masked_text": "Landlord details: James Lefebvre, [ADDRESS_1], [POSTCODE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "James Lefebvre",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ADDRESS",
+     "text": "107 Station Road",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "B15 2TT",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h031",
+   "lang": "en",
+   "masked_text": "Pay the holding fee with card [CARD_1] or bank transfer.",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4962 7371 4987 6000",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h032",
+   "lang": "ar",
+   "masked_text": "للاتصال بالمالك يوسف الجلاصي على الرقم [PHONE_1] مساء.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "يوسف الجلاصي",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 98 228 212",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h033",
+   "lang": "aeb_arabic",
+   "masked_text": "ابعث الفلوس على [IBAN_1] وكلمني على [PHONE_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN5910006842274408117604",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 41 134 405",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h034",
+   "lang": "aeb_latin",
+   "masked_text": "5alli num mte3ek, mte3i [PHONE_1], w el mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "0021659133990",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sami.gharbi56@example.com",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h035",
+   "lang": "mixed",
+   "masked_text": "Bonsoir, ana Claire, el CIN mte3i [ID_1] pour le contrat.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Claire",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "07689178",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h036",
+   "lang": "mixed",
+   "masked_text": "Salut, b3athtlek el adresse: [ADDRESS_1], 9rib mel pharmacie.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "37 boulevard de l'Environnement",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h037",
+   "lang": "fr",
+   "masked_text": "Pour visiter, Mehdi Jlassi sera sur [ADDRESS_1], son portable : [PHONE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Mehdi Jlassi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "45 652 457",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": [
+    {
+     "type": "ADDRESS",
+     "text": "place samedi",
+     "source": "fr_street_name"
+    }
+   ]
+  },
+  {
+   "id": "pii-h038",
+   "lang": "fr",
+   "masked_text": "Écrivez à [EMAIL_1] en précisant la date d'entrée.",
+   "gold": [
+    {
+     "type": "EMAIL",
+     "text": "THOMAS.CHAABANE5@EXAMPLE.ORG",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h039",
+   "lang": "fr",
+   "masked_text": "Adresse : [ADDRESS_1], appartement 4, digicode 1234.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "28 avenue de la Liberté",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h040",
+   "lang": "fr",
+   "masked_text": "Le propriétaire, Amira Bouzid, préfère les virements : [IBAN_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Amira Bouzid",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6785 3308 9208 4336",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h041",
+   "lang": "en",
+   "masked_text": "Camille Mansouri here, still looking for a flatmate. WhatsApp [PHONE_1] anytime.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Camille Mansouri",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "07953 92583",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h042",
+   "lang": "en",
+   "masked_text": "Landlord details: Aziz Jlassi, [ADDRESS_1], [POSTCODE_1].",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Aziz Jlassi",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ADDRESS",
+     "text": "198 Kings Avenue",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "POSTCODE",
+     "text": "E14 5AB",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h043",
+   "lang": "en",
+   "masked_text": "Pay the holding fee with card [CARD_1] or bank transfer.",
+   "gold": [
+    {
+     "type": "CARD",
+     "text": "4300-3173-3415-8521",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h044",
+   "lang": "ar",
+   "masked_text": "للاتصال بالمالك يوسف حداد على الرقم [PHONE_1] مساء.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "يوسف حداد",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "PHONE",
+     "text": "58529393",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h045",
+   "lang": "aeb_arabic",
+   "masked_text": "ابعث الفلوس على [IBAN_1] وكلمني على [PHONE_1].",
+   "gold": [
+    {
+     "type": "IBAN",
+     "text": "TN59 1000 6540 6387 8298 6043",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "PHONE",
+     "text": "+216 24 657 615",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h046",
+   "lang": "aeb_latin",
+   "masked_text": "5alli num mte3ek, mte3i [PHONE_1], w el mail [EMAIL_1].",
+   "gold": [
+    {
+     "type": "PHONE",
+     "text": "56 240 064",
+     "masked": true,
+     "type_ok": true
+    },
+    {
+     "type": "EMAIL",
+     "text": "sophie.lefebvre66@mail.test",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h047",
+   "lang": "mixed",
+   "masked_text": "Bonsoir, ana Rania, el CIN mte3i [ID_1] pour le contrat.",
+   "gold": [
+    {
+     "type": "NAME",
+     "text": "Rania",
+     "masked": false,
+     "type_ok": false
+    },
+    {
+     "type": "ID",
+     "text": "11277994",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h048",
+   "lang": "mixed",
+   "masked_text": "Salut, b3athtlek el adresse: [ADDRESS_1], 9rib mel pharmacie.",
+   "gold": [
+    {
+     "type": "ADDRESS",
+     "text": "46 avenue Habib Bourguiba",
+     "masked": true,
+     "type_ok": true
+    }
+   ],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h049",
+   "lang": "fr",
+   "masked_text": "Chambre 12 m2, loyer 380 DT, caution 760 DT, disponible du 01/12/2026 au 30/06/2027.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h050",
+   "lang": "en",
+   "masked_text": "Rent is 1,150 pounds, deposit 1,326, minimum term 6 months, viewing on 14 November at 18:30.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h051",
+   "lang": "aeb_latin",
+   "masked_text": "kra 600 dt, 3 bit, salon, cuisine équipée, 7 min mel métro ligne 4.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h052",
+   "lang": "ar",
+   "masked_text": "الشقة في الطابق 3، مساحة 85 متر مربع، الكراء 950 دينار، الضمان شهرين.",
+   "gold": [],
+   "false_positives": []
+  },
+  {
+   "id": "pii-h053",
+   "lang": "fr",
+   "masked_text": "[ADDRESS_1], 24 logements, ascenseur, parking n° 17.",
+   "gold": [],
+   "false_positives": [
+    {
+     "type": "ADDRESS",
+     "text": "Résidence construite en 2019",
+     "source": "fr_street_name"
+    }
+   ]
+  }
+ ]
+}
