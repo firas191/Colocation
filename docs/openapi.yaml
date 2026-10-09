@@ -1322,7 +1322,16 @@ components:
           required: [intent, status]
           properties:
             intent: { type: [string, "null"], enum: [search_listings, post_listing, legal_question, generate_document, report_problem, smalltalk_or_unsupported, null] }
-            status: { type: string, enum: [results, profile_failed, search_failed, clarification_needed, not_available_yet, unsupported, not_understood] }
+            status: { type: string, enum: [results, answered, profile_failed, search_failed, clarification_needed, not_available_yet, unsupported, not_understood] }
+            answer:
+              type: [string, "null"]
+              description: The Match agent's answer (D-084); null when it was dropped because it had a number no tool gave (warning agent_answer_unsupported). Absent on the fixed path.
+            agent:
+              type: object
+              description: Tools the Match agent called for this message and how many stored messages it had.
+              properties:
+                tool_calls: { type: array, items: { type: string } }
+                memory_messages: { type: integer }
             language: { type: [string, "null"] }
             confidence: { type: [number, "null"] }
             clarifying_question: { type: [string, "null"] }

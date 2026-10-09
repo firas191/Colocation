@@ -287,8 +287,13 @@ def test_llm_request_shape(client, qx):
 # ------------------------------------------------------------------ orchestrator
 @sandbox_only
 def test_assistant_routes_a_search(client, qx, db):
-    r = client.call("POST", "/v1/assistant/message", user_id=qx["user"],
-                    body={"text": "[mock:nocurrency] je cherche une chambre près de Testville centre"})
+    # the fixed path (P2 then search): the Match agent switched off; with it on, see test_match_agent.py (D-084)
+    db.execute("update app.settings set value = 'false' where key = 'match.agent_enabled'")
+    try:
+        r = client.call("POST", "/v1/assistant/message", user_id=qx["user"],
+                        body={"text": "[mock:nocurrency] je cherche une chambre près de Testville centre"})
+    finally:
+        db.execute("update app.settings set value = 'true' where key = 'match.agent_enabled'")
     j = assert_ok(r, 200, "AssistantResponse")
     d = j["data"]
     assert d["intent"] == "search_listings" and d["status"] == "results"

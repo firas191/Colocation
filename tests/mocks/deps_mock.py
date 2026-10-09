@@ -119,6 +119,76 @@ def p7_answer(msgs, props):
     return json.dumps(out, ensure_ascii=False)
 
 
+def _msg_text(m):
+    c = m.get("content") or ""
+    if isinstance(c, list):
+        c = " ".join(x.get("text", "") for x in c if isinstance(x, dict))
+    mm = re.search(r"<message>\n?(.*?)\n?</message>", c, re.S)
+    return (mm.group(1) if mm else c).strip()
+
+
+def agent_answer(body):
+    """Mock of the model inside the A3 Match agent (an /api/chat call with tools, D-084). It cannot reason: it calls
+    search_listings with the user's text (with the previous user message appended for a follow-up such as "moins
+    cher" or "cheaper"), listing_details for "numéro N" / "the second one", and after a tool answers with a sentence
+    built from the tool result. Markers: [mock:agentdown] HTTP 500, [mock:notool] answers without a tool,
+    [mock:badnumber] adds a price that no tool gave, [mock:loop] calls the search again after every result."""
+    msgs = body.get("messages") or []
+    users = [m for m in msgs if m.get("role") == "user"]
+    cur = _msg_text(users[-1]) if users else ""
+    prev = [_msg_text(m) for m in users[:-1]]
+    low = cur.lower()
+    if "[mock:agentdown]" in low:
+        return 500, {"error": "mock failure"}
+    last_user = max(i for i, m in enumerate(msgs) if m.get("role") == "user") if users else -1
+    tool_msgs = [m for m in msgs[last_user + 1:] if m.get("role") == "tool"]
+    en = bool(re.search(r"\b(room|looking|cheaper|the|second|near)\b", low))
+
+    def call(name, args):
+        return {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": name, "arguments": args}}]}
+
+    if tool_msgs and "[mock:loop]" not in low:
+        try:
+            obs = json.loads(tool_msgs[-1].get("content") or "{}")
+        except ValueError:
+            obs = {}
+        if isinstance(obs, list):                 # the workflow tool returns its items as a list
+            obs = obs[0] if obs and isinstance(obs[0], dict) else {}
+        if isinstance(obs.get("results"), list):
+            n = obs.get("found") or 0
+            text = (f"I found {n} listings." if en else f"J'ai trouvé {n} annonces.")
+            if obs["results"]:
+                r = obs["results"][0]
+                text += (f" Number 1 is {r.get('rent')} {r.get('currency')}." if en else f" La 1 est à {r.get('rent')} {r.get('currency')}.")
+        elif obs.get("found") is True:
+            text = (f"Listing {obs.get('number')}: {obs.get('rent')} {obs.get('currency')}, {obs.get('neighbourhood') or obs.get('city')}."
+                    if not en else f"Listing {obs.get('number')}: {obs.get('rent')} {obs.get('currency')}.")
+        else:
+            text = "I cannot find that number." if en else "Je ne trouve pas ce numéro."
+        if "[mock:badnumber]" in low:
+            text += " La moins chère est à 999 DT."
+        return 200, {"role": "assistant", "content": text}
+    if "[mock:notool]" in low:
+        return 200, {"role": "assistant", "content": "Je peux vous aider à chercher une chambre."}
+    dm = re.search(r"(?:num[ée]ro|number|n°)\s*(\d+)", low)
+    if dm or re.search(r"deuxi[eè]me|second", low):
+        return 200, call("listing_details", {"number": int(dm.group(1)) if dm else 2})
+    request = cur
+    if prev and re.search(r"moins cher|cheaper|plus proche|closer", low):
+        request = f"{cur} {prev[-1]}"
+    return 200, call("search_listings", {"request": request})
+
+
+def agent_stream(body, message):
+    """Ollama's streaming /api/chat answer (NDJSON), as the n8n Ollama Chat Model node asks for it."""
+    n_in = sum(len(str(m.get("content") or "")) for m in body.get("messages") or []) // 4
+    chunk = {"model": body.get("model"), "created_at": "2026-10-09T00:00:00Z", "message": message, "done": False}
+    end = {"model": body.get("model"), "created_at": "2026-10-09T00:00:01Z", "message": {"role": "assistant", "content": ""},
+           "done": True, "done_reason": "stop", "total_duration": 120_000_000, "load_duration": 1_000_000,
+           "prompt_eval_count": n_in, "eval_count": len(json.dumps(message)) // 4, "eval_duration": 90_000_000}
+    return (json.dumps(chunk) + "\n" + json.dumps(end) + "\n").encode()
+
+
 def chat_answer(body):
     """(status, response body) for a mock /api/chat call."""
     msgs = body.get("messages") or []
@@ -359,6 +429,16 @@ class H(BaseHTTPRequestHandler):
                 stats["chat_requests"] += 1
             last_chat.clear()
             last_chat.update(body)
+            if body.get("tools"):                     # the A3 Match agent (AI Agent node, streaming)
+                if body.get("model") not in CHAT_MODELS:
+                    return self.reply(404, {"error": f"model \"{body.get('model')}\" not found, try pulling it first"})
+                code, msg = agent_answer(body)
+                if code != 200:
+                    return self.reply(code, msg)
+                if body.get("stream", True):
+                    return self.reply(200, agent_stream(body, msg), "application/x-ndjson")
+                return self.reply(200, {"model": body.get("model"), "message": msg, "done": True, "done_reason": "stop",
+                                        "prompt_eval_count": 50, "eval_count": 20})
             code, ans = chat_answer(body)
             return self.reply(code, ans)
         if kind == "tei" and self.path == "/embed":

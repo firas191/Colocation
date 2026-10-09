@@ -63,7 +63,10 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `wf.eval.retrieval` | sub-workflow (job worker) | resolves gold, embeds queries once per model, searches every configuration, stores per-query metrics |
 | `wf.api.admin_eval_runs_get` | `GET /v1/admin/eval/runs/:id` (admin) | one run with summary and per-query metrics |
 | `wf.llm.call` | sub-workflow | loads a prompt version (`ai.prompt_for`), calls Ollama `/api/chat` with the JSON Schema as `format`, validates, retries once with the errors |
-| `wf.orchestrator` | `POST /v1/assistant/message` | A0: P1 router, deterministic Switch; search goes to A2 then A3, other intents answer a status code |
+| `wf.orchestrator` | `POST /v1/assistant/message` | A0: P1 router, deterministic Switch; search goes to the A3 Match agent (or, when it is off or fails, A2 then `wf.match.search`), other intents answer a status code |
+| `wf.match.agent` | sub-workflow | A3 Match agent (D-084): n8n AI Agent node with the Ollama chat model, Postgres chat memory (`agent_memory.chat_histories`) and two workflow tools; system message P6 from the registry; numbers in the answer checked in code |
+| `wf.match.tool_search` | sub-workflow (agent tool `search_listings`) | the agent's request through `wf.profile.extract` (P2) and `wf.match.search`; keeps the result in `ai.match_sessions`; answers the model with fields only |
+| `wf.match.tool_listing` | sub-workflow (agent tool `listing_details`) | fields of one result of the conversation's last search, by number |
 | `wf.profile.extract` | sub-workflow | A2: P2, amounts converted to minor units from P2 v3 (`lib/money.js`, D-066), deterministic checks (allowed preferences, currency), anchor geocoded |
 | `wf.match.search` | sub-workflow | A3 (search part): embeds the text query (bge-m3), `app.search_public` |
 | `wf.api.search` | `GET /v1/search` | filters, optional text, optional saved profile |
@@ -128,7 +131,27 @@ flowchart LR
   WE --> RES[(eval.runs, eval.results, ai.prompt_failures)]
 ```
 
-Every LLM call goes through `wf.llm.call`: the template and schema come from the registry, the model
+### Match agent (D-084)
+
+```mermaid
+flowchart LR
+  O[wf.orchestrator] -->|search_listings, or a follow-up within 30 min| A[wf.match.agent: AI Agent node]
+  CM[Ollama Chat Model] -.model.- A
+  MEM[(agent_memory.chat_histories)] -.memory.- A
+  A -.tool.- TS[search_listings: wf.match.tool_search]
+  A -.tool.- TL[listing_details: wf.match.tool_listing]
+  TS --> P[wf.profile.extract P2] --> M[wf.match.search]
+  TS --> SES[(ai.match_sessions)]
+  TL --> SES
+  A --> CHK[number check in code] --> R[answer + cards from the database]
+  A -.fails.-> P
+```
+
+The agent decides when to search, rewrites follow-ups into a full request and writes a short answer. The search
+itself is the fixed path (P2 with its checks, then `app.search_public`); the cards shown to the user come from the
+database, not from the model's text, and an answer with a number that no tool gave is dropped.
+
+Every LLM call except the agent's goes through `wf.llm.call`: the template and schema come from the registry, the model
 from `llm.default_model` unless the caller names one. Agent steps (prompt version, model, tokens,
 latency, errors; never the request text) are written to `ai.agent_steps` with the request record by
 `app.api_finish`. Search, money conversion, geocoding and location fuzzing are PostgreSQL functions

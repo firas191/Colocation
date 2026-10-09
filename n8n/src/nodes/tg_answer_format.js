@@ -14,6 +14,8 @@ if (d.status === 'not_available_yet') {
   return out(T(lang, 'later'));
 }
 if (d.status === 'unsupported' || d.status === 'not_understood') return out(T(lang, 'unsupported'));
+// the Match agent answered a question about an earlier result, without a new search (D-084)
+if (d.status === 'answered' && d.answer) return out(tgEsc(d.answer));
 if (d.status !== 'results') return out(T(lang, 'failed', { code: d.status }));
 // what was understood (P2 profile), then the listings
 const pr = d.profile || {};
@@ -24,6 +26,8 @@ const place = (d.anchor && d.anchor.place && (d.anchor.place.name || d.anchor.pl
 if (place) what.push(T(lang, 'near', { p: place }));
 if (pr.move_in_from) what.push(T(lang, 'move_in', { d: pr.move_in_from }));
 const lines = [];
+// with the Match agent, its checked answer first; the filters used and the cards below come from the data (D-084)
+if (d.answer) lines.push(tgEsc(d.answer));
 if (what.length) lines.push(T(lang, 'understood', { _raw: { what: what.join(' · ') } }));
 const res = d.results || [];
 if (!res.length) lines.push(T(lang, 'no_results'));

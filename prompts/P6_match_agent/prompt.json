@@ -1,0 +1,14 @@
+{
+  "name": "P6_match_agent",
+  "agent": "A3 match",
+  "role": "System message of the A3 Match agent (n8n AI Agent node): decide when to search and when to read one result, rewrite follow-ups (\"cheaper\", \"closer\") into a full request for the search tool, then answer in two or three sentences from the tool results only. The result cards are shown by the channel, not written by the model (D-084).",
+  "schema": "schemas/P6_match_agent.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "language"
+  ],
+  "golden_set": "match_agent",
+  "active_version": 1
+}

@@ -147,3 +147,20 @@ poor_condition 5, clutter 5, bunk 4, historic 2, render 1.
 - `p7_photos_v1_pairs.json`: four pairs of candidates that show the same room twice, for the pHash report.
 - Bias: Commons photos are cleaner, better lit and more often professional than listing photos; several are hotel or
   show-flat rooms. Accuracy measured here probably overstates accuracy on real listings (D-069).
+
+## match_agent v1 (`match_agent_v1.jsonl`)
+
+Conversations for the A3 Match agent (D-084), read by `scripts/agent_bench.py` from the file (not stored in
+`eval.datasets`). 27 conversations, 42 turns, account country TN, places from the gazetteer that have synthetic
+listings around them (Ennasr, La Marsa, INSAT, Lafayette, ENIT, Ariana, Manouba, Aouina, Lac 2, Bardo, El Menzah 6):
+
+| Kind | Conversations | What is expected |
+|---|---|---|
+| single search (`s01`-`s12`) | 12 (7 French, 2 English, 2 Tunisian in Latin letters, 1 Arabic) | `search_listings`; place, budget or move-in month of the search |
+| follow-up (`f01`-`f08`) | 8 | turn 2 changes the budget, the date or the place; the search keeps what turn 1 said |
+| one result (`d01`-`d05`) | 5 | turn 2 asks about result N: `listing_details` with N (scored only when turn 1 found N results) |
+| no tool (`o01`, `o02`) | 2 | turn 2 closes the conversation: no tool call |
+
+Each turn has `expect`: `tool`, and where it applies `anchor` (contained in the place the search used, accents
+ignored), `budget` (main units, TND), `month` (of `move_in_from`), `number`. Written by me with the set; no second
+annotator, no native-speaker check of the Tunisian and Arabic turns.

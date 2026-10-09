@@ -23,8 +23,14 @@ else if (r.output.needs_clarification || r.output.confidence < min) route = 1;
 else if (r.output.intent === 'search_listings') route = 0;
 else if (r.output.intent === 'smalltalk_or_unsupported') route = 3;
 else route = 2;
+// A follow-up of a recent search ("cheaper?", "and the second one?") reads as smalltalk or unclear to P1, which sees
+// one message. With the Match agent on and a search in the last match.followup_minutes, it goes to the agent,
+// which has the conversation (D-084).
+const ctx = $('Context').first().json;
+const followup = (route === 1 || route === 3) && ctx.agent_enabled === true && ctx.followup_open === true;
+if (followup) route = 0;
 const o = r.ok ? r.output : {};
 const hint = ['TN', 'FR', 'GB'].includes(o.jurisdiction_hint) ? o.jurisdiction_hint : null;
-return [{ json: { route, router: o, call_error: !!r.call_error, steps: [textStep, step],
+return [{ json: { route, followup, agent_enabled: ctx.agent_enabled === true, router: o, call_error: !!r.call_error, steps: [textStep, step],
   detected_language: tb ? tb.language.language : null,
   extract: { text: v.text, jurisdiction: hint || v.jurisdiction, today: v.today } } }];

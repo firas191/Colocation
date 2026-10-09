@@ -1,0 +1,317 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-09T11:00:10.7005509+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions and the active ones (P6_match_agent) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-09T11:00:10.9692801+01:00
+ Container flatshare-tests-run-adaf9619ac50 Creating 
+ Container flatshare-tests-run-adaf9619ac50 Created 
+prompt registry up to date
+exit=0 seconds=1.5
+
+===== Match agent: conversations of match_agent_v1, then the first messages on the fixed path (about 30 to 60 min) =====
+command: docker @run scripts/agent_bench.py
+started: 2026-10-09T11:00:12.4277351+01:00
+ Container flatshare-tests-run-60fd032f357c Creating 
+ Container flatshare-tests-run-60fd032f357c Created 
+27 conversations, 42 turns; model qwen3.5:4b, P6 v1; 74 published TN listings
+s01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 93587 ms
+s02 t1: other_route tools=[] tool_ok=None fields_ok=None kept=None 9025 ms
+s03 t1: fallback tools=[] tool_ok=None fields_ok=True kept=None 89881 ms
+s04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 90847 ms
+s05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False kept=True 59632 ms
+s06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 87375 ms
+s07 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 42816 ms
+s08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 36188 ms
+s09 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 56246 ms
+s10 t1: other_route tools=[] tool_ok=None fields_ok=None kept=None 8695 ms
+s11 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False kept=True 50440 ms
+s12 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 41406 ms
+f01 t1: other_route tools=[] tool_ok=None fields_ok=None kept=None 9769 ms
+f01 t2: agent tools=['search_listings'] tool_ok=True fields_ok=False kept=True 52346 ms
+f02 t1: agent tools=['search_listings', 'search_listings'] tool_ok=True fields_ok=True kept=True 82136 ms
+f02 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 77375 ms
+f03 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 46380 ms
+f03 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 70452 ms
+f04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 59254 ms
+f04 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 79820 ms
+f05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 48818 ms
+f05 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 47832 ms
+f06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 65495 ms
+f06 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 78017 ms
+f07 t1: agent tools=['search_listings', 'listing_details'] tool_ok=True fields_ok=True kept=True 76545 ms
+f07 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 61828 ms
+f08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 37196 ms
+f08 t2: agent tools=['search_listings'] tool_ok=True fields_ok=False kept=True 42120 ms
+d01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 36141 ms
+d01 t2: agent tools=['search_listings'] tool_ok=False fields_ok=None kept=True 35340 ms
+d02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 49942 ms
+d02 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None kept=True 43147 ms
+d03 t1: agent tools=['search_listings', 'listing_details'] tool_ok=True fields_ok=True kept=True 45680 ms
+d03 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None kept=True 18494 ms
+d04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 40742 ms
+d04 t2: agent tools=['search_listings'] tool_ok=False fields_ok=None kept=True 36650 ms
+d05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False kept=True 51666 ms
+d05 t2: other_route tools=[] tool_ok=None fields_ok=None kept=None 8627 ms
+o01 t1: other_route tools=[] tool_ok=None fields_ok=None kept=None 8370 ms
+o01 t2: other_route tools=[] tool_ok=None fields_ok=None kept=None 8719 ms
+o02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True kept=True 45789 ms
+o02 t2: agent tools=[] tool_ok=True fields_ok=None kept=True 19495 ms
+s01 fixed path: fields_ok=True 24372 ms
+s02 fixed path: fields_ok=None 8566 ms
+s03 fixed path: fields_ok=True 23738 ms
+s04 fixed path: fields_ok=True 32615 ms
+s05 fixed path: fields_ok=True 26431 ms
+s06 fixed path: fields_ok=True 22571 ms
+s07 fixed path: fields_ok=True 26336 ms
+s08 fixed path: fields_ok=True 23222 ms
+s09 fixed path: fields_ok=True 28468 ms
+s10 fixed path: fields_ok=None 8344 ms
+s11 fixed path: fields_ok=False 26963 ms
+s12 fixed path: fields_ok=True 22893 ms
+f01 fixed path: fields_ok=None 8496 ms
+f02 fixed path: fields_ok=True 23489 ms
+f03 fixed path: fields_ok=True 23604 ms
+f04 fixed path: fields_ok=True 24199 ms
+f05 fixed path: fields_ok=True 32301 ms
+f06 fixed path: fields_ok=True 23427 ms
+f07 fixed path: fields_ok=True 23652 ms
+f08 fixed path: fields_ok=True 23764 ms
+d01 fixed path: fields_ok=True 23937 ms
+d02 fixed path: fields_ok=True 24107 ms
+d03 fixed path: fields_ok=True 26651 ms
+d04 fixed path: fields_ok=True 32127 ms
+d05 fixed path: fields_ok=False 26081 ms
+o01 fixed path: fields_ok=None 8404 ms
+o02 fixed path: fields_ok=True 23972 ms
+{
+ "date": "2026-10-09T10:44:46+00:00",
+ "model": "qwen3.5:4b",
+ "prompt_version": 1,
+ "dataset": "match_agent_v1.jsonl",
+ "published_tn_listings": 74,
+ "minutes": 44.6,
+ "agent": {
+  "turns": 42,
+  "http_ok": 42,
+  "errors": [],
+  "paths": {
+   "agent": 35,
+   "fallback": 1,
+   "fixed": 0,
+   "other_route": 6
+  },
+  "agent_tool_ok": {
+   "n": 35,
+   "rate": 0.943
+  },
+  "agent_answer_kept": {
+   "n": 35,
+   "rate": 1.0
+  },
+  "client_ms": {
+   "p50": 46379.8,
+   "p95": 89880.7,
+   "max": 93587.0
+  },
+  "by_kind": {
+   "first_turn_search": {
+    "turns": 27,
+    "paths": {
+     "agent": 22,
+     "fallback": 1,
+     "fixed": 0,
+     "other_route": 4
+    },
+    "tool_ok": {
+     "n": 22,
+     "rate": 1.0
+    },
+    "fields_ok": {
+     "n": 23,
+     "rate": 0.87
+    },
+    "client_ms_p50": 48817.7,
+    "client_ms_p95": 90846.7
+   },
+   "followup_search": {
+    "turns": 8,
+    "paths": {
+     "agent": 8,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 0
+    },
+    "tool_ok": {
+     "n": 8,
+     "rate": 1.0
+    },
+    "fields_ok": {
+     "n": 8,
+     "rate": 0.75
+    },
+    "client_ms_p50": 61827.5,
+    "client_ms_p95": 79820.1
+   },
+   "details": {
+    "turns": 2,
+    "paths": {
+     "agent": 1,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 1
+    },
+    "tool_ok": {
+     "n": 1,
+     "rate": 1.0
+    },
+    "fields_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "client_ms_p50": 8626.8,
+    "client_ms_p95": 43146.9
+   },
+   "no_tool": {
+    "turns": 2,
+    "paths": {
+     "agent": 1,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 1
+    },
+    "tool_ok": {
+     "n": 1,
+     "rate": 1.0
+    },
+    "fields_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "client_ms_p50": 8719.1,
+    "client_ms_p95": 19494.7
+   }
+  }
+ },
+ "fixed_path_first_turns": {
+  "turns": 27,
+  "http_ok": 27,
+  "errors": [],
+  "paths": {
+   "agent": 0,
+   "fallback": 0,
+   "fixed": 23,
+   "other_route": 4
+  },
+  "agent_tool_ok": {
+   "n": 0,
+   "rate": null
+  },
+  "agent_answer_kept": {
+   "n": 0,
+   "rate": null
+  },
+  "client_ms": {
+   "p50": 23936.8,
+   "p95": 32300.9,
+   "max": 32615.1
+  },
+  "by_kind": {
+   "first_turn_search": {
+    "turns": 27,
+    "paths": {
+     "agent": 0,
+     "fallback": 0,
+     "fixed": 23,
+     "other_route": 4
+    },
+    "tool_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "fields_ok": {
+     "n": 23,
+     "rate": 0.913
+    },
+    "client_ms_p50": 23936.8,
+    "client_ms_p95": 32300.9
+   },
+   "followup_search": {
+    "turns": 0,
+    "paths": {
+     "agent": 0,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 0
+    },
+    "tool_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "fields_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "client_ms_p50": null,
+    "client_ms_p95": null
+   },
+   "details": {
+    "turns": 0,
+    "paths": {
+     "agent": 0,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 0
+    },
+    "tool_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "fields_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "client_ms_p50": null,
+    "client_ms_p95": null
+   },
+   "no_tool": {
+    "turns": 0,
+    "paths": {
+     "agent": 0,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 0
+    },
+    "tool_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "fields_ok": {
+     "n": 0,
+     "rate": null
+    },
+    "client_ms_p50": null,
+    "client_ms_p95": null
+   }
+  }
+ },
+ "load": "sequential, one conversation at a time"
+}
+wrote reports/eval/agent-bench-20261009-104446.json
+exit=0 seconds=2675.3
+
+===== Ollama memory placement after the agent runs =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-09T11:44:47.7178644+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b       2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+bge-m3:latest    790764642607    664 MB    100% GPU           4096       9 minutes from now    
+exit=0 seconds=0.4

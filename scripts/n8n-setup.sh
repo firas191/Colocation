@@ -40,6 +40,12 @@ cat > "$TMP/credentials.json" <<EOF
   "data": { "name": "X-Internal-Token", "value": "${INTERNAL_SERVICE_TOKEN}" }
 },
 {
+  "id": "fsCredOllama0001",
+  "name": "Ollama (local)",
+  "type": "ollamaApi",
+  "data": { "baseUrl": "${OLLAMA_BASE_URL:-http://ollama:11434}" }
+},
+{
   "id": "fsCredTelegram01",
   "name": "Telegram bot",
   "type": "telegramApi",

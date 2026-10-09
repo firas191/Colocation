@@ -38,7 +38,10 @@ for (const file of files) {
     }
     for (const src of Object.keys(wf.connections)) assert.ok(names.has(src), `connection from missing node ${src}`);
     for (const outs of Object.values(wf.connections)) {
-      for (const list of outs.main) for (const c of list) assert.ok(names.has(c.node), `connection to missing node ${c.node}`);
+      // main, and the sub-node connections of AI nodes (ai_languageModel, ai_memory, ai_tool)
+      for (const lists of Object.values(outs)) {
+        for (const list of lists) for (const c of list) assert.ok(names.has(c.node), `connection to missing node ${c.node}`);
+      }
     }
   });
 }

@@ -74,6 +74,11 @@ class WF:
             outs.append([])
         outs[out].append({"node": dst, "type": "main", "index": 0})
 
+    def ai_link(self, src, dst, kind):
+        """Sub-node connection of an AI root node: kind is ai_languageModel, ai_memory or ai_tool."""
+        outs = self.conns.setdefault(src, {}).setdefault(kind, [[]])
+        outs[0].append({"node": dst, "type": kind, "index": 0})
+
     def json(self):
         return {
             "id": self.wid,
@@ -689,6 +694,10 @@ LLM_CALL_WF = "fsLlmCall0000001"
 EVALP_WF = "fsEvalPrompts001"
 PROFILE_WF = "fsProfileExtr001"
 MATCH_WF = "fsMatchSearch001"
+MATCH_AGENT_WF = "fsMatchAgent0001"
+MATCH_TOOL_SEARCH_WF = "fsMatchToolSrch1"
+MATCH_TOOL_LISTING_WF = "fsMatchToolList1"
+OLLAMA_CRED = {"ollamaApi": {"id": "fsCredOllama0001", "name": "Ollama (local)"}}
 EMBED_WF = "fsListingsEmb001"
 FX_WF = "fsFxRefresh00001"
 USER_CONSENTS = ["terms", "privacy"]       # D-062: endpoints that process a person's request text or profile
@@ -874,6 +883,124 @@ def match_search():
     return wf
 
 
+def tool_inputs(names):
+    """Start node of a sub-workflow called as an agent tool: named inputs, so the tool node can map them."""
+    return {"inputSource": "workflowInputs",
+            "workflowInputs": {"values": [{"name": n, **({"type": t} if t != "string" else {})} for n, t in names]}}
+
+
+def tool_mapping(fields):
+    """workflowInputs of a 'Call n8n Workflow Tool' node: fields is [(name, type, expression)]."""
+    return {"mappingMode": "defineBelow", "value": {n: e for n, _t, e in fields}, "matchingColumns": [],
+            "schema": [{"id": n, "displayName": n, "required": False, "defaultMatch": False, "display": True,
+                        "canBeUsedToMatch": True, "type": t, "removed": False} for n, t, _e in fields],
+            "attemptToConvertTypes": False, "convertFieldsToString": False}
+
+
+def match_tool_search():
+    """Tool of the A3 Match agent: the agent's request in words -> P2 profile -> wf.match.search. Stores the result
+    for the conversation (ai.match_sessions) and answers the model with fields only (D-084)."""
+    wf = WF(MATCH_TOOL_SEARCH_WF, "wf.match.tool_search", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("request", "string"), ("session_id", "string"), ("user_id", "string"), ("request_id", "string"),
+                         ("jurisdiction", "string"), ("today", "string")]), [0, 0])
+    code_node(wf, "Profile input", "tool_search_input.js", [220, 0])
+    exec_wf(wf, "Extract profile", PROFILE_WF, "wf.profile.extract", pos=[440, 0])
+    code_node(wf, "Search plan", "tool_search_plan.js", [660, 0])
+    if_node(wf, "Search?", "={{ !$json.skip }}", [880, 0])
+    exec_wf(wf, "Match", MATCH_WF, "wf.match.search", pos=[1100, -100])
+    code_node(wf, "Session data", "tool_search_session.js", [1320, 0])
+    pg_node(wf, "Store", "select app.match_session_store($1, $2::uuid, $3::uuid, $4::jsonb) as r", "={{ $json.params }}",
+            [1540, 0], on_error=None)
+    code_node(wf, "Tool answer", "tool_search_answer.js", [1760, 0])
+    for a, b in (("Start", "Profile input"), ("Profile input", "Extract profile"), ("Extract profile", "Search plan"),
+                 ("Search plan", "Search?"), ("Match", "Session data"), ("Session data", "Store"), ("Store", "Tool answer")):
+        wf.link(a, b)
+    wf.link("Search?", "Match", 0)
+    wf.link("Search?", "Session data", 1)
+    return wf
+
+
+def match_tool_listing():
+    """Tool of the A3 Match agent: fields of one result of the conversation's last search, by its number."""
+    wf = WF(MATCH_TOOL_LISTING_WF, "wf.match.tool_listing", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("number", "number"), ("session_id", "string")]), [0, 0])
+    pg_node(wf, "Listing", "select app.match_session_listing($1, $2::int) as r",
+            "={{ [ $json.session_id || '', Number.isInteger(Number($json.number)) ? Number($json.number) : 0 ] }}", [220, 0],
+            on_error=None)
+    code_node(wf, "Tool answer", "tool_listing_answer.js", [440, 0])
+    wf.link("Start", "Listing")
+    wf.link("Listing", "Tool answer")
+    return wf
+
+
+SEARCH_TOOL_DESC = ("Search the published room and flatshare listings. Input: the whole search in one sentence in the user's "
+                    "words (kind of place, budget, area, dates, rules). For a change to an earlier search, write the earlier "
+                    "request again with the change. Returns how many were found, what was understood and numbered results.")
+LISTING_TOOL_DESC = ("Details of one result of the last search: give its number in the list (1 for the first). Returns its "
+                     "fields: rent, deposit, bills, furnished, bedrooms, flatmates, amenities, house rules, area, distance, "
+                     "availability.")
+
+
+def match_agent():
+    """A3 Match agent (spec 8.2): an n8n AI Agent node with the local chat model (Ollama), a Postgres chat memory per
+    user and two workflow tools. System message from the prompt registry (P6_match_agent). Input {text (masked),
+    language, jurisdiction, today, user_id, request_id}. Output {ok, status, answer, results, profile, anchor, steps}."""
+    wf = WF(MATCH_AGENT_WF, "wf.match.agent", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", "select app.match_agent_context($1::uuid) as c", "={{ [ $json.user_id ] }}", [220, 0], on_error=None)
+    code_node(wf, "Agent input", "agent_input.js", [440, 0])
+    if_node(wf, "Prompt ok?", "={{ $json.ok }}", [660, 0])
+    wf.node("Match agent", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+        "promptType": "define", "text": "={{ $json.text }}", "hasOutputParser": False,
+        "options": {"systemMessage": "={{ $json.system }}", "maxIterations": "={{ $json.max_iterations }}",
+                    "returnIntermediateSteps": True}}, [900, -100], onError="continueRegularOutput")
+    wf.node("Ollama Chat Model", "@n8n/n8n-nodes-langchain.lmChatOllama", 1, {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {"temperature": 0, "think": False, "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+                    "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+                    "numPredict": "={{ $('Agent input').first().json.num_predict }}"}},
+        [760, 140], credentials=OLLAMA_CRED)
+    wf.node("Chat memory", "@n8n/n8n-nodes-langchain.memoryPostgresChat", 1.3, {
+        "sessionIdType": "customKey", "sessionKey": "={{ $('Agent input').first().json.session_id }}",
+        "tableName": "agent_memory.chat_histories",
+        "contextWindowLength": "={{ $('Agent input').first().json.memory_turns }}"}, [900, 140], credentials=PG_CRED)
+    ai = "$('Agent input').first().json"
+    wf.node("search_listings", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": SEARCH_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": MATCH_TOOL_SEARCH_WF, "mode": "id", "cachedResultName": "wf.match.tool_search"},
+        "workflowInputs": tool_mapping([
+            ("request", "string", "={{ $fromAI('request', 'The whole search in one sentence, in the words of the user', 'string') }}"),
+            ("session_id", "string", "={{ %s.session_id }}" % ai), ("user_id", "string", "={{ %s.user_id }}" % ai),
+            ("request_id", "string", "={{ %s.request_id }}" % ai), ("jurisdiction", "string", "={{ %s.jurisdiction }}" % ai),
+            ("today", "string", "={{ %s.today }}" % ai)])}, [1040, 140])
+    wf.node("listing_details", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": LISTING_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": MATCH_TOOL_LISTING_WF, "mode": "id", "cachedResultName": "wf.match.tool_listing"},
+        "workflowInputs": tool_mapping([
+            ("number", "number", "={{ $fromAI('number', 'Number of the result in the last list, 1 for the first', 'number') }}"),
+            ("session_id", "string", "={{ %s.session_id }}" % ai)])}, [1180, 140])
+    code_node(wf, "Check answer", "agent_output.js", [1180, -100])
+    pg_node(wf, "Search of this request", "select app.match_session_result($1, $2::uuid) as r",
+            "={{ [ $json.session_id, $json.request_id ] }}", [1400, -100], on_error=None)
+    code_node(wf, "Result", "agent_result.js", [1620, -100])
+    code_node(wf, "No prompt", "agent_prompt_missing.js", [900, 260])
+    wf.link("Start", "Context")
+    wf.link("Context", "Agent input")
+    wf.link("Agent input", "Prompt ok?")
+    wf.link("Prompt ok?", "Match agent", 0)
+    wf.link("Prompt ok?", "No prompt", 1)
+    wf.link("Match agent", "Check answer")
+    wf.link("Check answer", "Search of this request")
+    wf.link("Search of this request", "Result")
+    wf.ai_link("Ollama Chat Model", "Match agent", "ai_languageModel")
+    wf.ai_link("Chat memory", "Match agent", "ai_memory")
+    wf.ai_link("search_listings", "Match agent", "ai_tool")
+    wf.ai_link("listing_details", "Match agent", "ai_tool")
+    return wf
+
+
 def endpoint(wid, name, method, path, hook, route_extra=None):
     """Common head of a user endpoint: webhook, route, gateway, 'Gateway ok?' (false -> Envelope)."""
     wf = WF(wid, name, tags=["api", "v1"])
@@ -974,8 +1101,10 @@ def orchestrator():
     code_node(wf, "Validate body", "orch_validate.js", [880, -100])
     if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
     pg_node(wf, "Context", "select coalesce((select (value #>> '{}')::float from app.settings where key = 'router.min_confidence'), 0.6) as min_confidence,"
-            " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url",
-            None, [1320, -200], on_error=None)
+            " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,"
+            " coalesce((select value #>> '{}' from app.settings where key = 'match.agent_enabled'), 'false') = 'true' as agent_enabled,"
+            " app.match_followup_open($1::uuid) as followup_open",
+            "={{ [ $json.gw.ctx.user_id ] }}", [1320, -200], on_error=None)
     # Text service before P1 (spec 8.2 A0, 9.7): language identification and PII count. A failure here is
     # recorded in the trace and does not stop the request (phase 4, D-074).
     http_node(wf, "Text analysis", "POST", "={{ $json.text_url.replace(/\\/+$/, '') + '/v1/analyze' }}", [1430, -350],
@@ -986,6 +1115,12 @@ def orchestrator():
     code_node(wf, "Decide route", "orch_route.js", [1980, -200])
     wf.node("Route by intent", "n8n-nodes-base.switch", 3.2, {
         "mode": "expression", "numberOutputs": 5, "output": "={{ $json.route }}", "options": {}}, [2200, -200])
+    # search_listings: the A3 Match agent when it is on (D-084); P2 + search when it is off or fails
+    if_node(wf, "Use agent?", "={{ $json.agent_enabled }}", [2420, -700])
+    code_node(wf, "Agent request", "orch_agent_input.js", [2640, -800])
+    exec_wf(wf, "Match agent", MATCH_AGENT_WF, "wf.match.agent", pos=[2860, -800], on_error="continueRegularOutput")
+    if_node(wf, "Agent ok?", "={{ $json.ok === true }}", [3080, -800])
+    code_node(wf, "Agent answer", "orch_agent_result.js", [3300, -900])
     code_node(wf, "Profile input", "orch_profile_input.js", [2420, -400])
     exec_wf(wf, "Extract profile", PROFILE_WF, "wf.profile.extract", pos=[2640, -400])
     code_node(wf, "Match input", "orch_match_input.js", [2860, -400])
@@ -1003,7 +1138,14 @@ def orchestrator():
     wf.link("Router input", "Classify")
     wf.link("Classify", "Decide route")
     wf.link("Decide route", "Route by intent")
-    wf.link("Route by intent", "Profile input", 0)
+    wf.link("Route by intent", "Use agent?", 0)
+    wf.link("Use agent?", "Agent request", 0)
+    wf.link("Use agent?", "Profile input", 1)
+    wf.link("Agent request", "Match agent")
+    wf.link("Match agent", "Agent ok?")
+    wf.link("Agent ok?", "Agent answer", 0)
+    wf.link("Agent ok?", "Profile input", 1)
+    wf.link("Agent answer", "Envelope")
     for i in (1, 2, 3, 4):
         wf.link("Route by intent", "Other intents", i)
     wf.link("Profile input", "Extract profile")
@@ -1620,7 +1762,7 @@ def tg_channel():
 BUILDS = {
     "workflows": [gateway, health, users_sync, error_handler, admin_kb_ingest, kb_ingest, kb_ingest_source,
                   jobs_get, admin_eval_runs_create, eval_retrieval, admin_eval_runs_get,
-                  llm_call, eval_prompts, profile_extract, match_search, api_search, api_profiles_extract, api_profiles_me,
+                  llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, api_search, api_profiles_extract, api_profiles_me,
                   orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
                   api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
                   listing_extract, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],

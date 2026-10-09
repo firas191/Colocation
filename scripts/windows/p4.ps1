@@ -8,10 +8,11 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step photos-fetch # candidate room photos from Wikimedia Commons into ..\photo_bench (D-069)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-setup     # P7 golden set and prompts; labelled photos through the Media service into eval/p7/; vision check
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-eval      # P7 v1 and v2 on the labelled photos, one job per version; pHash threshold on the same photos
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step agent-bench  # A3 Match agent: 27 conversations on the real model, then the fixed path (D-084)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step all         # setup, text-eval, p3-eval, report
 # Options: -Models "qwen3.5:4b"  -Versions "3,4"
 # Output: reports\p4-<timestamp>\p4.log and summary.txt; reports\eval\text-*.json and prompts-*.json; docs\PROMPT_EVAL.md.
-param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "all")][string]$Step = "all",
+param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "all")][string]$Step = "all",
       [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2")
 
 $ErrorActionPreference = "Continue"
@@ -138,6 +139,15 @@ if ($Step -eq "p7-eval") {
   Step "pHash threshold: near-duplicate and unrelated pairs of the labelled photos" {
     docker compose @files run --rm --no-deps -v "${photoDir}:/photo_bench:ro" -v "${root}:/flatshare:ro" -v "${root}\reports\eval:/out" --entrypoint python media /flatshare/eval/runners/phash_pairs.py --dir /photo_bench --dataset /flatshare/eval/datasets/p7_photos_v1.jsonl --out "/out/phash-pairs-$stamp.json"
   } | Out-Null
+}
+
+if ($Step -eq "agent-bench") {
+  $c = Step "prompts: store new versions and the active ones (P6_match_agent)" { docker @run scripts/prompts.py sync }
+  if ($c -ne 0) { Write-Host "Stopped: prompt registry sync failed. Log: $log"; exit 1 }
+  Step "Match agent: conversations of match_agent_v1, then the first messages on the fixed path (about 30 to 60 min)" {
+    docker @run scripts/agent_bench.py
+  } | Out-Null
+  Step "Ollama memory placement after the agent runs" { docker exec fs-ollama ollama ps } | Out-Null
 }
 
 if ($Step -in @("p3-eval", "p7-eval", "all", "report")) {

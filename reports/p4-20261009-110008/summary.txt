@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.3 s)
+PASS  prompts: store new versions and the active ones (P6_match_agent)  (exit 0, 1.5 s)
+PASS  Match agent: conversations of match_agent_v1, then the first messages on the fixed path (about 30 to 60 min)  (exit 0, 2675.3 s)
+PASS  Ollama memory placement after the agent runs  (exit 0, 0.4 s)

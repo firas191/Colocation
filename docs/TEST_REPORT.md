@@ -1377,6 +1377,66 @@ Sandbox as in T-41, with the Ollama mock. Logs in `reports/phase4/`.
 Not measured: the date check on answers of the real model in the bot (only the golden-set answers above), and the
 automatic publication on the PC (to be tried by the owner with the setting on).
 
+## T-47 A3 Match agent in the sandbox (2026-10-09) - PASS with the Ollama mock; not run on the real model yet (D-084)
+
+Sandbox as in T-41. The mock answers the agent's model calls with fixed rules (search with the user's text, the
+previous message appended for "moins cher"; details for "numéro N"; a sentence from the tool result), streamed as
+Ollama does. These runs check the AI Agent node's wiring, the memory, the tools, the checks and the fallback, not
+how well a real model uses the tools. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `37-db-tests.log` | pgTAP 363 in 14 files; new `140_match_agent.sql` (15): one conversation per user, defaults (on, 6 turns, 4 iterations), active P6 version or none, last search stored, rent in main units, no title or description for the model, distance in km, drafts not shown, unknown number, cards of the request only, another request ran no search, consent withdrawal deletes the conversation and the last search, api_user refused. Migration 0015 rolled back and applied again |
+| `38-js-unit-tests.log` | node 128 pass, 0 fail; new `agent_check.test.js` (4): number readings (450.000 DT, 1.225.000, dates), answer check against message, memory and tools, intermediate steps to tool calls, fallback masking; workflow check now covers the AI sub-node connections; prompt files check 13 versions |
+| `39-unit-tests.log` | 35 passed (unchanged) |
+| `40-contract-proxy-agent.log` | full suite through the proxy: 132 passed, 1 skipped (raw n8n check). New `test_match_agent.py` (9): a search answered by the agent with the card from the database and the trace step (tool, input size, result count, no text); memory rows (message, tool call, tool result without owner prose, answer); phone number masked in memory; a follow-up ("moins cher") routed to the agent and rewritten with the place of the first message; details of result 1 and an unknown number; an answer with a price no tool gave is dropped, cards kept; agent down and agent looping both fall back to P2 then search; agent off; consent withdrawal deletes the conversation. `test_profile_search.py`'s orchestrator test now runs with the agent off (the fixed path) |
+
+Also run: `scripts/agent_bench.py --limit 4` against the sandbox to check the script end to end (results not kept: the
+mock's answers say nothing about the real model).
+
+Not measured: tool choice, rewriting of follow-ups, answer quality and latency on qwen3.5:4b (`p4.ps1 -Step
+agent-bench` on the PC); token counts of the agent's calls (the node does not pass them to the workflow).
+
+## T-48 A3 Match agent on the owner's PC (2026-10-09) - works end to end; about twice the latency of the fixed path (D-084)
+
+`p4.ps1 -Step agent-bench` (log `reports/p4-20261009-110008/p4.log`, results `reports/eval/agent-bench-20261009-104446.json`
+on the PC): qwen3.5:4b, P6 v1, 74 published synthetic TN listings, 27 conversations (42 turns), then the 27 first
+messages again with the agent off. 44.6 minutes, all 69 requests HTTP 200. Ollama after the run: qwen3.5:4b loaded
+52% on CPU and 48% on GPU (3.7 GB, context 4096).
+
+| Measure | Agent | Fixed path (P2 then search) |
+|---|---|---|
+| Turns that reached the search route | 36 of 42 (35 agent, 1 fallback) | 23 of 27 |
+| Turns sent elsewhere by P1 | 6: 4 first messages answered `not_available_yet` (P1 chose an intent of a later phase, e.g. for "Lac 2 chambre 800 dt"), `d05` turn 2 likewise, `o01` turn 2 `unsupported` (its first message never reached the search) | 4 (the same first messages) |
+| Expected tool called (agent turns) | 33 of 35 | - |
+| Place, budget and month as labelled, same 23 first messages searched on both paths | 20 of 23 | 21 of 23 |
+| Follow-up turns with place and budget kept or changed as labelled | 6 of 8 | not possible (one message at a time) |
+| Answers kept by the number check | 35 of 35 | - |
+| Latency per message seen by the client, the 23 paired first messages | median 50 s, max 94 s | median 24 s, max 33 s |
+| Server latency, all turns of each path | median 49.8 s | median 24.0 s |
+
+What the per-turn rows show:
+- The 2 wrong tool choices (`d01`, `d04`, "et la 2 ?") came after a first search that found 0 listings: the agent
+  searched again instead of asking for result 2, which did not exist. Only 1 of the 5 questions about one result was
+  scorable (`d02`, correct); in the others the first search found fewer results than the number asked, or P1 sent
+  the question elsewhere (`d05`, "la 1 a le wifi ?"). The set has to be fixed before this is measured (below).
+- The 2 follow-ups that failed: `f01` (P1 sent its first message to another intent, so the agent never saw the place)
+  and `f08` ("et à l'Aouina ?" searched "Manouba ou Aouina").
+- Turns with more than one tool call: 3 (`f02` searched twice; `f07` and `d03` read one result after the search
+  without being asked).
+- 1 fallback (`s03`, "looking for a room near INSAT, max 500 TND"): the fixed path answered; the cause of the agent
+  failure was not read from the trace.
+- Answers: median 276 characters, longest 1,088, against "one or two sentences" in P6 v1; 3 of 35 use Markdown
+  (`**`), which Telegram shows as asterisks; the answers to the Tunisian messages in Latin letters came in Arabic.
+- Field misses common to both paths (P2): `s11` (Bardo) and `d05` (budget). Agent only: `s05` (Arabic budget).
+
+Not measured: token counts; quality of the answers' content beyond the number check; latency with the model fully
+on the GPU.
+
+Open after this run (not done): a set version 2 whose detail questions follow searches with enough results; P6 v2
+for shorter answers without Markdown and in the user's script; whether the follow-up rule should also take messages
+P1 sends to other intents while a search is open; the cause of the `s03` fallback.
+
 ---
 
 ## Not run

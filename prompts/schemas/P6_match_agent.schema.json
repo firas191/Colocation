@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P6_match_agent answer",
+  "description": "The agent's final answer is plain text; numbers in it are checked against the user's message and the tool results in code (n8n/src/lib/agent_check.js).",
+  "type": "string",
+  "maxLength": 1200
+}

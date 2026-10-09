@@ -505,6 +505,55 @@ Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
   what is missing. This skips the owner's confirmation and the trust check: it is for the sandbox, the demonstration
   and tests, and must be off for real users. Removed or replaced when the confirmation step is built (phase 5).
 
+### D-084 A3 Match agent: the n8n AI Agent node, only for the search conversation
+
+- **Where an agent and where not.** Spec 8.1 keeps routing deterministic and uses a tool-calling AI Agent node only
+  where several steps depend on each other (Match, Trust, Legal RAG). Of the parts built so far, only Match is one of
+  these: the user searches, changes the search ("cheaper", "closer to the faculty"), asks about one result. P1, P2,
+  P3 and P7 stay single calls through `wf.llm.call`: each returns one JSON object against a schema, has a golden set
+  and measured scores (T-40, T-44), and checks in code. An agent loop there would add calls and variation and make the
+  scores incomparable. The gateway, API, jobs, ingestion, embedding and evaluation workflows have no reasoning step.
+- **Shape** (`wf.match.agent`, migration 0015). AI Agent node (n8n 2.41.3, typeVersion 3.1) with three sub-nodes:
+  Ollama Chat Model (`llm.default_model`, temperature 0, thinking off, credential `ollamaApi` from
+  `OLLAMA_BASE_URL`), Postgres Chat Memory (one session per user), and two "Call n8n Workflow Tool" nodes:
+  `search_listings` (`wf.match.tool_search`) and `listing_details` (`wf.match.tool_listing`). The system message is
+  the active version of the new prompt `P6_match_agent` in the registry; the user's message goes between
+  `<message>` tags as in the other prompts.
+- **The search tool takes the request in words**, not filters. It runs P2 (`wf.profile.extract`) on what the agent
+  wrote, then `wf.match.search`: the P2 checks (allowed preferences, currencies, geocoding) apply to agent searches
+  too, and the agent's job is to write a complete request (for a follow-up, the earlier request with the change).
+  Cost: a search turn makes four model calls (P1, agent, P2, agent) instead of two (P1, P2). Latency on the PC: not
+  measured yet (`p4.ps1 -Step agent-bench`).
+- **What the model sees and what the user sees.** Tool results hold listing fields only (rent, area, distance,
+  furnished, availability...), never the owner's title or description (spec 8.2 A3 guardrail: owner prose could
+  carry instructions). The result cards shown to the user come from the database (`app.public_cards`), not from the
+  model's text. The answer is checked in code (`n8n/src/lib/agent_check.js`): a number of two digits or more that is
+  not in the message, the memory or a tool result drops the answer (warning `agent_answer_unsupported`); the filters
+  and cards are still shown.
+- **Follow-ups.** P1 sees one message, so "moins cher" reads as smalltalk. With the agent on and a search by the same
+  user in the last `match.followup_minutes` (30), a message P1 classifies as smalltalk or unclear goes to the agent.
+- **Fallback.** Agent off (`match.agent_enabled`), no active P6 version, model error, no answer or too many
+  iterations (`match.agent_max_iterations` 4): the fixed path runs (P2 then search) with the warning `agent_fallback`.
+- **Memory.** n8n's node stores the whole turn (message, tool call, tool result, answer: 4 rows for a search) in
+  `agent_memory.chat_histories`; the agent sees the last 2 x `match.agent_memory_turns` (6) messages. It receives the
+  Text service's masked copy of the message (phone numbers, e-mails, names; a regex fallback if the service is down).
+  Rows older than `match.agent_memory_days` (30) are deleted at each agent run, and withdrawing the privacy or terms
+  consent deletes the conversation (trigger on `app.consents`). The table is alone in its own schema because the node
+  runs `create table if not exists` before every use, which needs CREATE on the schema (F-062).
+- **Trace.** One step `A3_match_agent` per message: prompt version, model, tools called with input sizes and result
+  counts, answer length, dropped numbers, latency; no text (D-062). The node does not hand token counts to the
+  workflow, so the step's tokens are stored as 0: not measured.
+- **Evaluation** (`scripts/agent_bench.py`, `eval/datasets/match_agent_v1.jsonl`): 27 conversations, 42 turns, in
+  French, English, Arabic and Tunisian in Latin letters: 12 single searches, 8 follow-ups, 5 questions about one
+  result, 2 closings that need no tool. Per turn: path (agent, fallback, fixed), expected tool called, place, budget
+  and move-in month of the search, answer kept, latency; then the first messages again on the fixed path. Labels
+  written with the set, by me, not by a second annotator. Results on the PC (T-48): expected tool in 33 of 35
+  agent turns, search fields as labelled in 20 of 23 paired first messages (fixed path 21 of 23), 6 of 8
+  follow-ups handled, every answer kept by the number check; median latency 50 s against 24 s for the fixed path,
+  with the model half on the CPU. The agent stays on by default: it adds follow-ups and questions about a result, which the
+  fixed path cannot do, at the same field accuracy; the latency is the cost, and `match.agent_enabled` switches it
+  off.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

@@ -147,6 +147,7 @@ services:
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}        # the bot's token from @BotFather (docs/RUNBOOK.md); empty = no bot
       TELEGRAM_API_BASE: https://api.telegram.org
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}   # the Match agent's chat model node (D-084)
     volumes:
       - ./:/flatshare:ro
       - n8n_data:/home/node/.n8n
