@@ -568,8 +568,11 @@ Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
   list looks shorter. v1 stays active until both are run on the same set on the PC (`p4.ps1 -Step agent-bench`
   runs versions 1 and 2); v2 becomes active only if it keeps tool choice and search fields at least as good as v1.
   Result (T-50): v2 shortened answers (median 112 characters, no Markdown, right alphabet) and cut the median agent
-  turn from 54 s to 40 s, but answered 2 of 7 numbered-result questions without the tool, so v1 stays active. P6 v3
-  (v2 with `listing_details` required for those questions) is next on the PC.
+  turn from 54 s to 40 s, but answered 2 of 7 numbered-result questions without the tool, so v1 stayed active.
+  **P6 v3 is active** (T-51): v2 with `listing_details` required for those questions; 7 of 7 of them, answers as
+  short and plain as v2. It misses the rule above by one turn (44 of 45 tool choices against 45 of 45: an extra
+  lookup after "ok thanks"); accepted as an exception with the owner, because v3 equals or beats v1 on every other
+  measure.
 - **match_agent v2** (`eval/datasets/match_agent_v2.jsonl`, 30 conversations, 48 turns): v1 plus three fixes from
   T-48. The questions about one result now follow searches that found 9 or 10 listings on the PC, or the same search with a close budget (8 instead of 5;
   in v1 three of them followed searches with 0 or 1 result, so only 1 was scorable). The first messages of `f01` and

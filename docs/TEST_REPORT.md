@@ -1486,6 +1486,31 @@ good (23 against 22), tool choice is not (39 of 41 against 45 of 45). v1 stays a
 removes its Markdown. P6 v3 keeps v2 and makes `listing_details` the required first action for a question about a
 numbered result; to be run on the PC (`p4.ps1 -Step agent-bench`, version 3 by default).
 
+## T-51 P6 v3 on the owner's PC (2026-10-09) - v3 active (D-085)
+
+`p4.ps1 -Step agent-bench` with version 3 (log `reports/p4-20261009-145342/p4.log`, results
+`reports/eval/agent-bench-20261009-143551.json` on the PC), same set and setup as T-50; 42.1 minutes, every request
+HTTP 200, no fallback. Compared with v1 and v2 from T-50 (a different run: P1 sent `f04`, `f07` and `f08` to the
+search this time, as with v1).
+
+| Measure | v1 (T-50) | v2 (T-50) | v3 | Fixed path (this run) |
+|---|---|---|---|---|
+| Expected tool called | 45 of 45 | 39 of 41 | 44 of 45 | - |
+| Numbered-result questions with `listing_details` | 7 of 7 | 5 of 7 | 7 of 7 | - |
+| First messages: search fields as labelled | 25 of 28 | 23 of 25 | 26 of 28 | 23 of 25 |
+| Follow-ups: fields as labelled | 7 of 8 | 5 of 7 | 7 of 8 | - |
+| Answers in the message's alphabet | 44 of 45 | 41 of 41 | 45 of 45 | - |
+| Model wrote Markdown | 17 of 45 | 0 of 41 | 0 of 45 | - |
+| Length written, median / longest | 397 / 986 | 112 / 230 | 108 / 211 | - |
+| Client latency p50 / p95 | 52.9 s / 93.6 s | 39.5 s / 46.5 s | 40.7 s / 60.2 s | 23.4 s / 31.6 s |
+
+The one v3 miss: `o02` turn 2 ("ok thanks, that's all") called `listing_details` instead of no tool; the answer
+described a listing. Remaining field misses: `s11` (Bardo, also on the fixed path), `d05` (budget, also on the fixed
+path), `f05` turn 2.
+
+Decision: v3 active. It misses D-085's rule by one turn of tool choice (44 of 45 against 45 of 45), an extra lookup
+after a closing message; it equals or beats v1 on every other row, and the owner agreed to the exception.
+
 ---
 
 ## Not run
