@@ -164,3 +164,9 @@ listings around them (Ennasr, La Marsa, INSAT, Lafayette, ENIT, Ariana, Manouba,
 Each turn has `expect`: `tool`, and where it applies `anchor` (contained in the place the search used, accents
 ignored), `budget` (main units, TND), `month` (of `move_in_from`), `number`. Written by me with the set; no second
 annotator, no native-speaker check of the Tunisian and Arabic turns.
+
+### match_agent v2 (`match_agent_v2.jsonl`, D-085)
+
+v1 with: the questions about one result (`d01`-`d08`, 8 instead of 5) after first searches that found 9 or 10 (or the same place with a close budget)
+listings on the owner's PC (T-48); `f01` and `o01` start with "je cherche" so that P1 sends them to the search. The 12
+single searches are the same as in v1.

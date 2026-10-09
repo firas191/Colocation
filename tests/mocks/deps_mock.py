@@ -132,7 +132,8 @@ def agent_answer(body):
     search_listings with the user's text (with the previous user message appended for a follow-up such as "moins
     cher" or "cheaper"), listing_details for "numéro N" / "the second one", and after a tool answers with a sentence
     built from the tool result. Markers: [mock:agentdown] HTTP 500, [mock:notool] answers without a tool,
-    [mock:badnumber] adds a price that no tool gave, [mock:loop] calls the search again after every result."""
+    [mock:badnumber] adds a price that no tool gave, [mock:loop] calls the search again after every result,
+    [mock:markdown] answers with a long Markdown list."""
     msgs = body.get("messages") or []
     users = [m for m in msgs if m.get("role") == "user"]
     cur = _msg_text(users[-1]) if users else ""
@@ -167,6 +168,11 @@ def agent_answer(body):
             text = "I cannot find that number." if en else "Je ne trouve pas ce numéro."
         if "[mock:badnumber]" in low:
             text += " La moins chère est à 999 DT."
+        if "[mock:markdown]" in low and isinstance(obs.get("results"), list) and obs["results"]:
+            r = obs["results"][0]
+            text = ("Voici les résultats de votre recherche :\n\n" + "\n".join(
+                f"*   **Résultat {i}** : une chambre à {r.get('city')}, {r.get('rent')} {r.get('currency')} par mois, "
+                f"proche de ce que vous cherchez et disponible rapidement." for i in range(1, 6)))
         return 200, {"role": "assistant", "content": text}
     if "[mock:notool]" in low:
         return 200, {"role": "assistant", "content": "Je peux vous aider à chercher une chambre."}

@@ -8,12 +8,12 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step photos-fetch # candidate room photos from Wikimedia Commons into ..\photo_bench (D-069)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-setup     # P7 golden set and prompts; labelled photos through the Media service into eval/p7/; vision check
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-eval      # P7 v1 and v2 on the labelled photos, one job per version; pHash threshold on the same photos
-#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step agent-bench  # A3 Match agent: 27 conversations on the real model, then the fixed path (D-084)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step agent-bench  # A3 Match agent: match_agent_v2 for each P6 version, then the fixed path (D-084, D-085)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step all         # setup, text-eval, p3-eval, report
 # Options: -Models "qwen3.5:4b"  -Versions "3,4"
 # Output: reports\p4-<timestamp>\p4.log and summary.txt; reports\eval\text-*.json and prompts-*.json; docs\PROMPT_EVAL.md.
 param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "all")][string]$Step = "all",
-      [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2")
+      [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2", [string]$AgentVersions = "1,2")
 
 $ErrorActionPreference = "Continue"
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -144,8 +144,8 @@ if ($Step -eq "p7-eval") {
 if ($Step -eq "agent-bench") {
   $c = Step "prompts: store new versions and the active ones (P6_match_agent)" { docker @run scripts/prompts.py sync }
   if ($c -ne 0) { Write-Host "Stopped: prompt registry sync failed. Log: $log"; exit 1 }
-  Step "Match agent: conversations of match_agent_v1, then the first messages on the fixed path (about 30 to 60 min)" {
-    docker @run scripts/agent_bench.py
+  Step "Match agent: match_agent_v2 for P6 versions $AgentVersions, then the first messages on the fixed path (about 40 min per version)" {
+    docker @run scripts/agent_bench.py --versions $AgentVersions
   } | Out-Null
   Step "Ollama memory placement after the agent runs" { docker exec fs-ollama ollama ps } | Out-Null
 }

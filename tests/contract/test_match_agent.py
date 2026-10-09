@@ -128,3 +128,15 @@ def test_withdrawing_consent_deletes_the_conversation(client, db, user):
                (user,))
     assert db.execute("select count(*) from agent_memory.chat_histories where session_id = %s", (sid,)).fetchone()[0] == 0
     assert db.execute("select count(*) from ai.match_sessions where session_id = %s", (sid,)).fetchone()[0] == 0
+
+
+def test_markdown_is_removed_and_a_long_answer_cut(client, db, user):
+    """D-085: the model's Markdown list becomes plain text, cut at the last sentence under match.agent_answer_max_chars."""
+    j = say(client, user, "[mock:markdown] " + SEARCH)
+    d = j["data"]
+    assert d["status"] == "results" and d["answer"] and "agent_answer_cut" in d["warnings"], d
+    assert "*" not in d["answer"] and "\n" not in d["answer"] and len(d["answer"]) <= 400
+    assert d["answer"].startswith("Voici les résultats de votre recherche : Résultat 1 : une chambre à Testville, 400 TND")
+    assert d["answer"].endswith(".")                                          # cut at a sentence end
+    out = steps_of(db, j["request_id"])[-1][3]
+    assert out["markdown_removed"] is True and out["cut"] is True and out["raw_chars"] > 400

@@ -4,6 +4,8 @@
 //  - checkAnswer(answer, sources): every number of two digits or more in the answer must appear in one of the
 //    sources (the user's message, the tool results). Small numbers (result positions, counts up to 10) pass.
 //  - fallbackMask(text): e-mails and long digit runs masked, used only when the Text service did not answer.
+//  - plainText(answer): Markdown removed (bold, italics, headings, list markers, links), lines joined (D-085).
+//  - shorten(text, max): cut at the last sentence end that fits, else at a word, with an ellipsis (D-085).
 
 function toolCalls(steps) {
   return (Array.isArray(steps) ? steps : []).map((s) => {
@@ -60,4 +62,27 @@ function fallbackMask(text) {
     .replace(/\+?\d[\d .-]{6,}\d/g, (m) => (m.replace(/\D/g, '').length >= 8 ? '<PHONE>' : m));
 }
 
-if (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask };
+function plainText(answer) {
+  const lines = String(answer || '').replace(/\r/g, '').split('\n').map((l) => l
+    .replace(/^\s{0,3}#{1,6}\s+/, '')                      // headings
+    .replace(/^\s*(?:[-*+\u2022]|\d+[.)])\s+/, '')            // list markers ("1." too: positions are said in words)
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')                // links: keep the text
+    .replace(/(\*\*|__)(.+?)\1/g, '$2')                       // bold
+    .replace(/(^|[^\w*])[*_]([^*_\n]+)[*_](?=[^\w*]|$)/g, '$1$2') // italics
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/[*_]{2,}/g, '')
+    .trim()).filter(Boolean);
+  return lines.join(' ').replace(/\s{2,}/g, ' ').trim();
+}
+
+function shorten(text, max) {
+  const t = String(text || '');
+  if (!max || Array.from(t).length <= max) return { text: t, cut: false };
+  const head = Array.from(t).slice(0, max).join('');
+  const ends = [...head.matchAll(/[.!?\u061F\u06D4](?=\s|$)/g)].map((m) => m.index + 1);
+  if (ends.length && ends[ends.length - 1] >= max * 0.4) return { text: head.slice(0, ends[ends.length - 1]).trim(), cut: true };
+  const sp = head.lastIndexOf(' ');
+  return { text: (sp > max * 0.4 ? head.slice(0, sp) : head).trim() + '\u2026', cut: true };
+}
+
+if (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask, plainText, shorten };

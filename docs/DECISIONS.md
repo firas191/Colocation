@@ -554,6 +554,27 @@ Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
   fixed path cannot do, at the same field accuracy; the latency is the cost, and `match.agent_enabled` switches it
   off.
 
+### D-085 Match agent answers: plain text, cut in code; P6 v2; conversation set v2
+
+- **In code, whatever the prompt** (`agent_check.plainText`, `shorten`; migration 0016): Markdown is removed from
+  the answer (bold, italics, headings, list markers, links; lines joined), then the number check runs, then an
+  answer longer than `match.agent_answer_max_chars` (400) is cut at the last sentence end that fits (else at a word,
+  with "…") and gets the warning `agent_answer_cut`. The trace step records the model's length, whether it wrote
+  Markdown and whether the answer was cut. On the PC 3 of 35 answers had Markdown and the longest was 1,088
+  characters (T-48), which Telegram showed as raw stars and long lists.
+- **P6 v2** (`prompts/P6_match_agent/v2.md`): two plain sentences under 300 characters, no lists; the alphabet of
+  the message (new variable `script`, from P1); Tunisian or Arabic in Latin letters answered in French in Latin
+  letters; at most one search per message; `listing_details` whenever a result is named by its number, even if the
+  list looks shorter. v1 stays active until both are run on the same set on the PC (`p4.ps1 -Step agent-bench`
+  runs versions 1 and 2); v2 becomes active only if it keeps tool choice and search fields at least as good as v1.
+- **match_agent v2** (`eval/datasets/match_agent_v2.jsonl`, 30 conversations, 48 turns): v1 plus three fixes from
+  T-48. The questions about one result now follow searches that found 9 or 10 listings on the PC, or the same search with a close budget (8 instead of 5;
+  in v1 three of them followed searches with 0 or 1 result, so only 1 was scorable). The first messages of `f01` and
+  `o01` start with "je cherche" (P1 sent "chambre à Ennasr, 500 dt" to another intent, so the follow-up was never
+  tested). The 12 single searches are unchanged, including the 2 that P1 misroutes, to keep measuring that. The
+  benchmark also reports, per answer, the alphabet against the message's, Markdown written by the model, cuts and
+  lengths.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

@@ -10,7 +10,11 @@ whether the answer was kept by the number check, and the latency seen by the cli
 Labels (expected tool, place, budget, month) were written with the dataset (D-084), not by a second annotator.
 The search results themselves are not scored: the listings are synthetic (D-060).
 
-    python scripts/agent_bench.py [--dataset eval/datasets/match_agent_v1.jsonl] [--limit N] [--no-baseline]
+    python scripts/agent_bench.py [--dataset eval/datasets/match_agent_v2.jsonl] [--versions 1,2] [--limit N] [--no-baseline]
+
+Each P6_match_agent version in --versions is made the active one for its run (ai.prompt_versions.status), and the
+versions' statuses are put back as they were at the end. Per answer also: length, whether it is in the alphabet of
+the message, and from the trace step whether the model wrote Markdown or more than match.agent_answer_max_chars.
 
 Environment: FS_API_BASE, FS_SECRETS_FILE, FS_TEST_DB_DSN (as scripts/p3.py). Writes reports/eval/agent-bench-*.json.
 """
@@ -42,6 +46,31 @@ def norm(s):
 def pct(xs, q):
     xs = sorted(v for v in xs if v is not None)
     return xs[max(0, math.ceil(q / 100 * len(xs)) - 1)] if xs else None
+
+
+def script_of(text):
+    ar = sum(1 for ch in str(text or "") if "\u0600" <= ch <= "\u06ff")
+    lat = sum(1 for ch in str(text or "") if ch.isalpha() and ch.isascii() or "\u00c0" <= ch <= "\u024f")
+    if ar + lat < 3:
+        return None
+    return "arabic" if ar > lat else "latin"
+
+
+def agent_step(conn, request_id):
+    row = conn.execute("""select s.output from ai.agent_steps s join ai.executions e on e.id = s.execution_id
+                          where e.request_id = %s and s.agent = 'A3_match_agent' order by s.step_index desc limit 1""",
+                       (request_id,)).fetchone()
+    return row[0] if row else None
+
+
+def set_statuses(conn, statuses):
+    """statuses: {version: status} for P6_match_agent; the active one is set last (one active version at a time)."""
+    conn.execute("""update ai.prompt_versions v set status = 'draft' from ai.prompts p
+                    where p.id = v.prompt_id and p.name = 'P6_match_agent' and v.status = 'active'""")
+    for v, st in sorted(statuses.items(), key=lambda x: x[1] == "active"):
+        conn.execute("""update ai.prompt_versions v set status = %s from ai.prompts p
+                        where p.id = v.prompt_id and p.name = 'P6_match_agent' and v.version = %s""", (st, v))
+    conn.commit()
 
 
 def new_user(conn, label):
@@ -106,6 +135,12 @@ def run_conversation(c, conn, item, label):
                "error": (body.get("error") or {}).get("code"), "answer": d.get("answer"), "warnings": d.get("warnings")}
         if r.status_code == 200:
             row.update(score(turn, d, prev_count))
+            if row.get("path") == "agent":
+                st = agent_step(conn, body.get("request_id")) or {}
+                ans = d.get("answer")
+                row.update(answer_chars=len(ans) if ans else 0, raw_chars=st.get("raw_chars"),
+                           markdown=st.get("markdown_removed"), cut=st.get("cut"),
+                           same_script=(script_of(ans) == script_of(turn["text"])) if ans and script_of(turn["text"]) else None)
             prev_count = d.get("count") if d.get("status") == "results" else prev_count
         rows.append(row)
     return rows
@@ -131,14 +166,29 @@ def summarize(rows):
     return {"turns": len(rows), "http_ok": len(ok), "errors": [r for r in rows if r["http"] != 200][:5],
             "paths": {p: sum(1 for x in ok if x.get("path") == p) for p in ("agent", "fallback", "fixed", "other_route")},
             "agent_tool_ok": rate(agent, "tool_ok"), "agent_answer_kept": rate(agent, "answer_kept"),
+            "answers": {"same_script": rate(agent, "same_script"), "markdown_written": rate(agent, "markdown"),
+                        "cut": rate(agent, "cut"), "raw_chars_p50": pct([x.get("raw_chars") for x in agent], 50),
+                        "raw_chars_max": pct([x.get("raw_chars") for x in agent], 100),
+                        "shown_chars_p50": pct([x.get("answer_chars") for x in agent], 50)},
             "client_ms": {"p50": pct([x["client_ms"] for x in ok], 50), "p95": pct([x["client_ms"] for x in ok], 95),
                           "max": pct([x["client_ms"] for x in ok], 100)},
             "by_kind": by}
 
 
+def compact(sm):
+    """The lines worth reading in the console; the file keeps everything."""
+    if not sm:
+        return None
+    k = sm["by_kind"]
+    return {"paths": sm["paths"], "tool_ok": sm["agent_tool_ok"], "answers": sm.get("answers"),
+            "client_ms": sm["client_ms"],
+            **{f"{n}": {"turns": v["turns"], "tool_ok": v["tool_ok"], "fields_ok": v["fields_ok"]} for n, v in k.items()}}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--dataset", default=str(ROOT / "eval" / "datasets" / "match_agent_v1.jsonl"))
+    ap.add_argument("--dataset", default=str(ROOT / "eval" / "datasets" / "match_agent_v2.jsonl"))
+    ap.add_argument("--versions", default="active", help="P6_match_agent versions to run, e.g. 1,2 (default: the active one)")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--no-baseline", action="store_true")
     a = ap.parse_args()
@@ -147,23 +197,36 @@ def main():
     c.http.timeout = __import__("httpx").Timeout(300)          # one agent turn makes several model calls
     with psycopg.connect(kb.dsn()) as conn:
         model = conn.execute("select value #>> '{}' from app.settings where key = 'llm.default_model'").fetchone()[0]
-        pv = conn.execute("""select v.version from ai.prompt_versions v join ai.prompts p on p.id = v.prompt_id
-                             where p.name = 'P6_match_agent' and v.status = 'active'""").fetchone()
-        if not pv:
+        statuses = dict(conn.execute("""select v.version, v.status from ai.prompt_versions v join ai.prompts p on p.id = v.prompt_id
+                                        where p.name = 'P6_match_agent'""").fetchall())
+        active = [v for v, st in statuses.items() if st == "active"]
+        if not active:
             sys.exit("P6_match_agent has no active version: run scripts/prompts.py sync")
+        versions = active if a.versions == "active" else [int(x) for x in a.versions.split(",")]
+        missing = [v for v in versions if v not in statuses]
+        if missing:
+            sys.exit(f"P6_match_agent versions not stored: {missing} (scripts/prompts.py sync)")
         n_pub = conn.execute("select count(*) from app.listings where status = 'published' and jurisdiction_code = 'TN'").fetchone()[0]
         conn.execute("update app.settings set value = 'true' where key = 'match.agent_enabled'")
         conn.commit()
-        print(f"{len(items)} conversations, {sum(len(i['turns']) for i in items)} turns; model {model}, P6 v{pv[0]}; "
-              f"{n_pub} published TN listings", flush=True)
-        rows = []
+        print(f"{len(items)} conversations, {sum(len(i['turns']) for i in items)} turns per version; model {model}; "
+              f"P6 versions {versions}; {n_pub} published TN listings", flush=True)
         t_start = time.perf_counter()
-        for it in items:
-            rs = run_conversation(c, conn, it, "Agent benchmark")
-            rows += rs
-            for r in rs:
-                print(f"{r['id']} t{r['turn']}: {r.get('path')} tools={r.get('tool_calls')} tool_ok={r.get('tool_ok')} "
-                      f"fields_ok={r.get('fields_ok')} kept={r.get('answer_kept')} {r['client_ms']:.0f} ms", flush=True)
+        runs = {}
+        try:
+            for v in versions:
+                set_statuses(conn, {**{k: ("draft" if st == "active" else st) for k, st in statuses.items()}, v: "active"})
+                rows = []
+                for it in items:
+                    rs = run_conversation(c, conn, it, f"Agent benchmark (P6 v{v})")
+                    rows += rs
+                    for r in rs:
+                        print(f"v{v} {r['id']} t{r['turn']}: {r.get('path')} tools={r.get('tool_calls')} tool_ok={r.get('tool_ok')} "
+                              f"fields_ok={r.get('fields_ok')} chars={r.get('answer_chars')} md={r.get('markdown')} "
+                              f"script_ok={r.get('same_script')} {r['client_ms']:.0f} ms", flush=True)
+                runs[v] = rows
+        finally:
+            set_statuses(conn, statuses)
         base = []
         if not a.no_baseline:
             conn.execute("update app.settings set value = 'false' where key = 'match.agent_enabled'")
@@ -177,16 +240,18 @@ def main():
                 conn.execute("update app.settings set value = 'true' where key = 'match.agent_enabled'")
                 conn.commit()
         minutes = round((time.perf_counter() - t_start) / 60, 1)
-    summary = {"date": datetime.now(timezone.utc).isoformat(timespec="seconds"), "model": model, "prompt_version": pv[0],
+    summary = {"date": datetime.now(timezone.utc).isoformat(timespec="seconds"), "model": model, "prompt_versions": versions,
                "dataset": Path(a.dataset).name, "published_tn_listings": n_pub, "minutes": minutes,
-               "agent": summarize(rows),
+               "agent": {f"v{v}": summarize(rows) for v, rows in runs.items()},
                "fixed_path_first_turns": summarize(base) if base else None,
                "load": "sequential, one conversation at a time"}
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     out = ROOT / "reports" / "eval" / f"agent-bench-{stamp}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"summary": summary, "turns": rows, "fixed_path": base}, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(json.dumps(summary, indent=1, ensure_ascii=False))
+    out.write_text(json.dumps({"summary": summary, "turns": {f"v{v}": rows for v, rows in runs.items()}, "fixed_path": base},
+                              ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps({"minutes": minutes, **{f"v{v}": compact(summary["agent"][f"v{v}"]) for v in runs},
+                      "fixed_path": compact(summary["fixed_path_first_turns"])}, indent=1, ensure_ascii=False))
     print(f"wrote {out.relative_to(ROOT)}")
 
 

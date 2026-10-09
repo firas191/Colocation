@@ -7,7 +7,8 @@
     "message",
     "jurisdiction",
     "today",
-    "language"
+    "language",
+    "script"
   ],
   "golden_set": "match_agent",
   "active_version": 1

@@ -1437,6 +1437,20 @@ Open after this run (not done): a set version 2 whose detail questions follow se
 for shorter answers without Markdown and in the user's script; whether the follow-up rule should also take messages
 P1 sends to other intents while a search is open; the cause of the `s03` fallback.
 
+## T-49 Match agent answers and conversation set v2, in the sandbox (2026-10-09) - PASS with the mock; P6 v2 not run on the real model yet (D-085)
+
+| Log | Result |
+|---|---|
+| `41-db-tests.log` | pgTAP 365 in 15 files; new `150_agent_answer.sql` (2): 400 characters by default, read from the setting. Migration 0016 rolled back and applied again |
+| `42-js-unit-tests.log` | node 130 pass, 0 fail; new in `agent_check.test.js` (2): Markdown to plain text (bold, italics, list markers, numbered lists, links, headings; "2 * 3" and "prix_max" left alone), cut at the last sentence that fits (French, Arabic), at a word with "…" otherwise; prompt files check 14 versions |
+| `43-unit-tests.log` | 35 passed (unchanged) |
+| `44-contract-proxy-d085.log` | full suite through the proxy: 133 passed, 1 skipped. New in `test_match_agent.py`: a long Markdown answer from the mock comes back as one plain line under 400 characters, ending at a sentence, with `agent_answer_cut`; the trace step says Markdown was removed and the answer cut |
+
+Also run: `scripts/agent_bench.py --versions 1,2 --limit 2 --no-baseline` in the sandbox: both versions ran (the
+trace steps carry P6 v1 and v2), and the statuses were put back afterwards (v1 active, v2 draft).
+
+Not measured: P6 v2 on qwen3.5:4b (`p4.ps1 -Step agent-bench`, versions 1 and 2 on match_agent v2).
+
 ---
 
 ## Not run

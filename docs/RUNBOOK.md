@@ -110,7 +110,8 @@ Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py 
 | Match agent on or off (D-084; off = P2 then search, as before) | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.settings set value = 'false' where key = 'match.agent_enabled';"` (`'true'` to switch back) |
 | What the Match agent did for a request | `GET /v1/admin/traces/{request_id}`, step `A3_match_agent` (tools called, result counts, dropped numbers) |
 | A user's conversation with the agent | `select message->>'type', message->>'content' from agent_memory.chat_histories where session_id = 'user:<user id>' order by id;` (masked text; deleted after 30 days or when consent is withdrawn) |
-| Match agent on the real model (27 conversations, then the fixed path) | `... p4.ps1 -Step agent-bench` -> `reports\eval\agent-bench-*.json` |
+| Match agent on the real model (match_agent_v2 for P6 v1 and v2, then the fixed path) | `... p4.ps1 -Step agent-bench` (option `-AgentVersions "2"`) -> `reports\eval\agent-bench-*.json` |
+| Longest Match agent answer shown (D-085) | `select value from app.settings where key = 'match.agent_answer_max_chars';` (400) |
 | Near-duplicate threshold | `select value from app.settings where key = 'media.phash_max_distance';` (12 since D-082) |
 | Analyze one listing by hand | `POST /v1/listings`, then `POST /v1/listings/{id}/analyze`; result in `GET /v1/listings/{id}` (`extraction.issues`) |
 | Plausible rent ranges | `select value from app.settings where key = 'listing.rent_range';` (main units per month, D-076) |
