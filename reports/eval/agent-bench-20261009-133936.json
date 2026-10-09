@@ -1,0 +1,4290 @@
+{
+ "summary": {
+  "date": "2026-10-09T13:39:36+00:00",
+  "model": "qwen3.5:4b",
+  "prompt_versions": [
+   1,
+   2
+  ],
+  "dataset": "match_agent_v2.jsonl",
+  "published_tn_listings": 74,
+  "minutes": 80.9,
+  "agent": {
+   "v1": {
+    "turns": 48,
+    "http_ok": 48,
+    "errors": [],
+    "paths": {
+     "agent": 45,
+     "fallback": 0,
+     "fixed": 0,
+     "other_route": 3
+    },
+    "agent_tool_ok": {
+     "n": 45,
+     "rate": 1.0
+    },
+    "agent_answer_kept": {
+     "n": 45,
+     "rate": 1.0
+    },
+    "answers": {
+     "same_script": {
+      "n": 45,
+      "rate": 0.978
+     },
+     "markdown_written": {
+      "n": 45,
+      "rate": 0.378
+     },
+     "cut": {
+      "n": 45,
+      "rate": 0.422
+     },
+     "raw_chars_p50": 397,
+     "raw_chars_max": 986,
+     "shown_chars_p50": 334
+    },
+    "client_ms": {
+     "p50": 52934.1,
+     "p95": 93641.2,
+     "max": 99071.5
+    },
+    "by_kind": {
+     "first_turn_search": {
+      "turns": 30,
+      "paths": {
+       "agent": 28,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 2
+      },
+      "tool_ok": {
+       "n": 28,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 28,
+       "rate": 0.893
+      },
+      "client_ms_p50": 55882.5,
+      "client_ms_p95": 95288.4
+     },
+     "followup_search": {
+      "turns": 8,
+      "paths": {
+       "agent": 8,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 0
+      },
+      "tool_ok": {
+       "n": 8,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 8,
+       "rate": 0.875
+      },
+      "client_ms_p50": 67005.5,
+      "client_ms_p95": 87698.9
+     },
+     "details": {
+      "turns": 8,
+      "paths": {
+       "agent": 7,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 1
+      },
+      "tool_ok": {
+       "n": 7,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 0,
+       "rate": null
+      },
+      "client_ms_p50": 38501.3,
+      "client_ms_p95": 52934.1
+     },
+     "no_tool": {
+      "turns": 2,
+      "paths": {
+       "agent": 2,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 0
+      },
+      "tool_ok": {
+       "n": 2,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 0,
+       "rate": null
+      },
+      "client_ms_p50": 15873.6,
+      "client_ms_p95": 18756.0
+     }
+    }
+   },
+   "v2": {
+    "turns": 48,
+    "http_ok": 48,
+    "errors": [],
+    "paths": {
+     "agent": 41,
+     "fallback": 0,
+     "fixed": 1,
+     "other_route": 6
+    },
+    "agent_tool_ok": {
+     "n": 41,
+     "rate": 0.951
+    },
+    "agent_answer_kept": {
+     "n": 41,
+     "rate": 1.0
+    },
+    "answers": {
+     "same_script": {
+      "n": 41,
+      "rate": 1.0
+     },
+     "markdown_written": {
+      "n": 41,
+      "rate": 0.0
+     },
+     "cut": {
+      "n": 41,
+      "rate": 0.0
+     },
+     "raw_chars_p50": 112,
+     "raw_chars_max": 230,
+     "shown_chars_p50": 112
+    },
+    "client_ms": {
+     "p50": 39472.4,
+     "p95": 46519.3,
+     "max": 60459.8
+    },
+    "by_kind": {
+     "first_turn_search": {
+      "turns": 30,
+      "paths": {
+       "agent": 25,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 5
+      },
+      "tool_ok": {
+       "n": 25,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 25,
+       "rate": 0.92
+      },
+      "client_ms_p50": 40487.1,
+      "client_ms_p95": 45994.7
+     },
+     "followup_search": {
+      "turns": 8,
+      "paths": {
+       "agent": 7,
+       "fallback": 0,
+       "fixed": 1,
+       "other_route": 0
+      },
+      "tool_ok": {
+       "n": 7,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 7,
+       "rate": 0.714
+      },
+      "client_ms_p50": 39770.3,
+      "client_ms_p95": 60459.8
+     },
+     "details": {
+      "turns": 8,
+      "paths": {
+       "agent": 7,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 1
+      },
+      "tool_ok": {
+       "n": 7,
+       "rate": 0.714
+      },
+      "fields_ok": {
+       "n": 0,
+       "rate": null
+      },
+      "client_ms_p50": 22572.0,
+      "client_ms_p95": 26783.1
+     },
+     "no_tool": {
+      "turns": 2,
+      "paths": {
+       "agent": 2,
+       "fallback": 0,
+       "fixed": 0,
+       "other_route": 0
+      },
+      "tool_ok": {
+       "n": 2,
+       "rate": 1.0
+      },
+      "fields_ok": {
+       "n": 0,
+       "rate": null
+      },
+      "client_ms_p50": 15507.3,
+      "client_ms_p95": 17520.8
+     }
+    }
+   }
+  },
+  "fixed_path_first_turns": {
+   "turns": 30,
+   "http_ok": 30,
+   "errors": [],
+   "paths": {
+    "agent": 0,
+    "fallback": 0,
+    "fixed": 25,
+    "other_route": 5
+   },
+   "agent_tool_ok": {
+    "n": 0,
+    "rate": null
+   },
+   "agent_answer_kept": {
+    "n": 0,
+    "rate": null
+   },
+   "answers": {
+    "same_script": {
+     "n": 0,
+     "rate": null
+    },
+    "markdown_written": {
+     "n": 0,
+     "rate": null
+    },
+    "cut": {
+     "n": 0,
+     "rate": null
+    },
+    "raw_chars_p50": null,
+    "raw_chars_max": null,
+    "shown_chars_p50": null
+   },
+   "client_ms": {
+    "p50": 23488.9,
+    "p95": 32345.7,
+    "max": 33551.6
+   },
+   "by_kind": {
+    "first_turn_search": {
+     "turns": 30,
+     "paths": {
+      "agent": 0,
+      "fallback": 0,
+      "fixed": 25,
+      "other_route": 5
+     },
+     "tool_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "fields_ok": {
+      "n": 25,
+      "rate": 0.92
+     },
+     "client_ms_p50": 23488.9,
+     "client_ms_p95": 32345.7
+    },
+    "followup_search": {
+     "turns": 0,
+     "paths": {
+      "agent": 0,
+      "fallback": 0,
+      "fixed": 0,
+      "other_route": 0
+     },
+     "tool_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "fields_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "client_ms_p50": null,
+     "client_ms_p95": null
+    },
+    "details": {
+     "turns": 0,
+     "paths": {
+      "agent": 0,
+      "fallback": 0,
+      "fixed": 0,
+      "other_route": 0
+     },
+     "tool_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "fields_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "client_ms_p50": null,
+     "client_ms_p95": null
+    },
+    "no_tool": {
+     "turns": 0,
+     "paths": {
+      "agent": 0,
+      "fallback": 0,
+      "fixed": 0,
+      "other_route": 0
+     },
+     "tool_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "fields_ok": {
+      "n": 0,
+      "rate": null
+     },
+     "client_ms_p50": null,
+     "client_ms_p95": null
+    }
+   }
+  },
+  "load": "sequential, one conversation at a time"
+ },
+ "turns": {
+  "v1": [
+   {
+    "id": "s01",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 78033.1,
+    "server_ms": 76330,
+    "request_id": "b32a9984-f687-43c5-ba55-4be1487271c2",
+    "error": null,
+    "answer": "Voici les résultats de votre recherche pour une chambre meublée à Ennasr, avec un budget maximal de 450 DT : Résultat 1 : Chambre meublée à Ennasr, 450 DT/mois, disponible du 1er novembre 2026. Résultat 2 : Recherche d'un colocataire à Tunis (El Manar 2), 290 DT/mois, charges incluses, disponible du 1er octobre 2026.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 318,
+    "raw_chars": 550,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "s02",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 9891.3,
+    "server_ms": 9831,
+    "request_id": "a86c81ad-eaa9-4fd5-ace5-c474e9480a5b",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "s03",
+    "turn": 1,
+    "tags": [
+     "en"
+    ],
+    "http": 200,
+    "client_ms": 84103.5,
+    "server_ms": 84000,
+    "request_id": "311ac9ef-3d2d-4d95-818a-b989972e0a97",
+    "error": null,
+    "answer": "I found 10 rooms within your budget of 500 TND. However, none are specifically located near INSAT. Here are a few options that fit your price range: Room #1 in Ariana (El Menzah 5) for 340 TND/month, furnished and bills included. Room #6 in Ariana (Ennasr 1) for 320 TND/month, but unfurnished. Room #9 in Tunis (Bab Saadoun) for 500 TND/month, furnished but without bills included.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings",
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 382,
+    "raw_chars": 472,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "s04",
+    "turn": 1,
+    "tags": [
+     "aeb-latn"
+    ],
+    "http": 200,
+    "client_ms": 74358.6,
+    "server_ms": 74139,
+    "request_id": "3fc0f8f2-adb9-4511-bc85-3a9f2ea5c864",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre à Lafayette, jusqu'à 400 DT/mois. Voici quelques options qui correspondent : Résultat n°1 : Chambre à El Menzah 4, 360 DT/mois, charges incluses, disponible le 2026-12-10. Résultat n°5 : Chambre à Médina de Tunis, 380 DT/mois, charges incluses, disponible le 2026-12-19. Souhaitez-vous plus de détails sur l'une de ces options ?",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 365,
+    "raw_chars": 371,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s05",
+    "turn": 1,
+    "tags": [
+     "ar"
+    ],
+    "http": 200,
+    "client_ms": 95288.4,
+    "server_ms": 95117,
+    "request_id": "ed1788db-60de-4e90-9ff3-43af1b454dd9",
+    "error": null,
+    "answer": "تم العثور على 10 نتائج في منطقة المنزه 6، لكن لا توجد غرفة بسعر 500 دينار بالضبط. أقرب خيارات قريبة من هذا السعر هي: رقم 4: غرفة في باب سعدون بـ 300 دينار (تبدأ من ديسمبر). رقم 7: غرفة في وسط الشمال بـ 430 دينار (تبدأ منديسمبر). رقم 9: غرفة في عناسر بـ 450 دينار (تبدأ من نوفمبر). هل تريدني أن أبحث عن شيء آخر؟",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "budget": false
+    },
+    "fields_ok": false,
+    "answer_chars": 310,
+    "raw_chars": 318,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s06",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 93641.2,
+    "server_ms": 93556,
+    "request_id": "03be2588-12de-4deb-be88-f1d42c3b889c",
+    "error": null,
+    "answer": "Voici 10 résultats trouvés près de l'ENIT : Une chambre à El Menzah 7 (Ariana), 650 TND/mois, disponible le 3 décembre 2026. Une chambre à Ennasr 1 (Ariana), 320 TND/mois, disponible le 9 novembre 2026. Une chambre à El Menzah 4 (Tunis), 360 TND/mois, disponible le 10 décembre 2026. Une chambre à Médina de Tunis, 380 TND/mois, disponible le 19 décembre 2026.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true
+    },
+    "fields_ok": true,
+    "answer_chars": 360,
+    "raw_chars": 939,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "s07",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 46770.1,
+    "server_ms": 46674,
+    "request_id": "f1b3bec8-e0fe-4a00-97b6-66159d388ed6",
+    "error": null,
+    "answer": "Voici un résultat trouvé : Un appartement partagé à Ariana, 930 TND/mois, avec les charges incluses, meublé, disponible du 28 octobre 2026.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "month": true
+    },
+    "fields_ok": true,
+    "answer_chars": 139,
+    "raw_chars": 143,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s08",
+    "turn": 1,
+    "tags": [
+     "en"
+    ],
+    "http": 200,
+    "client_ms": 35636.1,
+    "server_ms": 35549,
+    "request_id": "6a03901e-f4f0-4639-8acd-d95de6fc5655",
+    "error": null,
+    "answer": "No rooms were found in Manouba with wifi under 350 dinars. Try increasing your budget or searching a wider area.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 112,
+    "raw_chars": 112,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s09",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 58721.1,
+    "server_ms": 58615,
+    "request_id": "f8889b2d-3c25-475a-baf7-54b2fdd1b5b7",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre à l'Aouina avec un budget de 700 dt. Voici les options qui correspondent le mieux : Résultat n°3 : Chambre à El Aouina, 670 dt/mois, meublée, disponible dès le 4 novembre. Résultat n°4 : Chambre à El Aouina, 690 dt/mois, non meublée, disponible le 14 novembre.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 297,
+    "raw_chars": 542,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "s10",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 8664.1,
+    "server_ms": 8609,
+    "request_id": "f2e3106c-453d-4ae4-b851-65b5f1ecc7a9",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "s11",
+    "turn": 1,
+    "tags": [
+     "aeb-latn"
+    ],
+    "http": 200,
+    "client_ms": 47751.9,
+    "server_ms": 47655,
+    "request_id": "d4e77946-220d-4e45-abf9-26cdd9c78e74",
+    "error": null,
+    "answer": "4 نتائج تم العثور عليها. النتيجة رقم 1: غرفة في سوسة، 250 دينار شهرياً، مع المرافق والمياه، متوفرة من 6 نوفمبر 2026. النتيجة رقم 3: غرفة في تونس، 300 دينار شهرياً (بدون مياه)، متوفرة من 6 ديسمبر 2026.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 4,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": false,
+     "budget": true
+    },
+    "fields_ok": false,
+    "answer_chars": 200,
+    "raw_chars": 201,
+    "markdown": false,
+    "cut": false,
+    "same_script": false
+   },
+   {
+    "id": "s12",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 35721.2,
+    "server_ms": 35628,
+    "request_id": "35454f6a-3e5f-458b-af08-15d484f3d752",
+    "error": null,
+    "answer": "Voici un résultat trouvé : Un appartement partagé à Ariana, loyer 930 TND/mois, charges incluses, meublé, disponible du 28 octobre 2026.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true
+    },
+    "fields_ok": true,
+    "answer_chars": 136,
+    "raw_chars": 140,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 41231.6,
+    "server_ms": 41140,
+    "request_id": "8b797f14-6a0d-4536-b176-7f228840501d",
+    "error": null,
+    "answer": "3 résultats trouvés. Le premier (n° 1) est une chambre à Ennasr pour 450 dt/mois, disponible le 1er novembre 2026. Le troisième (n° 3) est une chambre à Tunis pour 300 dt/mois, mais elle s'éloigne de 5 km d'Ennasr.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 214,
+    "raw_chars": 214,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 46037.9,
+    "server_ms": 45951,
+    "request_id": "3bfbdd30-ece7-478c-8bf5-d3f7952d5bd7",
+    "error": null,
+    "answer": "2 résultats trouvés. Le premier (n° 1) est un colocataire à Tunis pour 290 dt/mois, mais il s'éloigne de 4,7 km d'Ennasr. Le deuxième (n° 2) est une chambre à Tunis pour 300 dt/mois, mais elle s'éloigne de 5 km d'Ennasr.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 2,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 220,
+    "raw_chars": 220,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f02",
+    "turn": 1,
+    "tags": [
+     "en",
+     "followup",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 53877.4,
+    "server_ms": 53777,
+    "request_id": "f533d4c9-16f9-4a4f-ad28-f9c4f6a644a4",
+    "error": null,
+    "answer": "I found 10 rooms under 600 TND. None are specifically near INSAT, but here are a few options: A furnished room in Ariana for 340 TND/month, available from October 13th. A furnished room in Tunis for 300 TND/month, available from December 6th. A furnished room in Ennasr for 450 TND/month, available from November 1st. Would you like more details on any of these?",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 362,
+    "raw_chars": 373,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f02",
+    "turn": 2,
+    "tags": [
+     "en",
+     "followup",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 75046.9,
+    "server_ms": 74950,
+    "request_id": "aa70b991-da41-4222-9213-5e50954e8a1b",
+    "error": null,
+    "answer": "I found 10 rooms under 600 TND available from December. Here are the ones specifically available in December: A room in Jendouba for 570 TND/month, available from December 26th. A furnished room in Tunis for 300 TND/month, available from December 6th. A furnished room in Tunis for 430 TND/month, available from December 20th. Would you like more details on any of these?",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true,
+     "month": true
+    },
+    "fields_ok": true,
+    "answer_chars": 371,
+    "raw_chars": 382,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f03",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 41891.5,
+    "server_ms": 41823,
+    "request_id": "a86501b1-0b1a-4d20-a434-bc974595b489",
+    "error": null,
+    "answer": "Une seule colocation a été trouvée à La Marsa avec un loyer de 700 DT/mois : Une chambre à Aïn Zaghouan (Tunis), 4,1 km de La Marsa, disponible le 20/11/2026, loyer 540 DT/mois, charges incluses, non meublée.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 208,
+    "raw_chars": 212,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f03",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 87698.9,
+    "server_ms": 87613,
+    "request_id": "df976840-40dd-4647-a433-1d029f8190b6",
+    "error": null,
+    "answer": "Neuf colocations ont été trouvées à Ennasr avec un loyer de 700 DT/mois : Un colocataire recherché à Ennasr (Ariana), 0,9 km, disponible le 30/10/2026, loyer 560 DT/mois, charges incluses, meublée. Une chambre à Ennasr (Ariana), 0,2 km, disponible le 01/11/2026, loyer 450 DT/mois, charges non incluses, meublée.",
+    "warnings": [
+     "followup",
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 312,
+    "raw_chars": 920,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f04",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 56800.3,
+    "server_ms": 56720,
+    "request_id": "9725c8d6-f2fc-4f57-8db0-8692e8ae83d5",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre meublée près de l'ENIT, jusqu'à 450 dt. Voici quelques options qui correspondent : Le résultat n°1 est une chambre meublée à Ennasr, à 3 km de l'ENIT, disponible le 2026-11-01 pour 450 dt. Le résultat n°7 est une chambre meublée à Tunis, à 3,6 km de l'ENIT, disponible le 2026-11-01 pour 320 dt. Souhaitez-vous plus de détails sur l'une de ces options ?",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 390,
+    "raw_chars": 396,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f04",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 73651.5,
+    "server_ms": 73573,
+    "request_id": "89baf2db-1363-42c7-a810-a9f73ffc37ad",
+    "error": null,
+    "answer": "10 résultats trouvés pour une chambre meublée près de l'ENIT, jusqu'à 550 dt. Voici quelques options qui correspondent : Le résultat n°7 est une chambre meublée à Tunis (Belvédère), à seulement 2,1 km de l'ENIT, disponible le 2026-10-14 pour 510 dt. Le résultat n°3 est une chambre meublée à Tunis (Charguia 1), à 4,7 km de l'ENIT, disponible le 2026-11-17 pour 500 dt.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 369,
+    "raw_chars": 433,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f05",
+    "turn": 1,
+    "tags": [
+     "aeb-latn",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 41037.3,
+    "server_ms": 40962,
+    "request_id": "d328d7a7-07fe-4b08-afd2-984b3a186ba4",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée dans le budget de 400 dinars à Ariana. Essayez d'augmenter votre budget ou d'étendre la zone de recherche.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 137,
+    "raw_chars": 137,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f05",
+    "turn": 2,
+    "tags": [
+     "aeb-latn",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 40100.7,
+    "server_ms": 40031,
+    "request_id": "7fff5b24-aed7-4b14-956a-283178f5e8b2",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée dans le budget de 300 dinars à Ariana. Essayez d'augmenter votre budget ou d'étendre la zone de recherche.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 137,
+    "raw_chars": 137,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f06",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 58625.1,
+    "server_ms": 58541,
+    "request_id": "49faba1f-fdbe-45fa-8f50-7dbe661dd5c8",
+    "error": null,
+    "answer": "Voici les résultats de votre recherche pour une chambre à Lafayette avec un budget de 500 dinars : 10 logements ont été trouvés. Aucun ne se situe exactement à Lafayette, mais voici quelques options proches dans la région de Tunis : Le logement n°1 est une chambre meublée à Bab Saadoun (2,2 km de Lafayette) pour 500 dinars par mois.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 334,
+    "raw_chars": 527,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f06",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 71008.3,
+    "server_ms": 70934,
+    "request_id": "de744100-647c-49c0-aca0-c43b93313916",
+    "error": null,
+    "answer": "Voici les résultats de votre recherche pour une chambre à Lafayette avec un budget de 500 dinars et, si possible, du wifi : 10 logements ont été trouvés. Aucun ne mentionne explicitement le wifi dans les informations disponibles. Voici quelques options proches de Lafayette : Le logement n°2 est une chambre meublée à Bab Saadoun (2,2 km de Lafayette) pour 500 dinars par mois.",
+    "warnings": [
+     "followup",
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 377,
+    "raw_chars": 570,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f07",
+    "turn": 1,
+    "tags": [
+     "en",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 78674.4,
+    "server_ms": 78597,
+    "request_id": "607ca3ec-738a-4c54-97a3-d4a965379319",
+    "error": null,
+    "answer": "I found 6 results for a room in Bardo under 450 dinars. Here are the details: Room in Ennasr, rent 450 TND/month, furnished, available from 2026-11-01, distance 3.5 km from Le Bardo. Room in Ariana, rent 340 TND/month, bills included, furnished, available from 2026-10-13, distance 4.9 km from Le Bardo.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings",
+     "listing_details"
+    ],
+    "status": "results",
+    "count": 6,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 303,
+    "raw_chars": 886,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f07",
+    "turn": 2,
+    "tags": [
+     "en",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 67005.5,
+    "server_ms": 66926,
+    "request_id": "cf2b84fc-62c0-48f5-abcb-0a52d37c6ac1",
+    "error": null,
+    "answer": "I found 4 results for a room in Bardo under 350 dinars. Here are the details: Room in Ariana (El Menzah 5), rent 340 TND/month, bills included, furnished, available from 2026-10-13, distance 4.9 km from Le Bardo. Room in Tunis (Bab Saadoun), rent 300 TND/month, not furnished, available from 2026-12-06, distance 1.5 km from Le Bardo.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 4,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 334,
+    "raw_chars": 651,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "f08",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 37237.8,
+    "server_ms": 37164,
+    "request_id": "c317bc86-9efd-4d24-a3aa-b9249e7e9cd0",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée à Manouba avec un budget de 400 DT. Essayez d'augmenter votre budget ou d'étendre la zone de recherche.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 134,
+    "raw_chars": 134,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f08",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 40090.7,
+    "server_ms": 39992,
+    "request_id": "03003c7d-1b47-4b56-9c1d-07c462975570",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée à Manouba ou Aouina avec un budget de 400 DT. Essayez d'augmenter votre budget ou d'étendre la zone de recherche.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": false,
+     "budget": true
+    },
+    "fields_ok": false,
+    "answer_chars": 144,
+    "raw_chars": 144,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 86032.5,
+    "server_ms": 85921,
+    "request_id": "be2901ea-4d4a-4e01-ac99-d52d5479125d",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre meublée près de l'ENIT, 450 dt. Voici les résultats : Une chambre meublée à Ennasr, 450 dt/mois, disponible du 2026-11-01. Une chambre non meublée à Ariana, 320 dt/mois, avec les charges incluses, disponible du 2026-11-09. Une chambre meublée à Ariana, 340 dt/mois, avec les charges incluses, disponible du 2026-10-13.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 355,
+    "raw_chars": 966,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 52934.1,
+    "server_ms": 52878,
+    "request_id": "1b9a7e2a-23e2-4bca-ad05-20b731ee1c6c",
+    "error": null,
+    "answer": "Voici les détails de la chambre numéro 2 : Type : Chambre dans un appartement de 3 pièces. Loyer : 320 dt/mois (avec une caution de 320 dt). Mobilier : Non meublé. Emplacement : Ariana, quartier Ennasr 1, à 3,8 km de l'ENIT. Disponibilité : Du 2026-11-09. Charges : Incluses dans le loyer. Règles : Pas d'animaux, invités autorisés, fumer à l'extérieur, heures de calme respectées.",
+    "warnings": [
+     "followup",
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 381,
+    "raw_chars": 581,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d02",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 54361.8,
+    "server_ms": 54277,
+    "request_id": "37628383-ffb6-4aca-97c3-2e64db6fd5d0",
+    "error": null,
+    "answer": "Voici 10 résultats trouvés pour une colocation à Ennasr avec un budget de 1000 dt. Les résultats les plus proches sont : Le résultat n°3 est dans le quartier Ennasr, à seulement 0,2 km du centre recherché, et disponible dès le 1er novembre. Le résultat n°5 est une colocation partagée à Ettadhamen (0,5 km), avec un loyer de 810 dt. Souhaitez-vous plus de détails sur l'un de ces résultats ?",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 391,
+    "raw_chars": 397,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d02",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 40602.7,
+    "server_ms": 40545,
+    "request_id": "111e1158-e6be-4d11-b737-864d95a9e6fc",
+    "error": null,
+    "answer": "Voici les détails du premier résultat : C'est une recherche de colocataire (pas un logement) à Ennasr, Ariana. Le loyer est de 560 dt/mois, avec un dépôt de 560 dt. L'appartement dispose de 2 chambres, est meublé et comprend des équipements comme un balcon, une machine à laver et un parking. Les règles incluent l'interdiction de fumer et le respect des heures de repos.",
+    "warnings": [
+     "followup",
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 371,
+    "raw_chars": 526,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d03",
+    "turn": 1,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 92392.7,
+    "server_ms": 92245,
+    "request_id": "25ff21b0-9c6d-4c22-8303-b06d04cf4460",
+    "error": null,
+    "answer": "I found 10 rooms under 600 TND. None are specifically near INSAT, but here are a few options: Room #1: 340 TND/month in Ariana (El Menzah 5), furnished, bills included, available from 2026-10-13. Room #4: 420 TND/month in Siliana, furnished, no bills included, available from 2026-10-12. Room #8: 570 TND/month in Tunis (El Menzah 4), not furnished, bills included, available from 2026-10-30.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings",
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 392,
+    "raw_chars": 463,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d03",
+    "turn": 2,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 41139.3,
+    "server_ms": 41044,
+    "request_id": "2ec46bc1-d439-4ae7-bd7a-a7f4fb3a4645",
+    "error": null,
+    "answer": "Here are the details for room #3: Location: Bizerte Rent: 480 TND/month Deposit: 480 TND Type: Room (1 bedroom) Furnished: Yes Bills Included: Yes Amenities: Air conditioning, dishwasher, heating, washing machine House Rules: Pets allowed, guests limited, smoking outside only, quiet hours enforced Available From: 2026-11-15 Minimum Stay: 3 months Current Flatmates: None",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 372,
+    "raw_chars": 461,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d04",
+    "turn": 1,
+    "tags": [
+     "aeb-latn",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 99071.5,
+    "server_ms": 98965,
+    "request_id": "33102e08-e40a-43aa-b84c-14360a919236",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre à Lafayette avec un budget de 400 DT. Voici les résultats : Chambre à El Menzah 4, 360 DT/mois, charges incluses, disponible le 2026-12-10. Chambre à Charguia 1, 360 DT/mois, charges non incluses, meublée, disponible le 2026-12-24. Chambre à Les Berges du Lac 1, 400 DT/mois, charges non incluses, meublée, disponible le 2026-11-19.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 369,
+    "raw_chars": 986,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d04",
+    "turn": 2,
+    "tags": [
+     "aeb-latn",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 33202.7,
+    "server_ms": 33136,
+    "request_id": "731910ae-457e-4bb0-b7a2-26ebba53125c",
+    "error": null,
+    "answer": "Le résultat numéro 9 est une recherche de colocataire à El Manar 2. Il cherche un colocataire pour une chambre meublée avec chauffage et wifi, charges incluses, disponible dès le 2026-10-01. Les règles sont : pas d'animaux, heures de calme non spécifiées, fumeurs interdits, nombre limité d'invités. Le dépôt est de 290 DT.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 323,
+    "raw_chars": 323,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d05",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 56220.7,
+    "server_ms": 56137,
+    "request_id": "1aee33c7-be36-42cb-946c-beddaedadaec",
+    "error": null,
+    "answer": "J'ai trouvé 10 résultats pour une chambre à El Aouina avec un budget autour de 1000 dt/mois. Voici quelques options qui correspondent : Résultat n°3 : Chambre meublée, loyer 670 dt/mois (les charges incluses), disponible dès le 4 novembre. Résultat n°5 : Chambre meublée, loyer 530 dt/mois (les charges incluses), disponible immédiatement. Souhaitez-vous plus de détails sur l'une de ces options ?",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": false
+    },
+    "fields_ok": false,
+    "answer_chars": 397,
+    "raw_chars": 415,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d05",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 9105.3,
+    "server_ms": 9051,
+    "request_id": "1b5a53a3-04a2-40a4-9de0-8b94183c68b5",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null,
+    "applicable": true
+   },
+   {
+    "id": "o01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 42382.1,
+    "server_ms": 42291,
+    "request_id": "c0dff666-c245-4e01-984e-0c77f9646bf2",
+    "error": null,
+    "answer": "3 résultats trouvés. Le premier (n° 1) est une chambre à Ennasr pour 450 dt/mois, disponible le 1er novembre 2026. Le troisième (n° 3) est une chambre à Tunis pour 300 dt/mois, mais elle n'est pas dans votre zone préférée.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 222,
+    "raw_chars": 222,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "o01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 15873.6,
+    "server_ms": 15799,
+    "request_id": "32c52323-efe2-4ec5-8d77-40364cc2bdd9",
+    "error": null,
+    "answer": "Je vous souhaite bonne chance dans vos recherches ! N'hésitez pas si vous avez d'autres questions ou besoin de plus de détails sur une annonce spécifique.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "answer_chars": 154,
+    "raw_chars": 154,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "o02",
+    "turn": 1,
+    "tags": [
+     "en",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 54106.4,
+    "server_ms": 54012,
+    "request_id": "fdeed3f0-56bf-476b-8444-cdda2df47281",
+    "error": null,
+    "answer": "Here are 10 rooms under 600 TND per month. None are specifically near INSAT, but here are a few options: Room in Ariana for 340 TND/month, furnished, bills included, available from 2026-10-13. Room in Jendouba for 570 TND/month, not furnished, bills included, available from 2026-12-26. Room in Bizerte for 480 TND/month, furnished, bills included, available from 2026-11-15.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 375,
+    "raw_chars": 441,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "o02",
+    "turn": 2,
+    "tags": [
+     "en",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 18756.0,
+    "server_ms": 18699,
+    "request_id": "a1ba8bf1-39f3-43f6-bc35-d11fa29668e6",
+    "error": null,
+    "answer": "You're welcome! If you need anything else in the future, feel free to ask.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "answer_chars": 74,
+    "raw_chars": 74,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d06",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 58603.6,
+    "server_ms": 58512,
+    "request_id": "5d2f4255-e60b-4437-b916-db8d5587d83d",
+    "error": null,
+    "answer": "Voici les résultats de votre recherche pour une chambre à Lafayette (500 dinars) : Une chambre meublée à 500 dinars/mois, disponible le 29 octobre 2026, située à Bab Saadoun (Tunis), à 2,2 km de Lafayette. Une chambre meublée à 380 dinars/mois, disponible le 19 décembre 2026, située à Médina de Tunis (Tunis), à 1,9 km de Lafayette. Il y a 10 résultats au total.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 363,
+    "raw_chars": 371,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d06",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 26311.4,
+    "server_ms": 26247,
+    "request_id": "413ce47f-15b4-4425-8f63-7e8b05ba6ac8",
+    "error": null,
+    "answer": "La troisième chambre (n°3) n'est pas meublée. Elle est située à Ariana, dans le quartier Ennasr 1, et coûte 320 dinars par mois.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 128,
+    "raw_chars": 128,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d07",
+    "turn": 1,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 79786.1,
+    "server_ms": 79679,
+    "request_id": "2831cec4-9ef7-4591-8b7d-f5010f7e2900",
+    "error": null,
+    "answer": "I found 10 rooms within your budget of 600 TND. However, none are specifically near INSAT as the system couldn't locate that area in the database. Here are a few options that fit your budget: Room #1: 340 TND/month, furnished, bills included, available from 2026-10-13 in Ariana. Room #7: 350 TND/month, furnished, available immediately in Sahloul.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings",
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 348,
+    "raw_chars": 514,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d07",
+    "turn": 2,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 38501.3,
+    "server_ms": 38420,
+    "request_id": "75ed4030-97e9-439c-9a87-a85fb8ba44af",
+    "error": null,
+    "answer": "Here are the details for room #2: Location: Bizerte Rent: 480 TND/month (plus a deposit of 480 TND) Furnished: Yes Amenities: Air conditioning, dishwasher, heating, washing machine Bills: Included House Rules: Pets allowed, guests limited, smoking outside only, quiet hours enforced Availability: From 2026-11-15 Other: Minimum stay of 3 months; currently shared with no flatmates.",
+    "warnings": [
+     "followup",
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 381,
+    "raw_chars": 501,
+    "markdown": true,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d08",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 55882.5,
+    "server_ms": 55812,
+    "request_id": "fe79a87a-dbb1-41b9-8d55-a4b695459311",
+    "error": null,
+    "answer": "9 résultats trouvés pour une chambre à l'Aouina avec un budget de 700 dt. Voici les résultats les plus proches : Une chambre meublée à El Aouina, 620 dt/mois, disponible le 13 décembre 2026. Une chambre non meublée à El Aouina, 480 dt/mois (frais inclus), disponible le 25 décembre 2026. Une chambre meublée à El Aouina, 670 dt/mois (frais inclus), disponible le 4 novembre 2026.",
+    "warnings": [
+     "agent_answer_cut"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 379,
+    "raw_chars": 448,
+    "markdown": false,
+    "cut": true,
+    "same_script": true
+   },
+   {
+    "id": "d08",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 41459.4,
+    "server_ms": 41406,
+    "request_id": "628053cf-5c64-4212-b4cc-ff0e3927b300",
+    "error": null,
+    "answer": "Voici les détails de la chambre numéro 4 : Loyer : 690 dt/mois (sans frais inclus) Dépôt : 690 dt Chambres : 4 Meublée : Oui Quartier : El Aouina Disponible à partir du : 14 novembre 2026 Aménagements : bureau, ascenseur, parking, wifi Règles de la maison : pas d'animaux, nombre limité d'invités, fumeur autorisé, pas d'heures de silence Durée de séjour minimale : 6 mois Camerades actuelles : 0",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 396,
+    "raw_chars": 476,
+    "markdown": true,
+    "cut": false,
+    "same_script": true
+   }
+  ],
+  "v2": [
+   {
+    "id": "s01",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 41461.5,
+    "server_ms": 41390,
+    "request_id": "4f5eadcd-5eca-439d-8878-724627b756d8",
+    "error": null,
+    "answer": "Trois résultats trouvés. La première chambre à Ennasr coûte 450 dt par mois et est disponible le 1er novembre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 110,
+    "raw_chars": 110,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s02",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 8496.8,
+    "server_ms": 8427,
+    "request_id": "acd38695-c94f-4499-980c-9235682df74e",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "s03",
+    "turn": 1,
+    "tags": [
+     "en"
+    ],
+    "http": 200,
+    "client_ms": 39472.4,
+    "server_ms": 39383,
+    "request_id": "4f2cfd60-698a-479f-82f2-e276d269964e",
+    "error": null,
+    "answer": "Ten rooms found. Result 1 is in Ariana and includes bills, which fits your budget.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 82,
+    "raw_chars": 82,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s04",
+    "turn": 1,
+    "tags": [
+     "aeb-latn"
+    ],
+    "http": 200,
+    "client_ms": 40631.5,
+    "server_ms": 40542,
+    "request_id": "a19eb363-850a-4dad-ad30-65150e0c3e4c",
+    "error": null,
+    "answer": "9 résultats trouvés, dont la chambre numéro 7 à Ariana pour 340 dt par mois avec les charges incluses et meublée.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 113,
+    "raw_chars": 113,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s05",
+    "turn": 1,
+    "tags": [
+     "ar"
+    ],
+    "http": 200,
+    "client_ms": 42562.3,
+    "server_ms": 42464,
+    "request_id": "f6ac1885-fa67-475a-a4c5-eb39e86b78fe",
+    "error": null,
+    "answer": "وجدت 10 غرف في المنزه 6 بسعر 500 دينار، منها غرفة رقم 8 بتكلفة 500 دينار وتضم المصاريف.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 87,
+    "raw_chars": 87,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s06",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 40487.1,
+    "server_ms": 40382,
+    "request_id": "e8c1f858-a9dd-4855-9fa9-5a0845ecd452",
+    "error": null,
+    "answer": "J'ai trouvé 10 chambres près de l'ENIT, dont la numéro 5 à 340 TND par mois dans El Menzah 5.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true
+    },
+    "fields_ok": true,
+    "answer_chars": 93,
+    "raw_chars": 93,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s07",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 39958.3,
+    "server_ms": 39878,
+    "request_id": "ae4f6524-67f6-4532-a987-5f6543331e2b",
+    "error": null,
+    "answer": "J'ai trouvé une chambre en colocation à Ariana disponible dès le 28 octobre pour un loyer de 930 TND, avec les charges incluses.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "month": true
+    },
+    "fields_ok": true,
+    "answer_chars": 128,
+    "raw_chars": 128,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s08",
+    "turn": 1,
+    "tags": [
+     "en"
+    ],
+    "http": 200,
+    "client_ms": 35568.5,
+    "server_ms": 35501,
+    "request_id": "e5654eac-66f7-4532-a0d6-474ddf6a2aef",
+    "error": null,
+    "answer": "No rooms were found in Manouba with wifi under 350 dinars. Try increasing your budget or searching another area.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 112,
+    "raw_chars": 112,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s09",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 44973.6,
+    "server_ms": 44870,
+    "request_id": "a195677f-89ef-4c7a-9828-e298aa6bd7a2",
+    "error": null,
+    "answer": "9 résultats trouvés, dont la première chambre à El Aouina pour 620 dt par mois.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 79,
+    "raw_chars": 79,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s10",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 8362.7,
+    "server_ms": 8287,
+    "request_id": "be3217c4-2c12-4cb5-975f-06ce417c2b41",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "s11",
+    "turn": 1,
+    "tags": [
+     "aeb-latn"
+    ],
+    "http": 200,
+    "client_ms": 42934.3,
+    "server_ms": 42859,
+    "request_id": "01b16c5b-a3e7-45e1-8767-d5d4d2394c12",
+    "error": null,
+    "answer": "4 résultats trouvés. Le premier, à 250 dinars par mois dans le quartier de la Médina de Sousse, correspond bien à votre budget.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 4,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": false,
+     "budget": true
+    },
+    "fields_ok": false,
+    "answer_chars": 127,
+    "raw_chars": 127,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "s12",
+    "turn": 1,
+    "tags": [
+     "fr"
+    ],
+    "http": 200,
+    "client_ms": 35368.5,
+    "server_ms": 35295,
+    "request_id": "5e52ffd0-3f9b-4c10-bccc-c31bf338d552",
+    "error": null,
+    "answer": "J'ai trouvé une chambre partagée à Ariana, louée 930 TND par mois avec les charges incluses et disponible le 28 octobre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true
+    },
+    "fields_ok": true,
+    "answer_chars": 120,
+    "raw_chars": 120,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 36781.9,
+    "server_ms": 36700,
+    "request_id": "550c8063-34ac-412e-9748-4303a8aac8b7",
+    "error": null,
+    "answer": "Trois résultats trouvés. La première chambre à Ennasr coûte 450 dt et est disponible le 1 novembre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 99,
+    "raw_chars": 99,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 39770.3,
+    "server_ms": 39652,
+    "request_id": "4ab718ac-fa77-4858-94f6-42bdf7f1639d",
+    "error": null,
+    "answer": "Deux résultats trouvés. La deuxième option est une chambre à 300 dt disponible en décembre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 2,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 91,
+    "raw_chars": 91,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f02",
+    "turn": 1,
+    "tags": [
+     "en",
+     "followup",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 40607.5,
+    "server_ms": 40513,
+    "request_id": "cc0cce57-4a27-48a7-ad02-84a3a0e9ef37",
+    "error": null,
+    "answer": "Ten rooms were found. The first one in Ariana costs 340 TND and includes bills, which is the cheapest option.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 109,
+    "raw_chars": 109,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f02",
+    "turn": 2,
+    "tags": [
+     "en",
+     "followup",
+     "date"
+    ],
+    "http": 200,
+    "client_ms": 60459.8,
+    "server_ms": 60361,
+    "request_id": "b0ddfea9-55d7-42f7-86ea-43e966e8e4c4",
+    "error": null,
+    "answer": "Ten rooms were found. The first one in Jendouba costs 570 TND and is available from December 26th.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true,
+     "month": true
+    },
+    "fields_ok": true,
+    "answer_chars": 98,
+    "raw_chars": 98,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f03",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 42239.8,
+    "server_ms": 42153,
+    "request_id": "e9f98fbb-8369-4c39-9fe8-f716cffb37b6",
+    "error": null,
+    "answer": "Une seule colocation a été trouvée à La Marsa avec un loyer de 540 TND, mais elle se situe à Tunis et n'est pas disponible immédiatement. Essayez d'élargir vos critères ou d'augmenter votre budget.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 1,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 197,
+    "raw_chars": 197,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f03",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 40964.4,
+    "server_ms": 40879,
+    "request_id": "f06738c8-3be8-448f-b87f-ab9083030ade",
+    "error": null,
+    "answer": "Neuf colocations ont été trouvées à Ennasr avec un budget de 700 TND, dont la première propose une chambre meublée pour 560 TND disponible dès le 30 octobre.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 157,
+    "raw_chars": 157,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f04",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 9094.6,
+    "server_ms": 9029,
+    "request_id": "bfe625dd-c889-4fe3-aea9-d2cc909b64e1",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "f04",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 39470.5,
+    "server_ms": 39374,
+    "request_id": "4a1bd3e2-66bf-4719-bd38-1273454c3de5",
+    "error": null,
+    "answer": "J'ai trouvé 10 pièces jusqu'à 550 dt. La première à Ennasr est à 450 dt et meublée.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": false,
+     "budget": true
+    },
+    "fields_ok": false,
+    "answer_chars": 83,
+    "raw_chars": 83,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f05",
+    "turn": 1,
+    "tags": [
+     "aeb-latn",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 39767.2,
+    "server_ms": 39699,
+    "request_id": "494e89b5-edd9-41c7-b2ac-12c9ff8c67e4",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée à Ariana avec un budget de 400 dinars. Essayez d'augmenter votre budget ou d'étendre la recherche à d'autres zones proches.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 154,
+    "raw_chars": 154,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f05",
+    "turn": 2,
+    "tags": [
+     "aeb-latn",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 39870.4,
+    "server_ms": 39792,
+    "request_id": "7eea1b3d-dcf1-4ae4-93ff-66218b919d8a",
+    "error": null,
+    "answer": "Aucune chambre n'a été trouvée à Ariana avec un budget de 300 dinars. Essayez d'augmenter votre budget ou d'étendre la recherche à d'autres zones proches.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 154,
+    "raw_chars": 154,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f06",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 45652.9,
+    "server_ms": 45543,
+    "request_id": "3e329abf-8991-48a9-a560-3eb2bb72a5a4",
+    "error": null,
+    "answer": "J'ai trouvé 10 chambres dans votre budget à moins de 500 dinars, mais aucune n'est exactement à Lafayette. La première option est à Bab Saadoun, à seulement 2,2 km de là.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 170,
+    "raw_chars": 170,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f06",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 57426.6,
+    "server_ms": 57321,
+    "request_id": "94115886-a79c-4585-aaa7-c9edce38a3ad",
+    "error": null,
+    "answer": "J'ai trouvé 10 chambres dans votre budget, mais aucune n'est spécifiquement à Lafayette ni ne mentionne le wifi. La première option est à Médina de Tunis, à 1,9 km de là.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 170,
+    "raw_chars": 170,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f07",
+    "turn": 1,
+    "tags": [
+     "en",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 8619.4,
+    "server_ms": 8560,
+    "request_id": "d0c49c6c-d2ae-4f2c-9660-5b9f65edbbda",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "f07",
+    "turn": 2,
+    "tags": [
+     "en",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 37973.4,
+    "server_ms": 37860,
+    "request_id": "d93bfa6a-3b4f-4a9e-8ed5-393bfd076ade",
+    "error": null,
+    "answer": "Ten listings found. Number 5 in Ariana is close to the university and includes bills.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": false,
+     "budget": true
+    },
+    "fields_ok": false,
+    "answer_chars": 85,
+    "raw_chars": 85,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "f08",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 9019.4,
+    "server_ms": 8950,
+    "request_id": "4a7e37e0-72be-4881-bc5b-bf1e7ae8411d",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "f08",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "followup"
+    ],
+    "http": 200,
+    "client_ms": 8314.5,
+    "server_ms": 8242,
+    "request_id": "cf25fa88-f352-465d-919d-58afacfb091c",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "fixed",
+    "tool_calls": [],
+    "status": "clarification_needed",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null
+   },
+   {
+    "id": "d01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 44732.9,
+    "server_ms": 44633,
+    "request_id": "e7ec142c-8708-4c2d-8d50-2f58d8214b71",
+    "error": null,
+    "answer": "9 résultats trouvés, dont la première chambre meublée à 450 dt près de l'ENIT disponible en novembre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 101,
+    "raw_chars": 101,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 22572.0,
+    "server_ms": 22504,
+    "request_id": "39f3be99-62bc-4171-bacc-578aa2f22b21",
+    "error": null,
+    "answer": "La deuxième chambre est à Ariana, non meublée, mais avec les charges incluses et disponible en novembre.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 104,
+    "raw_chars": 104,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d02",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 43550.2,
+    "server_ms": 43451,
+    "request_id": "fa393f3a-a4a3-4c13-bb14-c8e3c84ce74f",
+    "error": null,
+    "answer": "J'ai trouvé 10 colocations à Ennasr avec un loyer de 1000 dt. La première option est une chambre meublée à Ariana, disponible le 30 octobre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 140,
+    "raw_chars": 140,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d02",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 20996.7,
+    "server_ms": 20915,
+    "request_id": "4aa4b2a8-f49c-4f82-aa67-d186f938ac56",
+    "error": null,
+    "answer": "La première option est une chambre meublée à Ariana avec un loyer de 560 dt et les charges incluses. Elle est disponible le 30 octobre 2026.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": false,
+    "applicable": true,
+    "answer_chars": 140,
+    "raw_chars": 140,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d03",
+    "turn": 1,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 41564.4,
+    "server_ms": 41476,
+    "request_id": "e6c075b9-5445-4300-a769-20e7b1449a8b",
+    "error": null,
+    "answer": "Ten rooms were found. Result number 7 is in Ennasr, which is near INSAT, and costs 450 TND per month.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 101,
+    "raw_chars": 101,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d03",
+    "turn": 2,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 26783.1,
+    "server_ms": 26724,
+    "request_id": "965d2976-3d94-4128-94fd-c9751651a3a7",
+    "error": null,
+    "answer": "Room number 3 is in Bizerte, costs 480 TND per month with a deposit of 480 TND, and includes air conditioning, dishwasher, heating, and washing machine. It has one bedroom, allows pets, and requires a minimum stay of three months.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 230,
+    "raw_chars": 230,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d04",
+    "turn": 1,
+    "tags": [
+     "aeb-latn",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 41294.0,
+    "server_ms": 41197,
+    "request_id": "f66f7ef7-8d00-475d-877d-1422ac17a7f7",
+    "error": null,
+    "answer": "9 résultats trouvés, dont le numéro 7 à Ariana pour 340 dt par mois avec les charges incluses et meublé.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 104,
+    "raw_chars": 104,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d04",
+    "turn": 2,
+    "tags": [
+     "aeb-latn",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 18694.4,
+    "server_ms": 18634,
+    "request_id": "195215f6-955b-4d4c-b57d-b1d8e5120b02",
+    "error": null,
+    "answer": "Le résultat numéro 7 est disponible dès le 13 octobre, ce qui correspond à votre demande de déménagement maintenant.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": false,
+    "applicable": true,
+    "answer_chars": 116,
+    "raw_chars": 116,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d05",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 45994.7,
+    "server_ms": 45905,
+    "request_id": "5b057fa0-5528-4e54-af5d-c65a51805413",
+    "error": null,
+    "answer": "J'ai trouvé 10 résultats pour une chambre à El Aouina avec un budget de 1000 dt. La première option propose une chambre meublée à 620 dt, disponible le 13 décembre.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": false
+    },
+    "fields_ok": false,
+    "answer_chars": 164,
+    "raw_chars": 164,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d05",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 8517.2,
+    "server_ms": 8451,
+    "request_id": "03e155cb-3838-4892-8968-7286f9b0738d",
+    "error": null,
+    "answer": null,
+    "warnings": null,
+    "path": "other_route",
+    "tool_calls": [],
+    "status": "not_available_yet",
+    "count": null,
+    "answer_kept": null,
+    "dropped": false,
+    "tool_ok": null,
+    "applicable": true
+   },
+   {
+    "id": "o01",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 37295.0,
+    "server_ms": 37207,
+    "request_id": "c7701b0d-e063-4c4f-a54e-ac8748aaf2ff",
+    "error": null,
+    "answer": "J'ai trouvé 3 résultats. La première chambre à Ennasr est disponible pour le 1er novembre et coûte 450 dt par mois.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 3,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 115,
+    "raw_chars": 115,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "o01",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 15507.3,
+    "server_ms": 15446,
+    "request_id": "5752e4dc-9dc3-4562-b290-8728e03d8a66",
+    "error": null,
+    "answer": "Je suis ravi d'avoir pu vous aider. N'hésitez pas si vous avez d'autres questions ou besoin de plus de détails sur une autre annonce.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "answer_chars": 133,
+    "raw_chars": 133,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "o02",
+    "turn": 1,
+    "tags": [
+     "en",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 38284.7,
+    "server_ms": 38190,
+    "request_id": "1317f75c-3b8e-4704-a0d7-297993533f3a",
+    "error": null,
+    "answer": "Ten rooms were found. Result number 7 is in Ennasr, which is near INSAT, and costs 450 TND per month.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 101,
+    "raw_chars": 101,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "o02",
+    "turn": 2,
+    "tags": [
+     "en",
+     "no_tool"
+    ],
+    "http": 200,
+    "client_ms": 17520.8,
+    "server_ms": 17452,
+    "request_id": "2bb21b03-aad7-4ce9-b787-5c90f670a494",
+    "error": null,
+    "answer": "You're welcome! If you need anything else, feel free to ask.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "answer_chars": 60,
+    "raw_chars": 60,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d06",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 46519.3,
+    "server_ms": 46430,
+    "request_id": "d785e3b4-23cf-43b6-b1de-243a6c741aa7",
+    "error": null,
+    "answer": "J'ai trouvé 10 résultats pour une chambre à Lafayette avec un budget de 500 dinars. La première option est dans Bab Saadoun, à 2,2 km de Lafayette, et coûte 500 dinars par mois.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 177,
+    "raw_chars": 177,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d06",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 24503.3,
+    "server_ms": 24436,
+    "request_id": "b0a92746-e5a0-4188-baa8-1fc8af4fb77b",
+    "error": null,
+    "answer": "La troisième chambre n'est pas meublée. Elle est située à Ariana, à 4,8 km de Lafayette, et coûte 320 dinars par mois.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 118,
+    "raw_chars": 118,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d07",
+    "turn": 1,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 40240.6,
+    "server_ms": 40146,
+    "request_id": "8386d6b1-d72f-417c-b686-af0313083e1f",
+    "error": null,
+    "answer": "Ten rooms were found. The first one in Ariana is the closest to INSAT and fits your budget.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 10,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 91,
+    "raw_chars": 91,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d07",
+    "turn": 2,
+    "tags": [
+     "en",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 24031.8,
+    "server_ms": 23966,
+    "request_id": "5a909fcf-468a-4d01-a6eb-76a4f9857efd",
+    "error": null,
+    "answer": "The second room is in Bizerte, 480 TND a month with bills included and available from November. It has air conditioning and allows pets.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 136,
+    "raw_chars": 136,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d08",
+    "turn": 1,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 40685.5,
+    "server_ms": 40558,
+    "request_id": "e42842a8-4447-4bc3-8983-2501236083e1",
+    "error": null,
+    "answer": "9 résultats trouvés, dont la première chambre à El Aouina pour 620 dt par mois.",
+    "warnings": [],
+    "path": "agent",
+    "tool_calls": [
+     "search_listings"
+    ],
+    "status": "results",
+    "count": 9,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "fields": {
+     "anchor": true,
+     "budget": true
+    },
+    "fields_ok": true,
+    "answer_chars": 79,
+    "raw_chars": 79,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   },
+   {
+    "id": "d08",
+    "turn": 2,
+    "tags": [
+     "fr",
+     "details"
+    ],
+    "http": 200,
+    "client_ms": 24063.5,
+    "server_ms": 23996,
+    "request_id": "c079fd9e-499d-46b4-89ff-f896b060ca38",
+    "error": null,
+    "answer": "La chambre 4 à El Aouina coûte 690 dt par mois, meublée avec un bureau et un parking, disponible du 14 novembre.",
+    "warnings": [
+     "followup"
+    ],
+    "path": "agent",
+    "tool_calls": [
+     "listing_details"
+    ],
+    "status": "answered",
+    "count": 0,
+    "answer_kept": true,
+    "dropped": false,
+    "tool_ok": true,
+    "applicable": true,
+    "answer_chars": 112,
+    "raw_chars": 112,
+    "markdown": false,
+    "cut": false,
+    "same_script": true
+   }
+  ]
+ },
+ "fixed_path": [
+  {
+   "id": "s01",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 24330.6,
+   "server_ms": 24252,
+   "request_id": "2e3bb4d3-4952-477a-b99b-a7eaf45d5176",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 3,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s02",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 8242.9,
+   "server_ms": 8182,
+   "request_id": "403836ab-46f9-4b68-bf7c-78c7a7fb38b8",
+   "error": null,
+   "answer": null,
+   "warnings": null,
+   "path": "other_route",
+   "tool_calls": [],
+   "status": "not_available_yet",
+   "count": null,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null
+  },
+  {
+   "id": "s03",
+   "turn": 1,
+   "tags": [
+    "en"
+   ],
+   "http": 200,
+   "client_ms": 23668.3,
+   "server_ms": 23580,
+   "request_id": "10cd4d9b-f218-40d6-9dd5-6004b789ead0",
+   "error": null,
+   "answer": null,
+   "warnings": [
+    "anchor_not_found"
+   ],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s04",
+   "turn": 1,
+   "tags": [
+    "aeb-latn"
+   ],
+   "http": 200,
+   "client_ms": 32345.7,
+   "server_ms": 32264,
+   "request_id": "63c65d1c-bed6-4f50-bdca-a01a5ccb0f4e",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 9,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s05",
+   "turn": 1,
+   "tags": [
+    "ar"
+   ],
+   "http": 200,
+   "client_ms": 24214.5,
+   "server_ms": 24121,
+   "request_id": "8e224f50-c90f-403a-91c8-a4a2523446bf",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s06",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 22548.6,
+   "server_ms": 22447,
+   "request_id": "c231b52e-5bbd-4cf0-9e16-2435a0b6953d",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s07",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "date"
+   ],
+   "http": 200,
+   "client_ms": 25908.3,
+   "server_ms": 25841,
+   "request_id": "c6ee3b95-f8cf-4ca4-a197-62745deb5f9b",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 1,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "month": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s08",
+   "turn": 1,
+   "tags": [
+    "en"
+   ],
+   "http": 200,
+   "client_ms": 23252.9,
+   "server_ms": 23177,
+   "request_id": "d88663ef-0bdc-4a15-9336-1d423563c34e",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 0,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s09",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 27810.8,
+   "server_ms": 27730,
+   "request_id": "5ae0a9ae-ba3c-4260-aa46-00bc527ad9e2",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 9,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "s10",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 8090.2,
+   "server_ms": 8039,
+   "request_id": "0cfdb26f-c3b1-4764-be44-75c7c4d9369c",
+   "error": null,
+   "answer": null,
+   "warnings": null,
+   "path": "other_route",
+   "tool_calls": [],
+   "status": "not_available_yet",
+   "count": null,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null
+  },
+  {
+   "id": "s11",
+   "turn": 1,
+   "tags": [
+    "aeb-latn"
+   ],
+   "http": 200,
+   "client_ms": 26815.4,
+   "server_ms": 26732,
+   "request_id": "d866efda-f448-4a5d-a5b6-efc2d01ec4c5",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": false
+   },
+   "fields_ok": false
+  },
+  {
+   "id": "s12",
+   "turn": 1,
+   "tags": [
+    "fr"
+   ],
+   "http": 200,
+   "client_ms": 22352.3,
+   "server_ms": 22278,
+   "request_id": "6e2f1664-4ef8-43d0-84c4-278aef4e89a0",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 1,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f01",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 23655.6,
+   "server_ms": 23578,
+   "request_id": "1daadd75-d79c-43e2-a7e8-1b1ab9f6cc70",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 3,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f02",
+   "turn": 1,
+   "tags": [
+    "en",
+    "followup",
+    "date"
+   ],
+   "http": 200,
+   "client_ms": 23548.9,
+   "server_ms": 23450,
+   "request_id": "d340b077-f41f-4f72-aeca-a7ce49e5f5fe",
+   "error": null,
+   "answer": null,
+   "warnings": [
+    "anchor_not_found"
+   ],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f03",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 23141.3,
+   "server_ms": 23059,
+   "request_id": "8b854b30-b2f4-410a-891f-ac33491dea25",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 1,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f04",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 8396.6,
+   "server_ms": 8325,
+   "request_id": "a7116900-9c2a-427f-83ba-880fae4bd835",
+   "error": null,
+   "answer": null,
+   "warnings": null,
+   "path": "other_route",
+   "tool_calls": [],
+   "status": "not_available_yet",
+   "count": null,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null
+  },
+  {
+   "id": "f05",
+   "turn": 1,
+   "tags": [
+    "aeb-latn",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 32186.9,
+   "server_ms": 32110,
+   "request_id": "d7ba5ee9-e613-4f6f-8ce2-98391957338b",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 0,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f06",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 22996.2,
+   "server_ms": 22909,
+   "request_id": "08657f81-223d-4aa4-9301-95936dd6ec12",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "f07",
+   "turn": 1,
+   "tags": [
+    "en",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 8343.1,
+   "server_ms": 8283,
+   "request_id": "ff225c37-d21c-4bad-b7d7-e46e89293af4",
+   "error": null,
+   "answer": null,
+   "warnings": null,
+   "path": "other_route",
+   "tool_calls": [],
+   "status": "not_available_yet",
+   "count": null,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null
+  },
+  {
+   "id": "f08",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "followup"
+   ],
+   "http": 200,
+   "client_ms": 8289.4,
+   "server_ms": 8225,
+   "request_id": "849e9ec5-eeb4-4af8-929b-8e2a61d731c8",
+   "error": null,
+   "answer": null,
+   "warnings": null,
+   "path": "other_route",
+   "tool_calls": [],
+   "status": "not_available_yet",
+   "count": null,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null
+  },
+  {
+   "id": "d01",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 30826.1,
+   "server_ms": 30746,
+   "request_id": "a5fb4834-505e-445f-8510-908ac033776d",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 9,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d02",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 26638.6,
+   "server_ms": 26524,
+   "request_id": "b8421a1e-3678-4826-a89e-056a6923b781",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d03",
+   "turn": 1,
+   "tags": [
+    "en",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 23488.9,
+   "server_ms": 23342,
+   "request_id": "335862a9-bad0-4c24-bddf-c65fd6237bc0",
+   "error": null,
+   "answer": null,
+   "warnings": [
+    "anchor_not_found"
+   ],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d04",
+   "turn": 1,
+   "tags": [
+    "aeb-latn",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 33551.6,
+   "server_ms": 33463,
+   "request_id": "5e4cd3e6-67ad-489d-9c9b-a49a31064eb2",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 9,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d05",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 26079.9,
+   "server_ms": 25994,
+   "request_id": "f728426f-3ce6-4cc0-9aa4-9f929a8b0fec",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": false
+   },
+   "fields_ok": false
+  },
+  {
+   "id": "o01",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "no_tool"
+   ],
+   "http": 200,
+   "client_ms": 22840.1,
+   "server_ms": 22765,
+   "request_id": "16bba658-003c-4f1d-8297-8f4c0789137c",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 3,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "o02",
+   "turn": 1,
+   "tags": [
+    "en",
+    "no_tool"
+   ],
+   "http": 200,
+   "client_ms": 23499.8,
+   "server_ms": 23409,
+   "request_id": "cebf7e98-5211-464a-a188-95b98fc86643",
+   "error": null,
+   "answer": null,
+   "warnings": [
+    "anchor_not_found"
+   ],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d06",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 23354.8,
+   "server_ms": 23263,
+   "request_id": "615b4bfe-104b-45a6-a9bb-c23f4e560f44",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d07",
+   "turn": 1,
+   "tags": [
+    "en",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 23473.6,
+   "server_ms": 23387,
+   "request_id": "b7cceb1e-0ade-4e6c-a6af-9e2aa943048e",
+   "error": null,
+   "answer": null,
+   "warnings": [
+    "anchor_not_found"
+   ],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 10,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  },
+  {
+   "id": "d08",
+   "turn": 1,
+   "tags": [
+    "fr",
+    "details"
+   ],
+   "http": 200,
+   "client_ms": 23101.9,
+   "server_ms": 23012,
+   "request_id": "2a258d05-55b3-49fd-bd90-ff16a6d14824",
+   "error": null,
+   "answer": null,
+   "warnings": [],
+   "path": "fixed",
+   "tool_calls": [],
+   "status": "results",
+   "count": 9,
+   "answer_kept": null,
+   "dropped": false,
+   "tool_ok": null,
+   "fields": {
+    "anchor": true,
+    "budget": true
+   },
+   "fields_ok": true
+  }
+ ]
+}

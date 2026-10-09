@@ -1451,6 +1451,41 @@ trace steps carry P6 v1 and v2), and the statuses were put back afterwards (v1 a
 
 Not measured: P6 v2 on qwen3.5:4b (`p4.ps1 -Step agent-bench`, versions 1 and 2 on match_agent v2).
 
+## T-50 P6 v1 and v2 on the owner's PC, conversation set v2 (2026-10-09) - v2 better on answers and speed, worse on 2 detail questions; v1 stays active (D-085)
+
+`p4.ps1 -Step agent-bench` (log `reports/p4-20261009-131840/p4.log`, results `reports/eval/agent-bench-20261009-133936.json`
+on the PC): qwen3.5:4b (52% CPU / 48% GPU), 74 published synthetic TN listings, match_agent v2 (30 conversations, 48
+turns) with P6 v1, then v2, then the 30 first messages on the fixed path; 80.9 minutes, every request HTTP 200, no
+fallback.
+
+| Measure | P6 v1 | P6 v2 | Fixed path |
+|---|---|---|---|
+| Agent turns | 45 | 41 | - |
+| Expected tool called | 45 of 45 | 39 of 41 | - |
+| Questions about a numbered result answered with `listing_details` | 7 of 7 | 5 of 7 | - |
+| Search fields as labelled, the 25 first messages searched on all three | 22 | 23 | 23 |
+| Follow-ups whose first message reached the agent: fields as labelled | 7 of 8 | 5 of 5 | - |
+| Answers in the alphabet of the message | 44 of 45 | 41 of 41 | - |
+| Model wrote Markdown | 17 of 45 | 0 of 41 | - |
+| Answer cut at 400 characters (D-085) | 19 of 45 | 0 of 41 | - |
+| Length written by the model, median / longest | 397 / 986 | 112 / 230 | - |
+| Server latency per agent turn, median | 54.0 s | 39.9 s | 23.6 s |
+| Client latency p95 | 93.6 s | 46.5 s | 32.3 s |
+
+- The 2 v2 misses: `d02` ("parle-moi de la première") and `d04` ("w ethenya chnowa feha ?") were answered from the
+  conversation without the tool. For `d04` the answer was about result 7, not 2.
+- P1 is not stable between runs: `f04`, `f07` and `f08` reached the search with v1 (first half of the run) and went
+  to `not_available_yet` with v2 and on the fixed path (second half), with the same text and P1 version. So their
+  follow-ups could not be tested with v2. Cause not checked (the model runs half on the CPU; no seed is set for P1).
+- `f08` turn 2 with v2 was a clarifying question from P1; the benchmark counted it as "fixed path". It now counts
+  any status other than a search result as another route.
+- The 12 single searches and the fixed path agree with T-48 except for the P1 variation above.
+
+Decision against D-085's rule (v2 only if tool choice and search fields are at least as good): search fields are as
+good (23 against 22), tool choice is not (39 of 41 against 45 of 45). v1 stays active; the code cuts its answers and
+removes its Markdown. P6 v3 keeps v2 and makes `listing_details` the required first action for a question about a
+numbered result; to be run on the PC (`p4.ps1 -Step agent-bench`, version 3 by default).
+
 ---
 
 ## Not run

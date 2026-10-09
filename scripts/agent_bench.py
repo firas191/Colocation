@@ -87,8 +87,8 @@ def new_user(conn, label):
 def score(turn, d, prev_count):
     e = turn["expect"]
     warnings = d.get("warnings") or []
-    if d.get("intent") != "search_listings":
-        path = "other_route"
+    if d.get("intent") != "search_listings" or d.get("status") not in ("results", "answered", "profile_failed", "search_failed"):
+        path = "other_route"                   # includes a clarifying question from the router (T-50: f08)
     elif "agent_fallback" in warnings:
         path = "fallback"
     elif "agent" in d:

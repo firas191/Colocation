@@ -1,0 +1,398 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-09T13:18:41.1975808+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions and the active ones (P6_match_agent) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-09T13:18:41.4963686+01:00
+ Container flatshare-tests-run-adabdbb32f45 Creating 
+ Container flatshare-tests-run-adabdbb32f45 Created 
+prompt registry up to date
+exit=0 seconds=1.8
+
+===== Match agent: match_agent_v2 for P6 versions 1,2, then the first messages on the fixed path (about 40 min per version) =====
+command: docker @run scripts/agent_bench.py --versions $AgentVersions
+started: 2026-10-09T13:18:43.2610881+01:00
+ Container flatshare-tests-run-aa4f6b9869ee Creating 
+ Container flatshare-tests-run-aa4f6b9869ee Created 
+30 conversations, 48 turns per version; model qwen3.5:4b; P6 versions [1, 2]; 74 published TN listings
+v1 s01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=318 md=True script_ok=True 78033 ms
+v1 s02 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 9891 ms
+v1 s03 t1: agent tools=['search_listings', 'search_listings'] tool_ok=True fields_ok=True chars=382 md=True script_ok=True 84104 ms
+v1 s04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=365 md=True script_ok=True 74359 ms
+v1 s05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=310 md=True script_ok=True 95288 ms
+v1 s06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=360 md=False script_ok=True 93641 ms
+v1 s07 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=139 md=False script_ok=True 46770 ms
+v1 s08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=112 md=False script_ok=True 35636 ms
+v1 s09 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=297 md=True script_ok=True 58721 ms
+v1 s10 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8664 ms
+v1 s11 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=200 md=False script_ok=False 47752 ms
+v1 s12 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=136 md=False script_ok=True 35721 ms
+v1 f01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=214 md=False script_ok=True 41232 ms
+v1 f01 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=220 md=False script_ok=True 46038 ms
+v1 f02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=362 md=False script_ok=True 53877 ms
+v1 f02 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=371 md=False script_ok=True 75047 ms
+v1 f03 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=208 md=False script_ok=True 41892 ms
+v1 f03 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=312 md=False script_ok=True 87699 ms
+v1 f04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=390 md=True script_ok=True 56800 ms
+v1 f04 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=369 md=True script_ok=True 73652 ms
+v1 f05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=137 md=False script_ok=True 41037 ms
+v1 f05 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=137 md=False script_ok=True 40101 ms
+v1 f06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=334 md=True script_ok=True 58625 ms
+v1 f06 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=377 md=True script_ok=True 71008 ms
+v1 f07 t1: agent tools=['search_listings', 'listing_details'] tool_ok=True fields_ok=True chars=303 md=False script_ok=True 78674 ms
+v1 f07 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=334 md=False script_ok=True 67006 ms
+v1 f08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=134 md=False script_ok=True 37238 ms
+v1 f08 t2: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=144 md=False script_ok=True 40091 ms
+v1 d01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=355 md=False script_ok=True 86032 ms
+v1 d01 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=381 md=True script_ok=True 52934 ms
+v1 d02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=391 md=True script_ok=True 54362 ms
+v1 d02 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=371 md=False script_ok=True 40603 ms
+v1 d03 t1: agent tools=['search_listings', 'search_listings'] tool_ok=True fields_ok=True chars=392 md=True script_ok=True 92393 ms
+v1 d03 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=372 md=True script_ok=True 41139 ms
+v1 d04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=369 md=False script_ok=True 99072 ms
+v1 d04 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=323 md=False script_ok=True 33203 ms
+v1 d05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=397 md=True script_ok=True 56221 ms
+v1 d05 t2: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 9105 ms
+v1 o01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=222 md=False script_ok=True 42382 ms
+v1 o01 t2: agent tools=[] tool_ok=True fields_ok=None chars=154 md=False script_ok=True 15874 ms
+v1 o02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=375 md=False script_ok=True 54106 ms
+v1 o02 t2: agent tools=[] tool_ok=True fields_ok=None chars=74 md=False script_ok=True 18756 ms
+v1 d06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=363 md=False script_ok=True 58604 ms
+v1 d06 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=128 md=False script_ok=True 26311 ms
+v1 d07 t1: agent tools=['search_listings', 'search_listings'] tool_ok=True fields_ok=True chars=348 md=True script_ok=True 79786 ms
+v1 d07 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=381 md=True script_ok=True 38501 ms
+v1 d08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=379 md=False script_ok=True 55882 ms
+v1 d08 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=396 md=True script_ok=True 41459 ms
+v2 s01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=110 md=False script_ok=True 41462 ms
+v2 s02 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8497 ms
+v2 s03 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=82 md=False script_ok=True 39472 ms
+v2 s04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=113 md=False script_ok=True 40632 ms
+v2 s05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=87 md=False script_ok=True 42562 ms
+v2 s06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=93 md=False script_ok=True 40487 ms
+v2 s07 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=128 md=False script_ok=True 39958 ms
+v2 s08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=112 md=False script_ok=True 35568 ms
+v2 s09 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=79 md=False script_ok=True 44974 ms
+v2 s10 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8363 ms
+v2 s11 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=127 md=False script_ok=True 42934 ms
+v2 s12 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=120 md=False script_ok=True 35368 ms
+v2 f01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=99 md=False script_ok=True 36782 ms
+v2 f01 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=91 md=False script_ok=True 39770 ms
+v2 f02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=109 md=False script_ok=True 40608 ms
+v2 f02 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=98 md=False script_ok=True 60460 ms
+v2 f03 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=197 md=False script_ok=True 42240 ms
+v2 f03 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=157 md=False script_ok=True 40964 ms
+v2 f04 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 9095 ms
+v2 f04 t2: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=83 md=False script_ok=True 39470 ms
+v2 f05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=154 md=False script_ok=True 39767 ms
+v2 f05 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=154 md=False script_ok=True 39870 ms
+v2 f06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=170 md=False script_ok=True 45653 ms
+v2 f06 t2: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=170 md=False script_ok=True 57427 ms
+v2 f07 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8619 ms
+v2 f07 t2: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=85 md=False script_ok=True 37973 ms
+v2 f08 t1: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 9019 ms
+v2 f08 t2: fixed tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8314 ms
+v2 d01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=101 md=False script_ok=True 44733 ms
+v2 d01 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=104 md=False script_ok=True 22572 ms
+v2 d02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=140 md=False script_ok=True 43550 ms
+v2 d02 t2: agent tools=[] tool_ok=False fields_ok=None chars=140 md=False script_ok=True 20997 ms
+v2 d03 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=101 md=False script_ok=True 41564 ms
+v2 d03 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=230 md=False script_ok=True 26783 ms
+v2 d04 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=104 md=False script_ok=True 41294 ms
+v2 d04 t2: agent tools=[] tool_ok=False fields_ok=None chars=116 md=False script_ok=True 18694 ms
+v2 d05 t1: agent tools=['search_listings'] tool_ok=True fields_ok=False chars=164 md=False script_ok=True 45995 ms
+v2 d05 t2: other_route tools=[] tool_ok=None fields_ok=None chars=None md=None script_ok=None 8517 ms
+v2 o01 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=115 md=False script_ok=True 37295 ms
+v2 o01 t2: agent tools=[] tool_ok=True fields_ok=None chars=133 md=False script_ok=True 15507 ms
+v2 o02 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=101 md=False script_ok=True 38285 ms
+v2 o02 t2: agent tools=[] tool_ok=True fields_ok=None chars=60 md=False script_ok=True 17521 ms
+v2 d06 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=177 md=False script_ok=True 46519 ms
+v2 d06 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=118 md=False script_ok=True 24503 ms
+v2 d07 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=91 md=False script_ok=True 40241 ms
+v2 d07 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=136 md=False script_ok=True 24032 ms
+v2 d08 t1: agent tools=['search_listings'] tool_ok=True fields_ok=True chars=79 md=False script_ok=True 40686 ms
+v2 d08 t2: agent tools=['listing_details'] tool_ok=True fields_ok=None chars=112 md=False script_ok=True 24064 ms
+s01 fixed path: fields_ok=True 24331 ms
+s02 fixed path: fields_ok=None 8243 ms
+s03 fixed path: fields_ok=True 23668 ms
+s04 fixed path: fields_ok=True 32346 ms
+s05 fixed path: fields_ok=True 24214 ms
+s06 fixed path: fields_ok=True 22549 ms
+s07 fixed path: fields_ok=True 25908 ms
+s08 fixed path: fields_ok=True 23253 ms
+s09 fixed path: fields_ok=True 27811 ms
+s10 fixed path: fields_ok=None 8090 ms
+s11 fixed path: fields_ok=False 26815 ms
+s12 fixed path: fields_ok=True 22352 ms
+f01 fixed path: fields_ok=True 23656 ms
+f02 fixed path: fields_ok=True 23549 ms
+f03 fixed path: fields_ok=True 23141 ms
+f04 fixed path: fields_ok=None 8397 ms
+f05 fixed path: fields_ok=True 32187 ms
+f06 fixed path: fields_ok=True 22996 ms
+f07 fixed path: fields_ok=None 8343 ms
+f08 fixed path: fields_ok=None 8289 ms
+d01 fixed path: fields_ok=True 30826 ms
+d02 fixed path: fields_ok=True 26639 ms
+d03 fixed path: fields_ok=True 23489 ms
+d04 fixed path: fields_ok=True 33552 ms
+d05 fixed path: fields_ok=False 26080 ms
+o01 fixed path: fields_ok=True 22840 ms
+o02 fixed path: fields_ok=True 23500 ms
+d06 fixed path: fields_ok=True 23355 ms
+d07 fixed path: fields_ok=True 23474 ms
+d08 fixed path: fields_ok=True 23102 ms
+{
+ "minutes": 80.9,
+ "v1": {
+  "paths": {
+   "agent": 45,
+   "fallback": 0,
+   "fixed": 0,
+   "other_route": 3
+  },
+  "tool_ok": {
+   "n": 45,
+   "rate": 1.0
+  },
+  "answers": {
+   "same_script": {
+    "n": 45,
+    "rate": 0.978
+   },
+   "markdown_written": {
+    "n": 45,
+    "rate": 0.378
+   },
+   "cut": {
+    "n": 45,
+    "rate": 0.422
+   },
+   "raw_chars_p50": 397,
+   "raw_chars_max": 986,
+   "shown_chars_p50": 334
+  },
+  "client_ms": {
+   "p50": 52934.1,
+   "p95": 93641.2,
+   "max": 99071.5
+  },
+  "first_turn_search": {
+   "turns": 30,
+   "tool_ok": {
+    "n": 28,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 28,
+    "rate": 0.893
+   }
+  },
+  "followup_search": {
+   "turns": 8,
+   "tool_ok": {
+    "n": 8,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 8,
+    "rate": 0.875
+   }
+  },
+  "details": {
+   "turns": 8,
+   "tool_ok": {
+    "n": 7,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  },
+  "no_tool": {
+   "turns": 2,
+   "tool_ok": {
+    "n": 2,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  }
+ },
+ "v2": {
+  "paths": {
+   "agent": 41,
+   "fallback": 0,
+   "fixed": 1,
+   "other_route": 6
+  },
+  "tool_ok": {
+   "n": 41,
+   "rate": 0.951
+  },
+  "answers": {
+   "same_script": {
+    "n": 41,
+    "rate": 1.0
+   },
+   "markdown_written": {
+    "n": 41,
+    "rate": 0.0
+   },
+   "cut": {
+    "n": 41,
+    "rate": 0.0
+   },
+   "raw_chars_p50": 112,
+   "raw_chars_max": 230,
+   "shown_chars_p50": 112
+  },
+  "client_ms": {
+   "p50": 39472.4,
+   "p95": 46519.3,
+   "max": 60459.8
+  },
+  "first_turn_search": {
+   "turns": 30,
+   "tool_ok": {
+    "n": 25,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 25,
+    "rate": 0.92
+   }
+  },
+  "followup_search": {
+   "turns": 8,
+   "tool_ok": {
+    "n": 7,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 7,
+    "rate": 0.714
+   }
+  },
+  "details": {
+   "turns": 8,
+   "tool_ok": {
+    "n": 7,
+    "rate": 0.714
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  },
+  "no_tool": {
+   "turns": 2,
+   "tool_ok": {
+    "n": 2,
+    "rate": 1.0
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  }
+ },
+ "fixed_path": {
+  "paths": {
+   "agent": 0,
+   "fallback": 0,
+   "fixed": 25,
+   "other_route": 5
+  },
+  "tool_ok": {
+   "n": 0,
+   "rate": null
+  },
+  "answers": {
+   "same_script": {
+    "n": 0,
+    "rate": null
+   },
+   "markdown_written": {
+    "n": 0,
+    "rate": null
+   },
+   "cut": {
+    "n": 0,
+    "rate": null
+   },
+   "raw_chars_p50": null,
+   "raw_chars_max": null,
+   "shown_chars_p50": null
+  },
+  "client_ms": {
+   "p50": 23488.9,
+   "p95": 32345.7,
+   "max": 33551.6
+  },
+  "first_turn_search": {
+   "turns": 30,
+   "tool_ok": {
+    "n": 0,
+    "rate": null
+   },
+   "fields_ok": {
+    "n": 25,
+    "rate": 0.92
+   }
+  },
+  "followup_search": {
+   "turns": 0,
+   "tool_ok": {
+    "n": 0,
+    "rate": null
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  },
+  "details": {
+   "turns": 0,
+   "tool_ok": {
+    "n": 0,
+    "rate": null
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  },
+  "no_tool": {
+   "turns": 0,
+   "tool_ok": {
+    "n": 0,
+    "rate": null
+   },
+   "fields_ok": {
+    "n": 0,
+    "rate": null
+   }
+  }
+ }
+}
+wrote reports/eval/agent-bench-20261009-133936.json
+exit=0 seconds=4854.4
+
+===== Ollama memory placement after the agent runs =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-09T14:39:37.6253977+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+bge-m3:latest    790764642607    664 MB    100% GPU           4096       9 minutes from now    
+qwen3.5:4b       2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
