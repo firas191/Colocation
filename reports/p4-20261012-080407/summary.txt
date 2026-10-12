@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.2 s)
+PASS  prompts: store new versions and the active ones (P5_legal_answerer)  (exit 0, 1.5 s)
+PASS  Legal agent: the 48 questions of tn_retrieval v2, one new user each (about 1 min per question)  (exit 0, 3321.3 s)
+PASS  Ollama memory placement after the legal runs  (exit 0, 0.3 s)

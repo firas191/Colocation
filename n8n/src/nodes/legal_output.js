@@ -1,6 +1,7 @@
 // wf.legal.agent > "Check answer"
 // The AI Agent node's answer -> a checked answer with its citations, or an abstention (spec 10.6), and one trace step.
-//  - [NOT_FOUND] from the model, no search made, or no valid [n] marker left -> abstained (abstain_reason says which)
+//  - [NOT_FOUND] from the model, no search made (the question is searched before the model, D-089), or no valid
+//    [n] marker left -> abstained (abstain_reason says which)
 //  - markers whose number search_law did not give are removed (warning legal_invalid_citation); the kept ones are
 //    renumbered 1, 2, ... and the citations list follows that order
 //  - every number in the answer must come from the message, the memory or an excerpt (agent_check.checkAnswer);
@@ -29,13 +30,15 @@ let used = [];
 let invalid = [];
 let cut = false;
 let unc = 0;
-const sourcesText = [a.text, a.memory_text, ...calls.map((x) => x.output)];
+let pre = null;
+try { pre = $('Prefetch').first().json; } catch (e) { pre = null; }
+const sourcesText = [a.text, a.memory_text, pre ? pre.excerpts_text : '', ...calls.map((x) => x.output)];
 if (!err && raw) {
   if (p.notFound) {
     status = 'abstained'; reason = 'not_found';
     const t = stripMarkers(p.text);
     if (t && checkAnswer(t, sourcesText).ok) missing = shorten(t, 300).text;
-  } else if (!searches.length) {
+  } else if (!searches.length && !(Number(src.searches) > 0)) {
     status = 'abstained'; reason = 'no_search';
   } else {
     const rn = renumber(p.text, [...byN.keys()]);
@@ -74,6 +77,7 @@ const step = { agent: 'A5_legal_agent', prompt_version_id: a.prompt_version_id |
   output: { status, abstain_reason: reason, conflict, conflict_token: p.conflict, answer_chars: answer ? Array.from(answer).length : 0,
             raw_chars: Array.from(raw).length, markdown_removed: markdown, cut, citations: citations.length,
             invalid_citations: invalid.length, uncited_sentences: unc, searches: searches.length,
+            prefetched: pre ? pre.found : null, searches_total: Number(src.searches) || 0,
             best_similarity: src.best_similarity ?? null,
             retrieved: sources.filter((x) => x.request_id === a.request_id)
               .map((x) => ({ n: x.n, chunk_id: x.chunk_id, similarity: x.similarity ?? null })) },

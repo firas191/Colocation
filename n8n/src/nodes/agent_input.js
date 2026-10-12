@@ -12,6 +12,8 @@ const base = { agent: c.agent || 'A3_match_agent', notice_version: c.notice_vers
 if (!c.prompt) return [{ json: { ...base, ok: false, error_code: 'prompt_missing' } }];
 const vars = { message: s.text, jurisdiction: s.jurisdiction || 'unknown', today: s.today, language: s.language || 'fr',
   script: s.script || 'latin' };
+// variables computed just before this node (the Legal agent's excerpts, D-089); other agents: the Context row, no vars
+Object.assign(vars, ($input.first().json || {}).vars || {});
 const fill = (t) => t.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (m, k) => (k in vars ? String(vars[k]) : m));
 const m = /##\s*system\s*\n([\s\S]*?)\n##\s*user\s*\n([\s\S]*)$/i.exec(c.prompt.template);
 if (!m) return [{ json: { ...base, ok: false, error_code: 'prompt_invalid' } }];

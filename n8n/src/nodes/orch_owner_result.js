@@ -11,4 +11,4 @@ if (a.ok !== true) {
 }
 return [{ json: { ok: true, gw: v.gw, status: 200, steps,
   data: { intent: 'post_listing', language: o.language || d.detected_language || null, status: a.status, answer: a.answer,
-          proposal: a.proposal, warnings: [...(d.followup ? ['followup'] : []), ...(a.warnings || [])], agent: a.agent } } }];
+          proposal: a.proposal, warnings: [...(d.followup ? ['followup'] : []), ...(d.own_listing ? ['own_listing'] : []), ...(a.warnings || [])], agent: a.agent } } }];

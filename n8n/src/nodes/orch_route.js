@@ -40,8 +40,16 @@ if (route === 1 || route === 3) {
   else if (open === 'legal' && ctx.legal_enabled === true) { route = 5; followup = true; }
   else if (open === 'owner' && ctx.owner_enabled === true && ctx.has_listings === true) { route = 6; followup = true; }
 }
+// A message about the user's own listing ("mon annonce", "my listing", "annonce mte3i", "إعلاني") from a user who has
+// listings goes to the owner assistant whatever P1 said: on the PC (T-56) P1 sent 3 such requests to the Legal agent,
+// the search or report_problem (D-089).
+const OWN = /(^|[^\p{L}])(mon annonce|mes annonces|my listings?|annonce mte3i|annonce mta3i|el annonce mte3i)([^\p{L}]|$)|إعلاني/iu;
+let ownListing = false;
+if (route !== 4 && route !== 6 && ctx.owner_enabled === true && ctx.has_listings === true && OWN.test(v.text)) {
+  route = 6; ownListing = true;
+}
 const o = r.ok ? r.output : {};
 const hint = ['TN', 'FR', 'GB'].includes(o.jurisdiction_hint) ? o.jurisdiction_hint : null;
-return [{ json: { route, followup, agent_enabled: ctx.agent_enabled === true, router: o, call_error: !!r.call_error, steps: [textStep, step],
+return [{ json: { route, followup, own_listing: ownListing, agent_enabled: ctx.agent_enabled === true, router: o, call_error: !!r.call_error, steps: [textStep, step],
   detected_language: tb ? tb.language.language : null,
   extract: { text: v.text, jurisdiction: hint || v.jurisdiction, today: v.today } } }];

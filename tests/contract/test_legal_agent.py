@@ -117,17 +117,18 @@ def test_answer_cites_the_excerpts_it_used(client, db, user):
     law = d["citations"][0]
     assert law["source_type"] == "primary_law" and law["article"] == "TST-L art. 2" and law["reliability"] == 5
     assert law["url"] == "https://example.org/test-ql-law" and law["retrieved_at"].startswith("2026-10-01") and law["chunk_id"]
-    assert d["notice_version"] == "legal-notice-v1" and d["jurisdiction"] == "QL" and d["agent"]["tool_calls"] == ["search_law"]
+    assert d["notice_version"] == "legal-notice-v1" and d["jurisdiction"] == "QL" and d["agent"]["tool_calls"] == []      # answered from the excerpts found first (D-089)
     st = steps_of(db, j["request_id"])
     assert [s[0] for s in st] == ["A0_text", "A0_orchestrator", "A5_legal_agent"]
     agent = st[-1]
     assert agent[1] is True and agent[5] is None                                # P5 version recorded, no error
-    assert agent[4] == [{"tool": "search_law", "input_chars": len(QUESTION), "found": 4}]
-    assert agent[3]["citations"] == 2 and len(agent[3]["retrieved"]) == 4 and agent[3]["searches"] == 1
+    assert agent[4] == []
+    assert agent[3]["citations"] == 2 and len(agent[3]["retrieved"]) == 4 and agent[3]["prefetched"] == 4
+    assert agent[3]["searches"] == 0 and agent[3]["searches_total"] == 1
     assert "dépôt" not in str(agent[2:5])                                       # no text of the message or the excerpts
     rows = db.execute("select message from agent_memory.chat_histories where session_id = %s order by id",
                       (f"legal:user:{user}",)).fetchall()
-    assert [r[0]["type"] for r in rows] == ["human", "ai", "tool", "ai"]
+    assert [r[0]["type"] for r in rows] == ["human", "ai"]          # the excerpts are in the system message, not stored
     assert not db.execute("select 1 from agent_memory.chat_histories where session_id = %s", (f"user:{user}",)).fetchone()
 
 
@@ -147,9 +148,9 @@ def test_a_number_no_excerpt_gives_drops_the_answer(client, user):
     assert d["status"] == "abstained" and d["abstain_reason"] == "unsupported_numbers" and d["answer"] is None, d
 
 
-def test_an_answer_without_a_search_is_not_shown(client, user):
+def test_an_answer_that_cites_nothing_is_not_shown(client, user):
     d = ask(client, user, "[mock:notool] " + QUESTION)["data"]
-    assert d["status"] == "abstained" and d["abstain_reason"] == "no_search", d
+    assert d["status"] == "abstained" and d["abstain_reason"] == "no_citation", d
 
 
 def test_disagreeing_sources_are_flagged(client, user):
@@ -160,7 +161,7 @@ def test_disagreeing_sources_are_flagged(client, user):
 
 def test_numbers_continue_across_two_searches_and_a_follow_up(client, db, user):
     d1 = ask(client, user, "[mock:twice] " + QUESTION)["data"]
-    assert d1["agent"]["tool_calls"] == ["search_law", "search_law"] and d1["status"] == "answered", d1
+    assert d1["agent"]["tool_calls"] == ["search_law"] and d1["status"] == "answered", d1   # first search done before the model
     nums = db.execute("""select jsonb_path_query_array(sources, '$[*].n') from ai.legal_sessions where session_id = %s""",
                       (f"legal:user:{user}",)).fetchone()[0]
     assert nums == sorted(set(nums)) and len(nums) == 4             # same excerpts found twice keep their numbers

@@ -1,0 +1,99 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-12T08:59:32.4748791+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions and the active ones (P11_owner_assistant) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-12T08:59:32.7871972+01:00
+ Container flatshare-tests-run-b294cdf4f894 Creating 
+ Container flatshare-tests-run-b294cdf4f894 Created 
+prompt registry up to date
+exit=0 seconds=1.9
+
+===== Owner assistant: the 24 requests of owner_agent v1, one new owner and test listing each (about 1 min per request) =====
+command: docker @run scripts/owner_bench.py
+started: 2026-10-12T08:59:34.6557994+01:00
+ Container flatshare-tests-run-3530a0d0b195 Creating 
+ Container flatshare-tests-run-3530a0d0b195 Created 
+24 requests; model qwen3.5:4b; P11 v1
+o-01 owner proposed ok=True changes={'rent': 420} tools=['my_listings', 'propose_change'] 30053 ms
+o-02 owner proposed ok=True changes={'rent': 300} tools=['my_listings', 'propose_change'] 25106 ms
+o-03 other abstained ok=None changes=None tools=None 29235 ms
+o-04 owner proposed ok=True changes={'rent': 380} tools=['my_listings', 'propose_change'] 46745 ms
+o-05 owner proposed ok=True changes={'rent': 400} tools=['my_listings', 'propose_change'] 29421 ms
+o-06 other results ok=None changes=None tools=None 58726 ms
+o-07 other answered ok=None changes=None tools=None 70809 ms
+o-08 owner proposed ok=True changes={'remove_photos': [2]} tools=['my_listings', 'propose_change'] 52031 ms
+o-09 owner proposed ok=True changes={'remove_photos': [3]} tools=['my_listings', 'propose_change'] 28551 ms
+o-10 owner proposed ok=True changes={'status': 'archived'} tools=['my_listings', 'propose_change'] 28671 ms
+o-11 owner proposed ok=True changes={'status': 'archived'} tools=['my_listings', 'propose_change'] 29326 ms
+o-12 owner proposed ok=True changes={'amenities_add': ['air_conditioning', 'wifi']} tools=['my_listings', 'propose_change'] 29992 ms
+o-13 other not_available_yet ok=None changes=None tools=None 8283 ms
+o-14 owner proposed ok=True changes={'furnished': True, 'bills_included': True} tools=['my_listings', 'propose_change'] 25752 ms
+o-15 owner proposed ok=False changes={'house_rules': {'pets': 'yes', 'smoking': 'no'}} tools=['my_listings', 'propose_change'] 25249 ms
+o-16 owner proposed ok=True changes={'available_from': '2026-12-01'} tools=['my_listings', 'propose_change'] 25595 ms
+o-17 owner proposed ok=True changes={'bedrooms': 2} tools=['my_listings', 'propose_change'] 29117 ms
+o-18 owner proposed ok=True changes={'rent': 400, 'deposit': 800} tools=['my_listings', 'propose_change'] 33033 ms
+o-19 owner answered ok=True changes=None tools=['my_listings', 'propose_change'] 25762 ms
+o-20 owner proposed ok=False changes={'house_rules': {'pets': 'yes', 'guests': 'no', 'parties': 'no', 'smoking': 'no'}} tools=['my_listings', 'propose_change'] 25511 ms
+o-21 owner answered ok=True changes=None tools=['my_listings'] 16764 ms
+o-22 owner answered ok=True changes=None tools=[] 13946 ms
+o-23 owner answered ok=True changes=None tools=[] 16441 ms
+o-24 owner answered ok=False changes=None tools=['my_listings'] 18059 ms
+{
+ "date": "2026-10-12T08:11:38+00:00",
+ "model": "qwen3.5:4b",
+ "prompt": "P11_owner_assistant v1",
+ "dataset": "owner_agent_v1.jsonl",
+ "requests": 24,
+ "minutes": 12.0,
+ "routes": {
+  "owner": 20,
+  "other": 4,
+  "error": 0
+ },
+ "other_routes": [
+  "legal_question/abstained",
+  "legal_question/answered",
+  "report_problem/not_available_yet",
+  "search_listings/results"
+ ],
+ "change_exact": {
+  "n": 15,
+  "count": 13,
+  "rate": 0.867
+ },
+ "fields": {
+  "right": 15,
+  "expected": 17,
+  "extra": 0
+ },
+ "refusals": {
+  "n": 1,
+  "count": 1,
+  "rate": 1.0
+ },
+ "no_change_kept": {
+  "n": 4,
+  "count": 3,
+  "rate": 0.75
+ },
+ "listed_first": {
+  "n": 20,
+  "count": 18
+ },
+ "client_ms": {
+  "p50": 25761.7,
+  "p95": 46745.3
+ },
+ "load": "sequential, one request at a time"
+}
+wrote reports/eval/owner-bench-20261012-081138.json
+exit=0 seconds=724.5

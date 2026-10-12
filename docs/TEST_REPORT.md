@@ -1564,6 +1564,56 @@ its confirmation, the database checks and the Telegram buttons, not the model. L
 Not measured: everything about the real model (right field and value, refusals, no change when none was asked,
 latency). To run on the PC: `p4.ps1 -Step owner-bench`.
 
+## T-55 Legal agent on the owner's PC, P5 v1 (2026-10-12) - measured; changes in D-089
+
+`p4.ps1 -Step legal-bench`, the 48 questions of tn_retrieval v2, one new TN user each; qwen3.5:4b (`ollama ps`: 52%
+CPU / 48% GPU), retrieval fixed_500_50 / bge-m3 / dense / top 5, `legal.min_similarity` 0, 30 TN and global sources.
+55.3 minutes. Output `reports/eval/legal-bench-20261012-075929.json` and the faithfulness sample (on the PC).
+
+| Measure (spec 10.7) | Result |
+|---|---|
+| Routed to the Legal agent by P1 | 42 of 48 (3 to report_problem, 3 smalltalk/unsupported) |
+| Correct abstention, out-of-scope questions | 3 of 3 that reached the agent (the 4th was routed elsewhere) |
+| False abstention, answerable questions | 22 of 39 (0.564): not_found 18, no_search 3, no_citation 1 |
+| Answerable questions where the model did not search | 6 of 39 (5 of the 6 Arabic questions) |
+| A gold passage among the excerpts retrieved | 18 of 39 (of 33 searched); T-21 hit@5 for the question itself: 0.795 |
+| Answered with at least one relevant citation | 16 of 17 answered |
+| Citation precision (lower bound: unjudged = not relevant) | 19 of 32 cited excerpts (0.594) |
+| Conflict raised, contradiction questions | 1 of 10; elsewhere 1 of 32 |
+| Markers of excerpts not retrieved (removed) | 7; sentences without a marker in answers: 9 |
+| Latency seen by the client (agent route) | p50 80.5 s, p95 91.7 s |
+| Best similarity, simulated thresholds | out-of-scope 0.468 and 0.643; answerable min 0.378, p10 0.499, p50 0.592: no threshold separates them on this set, the setting stays 0 |
+
+Faithfulness: the sample of 12 answered questions for the manual check is written; not judged yet.
+
+## T-56 Owner assistant on the owner's PC, P11 v1 (2026-10-12) - measured; changes in D-089
+
+`p4.ps1 -Step owner-bench`, the 24 requests of owner_agent v1, one new owner and test listing each; qwen3.5:4b.
+12.0 minutes. Output `reports/eval/owner-bench-20261012-081138.json` (on the PC).
+
+| Measure | Result |
+|---|---|
+| Routed to the owner assistant by P1 | 20 of 24 (o-03 and o-07 to the Legal agent, o-06 to the search, o-13 to report_problem) |
+| Change proposed exactly as expected | 13 of 15; fields right 15 of 17, no extra field |
+| Wrong proposals | o-15 pets=yes for "pas d'animaux"; o-20 four house rules for "colocataire femme uniquement" (nothing about gender is storable; the answer said it was added) |
+| Rent in millimes | refused by the database (out_of_range), the answer said so |
+| No proposal when none was asked (question, new listing, injection) | 3 of 3; with the protected-trait request 3 of 4 |
+| my_listings called first | 18 of 20 |
+| Latency seen by the client | p50 25.8 s, p95 46.7 s |
+
+## T-57 Changes of D-089 in the sandbox (2026-10-12) - PASS; to measure again on the PC
+
+The question searched before the Legal agent, P5 v2 and P11 v2 active, the "my listing" routing rule. The Ollama
+mock now answers the Legal agent from the excerpts in its system message (and searches only for `[mock:twice]` or when
+there are none).
+
+| Log | Result |
+|---|---|
+| `57-js-unit-tests.log` | node 144 pass, 0 fail; workflow JSON up to date |
+| `58-contract-proxy-d089.log` | full suite through the proxy: 195 passed, 1 skipped. Changed in `test_legal_agent.py`: the answer comes from the excerpts found first (no tool call, `prefetched` 4, the excerpts not stored in the memory); an answer citing nothing is `no_citation`; `[mock:twice]` gives one search_law call after the first search. New in `test_owner_agent.py`: "la caution de mon annonce" (P1 mock: legal question) goes to the owner assistant with warning `own_listing` |
+
+To run on the PC: `p4.ps1 -Step legal-bench` and `-Step owner-bench`, compared with T-55 and T-56.
+
 ---
 
 ## Not run

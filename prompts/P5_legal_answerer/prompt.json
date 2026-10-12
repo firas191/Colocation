@@ -1,15 +1,16 @@
 {
   "name": "P5_legal_answerer",
   "agent": "A5 legal",
-  "role": "System message of the A5 Legal agent (n8n AI Agent node): search the knowledge base with the search_law tool, then answer only from the numbered excerpts, citing each claim as [n]; say [NOT_FOUND] when the excerpts do not answer and [CONFLICT] when they disagree. Citations, abstention and the notice are checked and added in code (D-087).",
+  "role": "System message of the A5 Legal agent (n8n AI Agent node): read the excerpts already found for the question (and search again with the search_law tool if they do not answer), then answer only from the numbered excerpts, citing each claim as [n]; say [NOT_FOUND] when the excerpts do not answer and [CONFLICT] when they disagree. Citations, abstention and the notice are checked and added in code (D-087).",
   "schema": "schemas/P5_legal_answerer.schema.json",
   "variables": [
     "message",
     "jurisdiction",
     "today",
     "language",
-    "script"
+    "script",
+    "excerpts"
   ],
   "golden_set": "tn_retrieval",
-  "active_version": 1
+  "active_version": 2
 }

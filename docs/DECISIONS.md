@@ -681,6 +681,34 @@ correct it, and spec 5.2 lists `PATCH /v1/listings/:id`; neither existed. Both a
   frontend). No measurement on the real model yet: `scripts/owner_bench.py` (24 requests of
   `eval/datasets/owner_agent_v1.jsonl`, labels written by me) scores the proposals.
 
+### D-089 After the first PC runs: the question is searched before the Legal agent; P5 v2, P11 v2; "my listing" routing
+
+From T-55 (Legal agent, P5 v1) and T-56 (owner assistant, P11 v1) on the owner's PC.
+
+- **Legal agent: retrieval first.** With v1 the model decided whether and what to search. It did not search for 6 of
+  the 39 answerable questions that reached it (5 of the 6 in Arabic), and the queries it wrote found a gold passage
+  for 18 of the 33 it searched; the user's question itself, in the same configuration, had hit@5 0.795 (T-21). When
+  a gold passage was retrieved the model answered 17 times out of 18, and 16 of the 17 answers cited it (16 of 17 answers had a relevant
+  citation); when none was retrieved it abstained every time. So the losses were in the search, not in the answer.
+  From now on `wf.legal.agent` searches the (masked) question before the model runs (same `app.legal_search`,
+  same numbering) and puts the excerpts in the system message (`{{excerpts}}`, not stored in the memory). search_law
+  stays for a second search with other words. This is the plain retrieve-then-answer pattern with one optional
+  agent step; the agent no longer decides whether to look.
+- **P5 v2:** the excerpts in the message; search_law only when they do not answer; a definition of disagreeing
+  sources (conflict raised on 1 of 10 contradiction questions with v1). Active for the next measurement; v1 stays
+  stored (`scripts/prompts.py activate P5_legal_answerer 1` to go back).
+- **P11 v2:** v1 got 13 of 15 changes exactly right, refused the rent in millimes, and kept 3 of 4 messages without a
+  change. Its errors: "pas d'animaux" became pets=yes (the prompt's example was "smoking=no, pets=yes", also in the
+  tool description); "colocataire femme uniquement" became four house rules nobody asked for, and the answer said it
+  had added "femme uniquement"; "statut archived" in a French answer; "mfarcha" not read as furnished. v2 writes rules
+  as allowed / not allowed with a neutral example, refuses rules about who may live there without calling the tool,
+  says the status in words, lists a few Tunisian words, and says "proposed", never "done". Active for the next run.
+- **"My listing" goes to the owner assistant.** P1 sent 4 of the 24 owner requests elsewhere (Legal agent twice, the
+  search, report_problem). A message that names the user's own listing ("mon annonce", "my listing", "annonce mte3i",
+  "إعلاني") from a user who has listings now goes to the owner assistant whatever P1 said (warning `own_listing`).
+  This would have caught 3 of the 4 ("La caution de ma chambre..." names no listing). A legal question that says
+  "mon annonce" would also go there; not measured.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

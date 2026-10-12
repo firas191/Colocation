@@ -128,25 +128,30 @@ def _msg_text(m):
 
 
 def legal_answer(body, cur, tool_msgs, call):
-    """Mock of the model inside the A5 Legal agent (D-087): calls search_law with the user's text, then answers from
-    the first excerpt with [1] (the second too with [2] when there is one). Markers: [mock:notfound] answers
-    [NOT_FOUND], [mock:conflict] starts with [CONFLICT] and cites [1] and [2], [mock:badcite] cites [9] only,
-    [mock:badnumber] adds a delay no excerpt gives, [mock:notool] answers without searching, [mock:twice] searches
-    twice."""
+    """Mock of the model inside the A5 Legal agent (D-087, D-089): answers from the excerpts found before it runs (in
+    the system message), or calls search_law with the user's text when there are none; cites the first excerpt [n]
+    (the second too when there is one). Markers: [mock:notfound] answers [NOT_FOUND], [mock:conflict] starts with
+    [CONFLICT] and cites two, [mock:badcite] cites [9] only, [mock:badnumber] adds a delay no excerpt gives,
+    [mock:notool] answers without citing, [mock:twice] searches once more with other words."""
     low = cur.lower()
-    if not tool_msgs:
-        if "[mock:notool]" in low:
-            return 200, {"role": "assistant", "content": "Le bailleur doit rendre le dépôt."}
+    # excerpts found before the model runs (D-089) are in the system message: "[n] Source: title; type: ...\ntext"
+    system = next((str(m.get("content") or "") for m in body.get("messages") or [] if m.get("role") == "system"), "")
+    pre = [{"n": int(m.group(1)), "source": m.group(2).strip(), "text": m.group(3)}
+           for m in re.finditer(r"\[(\d+)\] Source: ([^;\n]+);[^\n]*\n(.*?)(?=\n\n\[\d+\] Source:|\n\nTool:|\Z)", system, re.S)]
+    if "[mock:notool]" in low and not tool_msgs:
+        return 200, {"role": "assistant", "content": "Le bailleur doit rendre le dépôt."}
+    if not tool_msgs and ("[mock:twice]" in low or not pre):
         return 200, call("search_law", {"query": re.sub(r"\[mock:[^\]]*\]", "", cur).strip()})
-    try:
-        obs = json.loads(tool_msgs[-1].get("content") or "{}")
-    except ValueError:
-        obs = {}
-    if isinstance(obs, list):
-        obs = obs[0] if obs and isinstance(obs[0], dict) else {}
-    if "[mock:twice]" in low and len(tool_msgs) == 1:
-        return 200, call("search_law", {"query": "autre formulation " + cur[:40]})
-    ex = obs.get("excerpts") or []
+    if tool_msgs:
+        try:
+            obs = json.loads(tool_msgs[-1].get("content") or "{}")
+        except ValueError:
+            obs = {}
+        if isinstance(obs, list):
+            obs = obs[0] if obs and isinstance(obs[0], dict) else {}
+        ex = obs.get("excerpts") or []
+    else:
+        ex = pre
     if "[mock:notfound]" in low or not ex:
         return 200, {"role": "assistant", "content": "[NOT_FOUND] Les extraits ne parlent pas de cette question."}
     first = re.sub(r"\s+", " ", ex[0].get("text") or "").strip()

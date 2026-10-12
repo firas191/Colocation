@@ -166,3 +166,10 @@ def test_telegram_cancel_button(db, qx):  # noqa: F811
     push(button(chat, p["reply_markup"]["inline_keyboard"][0][1]["callback_data"]))
     wait_reply(chat, n, lambda p: "annulée" in p.get("text", ""), timeout=60)
     assert db.execute("select rent_minor from app.listings where id = %s", (lid,)).fetchone()[0] == 350000
+
+
+def test_a_message_about_my_listing_goes_to_the_owner_assistant(client, owner):
+    uid, _ = owner
+    # the mock P1 reads "caution" as a legal question; "mon annonce" from a user with listings wins (D-089)
+    d = say(client, uid, "la caution de mon annonce est 700 dt")["data"]
+    assert d["intent"] == "post_listing" and "own_listing" in d["warnings"] and d["status"] == "proposed", d

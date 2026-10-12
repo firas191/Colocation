@@ -1041,7 +1041,18 @@ def legal_agent():
     abstained), answer, citations, conflict, abstain_reason, missing_information, notice_version, steps} (D-087)."""
     wf = WF(LEGAL_AGENT_WF, "wf.legal.agent", tags=["agent"])
     wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
-    pg_node(wf, "Context", "select app.legal_agent_context($1::uuid) as c", "={{ [ $json.user_id ] }}", [220, 0], on_error=None)
+    pg_node(wf, "Context", "select app.legal_agent_context($1::uuid) as c,"
+            " (select jsonb_object_agg(key, value #>> '{}') from app.settings"
+            " where key in ('ollama.base_url', 'llm.keep_alive', 'legal.retrieval')) as cfg", "={{ [ $json.user_id ] }}",
+            [220, 0], on_error=None)
+    # the question itself is searched first (D-089); the model may search again with search_law
+    code_node(wf, "Prefetch plan", "legal_prefetch_plan.js", [330, -250])
+    http_node(wf, "Embed question", "POST", "={{ $json.url }}", [440, -250], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 30000 }}", on_error="continueRegularOutput")
+    code_node(wf, "Prefetch input", "legal_prefetch_vector.js", [550, -250])
+    pg_node(wf, "Prefetch search", "select app.legal_search($1, $2::uuid, $3::uuid, $4, $5, $6) as r", "={{ $json.params }}",
+            [660, -250], on_error=None)
+    code_node(wf, "Prefetch", "legal_prefetch.js", [770, -250])
     code_node(wf, "Agent input", "agent_input.js", [440, 0])
     if_node(wf, "Prompt ok?", "={{ $json.ok }}", [660, 0])
     wf.node("Legal agent", "@n8n/n8n-nodes-langchain.agent", 3.1, {
@@ -1073,7 +1084,12 @@ def legal_agent():
     code_node(wf, "Check answer", "legal_output.js", [1400, -100])
     code_node(wf, "No prompt", "agent_prompt_missing.js", [900, 260])
     wf.link("Start", "Context")
-    wf.link("Context", "Agent input")
+    wf.link("Context", "Prefetch plan")
+    wf.link("Prefetch plan", "Embed question")
+    wf.link("Embed question", "Prefetch input")
+    wf.link("Prefetch input", "Prefetch search")
+    wf.link("Prefetch search", "Prefetch")
+    wf.link("Prefetch", "Agent input")
     wf.link("Agent input", "Prompt ok?")
     wf.link("Prompt ok?", "Legal agent", 0)
     wf.link("Prompt ok?", "No prompt", 1)
@@ -1100,7 +1116,7 @@ OWNER_FIELDS = [
     ("place", "Neighbourhood or town"),
     ("add_amenities", "Amenity codes to add, separated by commas"),
     ("remove_amenities", "Amenity codes to remove, separated by commas"),
-    ("house_rules", "Rules such as smoking=no, pets=yes"),
+    ("house_rules", "Only the rules named, each name=yes (allowed) or name=no (not allowed); names: smoking, pets, guests, parties"),
     ("remove_photo", "Number of the photo to remove"),
     ("status", "archived (rented or withdrawn) or published (show an archived listing again)"),
 ]

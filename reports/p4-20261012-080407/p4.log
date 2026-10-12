@@ -1,0 +1,164 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-12T08:04:07.7429683+01:00
+healthy
+healthy
+exit=0 seconds=0.2
+
+===== prompts: store new versions and the active ones (P5_legal_answerer) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-12T08:04:08.0059524+01:00
+ Container flatshare-tests-run-18ed3a346b9f Creating 
+ Container flatshare-tests-run-18ed3a346b9f Created 
+prompt registry up to date
+exit=0 seconds=1.5
+
+===== Legal agent: the 48 questions of tn_retrieval v2, one new user each (about 1 min per question) =====
+command: docker @run scripts/legal_bench.py
+started: 2026-10-12T08:04:09.4859241+01:00
+ Container flatshare-tests-run-584b29548c2d Creating 
+ Container flatshare-tests-run-584b29548c2d Created 
+48 questions; model qwen3.5:4b; P5 v1; retrieval {'k': 5, 'mode': 'dense', 'model': 'bge-m3', 'strategy': 'fixed_500_50', 'candidates': 50, 'min_reliability': 1}; min_similarity 0; 30 TN and global sources
+tn-01 legal answered reason=None conflict=False cited=4 relevant=1 retrieved_relevant=1 best=0.6305101604789973 79321 ms
+tn-02 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=1 best=0.5425738096237337 91822 ms
+tn-03 legal answered reason=None conflict=False cited=2 relevant=2 retrieved_relevant=2 best=0.6096845342234101 85644 ms
+tn-04 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.4978835721022127 83615 ms
+tn-05 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5711919238531272 83104 ms
+tn-06 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5924828185171904 83994 ms
+tn-07 legal answered reason=None conflict=False cited=1 relevant=0 retrieved_relevant=1 best=0.622082689131596 85099 ms
+tn-08 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.578805387020148 84067 ms
+tn-09 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=1 best=0.5473970275056931 91677 ms
+tn-10 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5312924757297379 78743 ms
+tn-11 legal answered reason=None conflict=True cited=1 relevant=1 retrieved_relevant=1 best=0.6168468733843457 87894 ms
+tn-12 legal answered reason=None conflict=False cited=3 relevant=1 retrieved_relevant=1 best=0.5993153808053093 83741 ms
+tn-13 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.4873777750624564 77756 ms
+tn-14 legal answered reason=None conflict=False cited=2 relevant=2 retrieved_relevant=2 best=0.6075479516444149 87622 ms
+tn-15 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5155980335468383 76931 ms
+tn-16 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5873472274078405 80119 ms
+tn-17 legal answered reason=None conflict=False cited=2 relevant=1 retrieved_relevant=2 best=0.7029800754410324 93741 ms
+tn-18 legal answered reason=None conflict=True cited=2 relevant=1 retrieved_relevant=2 best=0.7421061752660205 85748 ms
+tn-19 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.37816228585624756 80022 ms
+tn-20 legal answered reason=None conflict=False cited=2 relevant=1 retrieved_relevant=1 best=0.610582196081799 83160 ms
+tn-21 other not_available_yet reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 30153 ms
+tn-22 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=4 best=0.5946464152227525 61902 ms
+tn-23 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 49841 ms
+tn-24 other unsupported reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 25591 ms
+tn-25 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=1 best=0.6044707658571472 61887 ms
+tn-26 legal abstained reason=no_citation conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5915340269052165 83034 ms
+tn-27 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=1 best=0.5418290272645875 80501 ms
+tn-28 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=1 best=0.6440627423394197 86152 ms
+tn-29 legal answered reason=None conflict=False cited=2 relevant=2 retrieved_relevant=2 best=0.6337337753854334 81898 ms
+tn-30 other not_available_yet reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 29774 ms
+tn-31 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 33185 ms
+tn-32 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 46661 ms
+tn-33 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 46813 ms
+tn-34 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5629709287916547 80565 ms
+tn-35 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 55398 ms
+tn-36 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 52909 ms
+tn-37 other unsupported reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 24617 ms
+tn-38 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5808625624507888 57648 ms
+tn-39 legal answered reason=None conflict=False cited=5 relevant=1 retrieved_relevant=1 best=0.603928959604085 78050 ms
+tn-40 other not_available_yet reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 29937 ms
+tn-41 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5194725634239434 59604 ms
+tn-42 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.498717873982933 83628 ms
+tn-43 legal answered reason=None conflict=False cited=1 relevant=1 retrieved_relevant=2 best=0.6616499612197273 78593 ms
+tn-44 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.5997710465839191 81479 ms
+tn-45 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.6426637555756982 80884 ms
+tn-46 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=0.4676919137516964 77759 ms
+tn-47 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 51474 ms
+tn-48 other unsupported reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 24768 ms
+{
+ "date": "2026-10-12T07:59:29+00:00",
+ "model": "qwen3.5:4b",
+ "prompt": "P5_legal_answerer v1",
+ "dataset": "tn_retrieval_v2.jsonl",
+ "questions": 48,
+ "minutes": 55.3,
+ "settings": {
+  "legal.retrieval": {
+   "k": 5,
+   "mode": "dense",
+   "model": "bge-m3",
+   "strategy": "fixed_500_50",
+   "candidates": 50,
+   "min_reliability": 1
+  },
+  "legal.min_similarity": 0,
+  "legal.num_ctx": 8192
+ },
+ "routes": {
+  "legal": 42,
+  "other": 6,
+  "error": 0
+ },
+ "other_routes": [
+  "report_problem/not_available_yet",
+  "smalltalk_or_unsupported/unsupported"
+ ],
+ "correct_abstention": {
+  "legal_agent": {
+   "n": 3,
+   "count": 3,
+   "rate": 1.0
+  },
+  "out_of_scope_total": 4,
+  "routed_elsewhere": 1
+ },
+ "false_abstention": {
+  "n": 39,
+  "count": 22,
+  "rate": 0.564
+ },
+ "abstain_reasons": {
+  "not_found": 21,
+  "no_citation": 1,
+  "no_search": 3
+ },
+ "conflict_raised_on_contradiction": {
+  "n": 10,
+  "count": 1,
+  "rate": 0.1
+ },
+ "conflict_raised_elsewhere": {
+  "n": 32,
+  "count": 1,
+  "rate": 0.031
+ },
+ "citation_precision": {
+  "n": 32,
+  "count": 19,
+  "rate": 0.594
+ },
+ "answered_with_a_relevant_citation": {
+  "n": 17,
+  "count": 16,
+  "rate": 0.941
+ },
+ "retrieved_a_gold_span": {
+  "n": 39,
+  "count": 18,
+  "rate": 0.462
+ },
+ "uncited_sentences": 9,
+ "invalid_citations": 7,
+ "client_ms": {
+  "p50": 80500.9,
+  "p95": 91676.6,
+  "max": 93741.4
+ },
+ "load": "sequential, one question at a time"
+}
+{"best_similarity": {"answerable": {"min": 0.37816228585624756, "p10": 0.498717873982933, "p50": 0.5924828185171904}, "out_of_scope": [0.4676919137516964, 0.6426637555756982], "thresholds_simulated": [{"threshold": 0.3, "out_of_scope_below": 0, "out_of_scope": 2, "answerable_below": 0, "answerable": 33}, {"threshold": 0.35, "out_of_scope_below": 0, "out_of_scope": 2, "answerable_below": 0, "answerable": 33}, {"threshold": 0.4, "out_of_scope_below": 0, "out_of_scope": 2, "answerable_below": 1, "answerable": 33}, {"threshold": 0.45, "out_of_scope_below": 0, "out_of_scope": 2, "answerable_below": 1, "answerable": 33}, {"threshold": 0.5, "out_of_scope_below": 1, "out_of_scope": 2, "answerable_below": 4, "answerable": 33}, {"threshold": 0.55, "out_of_scope_below": 1, "out_of_scope": 2, "answerable_below": 10, "answerable": 33}, {"threshold": 0.6, "out_of_scope_below": 1, "out_of_scope": 2, "answerable_below": 20, "answerable": 33}]}}
+wrote reports/eval/legal-bench-20261012-075929.json and the sample for the faithfulness check
+exit=0 seconds=3321.3
+
+===== Ollama memory placement after the legal runs =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-12T08:59:30.8347912+01:00
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b    2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+exit=0 seconds=0.3
