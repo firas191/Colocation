@@ -30,11 +30,14 @@ switch (CALL) {
       body: { text: P.listing_text.slice(0, 5000), jurisdiction_code: P.country } };
     break;
   case 'presign': {
-    const d = $('Download photo').first();
-    const mime = (d.binary && d.binary.data && d.binary.data.mimeType) || 'image/jpeg';
+    // one upload slot per photo (several when the photos came as an album, D-086)
+    const files = $('Download photo').all().map((d) => {
+      const mime = (d.binary && d.binary.data && d.binary.data.mimeType) || 'image/jpeg';
+      return { kind: 'photo', content_type: ['image/png', 'image/webp'].includes(mime) ? mime : 'image/jpeg',
+        bytes: Number((d.json.result || {}).file_size) || 1 };
+    });
     call = { method: 'POST', path: `/v1/listings/${listingId()}/media/presign`, user_id: P.user_id, idem: idem('presign'),
-      body: { files: [{ kind: 'photo', content_type: ['image/png', 'image/webp'].includes(mime) ? mime : 'image/jpeg',
-        bytes: Number((d.json.result || {}).file_size) || 1 }] } };
+      body: { files } };
     break;
   }
   case 'analyze':

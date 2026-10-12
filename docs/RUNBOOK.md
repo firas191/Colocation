@@ -112,6 +112,9 @@ Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py 
 | A user's conversation with the agent | `select message->>'type', message->>'content' from agent_memory.chat_histories where session_id = 'user:<user id>' order by id;` (masked text; deleted after 30 days or when consent is withdrawn) |
 | Match agent on the real model (match_agent_v2 for P6 v1 and v2, then the fixed path) | `... p4.ps1 -Step agent-bench` (option `-AgentVersions "2"`) -> `reports\eval\agent-bench-*.json` |
 | Longest Match agent answer shown (D-085) | `select value from app.settings where key = 'match.agent_answer_max_chars';` (400) |
+| Telegram: post a listing with several photos (D-086) | select the photos together in Telegram, write `/annonce <text>` as the caption, send; up to 10 |
+| Telegram: photo cards under search results | `select value from app.settings where key = 'telegram.search_photo_cards';` (3; 0 turns them off) |
+| Telegram: "see all photos" does nothing | `docker logs fs-telegram` (album sender on port 8099, "album not sent: ..."); `select value from app.settings where key = 'services.telegram_relay_url';` |
 | Near-duplicate threshold | `select value from app.settings where key = 'media.phash_max_distance';` (12 since D-082) |
 | Analyze one listing by hand | `POST /v1/listings`, then `POST /v1/listings/{id}/analyze`; result in `GET /v1/listings/{id}` (`extraction.issues`) |
 | Plausible rent ranges | `select value from app.settings where key = 'listing.rent_range';` (main units per month, D-076) |

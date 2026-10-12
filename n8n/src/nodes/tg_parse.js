@@ -9,7 +9,8 @@ if (!u.update_id || !/^[0-9a-f]{16}$/.test(bot) || !msg || !msg.chat || msg.chat
 const from = (m ? m.from : cb.from) || {};
 const out = { update_id: Number(u.update_id), bot, chat_id: msg.chat.id, from_id: from.id, ext_id: `telegram:${from.id}`,
   lang_code: from.language_code || '', first_name: from.first_name || '', message_id: msg.message_id,
-  kind: 'other', text: '', command: null, args: '', callback_id: null, callback_data: null, photo_file_id: null };
+  kind: 'other', text: '', command: null, args: '', callback_id: null, callback_data: null, photo_file_id: null,
+  media_group_id: null };
 if (cb) {
   Object.assign(out, { kind: 'callback', callback_id: cb.id, callback_data: String(cb.data || '') });
 } else if (m.voice || m.audio) {
@@ -17,6 +18,8 @@ if (cb) {
 } else if (m.photo && m.photo.length) {
   out.kind = 'photo';
   out.photo_file_id = m.photo[m.photo.length - 1].file_id;      // the largest size Telegram offers
+  // several photos sent together: one message each, same media_group_id, the caption on one of them only (D-086)
+  out.media_group_id = m.media_group_id ? String(m.media_group_id) : null;
   out.text = String(m.caption || '').trim();
 } else if (typeof m.text === 'string') {
   out.kind = 'text';

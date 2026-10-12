@@ -1642,7 +1642,7 @@ def tg_channel():
     code_node(wf, "Parse update", "tg_parse.js", [220, 0])
     pg_node(wf, "Context", TG_CONTEXT_SQL, "={{ [ $json.update_id, $json.ext_id, $json.bot ] }}", [440, 0], on_error=None)
     code_node(wf, "Plan", "tg_plan.js", [660, 0])
-    wf.node("Action", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 8, "output": "={{ $json.route }}",
+    wf.node("Action", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 10, "output": "={{ $json.route }}",
                                                    "options": {}}, [880, 0])
     tg_send(wf, "Send message", [3300, 0])
     # 1 consent request with two buttons
@@ -1677,6 +1677,27 @@ def tg_channel():
     code_node(wf, "Call: ask assistant", "tg_call.js", [1320, 0], subst={"__CALL__": "ask assistant"})
     exec_wf(wf, "API: ask assistant", TG_API_WF, "wf.channel.telegram.api", pos=[1540, 0])
     code_node(wf, "Format answer", "tg_answer_format.js", [1760, 0])
+    tg_send(wf, "Send answer", [1980, 0])
+    # photo cards under the answer (D-086): first photo, the next ones blurred, a button for all of them
+    code_node(wf, "Result ids", "tg_result_ids.js", [2200, 0])
+    pg_node(wf, "Result photos", "select app.listing_photo_summary($1::uuid[], 4) as s,"
+            " (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url",
+            "={{ [ $json.ids ] }}", [2420, 0], on_error=None)
+    code_node(wf, "Photo cards", "tg_photo_cards.js", [2640, 0])
+    http_node(wf, "Card image", "POST", "={{ $json.url }}", [2860, 0], body="={{ $json.body }}", fmt="file",
+              timeout="={{ 60000 }}", svc=True, on_error="continueRegularOutput")
+    code_node(wf, "Card message", "tg_card_message.js", [3080, 0])
+    if_node(wf, "More photos?", "={{ $json.more > 0 }}", [3300, 0])
+    tg_node(wf, "Send card with button", {"resource": "message", "operation": "sendPhoto", "chatId": "={{ $json.chat_id }}",
+            "binaryData": True, "binaryPropertyName": "data", "replyMarkup": "inlineKeyboard",
+            "inlineKeyboard": {"rows": [{"row": {"buttons": [
+                {"text": "={{ $json.button }}", "additionalFields": {"callback_data": "={{ $json.callback }}"}}]}}]},
+            "additionalFields": {"caption": "={{ $json.caption }}", "parse_mode": "HTML", "fileName": "card.jpg"}}, [3520, -100])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
+    tg_node(wf, "Send card", {"resource": "message", "operation": "sendPhoto", "chatId": "={{ $json.chat_id }}",
+            "binaryData": True, "binaryPropertyName": "data",
+            "additionalFields": {"caption": "={{ $json.caption }}", "parse_mode": "HTML", "fileName": "card.jpg"}}, [3520, 100])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
     # 6 trace
     code_node(wf, "Call: trace", "tg_call.js", [1100, 150], subst={"__CALL__": "trace"})
     exec_wf(wf, "API: trace", TG_API_WF, "wf.channel.telegram.api", pos=[1320, 150])
@@ -1690,16 +1711,28 @@ def tg_channel():
     if_node(wf, "Created?", "={{ $json.status === 201 }}", [1760, 400])
     code_node(wf, "Listing error", "tg_error_reply.js", [1980, 650], subst={"__NAME__": "Listing error"})
     if_node(wf, "Photo?", "={{ !!$('Plan').first().json.photo_file_id }}", [1980, 400])
-    tg_node(wf, "Download photo", {"resource": "file", "operation": "get", "fileId": "={{ $('Plan').first().json.photo_file_id }}",
-            "download": True, "additionalFields": {}}, [2200, 300])
-    code_node(wf, "Call: presign", "tg_call.js", [2420, 300], subst={"__CALL__": "presign"})
-    exec_wf(wf, "API: presign", TG_API_WF, "wf.channel.telegram.api", pos=[2640, 300])
-    code_node(wf, "Upload request", "tg_upload_request.js", [2860, 300])
+    # several photos sent together (D-086): wait for the album's other messages, then take them all
+    if_node(wf, "Album?", "={{ !!$('Plan').first().json.media_group_id }}", [1980, 200])
+    pg_node(wf, "Record own photo", "select app.telegram_album_add($1, $2::bigint, $3, $4::bigint, $5, true) as r",
+            "={{ [ $('Plan').first().json.bot, $('Plan').first().json.chat_id, $('Plan').first().json.media_group_id,"
+            " $('Plan').first().json.message_id, $('Plan').first().json.photo_file_id ] }}", [2200, 100], on_error=None)
+    wf.node("Wait for album", "n8n-nodes-base.wait", 1.1, {"resume": "timeInterval",
+            "amount": "={{ $('Plan').first().json.album_wait_s }}", "unit": "seconds"}, [2420, 100],
+            webhookId="5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0e03")
+    pg_node(wf, "Claim album", "select app.telegram_album_claim($1, $2::bigint, $3, $4::uuid) as photos",
+            "={{ [ $('Plan').first().json.bot, $('Plan').first().json.chat_id, $('Plan').first().json.media_group_id,"
+            " $('API: create listing').first().json.body.data.listing_id ] }}", [2640, 100], on_error=None)
+    code_node(wf, "Photo list", "tg_photo_list.js", [2860, 200])
+    tg_node(wf, "Download photo", {"resource": "file", "operation": "get", "fileId": "={{ $json.file_id }}",
+            "download": True, "additionalFields": {}}, [3080, 300])
+    code_node(wf, "Call: presign", "tg_call.js", [3300, 300], subst={"__CALL__": "presign"})
+    exec_wf(wf, "API: presign", TG_API_WF, "wf.channel.telegram.api", pos=[3520, 300])
+    code_node(wf, "Upload request", "tg_upload_request.js", [3740, 300])
     wf.node("Upload photo", "n8n-nodes-base.httpRequest", 4.2, {
         "method": "PUT", "url": "={{ $json.url }}", "sendHeaders": True, "specifyHeaders": "json",
         "jsonHeaders": "={{ JSON.stringify($json.headers) }}", "sendBody": True, "contentType": "binaryData", "inputDataFieldName": "data",
         "options": {"timeout": 120000, "response": {"response": {"fullResponse": True, "neverError": True, "responseFormat": "text",
-                                                                  "outputPropertyName": "data"}}}}, [3080, 300])
+                                                                  "outputPropertyName": "data"}}}}, [3960, 300])
     code_node(wf, "Call: analyze", "tg_call.js", [2200, 500], subst={"__CALL__": "analyze"})
     exec_wf(wf, "API: analyze", TG_API_WF, "wf.channel.telegram.api", pos=[2420, 500])
     if_node(wf, "Accepted?", "={{ $json.status === 202 }}", [2640, 500])
@@ -1716,6 +1749,30 @@ def tg_channel():
     exec_wf(wf, "API: get listing", TG_API_WF, "wf.channel.telegram.api", pos=[4620, 400])
     code_node(wf, "Format listing", "tg_listing_format.js", [4840, 500])
     tg_send(wf, "Send listing", [5060, 500])
+    # 8 another photo of an album (D-086): kept for the /annonce message of the same album
+    pg_node(wf, "Record album photo", "select app.telegram_album_add($1, $2::bigint, $3, $4::bigint, $5, false) as r",
+            "={{ [ $json.bot, $json.chat_id, $json.media_group_id, $json.message_id, $json.photo_file_id ] }}", [1100, 800],
+            on_error=None)
+    wf.node("Wait (album photo)", "n8n-nodes-base.wait", 1.1, {"resume": "timeInterval",
+            "amount": "={{ $('Plan').first().json.album_wait_s + 3 }}", "unit": "seconds"}, [1320, 800],
+            webhookId="5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0e04")
+    pg_node(wf, "Album status", "select app.telegram_album_status($1, $2::bigint, $3, $4::bigint) as s",
+            "={{ [ $('Plan').first().json.bot, $('Plan').first().json.chat_id, $('Plan').first().json.media_group_id,"
+            " $('Plan').first().json.message_id ] }}", [1540, 800], on_error=None)
+    code_node(wf, "Album reply", "tg_album_reply.js", [1760, 800])
+    # 9 all the photos of a listing, as one album sent by the relay (D-086)
+    tg_node(wf, "Answer button 9", {"resource": "callback", "operation": "answerQuery", "queryId": "={{ $json.callback_id }}",
+            "additionalFields": {}}, [1100, 1000])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
+    pg_node(wf, "Listing photos", "select app.listing_public_photos($1::uuid, 10) as photos,"
+            " (select title from app.listings where id = $1::uuid and status = 'published') as title,"
+            " (select value #>> '{}' from app.settings where key = 'services.telegram_relay_url') as relay_url",
+            "={{ [ $('Plan').first().json.listing_id ] }}", [1320, 1000], on_error=None)
+    code_node(wf, "Album request", "tg_album_request.js", [1540, 1000])
+    if_node(wf, "Has photos?", "={{ $json.send }}", [1760, 1000])
+    http_node(wf, "Send album", "POST", "={{ $json.url }}", [1980, 950], body="={{ $json.body }}", fmt="json", full=True,
+              never_error=True, timeout="={{ 180000 }}", svc=True, on_error="continueRegularOutput")
+    code_node(wf, "Album sent?", "tg_album_sent.js", [2200, 950])
 
     for a, b in (("Webhook", "Parse update"), ("Parse update", "Context"), ("Context", "Plan"), ("Plan", "Action")):
         wf.link(a, b)
@@ -1733,10 +1790,18 @@ def tg_channel():
                  ("API: withdraw consent", "Done: withdrawn"), ("Done: withdrawn", "Send message"), ("No account", "Send message"),
                  ("Call: set country", "API: set country"), ("API: set country", "Done: country"), ("Done: country", "Send message"),
                  ("Typing", "Call: ask assistant"), ("Call: ask assistant", "API: ask assistant"), ("API: ask assistant", "Format answer"),
-                 ("Format answer", "Send message"),
+                 ("Format answer", "Send answer"), ("Send answer", "Result ids"), ("Result ids", "Result photos"),
+                 ("Result photos", "Photo cards"), ("Photo cards", "Card image"), ("Card image", "Card message"),
+                 ("Card message", "More photos?"),
                  ("Call: trace", "API: trace"), ("API: trace", "Format trace"), ("Format trace", "Send message"),
                  ("Typing (listing)", "Call: create listing"), ("Call: create listing", "API: create listing"),
                  ("API: create listing", "Created?"), ("Listing error", "Send message"),
+                 ("Record own photo", "Wait for album"), ("Wait for album", "Claim album"), ("Claim album", "Photo list"),
+                 ("Photo list", "Download photo"),
+                 ("Record album photo", "Wait (album photo)"), ("Wait (album photo)", "Album status"),
+                 ("Album status", "Album reply"), ("Album reply", "Send message"),
+                 ("Answer button 9", "Listing photos"), ("Listing photos", "Album request"), ("Album request", "Has photos?"),
+                 ("Send album", "Album sent?"), ("Album sent?", "Send message"),
                  ("Download photo", "Call: presign"), ("Call: presign", "API: presign"), ("API: presign", "Upload request"),
                  ("Upload request", "Upload photo"), ("Upload photo", "Call: analyze"),
                  ("Call: analyze", "API: analyze"), ("API: analyze", "Accepted?"), ("Wait notice", "Send wait notice"),
@@ -1748,7 +1813,15 @@ def tg_channel():
     wf.link("Has account?", "No account", 1)
     wf.link("Created?", "Photo?", 0)
     wf.link("Created?", "Listing error", 1)
-    wf.link("Photo?", "Download photo", 0)
+    wf.link("Photo?", "Album?", 0)
+    wf.link("Album?", "Record own photo", 0)
+    wf.link("Album?", "Photo list", 1)
+    wf.link("Action", "Record album photo", 8)
+    wf.link("Action", "Answer button 9", 9)
+    wf.link("Has photos?", "Send album", 0)
+    wf.link("Has photos?", "Send message", 1)
+    wf.link("More photos?", "Send card with button", 0)
+    wf.link("More photos?", "Send card", 1)
     wf.link("Photo?", "Call: analyze", 1)
     wf.link("Accepted?", "Wait notice", 0)
     wf.link("Accepted?", "Listing error", 1)

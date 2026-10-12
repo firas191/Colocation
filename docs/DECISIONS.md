@@ -581,6 +581,29 @@ Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
   benchmark also reports, per answer, the alphabet against the message's, Markdown written by the model, cuts and
   lengths.
 
+### D-086 Telegram photos: albums for /annonce, photo cards in search, all photos on request
+
+- **Albums.** Telegram sends each photo of an album as its own message with the same `media_group_id`; only one
+  carries the caption. Every photo of an album is kept in `app.telegram_album_items` (migration 0017, one day). The
+  `/annonce` message waits `telegram.album_wait_s` (3 s), then takes the album's photos not taken yet, in message
+  order (`app.telegram_album_claim`), and they go through the same presign, upload and analysis as one photo did
+  (one upload slot per photo; at most `media.max_files_per_listing`, and Telegram's own limit of 10 per album). A
+  photo of the album without the caption gets no reply when the album has `/annonce`; if none of the album's
+  messages has it, the first photo gets the usual "how to post" hint once; a photo that arrives after the listing
+  took its album is reported as not added. Not measured: how often a real album's photos arrive more than 3 s apart.
+- **Photo cards under search results** (the first `telegram.search_photo_cards` = 3 results that have photos): the
+  Media service draws one image (`/v1/images/card`): the first photo in full and, under it, the next ones (up to 3)
+  blurred, with "+N" for the photos not shown in full. The bot sends it with n8n's Telegram node (photo upload)
+  under the text answer, with a button "Voir les N photos" (callback `ph:<listing id>`). The strong blur on the strip
+  is presentation only; every photo shown, in the card or later, is already the processed copy (EXIF removed, faces
+  and text blurred, D-070); originals never leave storage.
+- **All the photos** (the button): the Telegram relay sends them as one album. n8n's Telegram node uploads one file
+  per message; its "send media group" takes Telegram file ids or public URLs only, and the photos are not public. The
+  relay holds the bot token already, so it gets an internal endpoint (`POST /v1/send-album`, port 8099, internal
+  token, no host port): it takes the processed copies from the Media service (`/v1/images/public`, keys under
+  `media/` only, at most 1,280 px) and uploads them in one `sendMediaGroup`. n8n never builds a Telegram URL; the
+  relay never logs URLs. Only photos of published listings (`app.listing_public_photos`, moderation ok or blurred).
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

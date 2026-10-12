@@ -21,7 +21,7 @@ from datetime import datetime
 import filetype
 import imagehash
 import numpy as np
-from PIL import ExifTags, Image, ImageFile, ImageOps
+from PIL import ExifTags, Image, ImageDraw, ImageFile, ImageFilter, ImageFont, ImageOps
 
 ALLOWED = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
 
@@ -242,6 +242,52 @@ def vision_copy(data: bytes, max_side: int = 1024, quality: int = 85) -> tuple[b
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=quality, exif=b"", comment=b"", icc_profile=None)
     return buf.getvalue(), img.size[0], img.size[1]
+
+
+def _open_clean(data: bytes) -> Image.Image:
+    limits = Limits()
+    img, _ = decode(data, sniff(data, limits), limits)
+    return img.convert("RGB")
+
+
+def _cover(img: Image.Image, w: int, h: int) -> Image.Image:
+    return ImageOps.fit(img, (w, h), Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+
+
+def card_image(photos: list[bytes], more: int, width: int = 960, quality: int = 85) -> tuple[bytes, int, int]:
+    """A listing's photo card for a chat (D-086): the first photo in full, and under it the next photos blurred (up to 3)
+    with "+N" on the last one, N being the photos not shown in full. Inputs are our own processed copies (EXIF removed,
+    faces and text blurred); they are checked like any image before decoding. One photo: the photo alone."""
+    if not photos:
+        raise ImageRejected("NO_PHOTO", "no photo for the card")
+    first = _open_clean(photos[0])
+    top_h = min(int(width * first.height / first.width), int(width * 0.75))
+    top = _cover(first, width, top_h)
+    rest = photos[1:4]
+    if not rest:
+        canvas = top
+    else:
+        strip_h = width // 4
+        canvas = Image.new("RGB", (width, top_h + strip_h + 6), (255, 255, 255))
+        canvas.paste(top, (0, 0))
+        cell_w = (width - 6 * (len(rest) - 1)) // len(rest)
+        for i, data in enumerate(rest):
+            thumb = _cover(_open_clean(data), cell_w, strip_h).filter(ImageFilter.GaussianBlur(radius=max(8, cell_w // 20)))
+            shade = Image.new("RGB", thumb.size, (0, 0, 0))
+            thumb = Image.blend(thumb, shade, 0.55 if (i == len(rest) - 1 and more > 0) else 0.35)   # "+N" stays readable
+            canvas.paste(thumb, (i * (cell_w + 6), top_h + 6))
+        label = f"+{more}" if more > 0 else ""
+        if label:
+            draw = ImageDraw.Draw(canvas)
+            font = ImageFont.load_default(size=max(24, strip_h // 3))
+            x0 = (len(rest) - 1) * (cell_w + 6)
+            box = draw.textbbox((0, 0), label, font=font)
+            tw, th = box[2] - box[0], box[3] - box[1]
+            draw.text((x0 + (cell_w - tw) // 2 - box[0], top_h + 6 + (strip_h - th) // 2 - box[1]), label, font=font,
+                      fill=(255, 255, 255))
+    buf = io.BytesIO()
+    canvas.save(buf, format="JPEG", quality=quality, exif=b"", comment=b"", icc_profile=None)
+    return buf.getvalue(), canvas.size[0], canvas.size[1]
 
 
 def hamming(a_hex: str, b_hex: str) -> int:

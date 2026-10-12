@@ -1511,6 +1511,23 @@ path), `f05` turn 2.
 Decision: v3 active. It misses D-085's rule by one turn of tool choice (44 of 45 against 45 of 45), an extra lookup
 after a closing message; it equals or beats v1 on every other row, and the owner agreed to the exception.
 
+## T-52 Telegram photos: albums, photo cards, all photos (2026-10-12) - PASS in the sandbox (D-086)
+
+Sandbox as in T-41, with the mock Telegram API (it now reads photo uploads, including n8n's chunked ones), the relay
+with its album sender, the Media service and the Ollama mock. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `45-db-tests.log` | pgTAP 378 in 16 files; new `160_telegram_photos.sql` (13): album photo recorded once, claimed in message order and only once, another bot's photo left alone, late photo, album without the command (first photo, no command), public photos oldest first, rejected photos and drafts not public, summary keeps positions and limits keys, api_user refused. Migration 0017 rolled back and applied again |
+| `46-js-unit-tests.log` | node 130 pass, 0 fail; workflow JSON up to date |
+| `47-unit-tests.log` | 35 passed (unchanged) |
+| `48-media-service-tests.log` | 31 passed; new: the card (960 px wide, the strip under the first photo measurably blurred, one photo gives the photo alone, only `media/` keys, at most 4 keys, internal token required) and the public copy (1,280 px, `media/` only, 404) |
+| `49-telegram-relay-tests.log` | 15 passed; new `test_album.py` (10): several photos in one `sendMediaGroup` with `attach://` parts and the caption on the first, one photo as `sendPhoto`, Media service or Telegram failure reported, bad requests refused (chat id, 0 or 11 photos, keys outside `media/`, `..`, long caption), internal token required, the bot token never in logs or answers |
+| `50-contract-proxy-photos.log` | full suite through the proxy: 137 passed, 1 skipped. New `test_telegram_photos.py` (4): an album of 3 photos with `/annonce` on the first gives one listing with 3 photos and no hint for the others; an album without the command gets one hint; with automatic publication on, a 4-photo listing is found by a search from another chat, which gets a card (JPEG, caption with number and rent, button "Voir les 4 photos" with `ph:<id>`), and the button sends the 4 photos as one album (JPEGs, caption on the first); the button of an unknown listing says there is no photo |
+
+Not measured: albums and cards with the real Telegram API on the PC; how often a real album's photos arrive more
+than 3 s apart.
+
 ---
 
 ## Not run

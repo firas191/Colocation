@@ -140,3 +140,37 @@ def test_eval_photos_are_processed_and_stored_under_eval_only(client, s3):
     assert r.status_code == 422 and r.json()["error"]["details"][0]["field"] == "key"
     r = client.post("/v1/eval/photos", json={"key": "eval/p7/b.jpg", "image_b64": "@" * 200}, headers=H)
     assert r.status_code == 422 and r.json()["error"]["details"][0]["field"] == "image_b64"
+
+
+def test_photo_card_first_photo_and_the_others_blurred(client, s3):
+    """D-086: the first photo in full, the next ones blurred under it with "+N"; only processed listing photos."""
+    import numpy as np
+    for i, colour in enumerate([(200, 40, 40), (40, 200, 40), (40, 40, 200), (200, 200, 40)]):
+        img = scene(w=1200, h=900)
+        img.paste(Image.new("RGB", (300, 300), colour), (450, 300))
+        s3.put(f"media/l3/p{i}.jpg", jpeg(img), "image/jpeg")
+    keys = [f"media/l3/p{i}.jpg" for i in range(4)]
+    r = client.post("/v1/images/card", json={"keys": keys, "total": 6}, headers=H)
+    assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg", r.text
+    card = Image.open(io.BytesIO(r.content))
+    assert card.format == "JPEG" and card.size[0] == 960 and card.size[1] > 720 and not card.getexif()
+    top_h = 720
+    strip = np.asarray(card.convert("L").crop((0, top_h + 6, 300, card.size[1])), dtype=float)
+    top = np.asarray(card.convert("L").crop((0, 0, 960, top_h)), dtype=float)
+    lap = lambda a: np.abs(np.diff(a, axis=0)).mean() + np.abs(np.diff(a, axis=1)).mean()   # noqa: E731
+    assert lap(strip) < lap(top) / 2                                       # the strip is blurred, the top photo is not
+    one = client.post("/v1/images/card", json={"keys": keys[:1], "total": 1}, headers=H)
+    assert one.status_code == 200 and Image.open(io.BytesIO(one.content)).size == (960, 720)   # one photo: no strip
+    bad = client.post("/v1/images/card", json={"keys": ["uploads/x/y.jpg"], "total": 1}, headers=H)
+    assert bad.status_code == 422 and bad.json()["error"]["details"][0]["field"] == "keys"
+    assert client.post("/v1/images/card", json={"keys": keys + keys[:1], "total": 5}, headers=H).status_code == 422
+    assert client.post("/v1/images/card", json={"keys": keys, "total": 6}).status_code == 401
+
+
+def test_public_photo_is_a_resized_processed_copy(client, s3):
+    s3.put("media/l4/p.jpg", jpeg(scene(w=2400, h=1800)), "image/jpeg")
+    r = client.post("/v1/images/public", json={"key": "media/l4/p.jpg"}, headers=H)
+    assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg"
+    assert Image.open(io.BytesIO(r.content)).size == (1280, 960)
+    assert client.post("/v1/images/public", json={"key": "eval/p7/a.jpg"}, headers=H).status_code == 422
+    assert client.post("/v1/images/public", json={"key": "media/none.jpg"}, headers=H).status_code == 404

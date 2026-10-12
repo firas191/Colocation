@@ -14,7 +14,7 @@ sections 5 and 8; deviations are in DECISIONS.md.
 | `ollama` | Embeddings (bge-m3); the local LLM qwen3.5:4b for P1 to P3 and, with images, P7 (D-081) | compose network |
 | `media` (FastAPI) | Photo processing (type, size, EXIF strip, hashes, blurring, metrics), presigned uploads, the smaller copy of a photo for P7 (`/v1/images/vision`), evaluation photos (`/v1/eval/photos`, keys under `eval/` only). Compute only; reads and writes objects, no database (D-070, D-071) | compose network, internal token |
 | `text` (FastAPI) | Language identification (GlotLID) and PII masking with optional NER (D-074, D-075) | compose network, internal token |
-| `telegram` | Long-polling relay from the Telegram Bot API to n8n's internal webhook (D-079) | outgoing only |
+| `telegram` | Long-polling relay from the Telegram Bot API to n8n's internal webhook (D-079); sends a listing's photos as one album when n8n asks (`POST /v1/send-album`, D-086) | outgoing to Telegram; 8099 on the internal network only |
 | `tei` (Text Embeddings Inference, CPU) | multilingual-e5-large embeddings and the XLM-RoBERTa tokenizer used for chunking | compose network |
 | one-shot: `db-bootstrap`, `n8n-setup`, `ollama-pull` | migrations, role passwords, settings, API keys; credential and workflow import; model pull | — |
 | profiles: `queue` (Redis), `test` (test runner, fixture file server) | load tests later; contract and ingestion tests | — |

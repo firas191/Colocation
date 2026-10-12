@@ -240,6 +240,8 @@ services:
       TELEGRAM_API_BASE: https://api.telegram.org
       N8N_TELEGRAM_URL: http://n8n:5678/webhook/telegram/update
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?set in .env (scripts/windows/setup.ps1 -AddMissing)}
+      MEDIA_URL: http://media:8000                    # processed photos for albums (D-086)
+      RELAY_PORT: "8099"                              # internal network only: n8n asks for albums here
     restart: unless-stopped
 
   # Queue mode (main + workers) is for the load tests of phase 9. Nothing on the

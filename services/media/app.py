@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import Request
+from fastapi import Request, Response
 from pydantic import BaseModel, Field, field_validator
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -126,6 +126,56 @@ def vision_copy(body: VisionIn):
         raise ServiceError("VALIDATION_FAILED", e.message, [{"field": "image", "issue": e.code}])
     return {"key": body.key, "mime": "image/jpeg", "width": w, "height": h, "bytes": len(out),
             "image_b64": base64.b64encode(out).decode("ascii")}
+
+
+def _listing_photo_key(v: str) -> str:
+    v = _key(v)
+    if not v.startswith("media/"):
+        raise ValueError("only processed listing photos (media/...) are sent to chats")
+    return v
+
+
+class CardIn(BaseModel):
+    """A listing's photo card for Telegram (D-086): the processed copies of its first photos, and how many there are."""
+    keys: list[str] = Field(min_length=1, max_length=4)
+    total: int = Field(ge=1, le=50)
+    width: int = Field(960, ge=320, le=1600)
+    model_config = {"extra": "forbid"}
+
+    @field_validator("keys")
+    @classmethod
+    def _ks(cls, v):
+        return [_listing_photo_key(k) for k in v]
+
+
+@app.post("/v1/images/card")
+def photo_card(body: CardIn):
+    photos = [storage.get(k, 15 * 1024 * 1024) for k in body.keys]
+    try:
+        out, w, h = imaging.card_image(photos, more=max(0, body.total - 1), width=body.width)
+    except imaging.ImageRejected as e:
+        raise ServiceError("VALIDATION_FAILED", e.message, [{"field": "image", "issue": e.code}])
+    return Response(out, media_type="image/jpeg", headers={"X-Image-Width": str(w), "X-Image-Height": str(h),
+                                                          "Content-Disposition": 'inline; filename="card.jpg"'})
+
+
+class PublicPhotoIn(BaseModel):
+    """One processed listing photo, at most 1,280 px, for sending to a chat (D-086)."""
+    key: str
+    max_side: int = Field(1280, ge=256, le=2048)
+    model_config = {"extra": "forbid"}
+
+    _k = field_validator("key")(lambda cls, v: _listing_photo_key(v))
+
+
+@app.post("/v1/images/public")
+def public_photo(body: PublicPhotoIn):
+    data = storage.get(body.key, 15 * 1024 * 1024)
+    try:
+        out, w, h = imaging.vision_copy(data, body.max_side, 85)
+    except imaging.ImageRejected as e:
+        raise ServiceError("VALIDATION_FAILED", e.message, [{"field": "image", "issue": e.code}])
+    return Response(out, media_type="image/jpeg", headers={"X-Image-Width": str(w), "X-Image-Height": str(h)})
 
 
 class EvalPhotoIn(BaseModel):

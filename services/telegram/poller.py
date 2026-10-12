@@ -6,8 +6,10 @@ unchanged, to the n8n workflow wf.channel.telegram (internal webhook, X-Internal
 Telegram (the next offset) only after n8n accepted it, so nothing is lost while n8n is down; n8n drops repeats by
 update_id. Nothing on this machine is reachable from the internet: every connection starts here.
 
+Since D-086 the relay also sends a listing's photos as one album when n8n asks (album.py, port RELAY_PORT).
+
 Environment: TELEGRAM_BOT_TOKEN (no token: the relay waits, the rest of the stack is unaffected), TELEGRAM_API_BASE,
-N8N_TELEGRAM_URL, INTERNAL_SERVICE_TOKEN, POLL_TIMEOUT_S (default 50).
+N8N_TELEGRAM_URL, INTERNAL_SERVICE_TOKEN, POLL_TIMEOUT_S (default 50), MEDIA_URL, RELAY_PORT (default 8099).
 """
 from __future__ import annotations
 
@@ -27,7 +29,9 @@ def config() -> dict:
             "api": os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org").rstrip("/"),
             "n8n": os.environ.get("N8N_TELEGRAM_URL", "http://n8n:5678/webhook/telegram/update"),
             "internal": os.environ.get("INTERNAL_SERVICE_TOKEN", ""),
-            "timeout": int(os.environ.get("POLL_TIMEOUT_S", "50"))}
+            "timeout": int(os.environ.get("POLL_TIMEOUT_S", "50")),
+            "media": os.environ.get("MEDIA_URL", "http://media:8000").rstrip("/"),
+            "port": int(os.environ.get("RELAY_PORT", "8099"))}
 
 
 def get_updates(c: httpx.Client, cfg: dict, offset: int | None) -> list[dict]:
@@ -86,4 +90,6 @@ def run(max_rounds: int | None = None, client: httpx.Client | None = None, sleep
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)       # httpx logs request URLs, which contain the token
+    import album
+    album.serve(config(), config()["port"])
     sys.exit(run())

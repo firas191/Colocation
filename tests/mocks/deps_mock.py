@@ -376,6 +376,10 @@ class H(BaseHTTPRequestHandler):
             fid = params.get("file_id")
             return self.reply(200, {"ok": True, "result": {"file_id": fid, "file_path": f"photos/{fid}.jpg",
                                                            "file_size": len(tg["files"].get(fid, b""))}})
+        if method == "sendMediaGroup":
+            media = params.get("media") or []
+            return self.reply(200, {"ok": True, "result": [{"message_id": mid * 100 + i, "chat": {"id": params.get("chat_id")},
+                                                           "date": int(time.time())} for i in range(len(media))]})
         if method in ("sendMessage", "editMessageText", "sendPhoto"):
             return self.reply(200, {"ok": True, "result": {"message_id": mid, "chat": {"id": params.get("chat_id")},
                                                            "date": int(time.time()), "text": params.get("text")}})
@@ -401,8 +405,20 @@ class H(BaseHTTPRequestHandler):
             return self.reply(200, b"", "text/plain")
         self.reply(404, {"error": "not found"})
 
+    def read_body(self):
+        if "chunked" in (self.headers.get("Transfer-Encoding") or "").lower():   # n8n streams multipart uploads
+            out = b""
+            while True:
+                size = int(self.rfile.readline().strip().split(b";")[0] or b"0", 16)
+                if size == 0:
+                    self.rfile.readline()
+                    return out
+                out += self.rfile.read(size)
+                self.rfile.readline()
+        return self.rfile.read(int(self.headers.get("Content-Length") or 0))
+
     def do_POST(self):
-        raw = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        raw = self.read_body()
         if kind == "telegram":
             if self.path.startswith("/_mock/telegram/files/"):
                 tg["files"][self.path.rsplit("/", 1)[-1]] = raw
@@ -417,6 +433,25 @@ class H(BaseHTTPRequestHandler):
             ctype = self.headers.get("Content-Type", "")
             if "json" in ctype:
                 params = json.loads(raw or b"{}")
+            elif "multipart/form-data" in ctype:     # photo uploads (n8n's sendPhoto, the relay's sendMediaGroup, D-086)
+                from email.parser import BytesParser
+                from email.policy import HTTP
+                msg = BytesParser(policy=HTTP).parsebytes(b"Content-Type: " + ctype.encode() + b"\r\n\r\n" + raw)
+                params = {}
+                for part in msg.iter_parts():
+                    name = part.get_param("name", header="content-disposition")
+                    payload = part.get_payload(decode=True) or b""
+                    if part.get_filename():
+                        params[name] = {"file": part.get_filename(), "bytes": len(payload), "content_type": part.get_content_type(),
+                                        "jpeg": payload[:2] == b"\xff\xd8"}
+                    else:
+                        params[name] = payload.decode("utf-8", "replace")
+                for k in ("media", "reply_markup"):
+                    if isinstance(params.get(k), str):
+                        try:
+                            params[k] = json.loads(params[k])
+                        except ValueError:
+                            pass
             else:
                 from urllib.parse import parse_qs
                 params = {k: v[0] for k, v in parse_qs(raw.decode(errors="replace")).items()}
