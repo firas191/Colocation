@@ -1528,6 +1528,42 @@ with its album sender, the Media service and the Ollama mock. Logs in `reports/p
 Not measured: albums and cards with the real Telegram API on the PC; how often a real album's photos arrive more
 than 3 s apart.
 
+## T-53 A5 Legal agent (2026-10-12) - PASS in the sandbox (D-087); not yet run on the real model
+
+Sandbox as in T-52, with the Ollama mock (its Legal agent answers: search with the message, then the first sentence of
+the first excerpt with [1]; markers for not found, conflict, a citation of nothing retrieved, a number no excerpt
+gives, no search, two searches). The knowledge base of the tests is synthetic (test jurisdiction QL: a "law" of three
+articles and a "blog"; one global "law" for Telegram), embedded with the mock's embeddings. These runs check the
+wiring, numbering, checks and abstentions, not the quality of answers. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `51-db-tests.log` | pgTAP 395 in 17 files; new `170_legal_agent.sql` (17): context (own session, 8,192 tokens, 2 turns, notice version), search of the country's and global sources and never another country's, numbering from 1, article from the structure-aware chunk that overlaps most, a known excerpt keeps its number within and across requests, the previous request's excerpts still citable, lexical without a vector, no excerpt below `legal.min_similarity`, follow-up to the most recent conversation or none, consent withdrawn forgets it |
+| `52-js-unit-tests.log` | node 136 pass, 0 fail (new `legal_check.test.js`: tokens, marker forms, renumbering and dropped markers, marker after a sentence end, uncited sentences); workflow JSON up to date |
+| `53-contract-proxy-legal.log` | full suite through the proxy: 184 passed, 1 skipped. New `test_legal_agent.py` (12): an answer cites [1] and [2] with title, URL, type, reliability, article and retrieval date, trace step without text and with the excerpts retrieved, memory in its own session; not found, a citation of nothing retrieved, a number no excerpt gives and an answer without a search are abstentions with their reason; disagreeing sources flagged; numbers kept across two searches and a follow-up routed to the Legal agent; agent failure is a 503; switched off says "not available yet"; consent withdrawn forgets the legal conversation; Telegram shows the answer, the numbered sources with link, article, type and date, and the notice; "not found" names the country |
+
+Also run: `scripts/legal_bench.py` end to end on two made-up questions (one answered, one abstained) to check the
+script and its outputs; those figures are not results.
+
+Not measured: everything about the real model (answers, abstention and conflict rates, citation precision,
+faithfulness, latency with the 8,192-token context on the GTX 1650). To run on the PC: `p4.ps1 -Step legal-bench`.
+
+## T-54 Owner assistant and PATCH /v1/listings/:id (2026-10-12) - PASS in the sandbox (D-088); not yet run on the real model
+
+Sandbox as in T-53, with the Ollama mock's owner assistant (it lists the listings, then proposes what the message
+says: "N dt" the rent, "photo N", "louée", "wifi"; a marker gives the rent in millimes). Test listings are written
+directly in the test jurisdiction QX, and in TN for Telegram users. These runs check the wiring, the proposal and
+its confirmation, the database checks and the Telegram buttons, not the model. Logs in `reports/phase4/`.
+
+| Log | Result |
+|---|---|
+| `54-db-tests.log` | pgTAP 425 in 18 files; new `180_owner_agent.sql` (30): a valid change with before/after in main units and storage in millimes, another owner's listing not found, a rent in millimes out of range, the same value is no change, unknown field, unknown amenity, a rejected photo not counted, place not in the gazetteer, a draft not published by a change, a past date; listings numbered most recent first with what a draft misses, photos without the rejected one, no title or description; a proposal stored and nothing written; confirmation writes, returns the removed photo's key, and works once; a place sets neighbourhood, city and asks for a new embedding; archived; follow-up to the owner conversation |
+| `55-js-unit-tests.log` | node 144 pass, 0 fail (new `owner_change.test.js`: amounts as written, tool arguments to the PATCH body with empty and unreadable fields left out and a rule about a person dropped, the before/after lines shown in Telegram); workflow JSON up to date |
+| `56-contract-proxy-owner.log` | full suite through the proxy: 194 passed, 1 skipped. New `test_owner_agent.py` (10): a rent change proposed (tools my_listings then propose_change, nothing written), confirmed with PATCH `{change_id}` once and 409 the second time, trace step without the values; a rent in millimes refused by the database; a photo removed (row and storage); a follow-up adds the wifi to the same listing; a user without listings gets the "/annonce" hint; PATCH with fields (place, furnished, house rules; embedded again), invalid fields 422, another owner 404; a draft published once its rent is given; "louée" archives; Telegram: the proposal with "Confirmer" and "Annuler", confirm writes and a second press says it is no longer valid, cancel writes nothing |
+
+Not measured: everything about the real model (right field and value, refusals, no change when none was asked,
+latency). To run on the PC: `p4.ps1 -Step owner-bench`.
+
 ---
 
 ## Not run
@@ -1543,3 +1579,5 @@ than 3 s apart.
 | Reproduction from a clean machine using README only | T-13 ran in the owner's working folder, not a fresh clone | before submission (phase 9) |
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |
+| Owner assistant on the real model | built in the sandbox (T-54) | `p4.ps1 -Step owner-bench` on the PC |
+| Legal agent on the real model (spec 10.7 figures) | built in the sandbox (T-53) | `p4.ps1 -Step legal-bench` on the PC, then the faithfulness sample by hand |

@@ -604,6 +604,83 @@ Spec 11.2 steps 5 and 6, 9.4 P7. Choices:
   `media/` only, at most 1,280 px) and uploads them in one `sendMediaGroup`. n8n never builds a Telegram URL; the
   relay never logs URLs. Only photos of published listings (`app.listing_public_photos`, moderation ok or blurred).
 
+### D-087 A5 Legal agent: an AI Agent over the knowledge base, answers only with citations
+
+Asked by the owner after the Match agent (D-084), ahead of the phase order: spec 17 puts the Legal agent in phase 6,
+and phase 4 is still open. Only the TN pack exists (plus global sources); FR and GB packs come later, from primary
+sources fetched with their URL and date.
+
+- **Shape.** Same pattern as the Match agent: n8n's AI Agent node (`wf.legal.agent`), the Ollama chat model
+  (`llm.default_model`, thinking off, temperature 0), a Postgres chat memory in its own session
+  (`legal:user:<id>`, so search turns and legal turns do not share context) and one workflow tool, `search_law`
+  (`wf.legal.tool_search`). The router sends `legal_question` to it (Switch output 5) when `legal.agent_enabled`;
+  off, the answer is "not available yet" as before. No fixed path behind it: when the agent fails the request
+  answers 503. A message P1 reads as smalltalk or unclear goes to the agent of the most recent conversation
+  (`app.agent_followup`, within `match.followup_minutes`).
+- **Retrieval.** The best configuration measured in RETRIEVAL_EVAL (T-21): fixed_500_50 chunks, bge-m3, dense,
+  top 5 (`legal.retrieval`), country plus global sources (`kb.search_chunks`). No reranker: none was built or
+  measured. The query is the one the model writes (the prompt asks for legal wording); embedded through Ollama
+  like the knowledge base; lexical if the embedding fails. Fixed chunks carry no article number, so the citation
+  takes the article reference of the structure-aware chunk that overlaps it most.
+- **Context size.** Five chunks of up to 500 tokens do not fit next to the system message, memory and answer in
+  4,096 tokens, so the agent's calls use `legal.num_ctx` = 8192 and a memory of 2 turns (a turn with a search
+  stores its excerpts). Not measured yet: the latency and GPU/CPU split this costs on the GTX 1650, and the reload
+  when Ollama alternates between 4,096 (other prompts) and 8,192.
+- **Numbering.** `app.legal_search` numbers the excerpts [1], [2], ... and stores them (`ai.legal_sessions`).
+  Numbers continue across the messages of a conversation and an excerpt found again keeps its number, so a number
+  the model sees in its memory still means the same excerpt. Excerpts of the current and the previous request are
+  citable.
+- **Output: text with markers, not the JSON of spec 10.6.** The AI Agent node's final answer is text, and asking a
+  4B model to fill a JSON schema after tool calls adds a failure mode. The prompt (P5_legal_answerer v1) asks for
+  plain text with [n] after each claim, `[NOT_FOUND]` when the excerpts do not answer, `[CONFLICT]` when they
+  disagree. The structure is rebuilt in code (`legal_output.js`, `lib/legal_check.js`): markers of excerpts not
+  retrieved are removed and the rest renumbered 1..k; `citations` carries title, URL, source type, reliability,
+  article, retrieval date. `claims` and `positions` of spec 10.6 are not produced; the conflict flag is.
+- **Abstention** (status `abstained`, `abstain_reason`): the model said `[NOT_FOUND]`; it answered without
+  searching; no valid citation was left; or a number in the answer is in no excerpt, message or memory (a wrong
+  delay or amount is worse than no answer). A similarity threshold (`legal.min_similarity`) can withhold weak
+  excerpts; it is 0 (off) until tuned on the evaluation set as spec 10.6 asks: `scripts/legal_bench.py` records
+  the best similarity of each question and what each threshold would have done.
+- **Notice.** Every legal answer in Telegram ends with the notice (`legal.notice_version` = legal-notice-v1):
+  general information from the cited sources, not legal advice, and for a dispute or an eviction a lawyer or a
+  legal aid service. No organisation is named: none was checked.
+- **Measured in the sandbox only** (mock model, T-53). The benchmark on the PC (`p4.ps1 -Step legal-bench`, the 48
+  questions of tn_retrieval v2) gives the spec 10.7 figures: correct and false abstention, conflict on the 10
+  contradiction questions, citation precision against the gold spans, latency; faithfulness by hand on a sample.
+
+### D-088 Owner assistant: changes by conversation, proposed by an agent, written only after the owner confirms
+
+Asked by the owner after the Legal agent. Spec 2.4 journey B step 6 says the owner sees what was extracted and can
+correct it, and spec 5.2 lists `PATCH /v1/listings/:id`; neither existed. Both are built here, sharing one check.
+
+- **Shape.** n8n AI Agent node (`wf.owner.agent`), the Ollama chat model (`llm.default_model`, thinking off,
+  temperature 0, `llm.num_ctx`), its own chat memory (`owner:user:<id>`), two workflow tools: `my_listings` (the
+  user's listings, numbered, most recent first; fields only, no title or description) and `propose_change` (listing
+  number plus one text argument per field). Prompt P11_owner_assistant v1 (not in the spec's prompt list; the next
+  free number). The router's `post_listing` goes to it when `owner.agent_enabled` and the user has listings;
+  otherwise the "/annonce" hint as before. A message P1 reads as smalltalk or unclear goes to it when the owner
+  conversation is the most recent one within `match.followup_minutes`; a listing created or changed in that time
+  counts, so "le loyer est 350 DT" after a draft that missed its rent reaches it.
+- **The model never writes.** `propose_change` checks the change (`app.listing_change_check`) and stores it as pending
+  (`ai.listing_changes`, valid `owner.change_minutes` = 30). Nothing changes until the owner confirms: in Telegram a
+  "Confirmer" button under the proposal, in the API `PATCH /v1/listings/:id` with `{change_id}`. Confirming checks
+  again and applies once (409 afterwards). What the channel shows as the change comes from the database
+  (before -> after per field), not from the model's sentence. A small model misreading "350" as a new rent shows up
+  there before anything is written.
+- **Checks, the same for PATCH and proposals** (in SQL): owner only (another user's listing is 404); known fields;
+  rent and deposit in the currency's main unit and inside `listing.rent_range` (catches millimes, as D-076); dates
+  from yesterday to two years ahead; a place must be found in the gazetteer of the listing's country and sets
+  neighbourhood, city and location; amenities from P3's vocabulary; house rules smoking, pets, guests, parties only
+  (no rule about persons); photos by number, oldest first, rejected ones not counted; status archived (rented,
+  withdrawn) or published again for a listing that was published before. A draft is then tried for automatic
+  publication (D-083, only when that setting is on).
+- **After writing:** removed photos are deleted from storage (Media service); a published listing is embedded again
+  when its place changed or it was just published. Every change is added to `extraction.owner_changes` and the
+  audit log.
+- **Not done:** title and description are not editable by the assistant or PATCH (owner prose; to decide with the
+  frontend). No measurement on the real model yet: `scripts/owner_bench.py` (24 requests of
+  `eval/datasets/owner_agent_v1.jsonl`, labels written by me) scores the proposals.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

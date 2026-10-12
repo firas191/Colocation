@@ -697,6 +697,12 @@ MATCH_WF = "fsMatchSearch001"
 MATCH_AGENT_WF = "fsMatchAgent0001"
 MATCH_TOOL_SEARCH_WF = "fsMatchToolSrch1"
 MATCH_TOOL_LISTING_WF = "fsMatchToolList1"
+LEGAL_AGENT_WF = "fsLegalAgent0001"
+LEGAL_TOOL_SEARCH_WF = "fsLegalToolSrch1"
+OWNER_AGENT_WF = "fsOwnerAgent0001"
+OWNER_TOOL_LISTINGS_WF = "fsOwnerToolList1"
+OWNER_TOOL_CHANGE_WF = "fsOwnerToolChg01"
+LISTING_APPLY_WF = "fsListingApply01"
 OLLAMA_CRED = {"ollamaApi": {"id": "fsCredOllama0001", "name": "Ollama (local)"}}
 EMBED_WF = "fsListingsEmb001"
 FX_WF = "fsFxRefresh00001"
@@ -1001,6 +1007,233 @@ def match_agent():
     return wf
 
 
+LAW_TOOL_DESC = ("Search the laws and guides of the user's country, and general guides, for excerpts about renting. Input: a short "
+                 "search query in the language of the question, with the words a law would use. Returns numbered excerpts "
+                 "[n] with their source; cite them by their number.")
+
+
+def legal_tool_search():
+    """Tool of the A5 Legal agent: the agent's query -> bge-m3 embedding -> knowledge-base search (jurisdiction plus
+    global sources, legal.retrieval) -> excerpts numbered for the conversation and stored (ai.legal_sessions, D-087)."""
+    wf = WF(LEGAL_TOOL_SEARCH_WF, "wf.legal.tool_search", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("query", "string"), ("session_id", "string"), ("user_id", "string"), ("request_id", "string"),
+                         ("jurisdiction", "string")]), [0, 0])
+    pg_node(wf, "Settings", "select (select jsonb_object_agg(key, value #>> '{}') from app.settings"
+            " where key in ('ollama.base_url', 'llm.keep_alive', 'legal.retrieval')) as cfg", None, [220, 0], on_error=None)
+    code_node(wf, "Plan", "legal_tool_plan.js", [440, 0])
+    http_node(wf, "Embed query", "POST", "={{ $json.url }}", [660, 0], body="={{ JSON.stringify($json.body) }}",
+              fmt="json", full=True, never_error=True, timeout="={{ 30000 }}", on_error="continueRegularOutput")
+    code_node(wf, "Search input", "legal_tool_vector.js", [880, 0])
+    pg_node(wf, "Search", "select app.legal_search($1, $2::uuid, $3::uuid, $4, $5, $6) as r", "={{ $json.params }}",
+            [1100, 0], on_error=None)
+    code_node(wf, "Tool answer", "legal_tool_answer.js", [1320, 0])
+    for a, b in (("Start", "Settings"), ("Settings", "Plan"), ("Plan", "Embed query"), ("Embed query", "Search input"),
+                 ("Search input", "Search"), ("Search", "Tool answer")):
+        wf.link(a, b)
+    return wf
+
+
+def legal_agent():
+    """A5 Legal agent (spec 8.2, 10.6): an n8n AI Agent node with the local chat model, its own Postgres chat memory
+    (session 'legal:user:<id>') and the search_law tool. System message from the prompt registry (P5_legal_answerer).
+    Input {text (masked), language, script, jurisdiction, today, user_id, request_id}. Output {ok, status (answered |
+    abstained), answer, citations, conflict, abstain_reason, missing_information, notice_version, steps} (D-087)."""
+    wf = WF(LEGAL_AGENT_WF, "wf.legal.agent", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", "select app.legal_agent_context($1::uuid) as c", "={{ [ $json.user_id ] }}", [220, 0], on_error=None)
+    code_node(wf, "Agent input", "agent_input.js", [440, 0])
+    if_node(wf, "Prompt ok?", "={{ $json.ok }}", [660, 0])
+    wf.node("Legal agent", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+        "promptType": "define", "text": "={{ $json.text }}", "hasOutputParser": False,
+        "options": {"systemMessage": "={{ $json.system }}", "maxIterations": "={{ $json.max_iterations }}",
+                    "returnIntermediateSteps": True}}, [900, -100], onError="continueRegularOutput")
+    wf.node("Ollama Chat Model", "@n8n/n8n-nodes-langchain.lmChatOllama", 1, {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {"temperature": 0, "think": False, "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+                    "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+                    "numPredict": "={{ $('Agent input').first().json.num_predict }}"}},
+        [760, 140], credentials=OLLAMA_CRED)
+    wf.node("Chat memory", "@n8n/n8n-nodes-langchain.memoryPostgresChat", 1.3, {
+        "sessionIdType": "customKey", "sessionKey": "={{ $('Agent input').first().json.session_id }}",
+        "tableName": "agent_memory.chat_histories",
+        "contextWindowLength": "={{ $('Agent input').first().json.memory_turns }}"}, [900, 140], credentials=PG_CRED)
+    ai = "$('Agent input').first().json"
+    wf.node("search_law", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": LAW_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": LEGAL_TOOL_SEARCH_WF, "mode": "id", "cachedResultName": "wf.legal.tool_search"},
+        "workflowInputs": tool_mapping([
+            ("query", "string", "={{ $fromAI('query', 'A short search query in the language of the question', 'string') }}"),
+            ("session_id", "string", "={{ %s.session_id }}" % ai), ("user_id", "string", "={{ %s.user_id }}" % ai),
+            ("request_id", "string", "={{ %s.request_id }}" % ai),
+            ("jurisdiction", "string", "={{ %s.jurisdiction || '' }}" % ai)])}, [1040, 140])
+    pg_node(wf, "Excerpts", "select app.legal_sources_of($1, $2::uuid) as s",
+            "={{ [ $('Agent input').first().json.session_id, $('Agent input').first().json.request_id ] }}", [1180, -100],
+            on_error=None)
+    code_node(wf, "Check answer", "legal_output.js", [1400, -100])
+    code_node(wf, "No prompt", "agent_prompt_missing.js", [900, 260])
+    wf.link("Start", "Context")
+    wf.link("Context", "Agent input")
+    wf.link("Agent input", "Prompt ok?")
+    wf.link("Prompt ok?", "Legal agent", 0)
+    wf.link("Prompt ok?", "No prompt", 1)
+    wf.link("Legal agent", "Excerpts")
+    wf.link("Excerpts", "Check answer")
+    wf.ai_link("Ollama Chat Model", "Legal agent", "ai_languageModel")
+    wf.ai_link("Chat memory", "Legal agent", "ai_memory")
+    wf.ai_link("search_law", "Legal agent", "ai_tool")
+    return wf
+
+
+OWNER_LIST_DESC = ("The user's listings, numbered (1 is the most recent): status, rent, deposit, bills, furnished, availability, "
+                   "bedrooms, place, amenities, house rules, number of photos, and what is missing for publication.")
+OWNER_CHANGE_DESC = ("Propose a change to one of the user's listings. Give the listing number and only the fields to change; "
+                     "leave the others empty. Nothing is written: the user confirms with a button. Returns what would change, "
+                     "or why it is refused.")
+OWNER_FIELDS = [
+    ("rent", "New rent, a number in the listing currency (400 for 400 dinars)"),
+    ("deposit", "New deposit, a number in the listing currency"),
+    ("bills_included", "yes or no"),
+    ("furnished", "yes or no"),
+    ("available_from", "Date from which it is free, YYYY-MM-DD"),
+    ("bedrooms", "Number of bedrooms"),
+    ("place", "Neighbourhood or town"),
+    ("add_amenities", "Amenity codes to add, separated by commas"),
+    ("remove_amenities", "Amenity codes to remove, separated by commas"),
+    ("house_rules", "Rules such as smoking=no, pets=yes"),
+    ("remove_photo", "Number of the photo to remove"),
+    ("status", "archived (rented or withdrawn) or published (show an archived listing again)"),
+]
+
+
+def owner_tool_listings():
+    """Tool of the owner assistant: the user's listings, numbered for the conversation (ai.owner_sessions, D-088)."""
+    wf = WF(OWNER_TOOL_LISTINGS_WF, "wf.owner.tool_listings", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("session_id", "string"), ("user_id", "string")]), [0, 0])
+    pg_node(wf, "Listings", "select app.owner_listings($1, $2::uuid) as r", "={{ [ $json.session_id, $json.user_id ] }}",
+            [220, 0], on_error=None)
+    code_node(wf, "Tool answer", "owner_tool_listings.js", [440, 0])
+    wf.link("Start", "Listings")
+    wf.link("Listings", "Tool answer")
+    return wf
+
+
+def owner_tool_change():
+    """Tool of the owner assistant: a proposed change, checked (app.listing_change_check) and stored as pending in
+    ai.listing_changes. Nothing is written to the listing (D-088)."""
+    wf = WF(OWNER_TOOL_CHANGE_WF, "wf.owner.tool_change", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("listing", "string")] + [(n, "string") for n, _d in OWNER_FIELDS]
+                        + [("session_id", "string"), ("user_id", "string"), ("request_id", "string")]), [0, 0])
+    code_node(wf, "Changes", "owner_tool_changes.js", [220, 0])
+    pg_node(wf, "Propose", "select case when $5::jsonb = '{}'::jsonb then null"
+            " else app.owner_change_propose($1, $2::uuid, $3::uuid, $4::int, $5::jsonb) end as r",
+            "={{ $json.params }}", [440, 0], on_error=None)
+    code_node(wf, "Tool answer", "owner_tool_answer.js", [660, 0])
+    wf.link("Start", "Changes")
+    wf.link("Changes", "Propose")
+    wf.link("Propose", "Tool answer")
+    return wf
+
+
+def owner_agent():
+    """Owner assistant (D-088): an n8n AI Agent node with the Ollama chat model, its own Postgres chat memory
+    (session 'owner:user:<id>') and two tools: my_listings and propose_change. Input as the other agents. Output {ok,
+    status (proposed | answered), answer, proposal {change_id, listing_id, listing_number, diff, changes}, steps}."""
+    wf = WF(OWNER_AGENT_WF, "wf.owner.agent", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", "select app.owner_agent_context($1::uuid) as c", "={{ [ $json.user_id ] }}", [220, 0], on_error=None)
+    code_node(wf, "Agent input", "agent_input.js", [440, 0])
+    if_node(wf, "Prompt ok?", "={{ $json.ok }}", [660, 0])
+    wf.node("Owner agent", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+        "promptType": "define", "text": "={{ $json.text }}", "hasOutputParser": False,
+        "options": {"systemMessage": "={{ $json.system }}", "maxIterations": "={{ $json.max_iterations }}",
+                    "returnIntermediateSteps": True}}, [900, -100], onError="continueRegularOutput")
+    wf.node("Ollama Chat Model", "@n8n/n8n-nodes-langchain.lmChatOllama", 1, {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {"temperature": 0, "think": False, "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+                    "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+                    "numPredict": "={{ $('Agent input').first().json.num_predict }}"}},
+        [760, 140], credentials=OLLAMA_CRED)
+    wf.node("Chat memory", "@n8n/n8n-nodes-langchain.memoryPostgresChat", 1.3, {
+        "sessionIdType": "customKey", "sessionKey": "={{ $('Agent input').first().json.session_id }}",
+        "tableName": "agent_memory.chat_histories",
+        "contextWindowLength": "={{ $('Agent input').first().json.memory_turns }}"}, [900, 140], credentials=PG_CRED)
+    ai = "$('Agent input').first().json"
+    wf.node("my_listings", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": OWNER_LIST_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": OWNER_TOOL_LISTINGS_WF, "mode": "id", "cachedResultName": "wf.owner.tool_listings"},
+        "workflowInputs": tool_mapping([("session_id", "string", "={{ %s.session_id }}" % ai),
+                                        ("user_id", "string", "={{ %s.user_id }}" % ai)])}, [1040, 140])
+    fields = [("listing", "string", "={{ $fromAI('listing', 'Number of the listing in my_listings, 1 for the most recent', 'string', '') }}")]
+    fields += [(n, "string", "={{ $fromAI('%s', '%s', 'string', '') }}" % (n, d)) for n, d in OWNER_FIELDS]
+    fields += [("session_id", "string", "={{ %s.session_id }}" % ai), ("user_id", "string", "={{ %s.user_id }}" % ai),
+               ("request_id", "string", "={{ %s.request_id }}" % ai)]
+    wf.node("propose_change", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": OWNER_CHANGE_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": OWNER_TOOL_CHANGE_WF, "mode": "id", "cachedResultName": "wf.owner.tool_change"},
+        "workflowInputs": tool_mapping(fields)}, [1180, 140])
+    pg_node(wf, "Proposal", "select app.owner_change_of_request($1::uuid, $2::uuid) as p",
+            "={{ [ $('Agent input').first().json.user_id, $('Agent input').first().json.request_id ] }}", [1180, -100],
+            on_error=None)
+    code_node(wf, "Check answer", "owner_output.js", [1400, -100])
+    code_node(wf, "No prompt", "agent_prompt_missing.js", [900, 260])
+    wf.link("Start", "Context")
+    wf.link("Context", "Agent input")
+    wf.link("Agent input", "Prompt ok?")
+    wf.link("Prompt ok?", "Owner agent", 0)
+    wf.link("Prompt ok?", "No prompt", 1)
+    wf.link("Owner agent", "Proposal")
+    wf.link("Proposal", "Check answer")
+    wf.ai_link("Ollama Chat Model", "Owner agent", "ai_languageModel")
+    wf.ai_link("Chat memory", "Owner agent", "ai_memory")
+    wf.ai_link("my_listings", "Owner agent", "ai_tool")
+    wf.ai_link("propose_change", "Owner agent", "ai_tool")
+    return wf
+
+
+def listing_apply():
+    """Sub-workflow: a change to a listing written by its owner (PATCH /v1/listings/:id, or a confirmed proposal of the
+    owner assistant). Input {user_id, listing_id, changes | change_id}. The database checks and writes
+    (app.listing_apply_changes / app.listing_change_confirm); then removed photos are deleted from storage and the
+    listing embedded again when its place changed or it was just published (D-088)."""
+    wf = WF(LISTING_APPLY_WF, "wf.listing.apply", tags=["intake"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Apply", "select case when $3 <> '' then app.listing_change_confirm($1::uuid, $2::uuid, app.try_uuid($3))"
+            " else app.listing_apply_changes($1::uuid, $2::uuid, $4::jsonb) end as r",
+            "={{ [ $json.user_id, $json.listing_id, $json.change_id || '', JSON.stringify($json.changes || {}) ] }}", [220, 0],
+            on_error=None)
+    code_node(wf, "Next steps", "listing_apply_after.js", [440, 0])
+    if_node(wf, "Delete photos?", "={{ $json.delete }}", [660, 0])
+    http_node(wf, "Delete photos", "POST", "={{ $('Next steps').first().json.delete_url }}", [880, -100],
+              body="={{ JSON.stringify($('Next steps').first().json.delete_body) }}", fmt="json", full=True, never_error=True,
+              timeout="={{ 30000 }}", svc=True, on_error="continueRegularOutput")
+    if_node(wf, "Embed?", "={{ $('Next steps').first().json.embed }}", [1100, 0])
+    http_node(wf, "Embed listing", "POST", "={{ $('Next steps').first().json.embed_url }}", [1320, -100],
+              body="={{ JSON.stringify($('Next steps').first().json.embed_body) }}", fmt="json", full=True, never_error=True,
+              timeout="={{ 60000 }}", on_error="continueRegularOutput")
+    code_node(wf, "Embedding rows", "listing_apply_embed.js", [1540, -100])
+    if_node(wf, "Store vector?", "={{ !$json.skip }}", [1760, -100])
+    pg_node(wf, "Store vector", "select app.store_listing_embeddings($1, $2::jsonb) as stored", "={{ $json.params }}",
+            [1980, -150], on_error="continueRegularOutput")
+    code_node(wf, "Result", "listing_apply_result.js", [2200, 0])
+    wf.link("Start", "Apply")
+    wf.link("Apply", "Next steps")
+    wf.link("Next steps", "Delete photos?")
+    wf.link("Delete photos?", "Delete photos", 0)
+    wf.link("Delete photos?", "Embed?", 1)
+    wf.link("Delete photos", "Embed?")
+    wf.link("Embed?", "Embed listing", 0)
+    wf.link("Embed?", "Result", 1)
+    wf.link("Embed listing", "Embedding rows")
+    wf.link("Embedding rows", "Store vector?")
+    wf.link("Store vector?", "Store vector", 0)
+    wf.link("Store vector?", "Result", 1)
+    wf.link("Store vector", "Result")
+    return wf
+
+
 def endpoint(wid, name, method, path, hook, route_extra=None):
     """Common head of a user endpoint: webhook, route, gateway, 'Gateway ok?' (false -> Envelope)."""
     wf = WF(wid, name, tags=["api", "v1"])
@@ -1094,8 +1327,8 @@ def api_profiles_me():
 
 
 def orchestrator():
-    """A0 (spec 8.2): P1 classifies, a deterministic Switch routes. Phase 3 serves search_listings;
-    other intents answer with a status code until their agents exist."""
+    """A0 (spec 8.2): P1 classifies, a deterministic Switch routes: search_listings to the A3 Match agent (or the fixed
+    path), legal_question to the A5 Legal agent; other intents answer with a status code until their agents exist."""
     wf = endpoint("fsOrchestrator01", "wf.orchestrator", "POST", "v1/assistant/message",
                   "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0015")
     code_node(wf, "Validate body", "orch_validate.js", [880, -100])
@@ -1103,7 +1336,10 @@ def orchestrator():
     pg_node(wf, "Context", "select coalesce((select (value #>> '{}')::float from app.settings where key = 'router.min_confidence'), 0.6) as min_confidence,"
             " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,"
             " coalesce((select value #>> '{}' from app.settings where key = 'match.agent_enabled'), 'false') = 'true' as agent_enabled,"
-            " app.match_followup_open($1::uuid) as followup_open",
+            " coalesce((select value #>> '{}' from app.settings where key = 'legal.agent_enabled'), 'false') = 'true' as legal_enabled,"
+            " coalesce((select value #>> '{}' from app.settings where key = 'owner.agent_enabled'), 'false') = 'true' as owner_enabled,"
+            " app.owner_has_listings($1::uuid) as has_listings,"
+            " app.agent_followup($1::uuid) as followup_agent",
             "={{ [ $json.gw.ctx.user_id ] }}", [1320, -200], on_error=None)
     # Text service before P1 (spec 8.2 A0, 9.7): language identification and PII count. A failure here is
     # recorded in the trace and does not stop the request (phase 4, D-074).
@@ -1114,7 +1350,7 @@ def orchestrator():
     exec_wf(wf, "Classify", LLM_CALL_WF, "wf.llm.call", pos=[1760, -200])
     code_node(wf, "Decide route", "orch_route.js", [1980, -200])
     wf.node("Route by intent", "n8n-nodes-base.switch", 3.2, {
-        "mode": "expression", "numberOutputs": 5, "output": "={{ $json.route }}", "options": {}}, [2200, -200])
+        "mode": "expression", "numberOutputs": 7, "output": "={{ $json.route }}", "options": {}}, [2200, -200])
     # search_listings: the A3 Match agent when it is on (D-084); P2 + search when it is off or fails
     if_node(wf, "Use agent?", "={{ $json.agent_enabled }}", [2420, -700])
     code_node(wf, "Agent request", "orch_agent_input.js", [2640, -800])
@@ -1128,6 +1364,14 @@ def orchestrator():
     exec_wf(wf, "Match", MATCH_WF, "wf.match.search", pos=[3300, -500])
     code_node(wf, "Search result", "orch_search_result.js", [3520, -400])
     code_node(wf, "Other intents", "orch_other.js", [2420, 0])
+    # legal_question: the A5 Legal agent (D-087); no fixed path behind it
+    code_node(wf, "Legal request", "orch_agent_input.js", [2420, 250])
+    exec_wf(wf, "Legal agent", LEGAL_AGENT_WF, "wf.legal.agent", pos=[2640, 250], on_error="continueRegularOutput")
+    code_node(wf, "Legal answer", "orch_legal_result.js", [2860, 250])
+    # post_listing from a user who has listings: the owner assistant (D-088)
+    code_node(wf, "Owner request", "orch_agent_input.js", [2420, 450])
+    exec_wf(wf, "Owner agent", OWNER_AGENT_WF, "wf.owner.agent", pos=[2640, 450], on_error="continueRegularOutput")
+    code_node(wf, "Owner answer", "orch_owner_result.js", [2860, 450])
     respond_tail(wf, 3740)
     wf.link("Gateway ok?", "Validate body", 0)
     wf.link("Validate body", "Valid?")
@@ -1148,6 +1392,14 @@ def orchestrator():
     wf.link("Agent answer", "Envelope")
     for i in (1, 2, 3, 4):
         wf.link("Route by intent", "Other intents", i)
+    wf.link("Route by intent", "Legal request", 5)
+    wf.link("Legal request", "Legal agent")
+    wf.link("Legal agent", "Legal answer")
+    wf.link("Legal answer", "Envelope")
+    wf.link("Route by intent", "Owner request", 6)
+    wf.link("Owner request", "Owner agent")
+    wf.link("Owner agent", "Owner answer")
+    wf.link("Owner answer", "Envelope")
     wf.link("Profile input", "Extract profile")
     wf.link("Extract profile", "Match input")
     wf.link("Match input", "Search?")
@@ -1265,7 +1517,8 @@ def admin_fx_refresh():
 
 
 # ---------------------------------------------------------------- phase 4: listings and media intake
-LISTING_GET_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0019"        # parameterised routes: see infra/caddy/Caddyfile
+LISTING_GET_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0019"
+LISTING_PATCH_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001e"     # same path as GET; the proxy rewrites PATCH to this id        # parameterised routes: see infra/caddy/Caddyfile
 LISTING_PRESIGN_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001a"
 LISTING_ANALYZE_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001b"
 ME_CONSENTS_HOOK = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001c"
@@ -1312,6 +1565,28 @@ def api_listings_get():
     respond_tail(wf, 1320)
     wf.link("Gateway ok?", "Load", 0)
     wf.link("Load", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_listings_patch():
+    """PATCH /v1/listings/:id (spec 5.2): the owner changes fields, or applies a change the owner assistant proposed
+    ({change_id}). Same checks for both, in the database (D-088)."""
+    wf = endpoint("fsApiListPatch01", "wf.api.listings_patch", "PATCH", "v1/listings/:id", LISTING_PATCH_HOOK,
+                  {"idempotent": True})
+    code_node(wf, "Validate body", "listings_patch_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    wf.node("Apply input", "n8n-nodes-base.code", 2, {"mode": "runOnceForAllItems", "language": "javaScript", "jsCode":
+            "// wf.api.listings_patch > \"Apply input\"\nreturn [{ json: $input.first().json.input }];\n"}, [1320, -200])
+    exec_wf(wf, "Apply", LISTING_APPLY_WF, "wf.listing.apply", pos=[1540, -200])
+    code_node(wf, "Build result", "listings_patch_result.js", [1760, -200])
+    respond_tail(wf, 1980)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Apply input", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Apply input", "Apply")
+    wf.link("Apply", "Build result")
     wf.link("Build result", "Envelope")
     return wf
 
@@ -1600,7 +1875,8 @@ def tg_node(wf, name, params, pos):
 
 def tg_send(wf, name, pos, chat="={{ $json.chat_id }}", text="={{ $json.text }}"):
     return tg_node(wf, name, {"resource": "message", "operation": "sendMessage", "chatId": chat, "text": text,
-                              "additionalFields": {"appendAttribution": False, "parse_mode": "HTML"}}, pos)
+                              "additionalFields": {"appendAttribution": False, "parse_mode": "HTML",
+                                                                     "disable_web_page_preview": True}}, pos)
 
 
 def tg_api():
@@ -1642,7 +1918,7 @@ def tg_channel():
     code_node(wf, "Parse update", "tg_parse.js", [220, 0])
     pg_node(wf, "Context", TG_CONTEXT_SQL, "={{ [ $json.update_id, $json.ext_id, $json.bot ] }}", [440, 0], on_error=None)
     code_node(wf, "Plan", "tg_plan.js", [660, 0])
-    wf.node("Action", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 10, "output": "={{ $json.route }}",
+    wf.node("Action", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 11, "output": "={{ $json.route }}",
                                                    "options": {}}, [880, 0])
     tg_send(wf, "Send message", [3300, 0])
     # 1 consent request with two buttons
@@ -1773,6 +2049,27 @@ def tg_channel():
     http_node(wf, "Send album", "POST", "={{ $json.url }}", [1980, 950], body="={{ $json.body }}", fmt="json", full=True,
               never_error=True, timeout="={{ 180000 }}", svc=True, on_error="continueRegularOutput")
     code_node(wf, "Album sent?", "tg_album_sent.js", [2200, 950])
+    # 5 (owner assistant): a proposed change gets two buttons, confirm and cancel (D-088)
+    if_node(wf, "Proposal?", "={{ $json.proposal === true }}", [1870, -150])
+    tg_node(wf, "Send proposal", {"resource": "message", "operation": "sendMessage", "chatId": "={{ $json.chat_id }}",
+            "text": "={{ $json.text }}", "replyMarkup": "inlineKeyboard",
+            "inlineKeyboard": {"rows": [{"row": {"buttons": [
+                {"text": "={{ $json.confirm_label }}", "additionalFields": {"callback_data": "={{ $json.confirm_data }}"}},
+                {"text": "={{ $json.cancel_label }}", "additionalFields": {"callback_data": "={{ $json.cancel_data }}"}}]}}]},
+            "additionalFields": {"appendAttribution": False, "parse_mode": "HTML"}}, [2090, -200])
+    # 10 the owner pressed a button under a proposed change: PATCH /v1/listings/:id {change_id}, or cancel it
+    tg_node(wf, "Answer button 10", {"resource": "callback", "operation": "answerQuery", "queryId": "={{ $json.callback_id }}",
+            "additionalFields": {}}, [1100, 1200])
+    wf.nodes[-1]["onError"] = "continueRegularOutput"
+    pg_node(wf, "Pending change", "select (select listing_id from ai.listing_changes where id = app.try_uuid($1)"
+            " and user_id = app.try_uuid($2) and status = 'pending') as listing_id,"
+            " case when $3 = 'cancel' then app.listing_change_cancel(app.try_uuid($2), app.try_uuid($1)) end as cancelled",
+            "={{ [ $('Plan').first().json.change_id, $('Plan').first().json.user_id || '', $('Plan').first().json.decision ] }}",
+            [1320, 1200], on_error=None)
+    if_node(wf, "Confirm?", "={{ $('Plan').first().json.decision === 'confirm' && !!$json.listing_id }}", [1540, 1200])
+    code_node(wf, "Call: apply change", "tg_call.js", [1760, 1150], subst={"__CALL__": "apply change"})
+    exec_wf(wf, "API: apply change", TG_API_WF, "wf.channel.telegram.api", pos=[1980, 1150])
+    code_node(wf, "Format change", "tg_change_format.js", [2200, 1200])
 
     for a, b in (("Webhook", "Parse update"), ("Parse update", "Context"), ("Context", "Plan"), ("Plan", "Action")):
         wf.link(a, b)
@@ -1790,7 +2087,7 @@ def tg_channel():
                  ("API: withdraw consent", "Done: withdrawn"), ("Done: withdrawn", "Send message"), ("No account", "Send message"),
                  ("Call: set country", "API: set country"), ("API: set country", "Done: country"), ("Done: country", "Send message"),
                  ("Typing", "Call: ask assistant"), ("Call: ask assistant", "API: ask assistant"), ("API: ask assistant", "Format answer"),
-                 ("Format answer", "Send answer"), ("Send answer", "Result ids"), ("Result ids", "Result photos"),
+                 ("Format answer", "Proposal?"), ("Send answer", "Result ids"), ("Result ids", "Result photos"),
                  ("Result photos", "Photo cards"), ("Photo cards", "Card image"), ("Card image", "Card message"),
                  ("Card message", "More photos?"),
                  ("Call: trace", "API: trace"), ("API: trace", "Format trace"), ("Format trace", "Send message"),
@@ -1818,6 +2115,16 @@ def tg_channel():
     wf.link("Album?", "Photo list", 1)
     wf.link("Action", "Record album photo", 8)
     wf.link("Action", "Answer button 9", 9)
+    wf.link("Action", "Answer button 10", 10)
+    wf.link("Proposal?", "Send proposal", 0)
+    wf.link("Proposal?", "Send answer", 1)
+    wf.link("Answer button 10", "Pending change")
+    wf.link("Pending change", "Confirm?")
+    wf.link("Confirm?", "Call: apply change", 0)
+    wf.link("Confirm?", "Format change", 1)
+    wf.link("Call: apply change", "API: apply change")
+    wf.link("API: apply change", "Format change")
+    wf.link("Format change", "Send message")
     wf.link("Has photos?", "Send album", 0)
     wf.link("Has photos?", "Send message", 1)
     wf.link("More photos?", "Send card with button", 0)
@@ -1835,9 +2142,9 @@ def tg_channel():
 BUILDS = {
     "workflows": [gateway, health, users_sync, error_handler, admin_kb_ingest, kb_ingest, kb_ingest_source,
                   jobs_get, admin_eval_runs_create, eval_retrieval, admin_eval_runs_get,
-                  llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, api_search, api_profiles_extract, api_profiles_me,
+                  llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, legal_tool_search, legal_agent, owner_tool_listings, owner_tool_change, owner_agent, listing_apply, api_search, api_profiles_extract, api_profiles_me,
                   orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
-                  api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
+                  api_listings_create, api_listings_get, api_listings_patch, api_listings_presign, api_listings_analyze, intake_photos,
                   listing_extract, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
     "workflows-test": [test_fail],
 }

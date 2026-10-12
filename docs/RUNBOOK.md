@@ -112,6 +112,14 @@ Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py 
 | A user's conversation with the agent | `select message->>'type', message->>'content' from agent_memory.chat_histories where session_id = 'user:<user id>' order by id;` (masked text; deleted after 30 days or when consent is withdrawn) |
 | Match agent on the real model (match_agent_v2 for P6 v1 and v2, then the fixed path) | `... p4.ps1 -Step agent-bench` (option `-AgentVersions "2"`) -> `reports\eval\agent-bench-*.json` |
 | Longest Match agent answer shown (D-085) | `select value from app.settings where key = 'match.agent_answer_max_chars';` (400) |
+| Legal agent on or off (D-087; off = "not available yet") | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.settings set value = 'false' where key = 'legal.agent_enabled';"` (`'true'` to switch back) |
+| What the Legal agent did for a request | `GET /v1/admin/traces/{request_id}`, step `A5_legal_agent` (searches, excerpts retrieved with their similarity, citations, abstain reason) |
+| Excerpts a legal conversation retrieved | `select jsonb_pretty(sources) from ai.legal_sessions where session_id = 'legal:user:<user id>';` |
+| Legal agent on the real model (tn_retrieval v2, spec 10.7) | `... p4.ps1 -Step legal-bench` -> `reports\eval\legal-bench-*.json` and `-sample.md` (faithfulness, judged by hand) |
+| Abstention threshold of the Legal agent (0 = off) | `update app.settings set value = '<threshold>' where key = 'legal.min_similarity';` with a value chosen from `best_similarity` in the benchmark |
+| Owner assistant on or off (D-088; off = the "/annonce" hint) | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.settings set value = 'false' where key = 'owner.agent_enabled';"` |
+| Changes proposed to owners and what became of them | `select created_at, status, diff from ai.listing_changes where user_id = '<user id>' order by created_at desc;` |
+| Owner assistant on the real model (owner_agent v1) | `... p4.ps1 -Step owner-bench` -> `reports\eval\owner-bench-*.json` |
 | Telegram: post a listing with several photos (D-086) | select the photos together in Telegram, write `/annonce <text>` as the caption, send; up to 10 |
 | Telegram: photo cards under search results | `select value from app.settings where key = 'telegram.search_photo_cards';` (3; 0 turns them off) |
 | Telegram: "see all photos" does nothing | `docker logs fs-telegram` (album sender on port 8099, "album not sent: ..."); `select value from app.settings where key = 'services.telegram_relay_url';` |

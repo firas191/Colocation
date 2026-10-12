@@ -1,7 +1,8 @@
 // wf.orchestrator > "Decide route" (deterministic, spec 8.1). Output index for the Switch:
 // 0 search_listings, 1 ask a clarifying question (needs_clarification, or confidence below
 // router.min_confidence), 2 a supported intent whose agent comes in a later phase,
-// 3 smalltalk_or_unsupported, 4 the router failed.
+// 3 smalltalk_or_unsupported, 4 the router failed, 5 legal_question with the A5 Legal agent on (D-087),
+// 6 post_listing from a user with listings, the owner assistant on (D-088).
 const r = $input.first().json;
 const v = $('Validate body').first().json;
 const min = Number($('Context').first().json.min_confidence ?? 0.6);
@@ -22,13 +23,23 @@ if (!r.ok) route = 4;
 else if (r.output.needs_clarification || r.output.confidence < min) route = 1;
 else if (r.output.intent === 'search_listings') route = 0;
 else if (r.output.intent === 'smalltalk_or_unsupported') route = 3;
+else if (r.output.intent === 'legal_question' && $('Context').first().json.legal_enabled === true) route = 5;
+// a user who already has listings and writes about posting: the owner assistant changes them (D-088); without
+// listings, the hint to send /annonce as before
+else if (r.output.intent === 'post_listing' && $('Context').first().json.owner_enabled === true
+         && $('Context').first().json.has_listings === true) route = 6;
 else route = 2;
-// A follow-up of a recent search ("cheaper?", "and the second one?") reads as smalltalk or unclear to P1, which sees
-// one message. With the Match agent on and a search in the last match.followup_minutes, it goes to the agent,
-// which has the conversation (D-084).
+// A follow-up of a recent search ("cheaper?", "and the second one?") or legal answer ("and if he refuses?") reads as
+// smalltalk or unclear to P1, which sees one message. It goes to the agent of the most recent conversation within
+// match.followup_minutes, if that agent is on; the agent has the conversation (D-084, D-087).
 const ctx = $('Context').first().json;
-const followup = (route === 1 || route === 3) && ctx.agent_enabled === true && ctx.followup_open === true;
-if (followup) route = 0;
+const open = ctx.followup_agent;
+let followup = false;
+if (route === 1 || route === 3) {
+  if (open === 'match' && ctx.agent_enabled === true) { route = 0; followup = true; }
+  else if (open === 'legal' && ctx.legal_enabled === true) { route = 5; followup = true; }
+  else if (open === 'owner' && ctx.owner_enabled === true && ctx.has_listings === true) { route = 6; followup = true; }
+}
 const o = r.ok ? r.output : {};
 const hint = ['TN', 'FR', 'GB'].includes(o.jurisdiction_hint) ? o.jurisdiction_hint : null;
 return [{ json: { route, followup, agent_enabled: ctx.agent_enabled === true, router: o, call_error: !!r.call_error, steps: [textStep, step],

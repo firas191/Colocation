@@ -1,0 +1,15 @@
+{
+  "name": "P11_owner_assistant",
+  "agent": "A1 owner assistant",
+  "role": "System message of the owner assistant (n8n AI Agent node): read the owner's listings, turn a request such as \"the rent is now 400\" or \"remove photo 2\" into a proposed change with the propose_change tool, and say in one or two sentences what is proposed. Nothing is written until the owner confirms; the change and its checks are in code and in the database (D-088).",
+  "schema": "schemas/P11_owner_assistant.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "language",
+    "script"
+  ],
+  "golden_set": "owner_agent",
+  "active_version": 1
+}

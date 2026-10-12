@@ -108,6 +108,11 @@
 				rewrite @jobs_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0010{uri}
 				@eval_run_get path_regexp ^/v1/admin/eval/runs/[^/]+$
 				rewrite @eval_run_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0011{uri}
+				@listing_patch {
+					method PATCH
+					path_regexp ^/v1/listings/[^/]+$
+				}
+				rewrite @listing_patch /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001e{uri}
 				@listing_get path_regexp ^/v1/listings/[^/]+$
 				rewrite @listing_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0019{uri}
 				@listing_presign path_regexp ^/v1/listings/[^/]+/media/presign$

@@ -22,12 +22,27 @@ const TG_TEXTS = {
     working: 'Analyse en cours…', listing_wait: "Annonce reçue, analyse en cours (cela peut prendre une ou deux minutes)…",
     listing_late: "L'analyse prend plus de temps que prévu. Elle continue ; l'annonce est {id}.",
     published: '✅ Publiée : elle apparaît maintenant dans les recherches (mode test : sans vérification de confiance).',
-    not_published: "Pas publiée : il manque {missing}. Renvoyez l'annonce avec ces informations.",
+    not_published: "Pas publiée : il manque {missing}. Écrivez-le simplement (par exemple « le loyer est 350 DT ») ou renvoyez l'annonce.",
     missing_rent: 'le loyer', missing_place: 'un quartier ou une ville connus',
     understood: "J'ai compris : {what}", results: '<b>{n} annonce(s)</b> :', no_results: "Aucune annonce ne correspond pour l'instant.",
     synthetic: '(annonces de test)', more: '… et {n} de plus.',
     clarify: '{q}', legal_later: 'Les réponses aux questions juridiques arrivent dans une prochaine phase du projet.',
+    legal_sources: '<b>Sources :</b>', legal_seen: 'consulté le {d}',
+    legal_conflict: '⚠️ Les sources ne disent pas toutes la même chose :',
+    legal_not_found: "Je n'ai pas trouvé la réponse dans les textes et guides que j'ai pour ce pays ({c}). Je préfère ne pas répondre sans source.",
+    legal_notice: "<i>Information générale tirée des sources citées, pas un avis juridique. Pour un litige ou une expulsion, adressez-vous à un avocat ou à une structure d'aide juridique.</i>",
+    type_primary_law: 'texte de loi', type_regulator: 'autorité', type_government_guide: 'guide officiel', type_ngo: 'association',
+    type_commercial_guide: 'guide commercial', type_blog: 'blog', type_internal: 'note interne',
     post_hint: 'Pour publier une annonce, envoyez /annonce suivi de son texte.',
+    owner_proposed: '<b>Modification proposée</b> (annonce {n}) :', owner_confirm: '✅ Confirmer', owner_cancel: '✖ Annuler',
+    owner_done: '✅ <b>Annonce modifiée</b> :', owner_cancelled: 'Modification annulée : rien n\'a changé.',
+    owner_gone: "Cette proposition n'est plus valable (expirée ou déjà traitée). Redemandez la modification.",
+    owner_refused: "La modification n'a pas été appliquée : {why}.", owner_status: 'Statut : {s}',
+    f_rent: 'Loyer', f_deposit: 'Caution', f_rent_period: 'Période', f_bills_included: 'Charges comprises', f_furnished: 'Meublé',
+    f_available_from: 'Disponible le', f_bedrooms: 'Chambres', f_min_stay_months: 'Durée minimum (mois)', f_place: 'Lieu',
+    f_amenities: 'Équipements', f_house_rules: 'Règles', f_remove_photos: 'Photos retirées', f_status: 'Statut',
+    st_published: 'publiée', st_archived: 'archivée (plus visible)', st_draft: 'brouillon', st_pending_review: 'en vérification',
+    st_processing: 'en analyse', st_rejected: 'refusée', yes: 'oui', no: 'non',
     later: "Cette demande sera traitée dans une prochaine phase du projet.",
     unsupported: "Je n'ai pas compris votre demande. /aide pour des exemples.",
     failed: 'Désolé, une erreur est survenue ({code}). Réessayez dans un moment.',
@@ -60,12 +75,27 @@ const TG_TEXTS = {
     working: 'Working on it…', listing_wait: 'Listing received, analysis running (this can take a minute or two)…',
     listing_late: 'The analysis is taking longer than expected. It continues; the listing is {id}.',
     published: '✅ Published: it now shows in searches (test mode: no trust check).',
-    not_published: 'Not published: {missing} missing. Send the listing again with it.',
+    not_published: 'Not published: {missing} missing. Just write it (for example "the rent is 350 DT") or send the listing again.',
     missing_rent: 'the rent', missing_place: 'a known neighbourhood or city',
     understood: 'I understood: {what}', results: '<b>{n} listing(s)</b>:', no_results: 'No listing matches yet.',
     synthetic: '(test listings)', more: '… and {n} more.',
     clarify: '{q}', legal_later: 'Answers to legal questions come in a later phase of the project.',
+    legal_sources: '<b>Sources:</b>', legal_seen: 'retrieved {d}',
+    legal_conflict: '⚠️ The sources do not all say the same thing:',
+    legal_not_found: "I did not find the answer in the laws and guides I have for this country ({c}). I would rather not answer without a source.",
+    legal_notice: '<i>General information from the sources cited, not legal advice. For a dispute or an eviction, contact a lawyer or a legal aid service.</i>',
+    type_primary_law: 'law', type_regulator: 'regulator', type_government_guide: 'official guide', type_ngo: 'NGO',
+    type_commercial_guide: 'commercial guide', type_blog: 'blog', type_internal: 'internal note',
     post_hint: 'To post a listing, send /listing followed by its text.',
+    owner_proposed: '<b>Proposed change</b> (listing {n}):', owner_confirm: '✅ Confirm', owner_cancel: '✖ Cancel',
+    owner_done: '✅ <b>Listing changed</b>:', owner_cancelled: 'Change cancelled: nothing was changed.',
+    owner_gone: 'This proposal is no longer valid (expired or already handled). Ask for the change again.',
+    owner_refused: 'The change was not applied: {why}.', owner_status: 'Status: {s}',
+    f_rent: 'Rent', f_deposit: 'Deposit', f_rent_period: 'Period', f_bills_included: 'Bills included', f_furnished: 'Furnished',
+    f_available_from: 'Available from', f_bedrooms: 'Bedrooms', f_min_stay_months: 'Minimum stay (months)', f_place: 'Place',
+    f_amenities: 'Amenities', f_house_rules: 'Rules', f_remove_photos: 'Photos removed', f_status: 'Status',
+    st_published: 'published', st_archived: 'archived (not shown)', st_draft: 'draft', st_pending_review: 'under review',
+    st_processing: 'being analysed', st_rejected: 'rejected', yes: 'yes', no: 'no',
     later: 'This kind of request comes in a later phase of the project.',
     unsupported: "I did not understand your request. /help for examples.",
     failed: 'Sorry, something went wrong ({code}). Please try again in a moment.',
@@ -98,12 +128,27 @@ const TG_TEXTS = {
     working: 'جاري المعالجة…', listing_wait: 'تم استلام الإعلان، التحليل جار (قد يستغرق دقيقة أو دقيقتين)…',
     listing_late: 'التحليل يأخذ وقتا أطول من المتوقع. يتواصل؛ رقم الإعلان {id}.',
     published: '✅ نُشر الإعلان: يظهر الآن في البحث (وضع تجريبي: دون فحص الثقة).',
-    not_published: 'لم يُنشر: ينقص {missing}. أعد إرسال الإعلان مع هذه المعلومات.',
+    not_published: 'لم يُنشر: ينقص {missing}. اكتبه ببساطة (مثلا «الإيجار 350 دينار») أو أعد إرسال الإعلان.',
     missing_rent: 'الإيجار', missing_place: 'حي أو مدينة معروفة',
     understood: 'فهمت: {what}', results: '<b>{n} إعلان(ات)</b>:', no_results: 'لا يوجد إعلان مطابق حاليا.',
     synthetic: '(إعلانات تجريبية)', more: '… و{n} أخرى.',
     clarify: '{q}', legal_later: 'الإجابة عن الأسئلة القانونية تأتي في مرحلة لاحقة من المشروع.',
+    legal_sources: '<b>المصادر:</b>', legal_seen: 'تاريخ الاطلاع {d}',
+    legal_conflict: '⚠️ المصادر لا تقول كلها نفس الشيء:',
+    legal_not_found: 'لم أجد الإجابة في النصوص والأدلة المتوفرة لدي لهذا البلد ({c}). أفضّل عدم الإجابة دون مصدر.',
+    legal_notice: '<i>معلومات عامة مأخوذة من المصادر المذكورة، وليست استشارة قانونية. في حالة نزاع أو إخلاء، توجّه إلى محامٍ أو إلى هيكل للمساعدة القانونية.</i>',
+    type_primary_law: 'نص قانوني', type_regulator: 'هيئة رسمية', type_government_guide: 'دليل رسمي', type_ngo: 'جمعية',
+    type_commercial_guide: 'دليل تجاري', type_blog: 'مدونة', type_internal: 'ملاحظة داخلية',
     post_hint: 'لنشر إعلان، أرسل /listing ثم نصه.',
+    owner_proposed: '<b>تعديل مقترح</b> (الإعلان {n}):', owner_confirm: '✅ تأكيد', owner_cancel: '✖ إلغاء',
+    owner_done: '✅ <b>تم تعديل الإعلان</b>:', owner_cancelled: 'تم إلغاء التعديل: لم يتغير شيء.',
+    owner_gone: 'هذا الاقتراح لم يعد صالحا (انتهت مدته أو تمت معالجته). اطلب التعديل من جديد.',
+    owner_refused: 'لم يتم تطبيق التعديل: {why}.', owner_status: 'الحالة: {s}',
+    f_rent: 'الإيجار', f_deposit: 'الضمان', f_rent_period: 'المدة', f_bills_included: 'المصاريف مشمولة', f_furnished: 'مفروش',
+    f_available_from: 'متاح من', f_bedrooms: 'الغرف', f_min_stay_months: 'أدنى مدة (أشهر)', f_place: 'المكان',
+    f_amenities: 'التجهيزات', f_house_rules: 'القواعد', f_remove_photos: 'الصور المحذوفة', f_status: 'الحالة',
+    st_published: 'منشور', st_archived: 'مؤرشف (غير ظاهر)', st_draft: 'مسودة', st_pending_review: 'قيد المراجعة',
+    st_processing: 'قيد التحليل', st_rejected: 'مرفوض', yes: 'نعم', no: 'لا',
     later: 'هذا النوع من الطلبات يأتي في مرحلة لاحقة من المشروع.',
     unsupported: 'لم أفهم طلبك. /help لأمثلة.',
     failed: 'عذرا، حدث خطأ ({code}). حاول بعد قليل.',
@@ -192,4 +237,25 @@ function tgApiError(lang, r) {
   return T(lang, 'failed', { code });
 }
 
-if (typeof module !== 'undefined') module.exports = { T, tgEsc, tgMoney, tgLang, tgApiError, TG_TEXTS, TG_ISSUES, TG_RULES };
+// A change of a listing (D-088), one line per field: "Loyer : 350 DT → 400 DT". diff: [{field, before, after, currency}]
+// with amounts in main units, as app.listing_change_check gives it.
+function tgDiff(lang, diff) {
+  const cur = (c) => (c === 'TND' ? 'DT' : c === 'EUR' ? '€' : c === 'GBP' ? '£' : (c || ''));
+  const val = (d, v) => {
+    if (v === null || v === undefined || (Array.isArray(v) && !v.length)) return '—';
+    if (d.field === 'rent' || d.field === 'deposit') return `${Number(v)} ${cur(d.currency)}`.trim();
+    if (typeof v === 'boolean') return T(lang, v ? 'yes' : 'no');
+    if (d.field === 'status') return T(lang, 'st_' + v);
+    if (d.field === 'house_rules' && typeof v === 'object') {
+      const R = TG_RULES[lang] || TG_RULES.fr;
+      return Object.entries(v).map(([k, x]) => ((R[k] || {})[x]) || `${k}: ${x}`).join(', ') || '—';
+    }
+    if (Array.isArray(v)) return v.join(', ');
+    return d.field === 'available_from' ? String(v).slice(0, 10) : String(v);
+  };
+  return (diff || []).map((d) => d.field === 'remove_photos'
+    ? `• ${T(lang, 'f_remove_photos')} : ${tgEsc(val(d, d.after))}`
+    : `• ${T(lang, 'f_' + d.field)} : ${tgEsc(val(d, d.before))} → ${tgEsc(val(d, d.after))}`);
+}
+
+if (typeof module !== 'undefined') module.exports = { T, tgEsc, tgMoney, tgLang, tgApiError, tgDiff, TG_TEXTS, TG_ISSUES, TG_RULES };

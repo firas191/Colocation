@@ -1,0 +1,108 @@
+{
+  "id": "fsOwnerToolList1",
+  "name": "wf.owner.tool_listings",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "66d7968f-0781-5fd9-b88b-15d481d007b0",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "session_id"
+            },
+            {
+              "name": "user_id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b75d5607-a280-5799-b306-a67ecb13ec25",
+      "name": "Listings",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.owner_listings($1, $2::uuid) as r",
+        "options": {
+          "queryReplacement": "={{ [ $json.session_id, $json.user_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "c7395c4d-17c9-5d90-b286-795b0a2c121c",
+      "name": "Tool answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.owner.tool_listings > \"Tool answer\": the owner's listings, numbered, fields only (no title or description).\nconst r = $input.first().json.r || { count: 0, listings: [] };\nreturn [{ json: r }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Listings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listings": {
+      "main": [
+        [
+          {
+            "node": "Tool answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    }
+  ]
+}

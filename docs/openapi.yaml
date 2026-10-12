@@ -533,6 +533,45 @@ paths:
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "429": { $ref: "#/components/responses/RateLimited" }
         "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+    patch:
+      operationId: changeListing
+      summary: The owner changes fields of a listing, or applies a change the owner assistant proposed (D-088)
+      description: |
+        Body: the fields to change, amounts in the currency's main unit (rent, rent_period, deposit, bills_included,
+        furnished, available_from, bedrooms, min_stay_months, place, amenities_add, amenities_remove, house_rules,
+        remove_photos (numbers, oldest photo first), status (archived, or published again)); or {change_id} alone
+        to apply a proposal of the owner assistant (valid owner.change_minutes, applied once). Checked in the database
+        (app.listing_change_check): plausible rent range, place found in the gazetteer, amenity vocabulary. A draft is
+        then tried for automatic publication when listing.auto_publish is on.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - $ref: "#/components/parameters/XClientIp"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, minProperties: 1 }
+      responses:
+        "200":
+          description: What changed
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingChangeResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
   /v1/listings/{id}/media/presign:
     post:
       operationId: presignListingMedia
@@ -991,6 +1030,39 @@ components:
             next:
               type: object
               properties: { upload: { type: string }, analyze: { type: string } }
+    ListingChange:
+      type: object
+      description: "One changed field; rent and deposit in main units with their currency."
+      required: [field]
+      properties:
+        field: { type: string }
+        before: {}
+        after: {}
+        currency: { type: string }
+    ListingChangeResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          additionalProperties: false
+          required: [listing_id, status, diff]
+          properties:
+            listing_id: { type: string, format: uuid }
+            status: { type: string }
+            diff: { type: array, items: { $ref: "#/components/schemas/ListingChange" } }
+            publication:
+              type: [object, "null"]
+              description: Automatic publication tried after the change (listing.auto_publish on, draft listings)
+              properties:
+                published: { type: boolean }
+                reason: { type: [string, "null"] }
+                missing: { type: array, items: { type: string } }
+            photos_deleted_from_storage: { type: integer }
+            embedded: { type: [boolean, "null"], description: "Embedded again (place changed or just published); null when not needed" }
     ListingResponse:
       type: object
       additionalProperties: false
@@ -1322,13 +1394,55 @@ components:
           required: [intent, status]
           properties:
             intent: { type: [string, "null"], enum: [search_listings, post_listing, legal_question, generate_document, report_problem, smalltalk_or_unsupported, null] }
-            status: { type: string, enum: [results, answered, profile_failed, search_failed, clarification_needed, not_available_yet, unsupported, not_understood] }
+            status:
+              type: string
+              enum: [results, answered, abstained, proposed, profile_failed, search_failed, clarification_needed, not_available_yet, unsupported, not_understood]
+              description: "legal_question (A5 Legal agent, D-087): answered, or abstained when the excerpts retrieved do not support an answer. post_listing (owner assistant, D-088): proposed (see proposal) or answered."
             answer:
               type: [string, "null"]
-              description: The Match agent's answer (D-084); null when it was dropped because it had a number no tool gave (warning agent_answer_unsupported). Absent on the fixed path.
+              description: >-
+                The Match agent's answer (D-084); null when it was dropped because it had a number no tool gave (warning
+                agent_answer_unsupported). Absent on the fixed path. For a legal question, the Legal agent's answer with
+                [n] markers that refer to `citations`; null when it abstained.
+            abstained: { type: boolean, description: "Legal question: the Legal agent did not answer (spec 10.6)." }
+            abstain_reason:
+              type: [string, "null"]
+              enum: [not_found, no_search, no_citation, unsupported_numbers, null]
+              description: "not_found: the model said the excerpts do not answer; no_search: it answered without searching; no_citation: no marker referred to an excerpt it retrieved; unsupported_numbers: a number no excerpt or message gives."
+            conflict: { type: boolean, description: "Legal question: the sources cited disagree; the answer gives each position." }
+            citations:
+              type: array
+              items:
+                type: object
+                required: [n, title, source_type]
+                properties:
+                  n: { type: integer, minimum: 1 }
+                  title: { type: [string, "null"] }
+                  cite_as: { type: [string, "null"] }
+                  url: { type: [string, "null"] }
+                  source_type: { type: [string, "null"], enum: [primary_law, regulator, government_guide, ngo, commercial_guide, blog, internal, null] }
+                  reliability: { type: [integer, "null"], minimum: 1, maximum: 5 }
+                  article: { type: [string, "null"] }
+                  retrieved_at: { type: [string, "null"] }
+                  chunk_id: { type: [string, "null"], format: uuid }
+            missing_information: { type: [string, "null"], description: "Legal question, not_found: what the model said is missing." }
+            notice_version: { type: [string, "null"], description: "Version of the notice the channel shows with a legal answer (setting legal.notice_version)." }
+            jurisdiction: { type: [string, "null"], description: "Legal question: the country whose sources were searched (plus global sources)." }
+            proposal:
+              type: [object, "null"]
+              description: >-
+                Owner assistant (status proposed, D-088): a change of one of the user's listings, not applied. Apply it
+                with PATCH /v1/listings/{listing_id} and body {"change_id": ...} before expires_at.
+              properties:
+                change_id: { type: string, format: uuid }
+                listing_id: { type: string, format: uuid }
+                listing_number: { type: [integer, "null"] }
+                diff: { type: array, items: { $ref: "#/components/schemas/ListingChange" } }
+                changes: { type: object }
+                expires_at: { type: string }
             agent:
               type: object
-              description: Tools the Match agent called for this message and how many stored messages it had.
+              description: Tools the Match or Legal agent called for this message and how many stored messages it had.
               properties:
                 tool_calls: { type: array, items: { type: string } }
                 memory_messages: { type: integer }

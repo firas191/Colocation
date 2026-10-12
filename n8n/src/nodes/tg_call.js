@@ -46,6 +46,12 @@ switch (CALL) {
   case 'job':
     call = { method: 'GET', path: `/v1/jobs/${$('API: analyze').first().json.body.data.job_id}`, user_id: P.user_id };
     break;
+  case 'apply change': {
+    // the owner pressed "confirm" under a proposed change (D-088): PATCH with the proposal's id
+    const lid = $('Pending change').first().json.listing_id;
+    call = { method: 'PATCH', path: `/v1/listings/${lid}`, user_id: P.user_id, idem: idem('change'), body: { change_id: P.change_id } };
+    break;
+  }
   case 'get listing':
     call = { method: 'GET', path: `/v1/listings/${listingId()}`, user_id: P.user_id };
     break;

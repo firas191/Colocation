@@ -1,7 +1,8 @@
 // wf.channel.telegram > "Plan": what to do with this update. Output index of the "Action" switch:
 // 0 reply with a fixed text · 1 ask for consent · 2 consent given · 3 consent refused or withdrawn ·
 // 4 set the country · 5 ask the assistant · 6 trace (admins) · 7 post a listing ·
-// 8 another photo of an album (D-086) · 9 all the photos of a listing (button under a search result, D-086).
+// 8 another photo of an album (D-086) · 9 all the photos of a listing (button under a search result, D-086) ·
+// 10 confirm or cancel a change the owner assistant proposed (D-088).
 // Nothing is processed before consent (spec 13.4): without it, every update gets the consent request.
 /* @include lib/tg_texts.js */
 const p = $('Parse update').first().json;
@@ -25,6 +26,12 @@ if (p.kind === 'callback') {
   if (p.callback_data === 'consent:no') return [{ json: { ...base, route: 3, text: T(lang, 'refused') } }];
   const ph = /^ph:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(p.callback_data);
   if (ph) return consented ? [{ json: { ...base, route: 9, listing_id: ph[1] } }] : [{ json: { ...base, route: 1, text: T(lang, 'consent') } }];
+  // the buttons under a change the owner assistant proposed (D-088): lc confirm, lx cancel
+  const lc = /^l([cx]):([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(p.callback_data);
+  if (lc) {
+    return consented ? [{ json: { ...base, route: 10, decision: lc[1] === 'c' ? 'confirm' : 'cancel', change_id: lc[2] } }]
+      : [{ json: { ...base, route: 1, text: T(lang, 'consent') } }];
+  }
   return [];
 }
 if (cmd === 'stop') return [{ json: { ...base, route: 3, text: T(lang, 'stopped') } }];

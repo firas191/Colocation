@@ -127,6 +127,91 @@ def _msg_text(m):
     return (mm.group(1) if mm else c).strip()
 
 
+def legal_answer(body, cur, tool_msgs, call):
+    """Mock of the model inside the A5 Legal agent (D-087): calls search_law with the user's text, then answers from
+    the first excerpt with [1] (the second too with [2] when there is one). Markers: [mock:notfound] answers
+    [NOT_FOUND], [mock:conflict] starts with [CONFLICT] and cites [1] and [2], [mock:badcite] cites [9] only,
+    [mock:badnumber] adds a delay no excerpt gives, [mock:notool] answers without searching, [mock:twice] searches
+    twice."""
+    low = cur.lower()
+    if not tool_msgs:
+        if "[mock:notool]" in low:
+            return 200, {"role": "assistant", "content": "Le bailleur doit rendre le dépôt."}
+        return 200, call("search_law", {"query": re.sub(r"\[mock:[^\]]*\]", "", cur).strip()})
+    try:
+        obs = json.loads(tool_msgs[-1].get("content") or "{}")
+    except ValueError:
+        obs = {}
+    if isinstance(obs, list):
+        obs = obs[0] if obs and isinstance(obs[0], dict) else {}
+    if "[mock:twice]" in low and len(tool_msgs) == 1:
+        return 200, call("search_law", {"query": "autre formulation " + cur[:40]})
+    ex = obs.get("excerpts") or []
+    if "[mock:notfound]" in low or not ex:
+        return 200, {"role": "assistant", "content": "[NOT_FOUND] Les extraits ne parlent pas de cette question."}
+    first = re.sub(r"\s+", " ", ex[0].get("text") or "").strip()
+    sent = re.split(r"(?<=[.!?])\s", first)
+    claim = next((x for x in sent if len(x.split()) >= 4 and not x.startswith("#")), first[:120]).rstrip(" .")
+    n1 = ex[0].get("n")
+    if "[mock:badcite]" in low:
+        return 200, {"role": "assistant", "content": f"{claim} [9]."}
+    text = f"Selon {ex[0].get('source')}, {claim} [{n1}]."
+    if len(ex) > 1:
+        text += f" Voir aussi [{ex[1].get('n')}]."
+    if "[mock:conflict]" in low and len(ex) > 1:
+        text = f"[CONFLICT] D'après la loi, {claim} [{n1}]. Un blog dit autre chose sur ce point [{ex[1].get('n')}]."
+    if "[mock:badnumber]" in low:
+        text += " Le délai est de 999 jours [1]."
+    return 200, {"role": "assistant", "content": text}
+
+
+def owner_answer(body, cur, tool_msgs, call):
+    """Mock of the model inside the owner assistant (D-088): my_listings first, then propose_change with what the
+    message says: "N dt" the rent, "photo N" remove that photo, "loué" archived, "wifi" add it, "annonce N" that
+    listing; then one sentence. Markers: [mock:notool] answers without a tool, [mock:badnumber] adds a number no tool
+    gave, [mock:millimes] gives the rent in millimes (the database refuses it)."""
+    low = cur.lower()
+    if "[mock:notool]" in low:
+        return 200, {"role": "assistant", "content": "Pour publier une nouvelle annonce, envoyez /annonce suivi du texte."}
+    names = []
+    for m in tool_msgs:
+        try:
+            o = json.loads(m.get("content") or "{}")
+        except ValueError:
+            o = {}
+        if isinstance(o, list):
+            o = o[0] if o and isinstance(o[0], dict) else {}
+        names.append(o)
+    if not tool_msgs:
+        return 200, call("my_listings", {})
+    last = names[-1]
+    if "listings" in last and len(tool_msgs) == 1:
+        args = {}
+        m = re.search(r"annonce\s*(\d+)|listing\s*(\d+)", low)
+        args["listing"] = (m.group(1) or m.group(2)) if m else "1"
+        rm = re.search(r"(\d+)\s*(dt|dinars?|€)", low)
+        if rm:
+            args["rent"] = str(int(rm.group(1)) * (1000 if "[mock:millimes]" in low else 1))
+        pm = re.search(r"photo\s*(\d+)", low)
+        if pm:
+            args["remove_photo"] = pm.group(1)
+        if re.search(r"lou[ée]|rented", low):
+            args["status"] = "archived"
+        if "wifi" in low:
+            args["add_amenities"] = "wifi"
+        qm = re.search(r"quartier ([\w' -]+?)(?:[,.]|$)", cur, re.I)
+        if qm:
+            args["place"] = qm.group(1).strip()
+        return 200, call("propose_change", args)
+    if last.get("ok"):
+        text = f"Je propose cette modification de l'annonce {last.get('listing')} : confirmez avec le bouton."
+    else:
+        text = "Je ne peux pas proposer cette modification : " + ", ".join(e.get("issue", "?") for e in last.get("errors") or []) + "."
+    if "[mock:badnumber]" in low:
+        text += " Le nouveau loyer sera de 777 DT."
+    return 200, {"role": "assistant", "content": text}
+
+
 def agent_answer(body):
     """Mock of the model inside the A3 Match agent (an /api/chat call with tools, D-084). It cannot reason: it calls
     search_listings with the user's text (with the previous user message appended for a follow-up such as "moins
@@ -148,6 +233,11 @@ def agent_answer(body):
     def call(name, args):
         return {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": name, "arguments": args}}]}
 
+    tools = [(t.get("function") or {}).get("name") for t in body.get("tools") or []]
+    if "search_law" in tools:
+        return legal_answer(body, cur, tool_msgs, call)
+    if "my_listings" in tools:
+        return owner_answer(body, cur, tool_msgs, call)
     if tool_msgs and "[mock:loop]" not in low:
         try:
             obs = json.loads(tool_msgs[-1].get("content") or "{}")
@@ -266,7 +356,7 @@ def chat_answer(body):
             intent = "report_problem"
         elif re.search(r"caution|deposit|préavis|notice", low):
             intent = "legal_question"
-        elif re.search(r"à louer|a louer|flatmate|colocataire", low):
+        elif re.search(r"à louer|a louer|flatmate|colocataire|mon annonce|my listing|loyer|c'est loué|la photo", low):
             intent = "post_listing"
         elif re.search(r"cherche|looking for|room|chambre|n7eb", low):
             intent = "search_listings"

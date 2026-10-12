@@ -170,3 +170,17 @@ annotator, no native-speaker check of the Tunisian and Arabic turns.
 v1 with: the questions about one result (`d01`-`d08`, 8 instead of 5) after first searches that found 9 or 10 (or the same place with a close budget)
 listings on the owner's PC (T-48); `f01` and `o01` start with "je cherche" so that P1 sends them to the search. The 12
 single searches are the same as in v1.
+
+## owner_agent v1 (`owner_agent_v1.jsonl`, D-088)
+
+Requests to the owner assistant, read by `scripts/owner_bench.py` from the file (not stored in `eval.datasets`). Each
+request is sent by a new owner who has one published test listing (TN, rent 350 TND, a TV, 3 photos). 24 requests:
+
+| Kind | Requests | What is expected |
+|---|---|---|
+| one field (`o-01`-`o-13`, `o-16`, `o-17`, `o-24`) | 16 (French, English, Arabic, Tunisian in Latin letters, one code-switched) | the proposed change, exactly (`expect` is the PATCH body) |
+| two fields (`o-14`, `o-15`, `o-18`) | 3 | both fields |
+| rent in millimes (`o-19`) | 1 | no proposal; the database refuses it (`out_of_range`) |
+| no change (`o-20`-`o-23`) | 4 | no proposal: a protected-trait rule, a question, a new listing, an injection |
+
+Written by me with the set; no second annotator, no native-speaker check of the Arabic and Tunisian requests.

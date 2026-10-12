@@ -63,10 +63,16 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `wf.eval.retrieval` | sub-workflow (job worker) | resolves gold, embeds queries once per model, searches every configuration, stores per-query metrics |
 | `wf.api.admin_eval_runs_get` | `GET /v1/admin/eval/runs/:id` (admin) | one run with summary and per-query metrics |
 | `wf.llm.call` | sub-workflow | loads a prompt version (`ai.prompt_for`), calls Ollama `/api/chat` with the JSON Schema as `format`, validates, retries once with the errors |
-| `wf.orchestrator` | `POST /v1/assistant/message` | A0: P1 router, deterministic Switch; search goes to the A3 Match agent (or, when it is off or fails, A2 then `wf.match.search`), other intents answer a status code |
+| `wf.orchestrator` | `POST /v1/assistant/message` | A0: P1 router, deterministic Switch; search goes to the A3 Match agent (or, when it is off or fails, A2 then `wf.match.search`), legal questions to the A5 Legal agent, owners' changes to the owner assistant, other intents answer a status code |
 | `wf.match.agent` | sub-workflow | A3 Match agent (D-084): n8n AI Agent node with the Ollama chat model, Postgres chat memory (`agent_memory.chat_histories`) and two workflow tools; system message P6 from the registry; numbers in the answer checked in code |
 | `wf.match.tool_search` | sub-workflow (agent tool `search_listings`) | the agent's request through `wf.profile.extract` (P2) and `wf.match.search`; keeps the result in `ai.match_sessions`; answers the model with fields only |
 | `wf.match.tool_listing` | sub-workflow (agent tool `listing_details`) | fields of one result of the conversation's last search, by number |
+| `wf.legal.agent` | sub-workflow | A5 Legal agent (D-087): AI Agent node, Ollama chat model (8,192-token context), own chat memory (`legal:user:<id>`), one tool; system message P5 from the registry; citations, abstention and numbers checked in code |
+| `wf.legal.tool_search` | sub-workflow (agent tool `search_law`) | the agent's query embedded (bge-m3), `app.legal_search` (`kb.search_chunks`, country plus global sources), excerpts numbered for the conversation in `ai.legal_sessions` |
+| `wf.owner.agent` | sub-workflow | Owner assistant (D-088): AI Agent node, Ollama chat model, own chat memory (`owner:user:<id>`), tools `my_listings` and `propose_change`; proposes, never writes |
+| `wf.owner.tool_listings` / `wf.owner.tool_change` | sub-workflows (agent tools) | the user's listings, numbered (`app.owner_listings`); a change checked and stored as pending (`app.owner_change_propose`, `ai.listing_changes`) |
+| `wf.listing.apply` | sub-workflow | writes a change (`app.listing_apply_changes`, or a confirmed proposal), deletes removed photos from storage, embeds again when needed |
+| `wf.api.listings_patch` | `PATCH /v1/listings/:id` | the owner changes fields, or applies a proposal with `{change_id}` |
 | `wf.profile.extract` | sub-workflow | A2: P2, amounts converted to minor units from P2 v3 (`lib/money.js`, D-066), deterministic checks (allowed preferences, currency), anchor geocoded |
 | `wf.match.search` | sub-workflow | A3 (search part): embeds the text query (bge-m3), `app.search_public` |
 | `wf.api.search` | `GET /v1/search` | filters, optional text, optional saved profile |
@@ -151,7 +157,39 @@ The agent decides when to search, rewrites follow-ups into a full request and wr
 itself is the fixed path (P2 with its checks, then `app.search_public`); the cards shown to the user come from the
 database, not from the model's text, and an answer with a number that no tool gave is dropped.
 
-Every LLM call except the agent's goes through `wf.llm.call`: the template and schema come from the registry, the model
+### Legal agent (D-087)
+
+```mermaid
+flowchart LR
+  O[wf.orchestrator] -->|legal_question, or a follow-up within 30 min| A[wf.legal.agent: AI Agent node]
+  CM[Ollama Chat Model, 8192 ctx] -.model.- A
+  MEM[(agent_memory.chat_histories, legal:user:id)] -.memory.- A
+  A -.tool.- T[search_law: wf.legal.tool_search]
+  T --> E[bge-m3 embedding] --> S[kb.search_chunks: country + global, top 5]
+  S --> SES[(ai.legal_sessions: numbered excerpts)]
+  A --> CHK[markers, abstention, numbers checked in code] --> R[answer + citations, or abstained]
+  SES --> CHK
+```
+
+The model writes plain text with [n] after each claim, `[NOT_FOUND]` or `[CONFLICT]`; code keeps only markers of
+excerpts that were retrieved, builds the citations (title, URL, type, reliability, article, retrieval date) from the
+database, and abstains when nothing valid is cited or a number is in no excerpt. Telegram adds the notice.
+
+### Owner assistant (D-088)
+
+```mermaid
+flowchart LR
+  O[wf.orchestrator] -->|post_listing from a user with listings, or a follow-up| A[wf.owner.agent: AI Agent node]
+  A -.tool.- L[my_listings] --> DB1[(app.listings: fields only)]
+  A -.tool.- C[propose_change] --> CHK[app.listing_change_check] --> P[(ai.listing_changes: pending)]
+  P --> T[Telegram: before -> after, Confirm / Cancel]
+  P --> API[response: proposal]
+  T -->|Confirm| PATCH[PATCH /v1/listings/:id change_id]
+  API --> PATCH
+  PATCH --> W[wf.listing.apply: check again, write, delete photos, embed]
+```
+
+Every LLM call except the agents' goes through `wf.llm.call`: the template and schema come from the registry, the model
 from `llm.default_model` unless the caller names one. Agent steps (prompt version, model, tokens,
 latency, errors; never the request text) are written to `ai.agent_steps` with the request record by
 `app.api_finish`. Search, money conversion, geocoding and location fuzzing are PostgreSQL functions
