@@ -11,11 +11,12 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step agent-bench  # A3 Match agent: match_agent_v2 for P6 v3 (option -AgentVersions "2,3"), then the fixed path (D-084, D-085)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step legal-bench  # A5 Legal agent: the 48 tn_retrieval v2 questions (D-087)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step owner-bench  # owner assistant: the 24 owner_agent v1 requests (D-088)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-timing -Listing <id>  # P3 and P7 calls of a listing timed one by one, no 120 s limit (D-091)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step all         # setup, text-eval, p3-eval, report
 # Options: -Models "qwen3.5:4b"  -Versions "3,4"
 # Output: reports\p4-<timestamp>\p4.log and summary.txt; reports\eval\text-*.json and prompts-*.json; docs\PROMPT_EVAL.md.
-param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "legal-bench", "owner-bench", "all")][string]$Step = "all",
-      [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2", [string]$AgentVersions = "3")
+param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "legal-bench", "owner-bench", "p7-timing", "all")][string]$Step = "all",
+      [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2", [string]$AgentVersions = "3", [string]$Listing = "")
 
 $ErrorActionPreference = "Continue"
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -159,6 +160,14 @@ if ($Step -eq "legal-bench") {
     docker @run scripts/legal_bench.py
   } | Out-Null
   Step "Ollama memory placement after the legal runs" { docker exec fs-ollama ollama ps } | Out-Null
+}
+
+if ($Step -eq "p7-timing") {
+  Step "Ollama memory placement before" { docker exec fs-ollama ollama ps } | Out-Null
+  Step "P3 and P7 calls timed one by one (up to 15 min per call)" {
+    if ($Listing) { docker @run scripts/p7_timing.py --listing $Listing } else { docker @run scripts/p7_timing.py }
+  } | Out-Null
+  Step "Ollama memory placement after" { docker exec fs-ollama ollama ps } | Out-Null
 }
 
 if ($Step -eq "owner-bench") {

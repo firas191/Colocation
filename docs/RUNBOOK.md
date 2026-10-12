@@ -117,6 +117,7 @@ Failed items of a run, with the inputs: `python eval/runners/prompt_failures.py 
 | Excerpts a legal conversation retrieved | `select jsonb_pretty(sources) from ai.legal_sessions where session_id = 'legal:user:<user id>';` |
 | Legal agent on the real model (tn_retrieval v2, spec 10.7) | `... p4.ps1 -Step legal-bench` -> `reports\eval\legal-bench-*.json` and `-sample.md` (faithfulness, judged by hand) |
 | Abstention threshold of the Legal agent (0 = off) | `update app.settings set value = '<threshold>' where key = 'legal.min_similarity';` with a value chosen from `best_similarity` in the benchmark |
+| How long each step of a listing analysis took (D-090) | `docker exec -u postgres fs-postgres psql -d flatshare -c "select j.status, j.attempts, j.finished_at - j.started_at as took, s.agent, s.model, s.latency_ms, s.error from app.jobs j left join ai.executions e on e.request_id = j.id left join ai.agent_steps s on s.execution_id = e.id where j.input->>'listing_id' = '<listing id>' order by s.step_index;"` |
 | Owner assistant on or off (D-088; off = the "/annonce" hint) | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.settings set value = 'false' where key = 'owner.agent_enabled';"` |
 | Changes proposed to owners and what became of them | `select created_at, status, diff from ai.listing_changes where user_id = '<user id>' order by created_at desc;` |
 | Owner assistant on the real model (owner_agent v1) | `... p4.ps1 -Step owner-bench` -> `reports\eval\owner-bench-*.json` |

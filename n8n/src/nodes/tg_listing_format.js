@@ -1,11 +1,12 @@
 // wf.channel.telegram > "Format listing": what P3 read in the listing, the issues for the owner (D-077), and what
-// happened to the photo (from GET /v1/listings/:id). Or, when the wait ended first, where to find the listing later.
+// happened to the photo (from GET /v1/listings/:id). Or, when the job was still running after
+// telegram.job_wait_max_s, where to find the listing later.
 /* @include lib/tg_texts.js */
 const P = $('Plan').first().json;
 const lang = P.lang;
 const id = $('API: create listing').first().json.body.data.listing_id;
 const r = $input.first().json;
-if (r.state === 2) return [{ json: { chat_id: P.chat_id, text: T(lang, 'listing_late', { id }) } }];
+if (r.state === 3) return [{ json: { chat_id: P.chat_id, text: T(lang, 'listing_late', { id }) } }];
 const err = tgApiError(lang, r);
 if (err) return [{ json: { chat_id: P.chat_id, text: err } }];
 const v = r.body.data;

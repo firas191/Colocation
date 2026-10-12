@@ -1614,6 +1614,14 @@ there are none).
 
 To run on the PC: `p4.ps1 -Step legal-bench` and `-Step owner-bench`, compared with T-55 and T-56.
 
+## T-58 Telegram: a slow listing analysis still gets its result (2026-10-12) - PASS in the sandbox (D-090)
+
+| Log | Result |
+|---|---|
+| `59-contract-proxy-d090.log` | full suite through the proxy: 196 passed, 1 skipped. New in `test_telegram.py`: with `telegram.job_wait_s` at 10 s and a model call made to last 25 s, the bot says the analysis is slow, then sends "Ce que j'ai lu" with the rent when the job ends, and no "still not finished" message |
+
+Not measured: how long a 3-photo analysis takes on the PC, and which step takes the time (RUNBOOK query).
+
 ---
 
 ## Not run

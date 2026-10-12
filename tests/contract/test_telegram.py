@@ -175,6 +175,22 @@ def test_listing_with_photo_is_extracted_and_the_photo_processed(db):
     assert row == (350000, 1)
 
 
+
+def test_a_slow_analysis_is_announced_then_its_result_sent(db):
+    """D-090: after telegram.job_wait_s the bot says it is slow, keeps waiting, and sends the result when it comes."""
+    db.execute("update app.settings set value = '10' where key = 'telegram.job_wait_s'")
+    try:
+        chat = consented_chat()
+        n = len(sent())
+        push(text_msg(chat, "/annonce Chambre meublée à Sahloul, 350 DT [mock:slow=25]"))
+        wait_reply(chat, n, lambda p: "plus de temps que prévu" in p["text"], timeout=90)
+        p = wait_reply(chat, n, lambda p: "Ce que j'ai lu" in p["text"], timeout=150)
+        assert "350 DT/mois" in p["text"]
+        assert not any("toujours pas finie" in m["params"].get("text", "") for m in sent(n)
+                       if str(m["params"].get("chat_id")) == str(chat))
+    finally:
+        db.execute("update app.settings set value = '300' where key = 'telegram.job_wait_s'")
+
 def test_listing_command_needs_text():
     chat = consented_chat()
     n = len(sent())

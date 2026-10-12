@@ -709,6 +709,22 @@ From T-55 (Legal agent, P5 v1) and T-56 (owner assistant, P11 v1) on the owner's
   This would have caught 3 of the 4 ("La caution de ma chambre..." names no listing). A legal question that says
   "mon annonce" would also go there; not measured.
 
+### D-090 Telegram: a slow listing analysis still gets its result
+
+Seen on the owner's PC (2026-10-12): an `/annonce` with 3 photos was still being analysed after `telegram.job_wait_s`
+(300 s); the bot said so with the listing id and stopped, so the owner never saw the result. Why it took that long
+is not measured yet (the job's steps are in `ai.agent_steps`; RUNBOOK has the query). Now the bot says once that it
+is slow (photos are analysed one by one) and keeps polling every 10 s; the result is sent when the job ends. It stops
+after `telegram.job_wait_max_s` (1800 s, migration 0020) with the listing id, as before.
+
+### D-091 Timing the model calls of a listing analysis before changing anything (F-064)
+
+A 3-photo listing took 14 minutes on the PC and every vision call hit the 120 s timeout (F-064). Possible fixes pull
+in different directions: smaller vision copies (fewer image tokens), a longer `llm.timeout_ms` for P7, analysing fewer
+photos, or keeping P7 off for Telegram listings. Choosing without figures would be a guess, so `scripts/p7_timing.py`
+(`p4.ps1 -Step p7-timing`) first measures the same calls one at a time without the timeout and reports Ollama's own
+durations (load, prompt evaluation with the prompt's token count, generation) at 512, 768 and 1024 px.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

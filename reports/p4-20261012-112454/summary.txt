@@ -1,0 +1,2 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.4 s)
+PASS  prompts: store new versions and the active ones (P5_legal_answerer)  (exit 0, 4.4 s)

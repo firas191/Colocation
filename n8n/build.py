@@ -2035,8 +2035,10 @@ def tg_channel():
     code_node(wf, "Call: job", "tg_call.js", [3520, 500], subst={"__CALL__": "job"})
     exec_wf(wf, "API: job", TG_API_WF, "wf.channel.telegram.api", pos=[3740, 500])
     code_node(wf, "Job state", "tg_job_state.js", [3960, 500])
-    wf.node("Finished?", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 3, "output": "={{ $json.state }}",
+    wf.node("Finished?", "n8n-nodes-base.switch", 3.2, {"mode": "expression", "numberOutputs": 4, "output": "={{ $json.state }}",
                                                       "options": {}}, [4180, 500])
+    code_node(wf, "Slow notice", "tg_slow_notice.js", [4400, 650])
+    tg_send(wf, "Send slow notice", [4620, 650])
     code_node(wf, "Call: get listing", "tg_call.js", [4400, 400], subst={"__CALL__": "get listing"})
     exec_wf(wf, "API: get listing", TG_API_WF, "wf.channel.telegram.api", pos=[4620, 400])
     code_node(wf, "Format listing", "tg_listing_format.js", [4840, 500])
@@ -2150,7 +2152,10 @@ def tg_channel():
     wf.link("Accepted?", "Listing error", 1)
     wf.link("Finished?", "Call: get listing", 0)
     wf.link("Finished?", "Wait 10 s", 1)
-    wf.link("Finished?", "Format listing", 2)
+    wf.link("Finished?", "Slow notice", 2)
+    wf.link("Slow notice", "Send slow notice")
+    wf.link("Send slow notice", "Wait 10 s")
+    wf.link("Finished?", "Format listing", 3)
     return wf
 
 

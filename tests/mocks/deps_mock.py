@@ -310,6 +310,9 @@ def chat_answer(body):
         return 500, {"error": "mock failure"}
     if "[mock:slow]" in low:
         time.sleep(5)
+    slow = re.search(r"\[mock:slow=(\d+)\]", low)
+    if slow:                         # a long model call (a listing with several photos on the PC)
+        time.sleep(min(int(slow.group(1)), 60))
     if "[mock:thinking]" in low:     # a model that thinks and leaves the answer empty (F-048)
         return 200, {"model": body.get("model"), "message": {"role": "assistant", "content": "", "thinking": "Let me think. " * 40},
                      "done": True, "prompt_eval_count": 50, "eval_count": 200, "total_duration": 120_000_000}

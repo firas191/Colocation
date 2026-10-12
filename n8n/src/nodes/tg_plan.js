@@ -15,6 +15,7 @@ const consented = !!c.user_id && consents.terms === true && consents.privacy ===
 const country = c.jurisdiction_code || cfg['telegram.default_jurisdiction'] || 'TN';
 const base = { ...p, lang, user_id: c.user_id || null, role: c.role || null, country, consented,
   policy_version: cfg['telegram.policy_version'] || 'telegram', job_wait_s: Number(cfg['telegram.job_wait_s'] || 300),
+  job_wait_max_s: Number(cfg['telegram.job_wait_max_s'] || 1800),
   last_request_id: c.last_request_id || null, api_url: c.api_url,
   album_wait_s: Math.min(30, Math.max(1, Number(cfg['telegram.album_wait_s'] ?? 3))),
   photo_cards: Math.min(5, Math.max(0, Number(cfg['telegram.search_photo_cards'] ?? 3))),

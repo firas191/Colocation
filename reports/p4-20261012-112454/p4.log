@@ -1,0 +1,35 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-12T11:24:55.6364279+01:00
+healthy
+healthy
+exit=0 seconds=0.4
+
+===== prompts: store new versions and the active ones (P5_legal_answerer) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-12T11:24:56.0738864+01:00
+ Container flatshare-tests-run-2f4272961eba Creating 
+ Container flatshare-tests-run-2f4272961eba Created 
+P11_owner_assistant v2: stored
+P11_owner_assistant: active version 2 (was 1)
+P5_legal_answerer v2: stored
+P5_legal_answerer: active version 2 (was 1)
+exit=0 seconds=4.4
+
+===== Legal agent: the 48 questions of tn_retrieval v2, one new user each (about 1 min per question) =====
+command: docker @run scripts/legal_bench.py
+started: 2026-10-12T11:25:00.4568813+01:00
+ Container flatshare-tests-run-e5b9979f5e20 Creating 
+ Container flatshare-tests-run-e5b9979f5e20 Created 
+48 questions; model qwen3.5:4b; P5 v2; retrieval {'k': 5, 'mode': 'dense', 'model': 'bge-m3', 'strategy': 'fixed_500_50', 'candidates': 50, 'min_reliability': 1}; min_similarity 0; 30 TN and global sources
+tn-01 legal abstained reason=not_found conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 211737 ms
+tn-02 error None reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 122472 ms
+tn-03 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 161017 ms
+tn-04 error None reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 122569 ms
+tn-05 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 159263 ms
+tn-06 error None reason=None conflict=None cited=None relevant=None retrieved_relevant=None best=None 122581 ms
+tn-07 legal abstained reason=no_search conflict=False cited=0 relevant=0 retrieved_relevant=0 best=None 149720 ms
