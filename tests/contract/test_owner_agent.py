@@ -173,3 +173,14 @@ def test_a_message_about_my_listing_goes_to_the_owner_assistant(client, owner):
     # the mock P1 reads "caution" as a legal question; "mon annonce" from a user with listings wins (D-089)
     d = say(client, uid, "la caution de mon annonce est 700 dt")["data"]
     assert d["intent"] == "post_listing" and "own_listing" in d["warnings"] and d["status"] == "proposed", d
+
+
+def test_a_field_given_after_posting_goes_to_the_owner_assistant(client, db, qx):  # noqa: F811
+    """D-093: "le loyer est 350 DT" right after a listing without a rent, even when P1 reads it as a search."""
+    uid = make_user(db, "owner")
+    lid = add_listing(db, uid, status="draft", rent=None, photos=0)
+    d = say(client, uid, "[mock:route0] le loyer est 380 dt")["data"]
+    assert d["intent"] == "post_listing" and d["status"] == "proposed" and "followup" in d["warnings"], d
+    assert d["proposal"]["listing_id"] == lid and d["proposal"]["changes"] == {"rent": 380}
+    d = say(client, uid, "[mock:route0] je cherche une chambre, loyer 380 dt")["data"]
+    assert d["intent"] == "search_listings", d                  # asking to search still searches

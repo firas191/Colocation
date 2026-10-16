@@ -734,6 +734,16 @@ one new wrong value (o-23). Both v2 stay active (spec 9.5: better on the primary
 The owner tool now reads "450.000" as 450 (dinars with their millimes, as written in Tunisia) and keeps "1.225" and
 "1.225.000" as thousands.
 
+### D-093 "Le loyer est 350 DT" after posting goes to the owner assistant
+
+On the PC (2026-10-16) the bot ended its reply to a listing without a rent with "Just write it (for example 'the
+rent is 350 DT')"; the owner wrote "le loyer est 350 DT" and P1 read it as a search, so it got 10 search results.
+The follow-up rule did not apply (it covers messages P1 calls smalltalk or unclear), nor the "my listing" rule (no
+"mon annonce"). Now, within `match.followup_minutes` of a change to one of the user's listings (`app.owner_recent`,
+migration 0021), a message P1 calls a search goes to the owner assistant when it names a listing field (loyer, kra,
+rent, caution, dépôt, garantie, prix, الكراء...), contains a number, and does not ask to search (cherche, looking,
+n7eb...). "Je cherche une chambre, loyer 380 dt" still goes to the search. Not measured on the real model yet.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

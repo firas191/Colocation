@@ -358,6 +358,8 @@ def chat_answer(body):
     elif kind == "P1":
         if "[mock:schema]" in low:
             intent = "buy_house"
+        elif "[mock:route0]" in low:            # P1 reading a message as a search whatever it says (D-093)
+            intent = "search_listings"
         elif re.search(r"contrat|agreement|convention", low):
             intent = "generate_document"
         elif re.search(r"arnaque|scam", low):

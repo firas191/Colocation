@@ -1695,6 +1695,13 @@ Same photos and caption as on 2026-10-12, sent in Telegram at 14:41 with nothing
 The bot answered at 14:44 with the fields read, the photo note ("amenities the text does not mention"), "not
 published: rent missing" and the 3 photos accepted (1 area blurred). F-064 did not happen again; its cause stays unknown.
 
+## T-63 A listing field given after posting reaches the owner assistant (2026-10-16) - PASS in the sandbox (D-093)
+
+Owner's PC, Telegram, 14:47: "le loyer est 350 DT" under the bot's "not published: rent missing" got 10 search results
+(P1: search). Sandbox: `60-contract-proxy-d093.log`, full suite through the proxy 197 passed, 1 skipped. New in
+`test_owner_agent.py`: with P1 forced to "search", "le loyer est 380 dt" from a user who just posted a draft gives a
+proposal for that draft (rent 380, warning `followup`), and "je cherche une chambre, loyer 380 dt" stays a search.
+
 ---
 
 ## Not run

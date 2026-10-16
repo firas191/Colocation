@@ -1355,6 +1355,7 @@ def orchestrator():
             " coalesce((select value #>> '{}' from app.settings where key = 'legal.agent_enabled'), 'false') = 'true' as legal_enabled,"
             " coalesce((select value #>> '{}' from app.settings where key = 'owner.agent_enabled'), 'false') = 'true' as owner_enabled,"
             " app.owner_has_listings($1::uuid) as has_listings,"
+            " app.owner_recent($1::uuid) as owner_recent,"
             " app.agent_followup($1::uuid) as followup_agent",
             "={{ [ $json.gw.ctx.user_id ] }}", [1320, -200], on_error=None)
     # Text service before P1 (spec 8.2 A0, 9.7): language identification and PII count. A failure here is

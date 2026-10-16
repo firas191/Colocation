@@ -48,6 +48,15 @@ let ownListing = false;
 if (route !== 4 && route !== 6 && ctx.owner_enabled === true && ctx.has_listings === true && OWN.test(v.text)) {
   route = 6; ownListing = true;
 }
+// A field of a listing the user just posted or changed ("le loyer est 350 DT", the example the bot gives under a
+// listing without a rent) reads as a search to P1 (PC, 2026-10-16). Within match.followup_minutes of a listing change,
+// a message that names a listing field, gives a number and does not ask to search goes to the owner assistant (D-093).
+const FIELD = /(^|[^\p{L}])(loyer|kra|rent|caution|d[ée]p[oô]t|deposit|garantie|prix|price|الكراء|الإيجار|الضمان|السعر)([^\p{L}]|$)/iu;
+const SEARCH = /(cherche|recherche|looking|search|find|trouve|nlawej|n7eb|ابحث|نبحث|نلوج)/iu;
+if (route === 0 && ctx.owner_enabled === true && ctx.owner_recent === true && FIELD.test(v.text) && /\d/.test(v.text)
+    && !SEARCH.test(v.text)) {
+  route = 6; followup = true;
+}
 const o = r.ok ? r.output : {};
 const hint = ['TN', 'FR', 'GB'].includes(o.jurisdiction_hint) ? o.jurisdiction_hint : null;
 return [{ json: { route, followup, own_listing: ownListing, agent_enabled: ctx.agent_enabled === true, router: o, call_error: !!r.call_error, steps: [textStep, step],
