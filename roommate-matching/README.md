@@ -7,6 +7,13 @@ contact only with mutual consent, and generates a shared living plan once they d
 Built and tested on **n8n Cloud** (editor only, no Code nodes). It is independent from the generated
 workflows in `n8n/workflows/` (which come from `n8n/build.py`): nothing here is touched by the build.
 
+## Link with the Telegram bot
+
+The two parts stay separate (different logic and hosting). The Telegram bot's help message (shown after
+`/start` consent and on `/aide`) links to the public chat page of 01:
+https://yosrk.app.n8n.cloud/webhook/c5fdbb67-ba73-4c88-ae30-2fe1bfdae103/chat
+(text in `n8n/src/lib/tg_texts.js`, then `python3 n8n/build.py`). If 01 moves to another n8n instance, update that URL.
+
 ## Flow
 
 ```
