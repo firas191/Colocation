@@ -8,6 +8,8 @@ test('amounts as a model may write them', () => {
   assert.equal(amount('400'), 400);
   assert.equal(amount('400 DT'), 400);
   assert.equal(amount('1.225.000'), 1225000);
+  assert.equal(amount('450.000'), 450);             // T-61 o-03: dinars with their millimes
+  assert.equal(amount('1.225'), 1225);
   assert.equal(amount('450,5'), 450.5);
   assert.equal(amount(''), null);
   assert.equal(amount('beaucoup'), null);

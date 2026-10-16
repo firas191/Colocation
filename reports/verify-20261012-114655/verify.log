@@ -1,0 +1,441 @@
+verify.ps1 run 20261012-114655 on FIRAS
+
+===== sync git history with flatshare.bundle =====
+command: if (-not (Test-Path ".git")) { git init -q -b main }
+    git fetch -q flatshare.bundle main
+    $head = git rev-parse -q --verify HEAD 2>$null
+    if (-not $head) { git reset -q --mixed FETCH_HEAD }
+    else {
+      git merge-base --is-ancestor HEAD FETCH_HEAD
+      if ($LASTEXITCODE -eq 0) { git reset -q --mixed FETCH_HEAD } else { "local commits found: history left as it is" }
+    }
+    $global:LASTEXITCODE = 0
+    git log --oneline -n 5
+started: 2026-10-12T11:46:55.9560785+01:00
+local commits found: history left as it is
+387b49cb D-089 to D-091
+3657874f D-089
+b4074906 legal agent and owner assistant
+50c22118 telegram photos
+c2174be4 P6 v3 active
+exit=0 seconds=0.3
+
+===== add settings introduced by later phases to .env (existing lines unchanged) =====
+command: & powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -AddMissing
+started: 2026-10-12T11:46:56.3148788+01:00
+added to .env: nothing
+exit=0 seconds=0.5
+
+===== Docker engine is running =====
+command: docker info --format "server {{.ServerVersion}} os {{.OperatingSystem}}"
+started: 2026-10-12T11:46:56.8369872+01:00
+server 29.8.1 os Docker Desktop
+exit=0 seconds=0.4
+
+===== GPU visible to Docker (docker run --gpus all ... nvidia-smi) =====
+command: docker run --rm --gpus all ubuntu:24.04 nvidia-smi -L
+started: 2026-10-12T11:46:57.2710010+01:00
+GPU 0: NVIDIA GeForce GTX 1650 with Max-Q Design (UUID: GPU-ee1b4c30-d658-6a46-7bfb-e81ac22f9265)
+exit=0 seconds=1.1
+gpu_override=True
+
+===== docker and compose versions =====
+command: docker version --format "client {{.Client.Version}} server {{.Server.Version}}"; docker compose version
+started: 2026-10-12T11:46:58.4304914+01:00
+client 29.8.1 server 29.8.1
+Docker Compose version v5.5.1
+exit=0 seconds=0.5
+
+===== free disk space (Docker Desktop stores images on C: by default; about 10 GB is needed) =====
+command: Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -ne $null } | ForEach-Object { "{0}: {1:N1} GB free" -f $_.Name, ($_.Free / 1GB) }
+started: 2026-10-12T11:46:58.9046135+01:00
+C: 11.4 GB free
+D: 101.6 GB free
+E: 3.9 GB free
+exit=0 seconds=0.4
+
+===== compose config is valid =====
+command: docker compose @files config -q
+started: 2026-10-12T11:46:59.2999420+01:00
+exit=0 seconds=0.2
+
+===== every pinned image tag exists in its registry =====
+command: $bad = 0
+  foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
+                     "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli",
+                     "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
+    docker manifest inspect $img *> $null
+    if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
+  }
+  $global:LASTEXITCODE = $bad
+started: 2026-10-12T11:46:59.5562502+01:00
+found    postgis/postgis:18-3.6
+found    amacneil/dbmate:2.36.0
+found    dxflrs/garage:v2.4.1
+found    ollama/ollama:0.34.4
+found    n8nio/n8n:2.41.3
+found    n8nio/runners:2.41.3
+found    caddy:2.11.4-alpine
+found    python:3.12.14-slim
+found    docker:29.8.1-cli
+found    ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4
+exit=0 seconds=115.5
+
+===== pull service images (largest download: Ollama, n8n) =====
+command: docker compose @files pull --ignore-buildable
+started: 2026-10-12T11:48:55.0396857+01:00
+ Image flatshare/text:0.1.0 Skipped Image can be built
+ Image flatshare/media:0.1.0 Skipped Image can be built
+ Image ollama/ollama:0.34.4 Pulling 
+ Image caddy:2.11.4-alpine Pulling 
+ Image flatshare/postgres:18-3.6-pgvector0.8 Skipped 
+ Image flatshare/telegram-relay:0.1.0 Skipped Image can be built
+ Image flatshare/postgres:18-3.6-pgvector0.8 Skipped Image can be built
+ Image n8nio/runners:2.41.3 Pulling 
+ Image n8nio/n8n:2.41.3 Pulling 
+ Image dxflrs/garage:v2.4.1 Pulling 
+ Image ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4 Pulling 
+ Image dxflrs/garage:v2.4.1 Pulled 
+ Image ollama/ollama:0.34.4 Pulled 
+ Image n8nio/n8n:2.41.3 Pulled 
+ Image caddy:2.11.4-alpine Pulled 
+ Image n8nio/runners:2.41.3 Pulled 
+ Image ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4 Pulled 
+exit=0 seconds=2
+
+===== build images =====
+command: docker compose @files --profile test build
+started: 2026-10-12T11:48:57.0889634+01:00
+ Image flatshare/media:0.1.0 Building 
+ Image flatshare/telegram-relay:0.1.0 Building 
+ Image flatshare/text:0.1.0 Building 
+ Image flatshare/tests:py3.12.14-p4 Building 
+ Image flatshare/postgres:18-3.6-pgvector0.8 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.44kB done
+#1 DONE 0.0s
+
+#2 [text internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.13kB 0.0s done
+#2 DONE 0.0s
+
+#3 [telegram internal] load build definition from Dockerfile
+#3 transferring dockerfile: 465B done
+#3 DONE 0.1s
+
+#4 [postgres internal] load build definition from Dockerfile
+#4 transferring dockerfile: 1.08kB 0.0s done
+#4 DONE 0.1s
+
+#5 [tests internal] load build definition from Dockerfile
+#5 transferring dockerfile: 599B 0.0s done
+#5 DONE 0.1s
+
+#6 [media internal] load build definition from Dockerfile
+#6 transferring dockerfile: 1.27kB 0.0s done
+#6 DONE 0.1s
+
+#7 [media internal] load metadata for docker.io/library/python:3.12.14-slim
+#7 ...
+
+#8 [tests internal] load metadata for docker.io/library/docker:29.8.1-cli
+#8 DONE 1.3s
+
+#7 [media internal] load metadata for docker.io/library/python:3.12.14-slim
+#7 DONE 1.3s
+
+#9 [postgres internal] load metadata for docker.io/amacneil/dbmate:2.36.0
+#9 DONE 1.3s
+
+#10 [postgres internal] load metadata for docker.io/postgis/postgis:18-3.6
+#10 DONE 1.3s
+
+#11 [text internal] load .dockerignore
+#11 transferring context: 2B done
+#11 DONE 0.0s
+
+#12 [tests internal] load .dockerignore
+#12 transferring context: 2B done
+#12 DONE 0.0s
+
+#13 [postgres internal] load .dockerignore
+#13 transferring context: 2B done
+#13 DONE 0.0s
+
+#14 [telegram internal] load build context
+#14 DONE 0.0s
+
+#15 [text internal] load build context
+#15 DONE 0.0s
+
+#16 [tests internal] load build context
+#16 DONE 0.0s
+
+#17 [media internal] load build context
+#17 DONE 0.0s
+
+#18 [tests 1/7] FROM docker.io/library/python:3.12.14-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
+#18 resolve docker.io/library/python:3.12.14-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f 0.1s done
+#18 resolve docker.io/library/python:3.12.14-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f 0.1s done
+#18 DONE 0.1s
+
+#19 [tests docker 1/1] FROM docker.io/library/docker:29.8.1-cli@sha256:018edbc908e08fcc9dbf029c812c34251e9b4719e6f71ca0e5eae2a987d014ca
+#19 resolve docker.io/library/docker:29.8.1-cli@sha256:018edbc908e08fcc9dbf029c812c34251e9b4719e6f71ca0e5eae2a987d014ca 0.1s done
+#19 DONE 0.1s
+
+#20 [postgres dbmate 1/1] FROM docker.io/amacneil/dbmate:2.36.0@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb
+#20 resolve docker.io/amacneil/dbmate:2.36.0@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb 0.1s done
+#20 DONE 0.1s
+
+#21 [postgres stage-1 1/4] FROM docker.io/postgis/postgis:18-3.6@sha256:60f6ad1d21ea86a67d47780b9a0d1e1d200500f62b19293fa834d0dea80b8677
+#21 resolve docker.io/postgis/postgis:18-3.6@sha256:60f6ad1d21ea86a67d47780b9a0d1e1d200500f62b19293fa834d0dea80b8677 0.1s done
+#21 DONE 0.1s
+
+#22 [postgres stage-1 2/4] RUN set -eux;     apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 update;     apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=60 install -y --no-install-recommends         postgresql-18-pgvector postgresql-18-pgtap libtap-parser-sourcehandler-pgtap-perl;     rm -rf /var/lib/apt/lists/*;     dpkg-query -W postgresql-18-pgvector postgresql-18-pgtap postgresql-18-postgis-3;     dpkg-query -W -f='${Version}' postgresql-18-pgvector | grep -q '^0\.8\.'
+#22 CACHED
+
+#23 [postgres stage-1 3/4] COPY --from=dbmate /usr/local/bin/dbmate /usr/local/bin/dbmate
+#23 CACHED
+
+#24 [postgres stage-1 4/4] RUN dbmate --version && pg_prove --version
+#24 CACHED
+
+#16 [tests internal] load build context
+#16 transferring context: 42B done
+#16 DONE 0.0s
+
+#14 [telegram internal] load build context
+#14 transferring context: 18.36kB 0.0s done
+#14 DONE 0.0s
+
+#15 [text internal] load build context
+#15 transferring context: 420B 0.0s done
+#15 DONE 0.0s
+
+#17 [media internal] load build context
+#17 transferring context: 79.09kB 0.0s done
+#17 DONE 0.0s
+
+#25 [tests stage-1 2/6] COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
+#25 CACHED
+
+#26 [tests stage-1 5/6] RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
+#26 CACHED
+
+#27 [tests stage-1 4/6] COPY requirements-dev.txt /tmp/requirements-dev.txt
+#27 CACHED
+
+#28 [tests stage-1 3/6] RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*  && git config --system --add safe.directory /flatshare
+#28 CACHED
+
+#29 [tests stage-1 6/6] WORKDIR /flatshare
+#29 CACHED
+
+#30 [telegram 3/7] COPY telegram/requirements.txt /tmp/requirements.txt
+#30 CACHED
+
+#31 [telegram 5/7] COPY telegram/poller.py telegram/album.py /app/
+#31 CACHED
+
+#32 [telegram 4/7] RUN pip install --no-cache-dir -r /tmp/requirements.txt
+#32 CACHED
+
+#33 [telegram 6/7] COPY telegram/tests /app/tests
+#33 CACHED
+
+#34 [telegram 2/7] WORKDIR /app
+#34 CACHED
+
+#35 [telegram 7/7] RUN useradd --system --uid 10001 app
+#35 CACHED
+
+#36 [text  2/10] RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+#36 CACHED
+
+#37 [text  4/10] RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+#37 CACHED
+
+#38 [text  6/10] RUN pip install --no-cache-dir -r /tmp/requirements.txt
+#38 CACHED
+
+#39 [text  8/10] COPY text/*.py /app/
+#39 CACHED
+
+#40 [text  7/10] COPY common/fs_common.py /app/fs_common.py
+#40 CACHED
+
+#41 [text  9/10] COPY text/tests /app/tests
+#41 CACHED
+
+#42 [text  5/10] COPY text/requirements.txt /tmp/requirements.txt
+#42 CACHED
+
+#43 [text  3/10] WORKDIR /app
+#43 CACHED
+
+#44 [text 10/10] RUN useradd --system --uid 10001 app && mkdir -p /models && chown app /models
+#44 CACHED
+
+#45 [media  8/12] COPY common/fs_common.py /app/fs_common.py
+#45 CACHED
+
+#46 [media 11/12] COPY media/third_party /app/third_party
+#46 CACHED
+
+#47 [media  6/12] COPY media/models.lock /app/models.lock
+#47 CACHED
+
+#48 [media  7/12] RUN mkdir -p /app/models && grep -v '^#' /app/models.lock | while read -r f sum url; do       curl -fsSL --retry 3 -o "/app/models/$f" "$url" && echo "$sum  /app/models/$f" | sha256sum -c -; done
+#48 CACHED
+
+#49 [media  4/12] COPY media/requirements.txt /tmp/requirements.txt
+#49 CACHED
+
+#50 [media  5/12] RUN pip install --no-cache-dir -r /tmp/requirements.txt
+#50 CACHED
+
+#51 [media 10/12] COPY media/tests /app/tests
+#51 CACHED
+
+#52 [media  3/12] WORKDIR /app
+#52 CACHED
+
+#53 [media  9/12] COPY media/*.py /app/
+#53 CACHED
+
+#54 [media  2/12] RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg       tesseract-ocr tesseract-ocr-eng tesseract-ocr-fra tesseract-ocr-ara  && rm -rf /var/lib/apt/lists/*
+#54 CACHED
+
+#55 [media 12/12] RUN useradd --system --uid 10001 app
+#55 CACHED
+
+#56 [media] exporting to image
+#56 exporting layers 0.0s done
+#56 exporting manifest sha256:6b9452c1f60689b58ec763e978e484d90d0a769c7a54bafb786d4640ad2a9594 0.0s done
+#56 exporting config sha256:e658460b12ee153c880662c01521257abedfb013e7d31123f84cca2c5867a10f 0.0s done
+#56 exporting attestation manifest sha256:afd25a801aeb117e1a9feea1f0ec858f25b1e21cf4b470dd4d2d391d16ecca80
+#56 ...
+
+#57 [postgres] exporting to image
+#57 exporting layers 0.0s done
+#57 exporting manifest sha256:726fefb58db94980504cbce4309957a80e3e47160b8136fa5a127d6f70ac120f done
+#57 exporting config sha256:802f636383f738797b81cce7f17cb6ea74e68dc97270fe8380e57152e295047c done
+#57 exporting attestation manifest sha256:4bdc1512dccc22c40861d9f067160178bc7f1de993a2e11ab1d9102f5025baad 0.0s done
+#57 exporting manifest list sha256:5e261601ca2119e33cd91ad7295d42f493508b808739df4538bb03508676a7de 0.0s done
+#57 naming to docker.io/flatshare/postgres:18-3.6-pgvector0.8 0.0s done
+#57 unpacking to docker.io/flatshare/postgres:18-3.6-pgvector0.8 0.1s done
+#57 DONE 0.3s
+
+#56 [media] exporting to image
+#56 exporting attestation manifest sha256:afd25a801aeb117e1a9feea1f0ec858f25b1e21cf4b470dd4d2d391d16ecca80 0.1s done
+#56 exporting manifest list sha256:8d8c165c0a349e9793cd53862a59cdff82f82bd2018d6ed4efceb09337b379d4 0.1s done
+#56 naming to docker.io/flatshare/media:0.1.0 done
+#56 unpacking to docker.io/flatshare/media:0.1.0
+#56 ...
+
+#58 [telegram] exporting to image
+#58 exporting layers done
+#58 exporting manifest sha256:8c00aa5120e18cb81cd9a2cac37587d6d1d844eccd7d8aba84177ba30f44238c 0.0s done
+#58 exporting config sha256:fbdc5200ee7cb80781d7416be09aecc18a61751a60667c381ada8979b8a142f0 0.0s done
+#58 exporting attestation manifest sha256:c912fa4ff68c77b26c81cf284dda7f456c11ca0d28070f55d664bf83943b6252 0.1s done
+#58 exporting manifest list sha256:730a0b5ee15effa3c2cc96aab413f37fe5fee04d8d4865656d11977cb80cf1a7 0.1s done
+#58 naming to docker.io/flatshare/telegram-relay:0.1.0 0.0s done
+#58 unpacking to docker.io/flatshare/telegram-relay:0.1.0 0.0s done
+#58 DONE 0.3s
+
+#59 [tests] exporting to image
+#59 exporting layers done
+#59 exporting manifest sha256:8a170e3dbc896d2f0006bb7c8bca24f6d434a434a36526957cc83aa600e4bd5c done
+#59 exporting config sha256:d48446bf92d83f76865e4b36ba8617a94e21e142cc93ad27def7db6f59356ba1 0.0s done
+#59 exporting attestation manifest sha256:daf2c7479fb6aaacaafbad1d2e0e2e2dff83f911edab2ba1fcd76cdcb998c460 0.1s done
+#59 exporting manifest list sha256:902efc5cf3e0c92f05d9380dca1635e45569c186a02c895c65193feef8009592 0.1s done
+#59 naming to docker.io/flatshare/tests:py3.12.14-p4 0.0s done
+#59 unpacking to docker.io/flatshare/tests:py3.12.14-p4 0.0s done
+#59 DONE 0.3s
+
+#60 [text] exporting to image
+#60 exporting layers done
+#60 exporting manifest sha256:141d50691f3d6d2d84f025d75ea80f3e5e95b3ae35b5b369f3334ab493ccc7de 0.0s done
+#60 exporting config sha256:6774f37329e3f833106905dc11c1bfecb16a2996aea8804aece3ce9f0412b021 0.0s done
+#60 exporting attestation manifest sha256:6d2a976f4d75f2d545b5804d1ed493a4dea106861f377e5adee54c50329383b1 0.1s done
+#60 exporting manifest list sha256:f47d28c5a0d56d6084335b474d94cdeb3d4302150d41a9fb4d8273844694c048 0.1s done
+#60 naming to docker.io/flatshare/text:0.1.0 0.0s done
+#60 unpacking to docker.io/flatshare/text:0.1.0 0.0s done
+#60 DONE 0.3s
+
+#56 [media] exporting to image
+#56 unpacking to docker.io/flatshare/media:0.1.0 0.0s done
+#56 DONE 0.4s
+
+#61 [postgres] resolving provenance for metadata file
+#61 DONE 0.1s
+
+#62 [telegram] resolving provenance for metadata file
+#62 DONE 0.1s
+
+#63 [text] resolving provenance for metadata file
+#63 DONE 0.1s
+
+#64 [media] resolving provenance for metadata file
+#64 DONE 0.1s
+
+#65 [tests] resolving provenance for metadata file
+#65 DONE 0.0s
+ Image flatshare/media:0.1.0 Built 
+ Image flatshare/telegram-relay:0.1.0 Built 
+ Image flatshare/postgres:18-3.6-pgvector0.8 Built 
+ Image flatshare/text:0.1.0 Built 
+ Image flatshare/tests:py3.12.14-p4 Built 
+exit=0 seconds=4.9
+
+===== start stack =====
+command: docker compose @files up -d; docker compose @files up -d --force-recreate n8n-setup n8n proxy
+started: 2026-10-12T11:49:01.9871357+01:00
+ Container fs-media Running 
+ Container flatshare-n8n-runners-1 Running 
+ Container fs-n8n Running 
+ Container fs-postgres Running 
+ Container fs-ollama Running 
+ Container fs-garage Running 
+ Container fs-telegram Running 
+ Container fs-proxy Running 
+ Container fs-tei Running 
+ Container fs-text Running 
+ Container fs-postgres Waiting 
+ Container fs-ollama Waiting 
+ Container fs-garage Waiting 
+ Container fs-garage Healthy 
+ Container fs-postgres Healthy 
+ Container fs-ollama Healthy 
+ Container flatshare-ollama-pull-1 Starting 
+ Container flatshare-db-bootstrap-1 Starting 
+ Container flatshare-ollama-pull-1 Started 
+ Container flatshare-db-bootstrap-1 Started 
+ Container flatshare-db-bootstrap-1 Waiting 
+ Container flatshare-db-bootstrap-1 Exited 
+ Container flatshare-n8n-setup-1 Starting 
+ Container flatshare-n8n-setup-1 Started 
+ Container flatshare-n8n-setup-1 Waiting 
+ Container flatshare-n8n-setup-1 Exited 
+ Container fs-n8n Waiting 
+ Container fs-n8n Waiting 
+ Container fs-n8n Healthy 
+ Container fs-n8n Healthy 
+ Container fs-postgres Running 
+ Container flatshare-n8n-setup-1 Recreate 
+ Container flatshare-n8n-setup-1 Recreated 
+ Container fs-n8n Recreate 
+ Container fs-n8n Recreated 
+ Container fs-proxy Recreate 
+ Container fs-proxy Recreated 
+ Container fs-postgres Waiting 
+ Container fs-postgres Healthy 
+ Container flatshare-db-bootstrap-1 Starting 
+ Container flatshare-db-bootstrap-1 Started 
+ Container flatshare-db-bootstrap-1 Waiting 
+ Container flatshare-db-bootstrap-1 Exited 
+ Container flatshare-n8n-setup-1 Starting 
+ Container flatshare-n8n-setup-1 Started 
+ Container flatshare-n8n-setup-1 Waiting 
+request returned 500 Internal Server Error for API route and version http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.55/containers/83c18fe2c8003f9c72753c6cf258031b8696eee4ee1c3d43c8791c0f3351eafd/json, check if the server supports the requested API version
+exit=1 seconds=966

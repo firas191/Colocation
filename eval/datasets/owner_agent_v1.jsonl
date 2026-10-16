@@ -3,7 +3,7 @@
 {"id": "o-03", "language": "fr", "text": "mon annonce : loyer 450.000 DT maintenant", "expect": {"rent": 450}, "tags": ["rent", "unit_trap"]}
 {"id": "o-04", "language": "en", "text": "Please change the rent of my listing to 380 dinars", "expect": {"rent": 380}, "tags": ["rent"]}
 {"id": "o-05", "language": "ar", "text": "غير سعر الكراء في إعلاني إلى 400 دينار", "expect": {"rent": 400}, "tags": ["rent"]}
-{"id": "o-06", "language": "aeb-latn", "text": "badel el kra fel annonce mte3i 3la 350 dt", "expect": {"rent": 350}, "tags": ["rent", "arabizi"]}
+{"id": "o-06", "language": "aeb-latn", "text": "badel el kra fel annonce mte3i 3la 380 dt", "expect": {"rent": 380}, "tags": ["rent", "arabizi"]}
 {"id": "o-07", "language": "fr", "text": "La caution de ma chambre est de 700 dt", "expect": {"deposit": 700}, "tags": ["deposit"]}
 {"id": "o-08", "language": "fr", "text": "Enlève la photo 2 de mon annonce", "expect": {"remove_photos": [2]}, "tags": ["photo"]}
 {"id": "o-09", "language": "en", "text": "remove the third photo from my listing", "expect": {"remove_photos": [3]}, "tags": ["photo"]}

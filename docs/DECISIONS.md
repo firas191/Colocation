@@ -725,6 +725,15 @@ photos, or keeping P7 off for Telegram listings. Choosing without figures would 
 (`p4.ps1 -Step p7-timing`) first measures the same calls one at a time without the timeout and reports Ollama's own
 durations (load, prompt evaluation with the prompt's token count, generation) at 512, 768 and 1024 px.
 
+### D-092 P5 v2 and P11 v2 stay active; dinars written with millimes
+
+T-60 against T-55: false abstention 0.564 to 0.205, gold retrieved 18 to 28 of 39, conflicts on contradiction
+questions 1 to 5 of 10, correct abstentions unchanged (3 of 3). The cost: 6 of 31 answers cite only excerpts outside
+the gold (1 of 17 before), to be judged by hand. T-61 against T-56: routing 20 to 23 of 24, the two v1 errors fixed,
+one new wrong value (o-23). Both v2 stay active (spec 9.5: better on the primary measure; the regressions are listed).
+The owner tool now reads "450.000" as 450 (dinars with their millimes, as written in Tunisia) and keeps "1.225" and
+"1.225.000" as thousands.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

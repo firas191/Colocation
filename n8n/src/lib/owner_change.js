@@ -1,11 +1,16 @@
 // Owner assistant (D-088): the propose_change tool's arguments, as the model wrote them (text), to the body of
 // PATCH /v1/listings/:id. Empty or unreadable arguments are left out; what is left is checked in the database.
-//  - amount("400 DT") 400; amount("1.225.000") 1225000 (dots as thousands separators); amount("450,5") 450.5
+//  - amount("400 DT") 400; amount("450.000") 450 (dinars written with their millimes); amount("1.225") 1225 and
+//    amount("1.225.000") 1225000 (dots between thousands); amount("450,5") 450.5
 //  - yesNo("oui") true; list("wifi, Air conditioning") ["wifi", "air_conditioning"]; rules("smoking=no, pets=yes")
 function amount(s) {
   const t = String(s ?? '').replace(/\s+/g, '').replace(/[^\d.,]/g, '');
   if (!t) return null;
-  const v = /^\d{1,3}(\.\d{3})+$/.test(t) ? Number(t.replace(/\./g, '')) : Number(t.replace(',', '.'));
+  let v;
+  if (/^\d{1,3}(\.\d{3}){2,}$/.test(t)) v = Number(t.replace(/\./g, ''));     // 1.225.000: dots between thousands
+  else if (/^\d{1,3}\.000$/.test(t)) v = Number(t);                        // 450.000: dinars with their millimes (T-61)
+  else if (/^\d{1,3}\.\d{3}$/.test(t)) v = Number(t.replace('.', ''));     // 1.225: thousands
+  else v = Number(t.replace(',', '.'));
   return Number.isFinite(v) ? v : null;
 }
 function int(s) {

@@ -1,0 +1,40 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-16T13:23:37.9187821+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== Ollama memory placement before =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-16T13:23:38.2277519+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+bge-m3:latest    790764642607    664 MB    100% GPU           4096       8 minutes from now    
+qwen3.5:4b       2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       8 minutes from now    
+exit=0 seconds=0.2
+
+===== P3 and P7 calls timed one by one (up to 15 min per call) =====
+command: if ($Listing) { docker @run scripts/p7_timing.py --listing $Listing } else { docker @run scripts/p7_timing.py }
+started: 2026-10-16T13:23:38.4487076+01:00
+ Container flatshare-tests-run-387161c91a1d Creating 
+ Container flatshare-tests-run-387161c91a1d Created 
+listing d3cae0fc-4e2d-4ff9-b1af-ae492b2d14bd: 3 photos; model qwen3.5:4b; P3 v4, P7 v1; num_ctx 4096; timeout here 900 s (workflows: 120000 ms)
+{"call": "P3 text (first call)", "ok": true, "http": 200, "wall_s": 17.3, "load_s": 0.0, "prompt_tokens": 2508, "prompt_s": 4.6, "output_tokens": 127, "output_s": 12.6, "total_s": 17.3, "done_reason": "stop", "valid_json": true, "error": null}
+{"call": "P7 photo 512px", "width": 512, "height": 512, "jpeg_bytes": 33181, "ok": true, "http": 200, "wall_s": 23.0, "load_s": 0.0, "prompt_tokens": 556, "prompt_s": 5.3, "output_tokens": 200, "output_s": 17.3, "total_s": 23.0, "done_reason": "stop", "valid_json": true, "error": null}
+{"call": "P7 photo 768px", "width": 768, "height": 768, "jpeg_bytes": 58561, "ok": true, "http": 200, "wall_s": 31.8, "load_s": 0.0, "prompt_tokens": 876, "prompt_s": 10.7, "output_tokens": 212, "output_s": 20.9, "total_s": 31.8, "done_reason": "stop", "valid_json": true, "error": null}
+{"call": "P7 photo 1024px", "width": 1000, "height": 1000, "jpeg_bytes": 76872, "ok": true, "http": 200, "wall_s": 40.0, "load_s": 0.0, "prompt_tokens": 1261, "prompt_s": 18.0, "output_tokens": 219, "output_s": 21.7, "total_s": 40.0, "done_reason": "stop", "valid_json": true, "error": null}
+{"call": "P3 text (again)", "ok": true, "http": 200, "wall_s": 14.6, "load_s": 0.0, "prompt_tokens": 2508, "prompt_s": 0.3, "output_tokens": 127, "output_s": 14.1, "total_s": 14.6, "done_reason": "stop", "valid_json": true, "error": null}
+wrote reports/eval/p7-timing-20261016-122546.json
+exit=0 seconds=128.4
+
+===== Ollama memory placement after =====
+command: docker exec fs-ollama ollama ps
+started: 2026-10-16T13:25:46.8451921+01:00
+NAME             ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+qwen3.5:4b       2a654d98e6fb    3.7 GB    52%/48% CPU/GPU    4096       9 minutes from now    
+bge-m3:latest    790764642607    664 MB    100% GPU           4096       6 minutes from now    
+exit=0 seconds=0.3

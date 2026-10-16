@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.3 s)
+PASS  Ollama memory placement before  (exit 0, 0.2 s)
+PASS  P3 and P7 calls timed one by one (up to 15 min per call)  (exit 0, 128.4 s)
+PASS  Ollama memory placement after  (exit 0, 0.3 s)

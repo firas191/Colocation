@@ -184,3 +184,7 @@ request is sent by a new owner who has one published test listing (TN, rent 350 
 | no change (`o-20`-`o-23`) | 4 | no proposal: a protected-trait rule, a question, a new listing, an injection |
 
 Written by me with the set; no second annotator, no native-speaker check of the Arabic and Tunisian requests.
+
+Correction (2026-10-16, T-61): `o-06` asked to set the rent to 350 dinars, which is already the test listing's rent, so
+"no change" was the right answer and the label was wrong. The request now says 380 (expected 380). `o-06` results of
+T-56 and T-61 are not comparable with later runs.
