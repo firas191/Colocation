@@ -1688,6 +1688,13 @@ reached the assistant through the routing rule and was right. Still wrong:
 - o-06 was a labelling error of mine: the request asked for 350 dinars, the listing's rent already. "No change" was right.
   The set now says 380 (eval/datasets/README.md).
 
+## T-62 The 3-photo /annonce again on the owner's PC (2026-10-16, F-064)
+
+Same photos and caption as on 2026-10-12, sent in Telegram at 14:41 with nothing else running. The job finished in
+2 min 30 s, first attempt: P7 photo calls 37.2 s, 36.0 s and 42.4 s, P3 28.4 s, no error (step-time query, RUNBOOK).
+The bot answered at 14:44 with the fields read, the photo note ("amenities the text does not mention"), "not
+published: rent missing" and the 3 photos accepted (1 area blurred). F-064 did not happen again; its cause stays unknown.
+
 ---
 
 ## Not run
