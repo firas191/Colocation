@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P8_scam_agent final answer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["signals", "prices_in_text", "note"],
+  "properties": {
+    "signals": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "quote", "evidence"],
+        "properties": {
+          "type": { "enum": ["off_platform_payment", "advance_payment", "owner_abroad", "urgency", "external_contact"] },
+          "quote": { "type": "string", "maxLength": 160 },
+          "evidence": { "type": "string", "maxLength": 120 }
+        }
+      }
+    },
+    "prices_in_text": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["amount", "currency", "context"],
+        "properties": {
+          "amount": { "type": "number" },
+          "currency": { "type": ["string", "null"] },
+          "context": { "type": "string", "maxLength": 60 }
+        }
+      }
+    },
+    "note": { "type": "string", "maxLength": 300 }
+  }
+}

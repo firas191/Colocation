@@ -1,0 +1,108 @@
+{
+  "id": "fsScamToolContct",
+  "name": "wf.scam.tool_contact",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "d3c16de1-43d3-59f2-ad95-c6ba2da17199",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "contact"
+            },
+            {
+              "name": "listing_id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "48d6b9c9-aade-5566-a415-399789822582",
+      "name": "Reuse",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with me as (select owner_id from app.listings where id = $1::uuid), k as (select trim($2::text) as c, right(regexp_replace($2::text, '\\D', '', 'g'), 8) as d) select count(*)::int as other_listings, count(distinct l.owner_id)::int as other_owners from app.listings l, me, k where l.id <> $1::uuid and l.owner_id is distinct from me.owner_id and case when position('@' in k.c) > 0 then length(k.c) >= 6 and position(lower(k.c) in lower(coalesce(l.title, '') || ' ' || coalesce(l.description, ''))) > 0 else length(k.d) = 8 and position(k.d in regexp_replace(coalesce(l.title, '') || coalesce(l.description, ''), '\\D', '', 'g')) > 0 end",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id, String($json.contact || '') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "7e4b69ff-79fb-542c-994e-a852c4f4a37d",
+      "name": "Tool answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.tool_contact > \"Tool answer\": how many listings of OTHER owners contain the same phone (last 8 digits) or e-mail.\nconst s = $('Start').first().json;\nconst r = $input.first().json || {};\nconst n = Number(r.other_listings) || 0, o = Number(r.other_owners) || 0;\nreturn [{ json: { contact: String(s.contact || '').slice(0, 80), other_listings: n, other_owners: o, final: true,\n  meaning: o > 0 ? `used in ${n} listing(s) of ${o} other owner(s)` : 'not used in other owners\\' listings; do not check this contact again' } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Reuse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reuse": {
+      "main": [
+        [
+          {
+            "node": "Tool answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    }
+  ]
+}

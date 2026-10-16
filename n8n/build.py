@@ -1275,6 +1275,9 @@ ANALYZE_WF = "fsListingAnalyz1"
 INTAKE_PHOTOS_WF = "fsIntakePhotos01"
 LISTING_EXTRACT_WF = "fsListingExtr001"
 SCAM_CHECK_WF = "fsScamCheck00001"
+SCAM_TOOL_MARKET_WF = "fsScamToolMarket"
+SCAM_TOOL_OWNER_WF = "fsScamToolOwner1"
+SCAM_TOOL_CONTACT_WF = "fsScamToolContct"
 SETTINGS_SQL = ("select (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url,"
                 " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,"
                 " (select value #>> '{}' from app.settings where key = 'services.asr_url') as asr_url")
@@ -1493,35 +1496,137 @@ def listing_extract():
     return wf
 
 
+SCAM_MARKET_TOOL_DESC = ("Compare a rent amount with the median monthly rent of similar published listings (same city, kind "
+                         "and currency, else the whole country). Input: amount, a number in the main unit of the currency "
+                         "(450 for 450 DT). Returns the listing's own rent, the median, the ratio amount / median and how "
+                         "many listings were compared.")
+SCAM_OWNER_TOOL_DESC = ("Facts about the account that posted this listing: account age in days, whether it is verified, and "
+                        "how many listings it created in the last 24 hours. No input.")
+SCAM_CONTACT_TOOL_DESC = ("Check whether a phone number or e-mail written in this listing is also used in listings of other "
+                          "owners. Input: contact, copied exactly as written in the listing. Returns how many other "
+                          "listings and other owners use it.")
+SCAM_CONTACT_SQL = ("with me as (select owner_id from app.listings where id = $1::uuid), k as (select trim($2::text) as c, "
+                    "right(regexp_replace($2::text, '\\D', '', 'g'), 8) as d) "
+                    "select count(*)::int as other_listings, count(distinct l.owner_id)::int as other_owners "
+                    "from app.listings l, me, k where l.id <> $1::uuid and l.owner_id is distinct from me.owner_id and "
+                    "case when position('@' in k.c) > 0 then length(k.c) >= 6 and position(lower(k.c) in "
+                    "lower(coalesce(l.title, '') || ' ' || coalesce(l.description, ''))) > 0 "
+                    "else length(k.d) = 8 and position(k.d in regexp_replace(coalesce(l.title, '') || coalesce(l.description, ''), "
+                    "'\\D', '', 'g')) > 0 end")
+SCAM_AGENT_CONTEXT_SQL = ("select to_jsonb(ai.prompt_for('P8_scam_agent', nullif($1, '')::int)) as prompt_row, "
+                          "coalesce((select value #>> '{}' from app.settings where key = 'llm.model'), 'qwen3.5:4b') as model, "
+                          "coalesce((select (value #>> '{}')::int from app.settings where key = 'llm.num_ctx'), 4096) as num_ctx")
+
+
+def scam_tool_market():
+    """Tool of the A4 Scam agent: a rent amount against the median of comparable listings."""
+    wf = WF(SCAM_TOOL_MARKET_WF, "wf.scam.tool_market", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("amount", "number"), ("listing_id", "string")]), [0, 0])
+    pg_node(wf, "Context", "select app.scam_context($1::uuid) as ctx", "={{ [ $json.listing_id ] }}", [220, 0], on_error=None)
+    code_node(wf, "Tool answer", "scam_tool_market.js", [440, 0])
+    wf.link("Start", "Context")
+    wf.link("Context", "Tool answer")
+    return wf
+
+
+def scam_tool_owner():
+    """Tool of the A4 Scam agent: account age, verification and recent listings of the listing's owner."""
+    wf = WF(SCAM_TOOL_OWNER_WF, "wf.scam.tool_owner", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, tool_inputs([("listing_id", "string")]), [0, 0])
+    pg_node(wf, "Context", "select app.scam_context($1::uuid) as ctx", "={{ [ $json.listing_id ] }}", [220, 0], on_error=None)
+    code_node(wf, "Tool answer", "scam_tool_owner.js", [440, 0])
+    wf.link("Start", "Context")
+    wf.link("Context", "Tool answer")
+    return wf
+
+
+def scam_tool_contact():
+    """Tool of the A4 Scam agent: is a phone (last 8 digits) or e-mail of the listing used by other owners' listings."""
+    wf = WF(SCAM_TOOL_CONTACT_WF, "wf.scam.tool_contact", tags=["agent"])
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1,
+            tool_inputs([("contact", "string"), ("listing_id", "string")]), [0, 0])
+    pg_node(wf, "Reuse", SCAM_CONTACT_SQL, "={{ [ $json.listing_id, String($json.contact || '') ] }}", [220, 0], on_error=None)
+    code_node(wf, "Tool answer", "scam_tool_contact.js", [440, 0])
+    wf.link("Start", "Reuse")
+    wf.link("Reuse", "Tool answer")
+    return wf
+
+
 def scam_check():
-    """A4 scam check (wf.scam.check, P8): listing -> rule signals (price, profile, price_mismatch) + quoted model signals -> score.
-    Input {listing_id, job_id?, model?, version?}; output see scam_result.js. A model failure does not stop the check."""
+    """A4 Scam check agent: an n8n AI Agent node with the local chat model and three workflow tools (market_price,
+    owner_profile, contact_reuse); system message from the prompt registry (P8_scam_agent). The agent decides which
+    checks to run and writes a short note for the moderator; the quoted text signals come from one P8_scam_detector
+    call (wf.llm.call, the evaluated prompt); code checks everything and computes the score (lib/scam_signals.js).
+    Input {listing_id, job_id?, model?, version?}; output see scam_result.js. An agent failure does not stop the check."""
     wf = WF(SCAM_CHECK_WF, "wf.scam.check", tags=["agent", "intake"], settings={"saveDataSuccessExecution": "all"})
     wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
     pg_node(wf, "Context", "select app.scam_context($1::uuid) as ctx", "={{ [ $json.listing_id ] }}", [220, 0], on_error=None)
     if_node(wf, "Found?", "={{ !!$json.ctx && $json.ctx.ok === true }}", [440, 0])
-    code_node(wf, "Call input", "scam_vars.js", [660, -100])
-    exec_wf(wf, "Detect", LLM_CALL_WF, "wf.llm.call", pos=[880, -100])
-    code_node(wf, "Score", "scam_post.js", [1100, -100])
-    if_node(wf, "Store?", "={{ $json.store }}", [1320, -100])
+    pg_node(wf, "Agent context", SCAM_AGENT_CONTEXT_SQL, "={{ [ '' ] }}", [660, -100], on_error=None)
+    code_node(wf, "Agent input", "scam_agent_input.js", [880, -100])
+    if_node(wf, "Prompt ok?", "={{ $json.ok }}", [1100, -100])
+    wf.node("Scam agent", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+        "promptType": "define", "text": "={{ $json.text }}", "hasOutputParser": False,
+        "options": {"systemMessage": "={{ $json.system }}", "maxIterations": "={{ $json.max_iterations }}",
+                    "returnIntermediateSteps": True}}, [1320, -200], onError="continueRegularOutput")
+    wf.node("Ollama Chat Model", "@n8n/n8n-nodes-langchain.lmChatOllama", 1, {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {"temperature": 0, "think": False, "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+                    "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+                    "numPredict": "={{ $('Agent input').first().json.num_predict }}"}},
+        [1180, 40], credentials=OLLAMA_CRED)
+    ai = "$('Agent input').first().json"
+    wf.node("market_price", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": SCAM_MARKET_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": SCAM_TOOL_MARKET_WF, "mode": "id", "cachedResultName": "wf.scam.tool_market"},
+        "workflowInputs": tool_mapping([
+            ("amount", "number", "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit (450 for 450 DT)', 'number') }}"),
+            ("listing_id", "string", "={{ %s.listing_id }}" % ai)])}, [1320, 40])
+    wf.node("owner_profile", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": SCAM_OWNER_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": SCAM_TOOL_OWNER_WF, "mode": "id", "cachedResultName": "wf.scam.tool_owner"},
+        "workflowInputs": tool_mapping([("listing_id", "string", "={{ %s.listing_id }}" % ai)])}, [1460, 40])
+    wf.node("contact_reuse", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
+        "description": SCAM_CONTACT_TOOL_DESC, "source": "database",
+        "workflowId": {"__rl": True, "value": SCAM_TOOL_CONTACT_WF, "mode": "id", "cachedResultName": "wf.scam.tool_contact"},
+        "workflowInputs": tool_mapping([
+            ("contact", "string", "={{ $fromAI('contact', 'A phone number or e-mail copied exactly as written in the listing', 'string') }}"),
+            ("listing_id", "string", "={{ %s.listing_id }}" % ai)])}, [1600, 40])
+    code_node(wf, "Agent output", "scam_agent_output.js", [1540, -100])
+    code_node(wf, "Detect input", "scam_detect_vars.js", [1760, -100])
+    exec_wf(wf, "Detect", LLM_CALL_WF, "wf.llm.call", pos=[1980, -100])
+    code_node(wf, "Score", "scam_post.js", [2200, -100])
+    if_node(wf, "Store?", "={{ $json.store }}", [2420, -100])
     pg_node(wf, "Store check", "select app.store_scam_check($1::uuid, $2::jsonb) as r", "={{ $json.params }}",
-            [1540, -200], on_error=None, retries=1)
+            [2640, -200], on_error=None, retries=1)
     pg_node(wf, "Record steps", "select app.record_job_steps(nullif($1, '')::uuid, 'wf.scam.check', $2, $3::jsonb) as execution_id",
             "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Score').first().json.steps) ] }}",
-            [1760, -100], on_error="continueRegularOutput")
-    code_node(wf, "Result", "scam_result.js", [1980, 0])
+            [2860, -100], on_error="continueRegularOutput")
+    code_node(wf, "Result", "scam_result.js", [3080, 0])
     wf.link("Start", "Context")
     wf.link("Context", "Found?")
-    wf.link("Found?", "Call input", 0)
+    wf.link("Found?", "Agent context", 0)
     wf.link("Found?", "Result", 1)
-    wf.link("Call input", "Detect")
+    wf.link("Agent context", "Agent input")
+    wf.link("Agent input", "Prompt ok?")
+    wf.link("Prompt ok?", "Scam agent", 0)
+    wf.link("Prompt ok?", "Agent output", 1)
+    wf.link("Scam agent", "Agent output")
+    wf.link("Agent output", "Detect input")
+    wf.link("Detect input", "Detect")
     wf.link("Detect", "Score")
     wf.link("Score", "Store?")
     wf.link("Store?", "Store check", 0)
     wf.link("Store?", "Record steps", 1)
     wf.link("Store check", "Record steps")
     wf.link("Record steps", "Result")
+    wf.ai_link("Ollama Chat Model", "Scam agent", "ai_languageModel")
+    wf.ai_link("market_price", "Scam agent", "ai_tool")
+    wf.ai_link("owner_profile", "Scam agent", "ai_tool")
+    wf.ai_link("contact_reuse", "Scam agent", "ai_tool")
     return wf
+
 
 def listing_analyze():
     """Job worker for POST /v1/listings/:id/analyze: photos (4.3), then the text extraction P3 (4.4).
@@ -1796,7 +1901,7 @@ BUILDS = {
                   llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, api_search, api_profiles_extract, api_profiles_me,
                   orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
                   api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
-                  listing_extract, scam_check, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
+                  listing_extract, scam_tool_market, scam_tool_owner, scam_tool_contact, scam_check, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
     "workflows-test": [test_fail],
 }
 

@@ -1,0 +1,109 @@
+{
+  "id": "fsScamToolMarket",
+  "name": "wf.scam.tool_market",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "10459f57-7937-5cbe-b402-4ff0489d91db",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "amount",
+              "type": "number"
+            },
+            {
+              "name": "listing_id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6891f254-babe-5d73-b8dd-970a6435784e",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.scam_context($1::uuid) as ctx",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "23689d7b-7b45-5eb5-80f5-9c885c92631e",
+      "name": "Tool answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.tool_market > \"Tool answer\": a rent amount against the median monthly rent of comparable published listings\n// (app.scam_context: same city, kind and currency, else the whole country). Numbers in main units; no listing prose.\nconst s = $('Start').first().json;\nconst c = $input.first().json.ctx || {};\nif (c.ok !== true) return [{ json: { error: 'listing_not_found' } }];\nconst exp = c.currency_exponent == null ? 2 : Number(c.currency_exponent);\nconst main = (v) => (v == null ? null : Math.round((Number(v) / 10 ** exp) * 100) / 100);\nconst m = c.market || {};\nconst median = m.median_monthly_minor ? main(m.median_monthly_minor) : null;\nconst amount = Number(s.amount);\nreturn [{ json: { currency: c.currency || null, listed_rent: main(c.rent_minor), listed_period: c.rent_period || null,\n  amount: Number.isFinite(amount) ? amount : null, median_monthly_rent: median, compared_listings: m.comparables ?? 0,\n  compared_in: m.scope || 'none',\n  ratio: median && amount > 0 ? Math.round((amount / median) * 100) / 100 : null,\n  note: median ? null : 'not enough similar listings to compare' } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Tool answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-// Scam check (A4): deterministic signals and score. The model only lists text signals with quotes (prompt P8);
-// price, profile, price_mismatch, weights and thresholds are computed here from app.scam_context (settings scam.*).
-// Evidence of rule signals is data (numbers, codes), never sentences.
+// Scam check (A4): deterministic signals and score. The agent only lists text signals with quotes (P8_scam_agent);
+// price, profile, price_mismatch, contact reuse, weights and thresholds are computed here from app.scam_context
+// (settings scam.*). Evidence of rule signals is data (numbers, codes), never sentences.
 const MODEL_TYPES = ['off_platform_payment', 'advance_payment', 'owner_abroad', 'urgency', 'external_contact'];
 // Contexts are normalized (no accents, lower case) before these tests.
 const RENT_CTX = /\b(rent|loyer|kra|price|prix|real|reel|vrai|actual|monthly|mensuel)\b|per month|par mois/;
@@ -8,9 +8,10 @@ const OTHER_CTX = /\b(deposit|caution|fees?|frais|bills?|transfer|virement)\b/;
 const RENT_WORD = /\b(rent|loyer|kra)\b/;
 const CURRENCY_ALIAS = { 'dt': 'TND', 'tnd': 'TND', 'dinar': 'TND', 'dinars': 'TND',
   '€': 'EUR', 'eur': 'EUR', 'euro': 'EUR', 'euros': 'EUR', '$': 'USD', 'usd': 'USD', '£': 'GBP', 'gbp': 'GBP' };
+const CONTACT_REUSED_WEIGHT = 20;   // used until scam.weights has a contact_reused entry
 
 function normText(s) {
-  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 function normCurrency(c) {
@@ -41,6 +42,14 @@ function numbersIn(text) {
 function amountInText(amount, text) {
   for (const n of numbersIn(text)) if (Math.abs(n - amount) < 0.005) return true;
   return false;
+}
+
+// A phone (last 8 digits) or an e-mail is "in the text" only if the listing really contains it.
+function contactInText(contact, text) {
+  const c = String(contact || '').trim();
+  if (c.includes('@')) return c.length >= 6 && normText(text).includes(normText(c));
+  const d = c.replace(/\D/g, '');
+  return d.length >= 8 && String(text || '').replace(/\D/g, '').includes(d.slice(-8));
 }
 
 function monthlyOf(amount, period) {
@@ -115,6 +124,21 @@ function profileSignals(ctx, S, W) {
   return out;
 }
 
+// Results of the agent's contact_reuse tool (database counts). Kept only for a contact that is really written in the
+// listing, so the agent cannot raise the score with a contact it made up; the largest reuse wins.
+function contactSignal(reuse, text, W, dropped) {
+  let best = null;
+  for (const x of Array.isArray(reuse) ? reuse : []) {
+    if (!x || !(Number(x.other_owners) > 0)) continue;
+    if (!contactInText(x.contact, text)) { dropped.push({ type: 'contact_reused', reason: 'contact_not_in_text' }); continue; }
+    if (!best || Number(x.other_listings) > best.other_listings) {
+      best = { other_listings: Number(x.other_listings) || 0, other_owners: Number(x.other_owners) || 0 };
+    }
+  }
+  if (!best) return null;
+  return { type: 'contact_reused', source: 'rule', weight: W.contact_reused ?? CONTACT_REUSED_WEIGHT, evidence: best };
+}
+
 // Signals of the model kept only if the type is allowed and the quote is really in the text (one per type).
 function modelSignals(output, text, W) {
   const kept = [], dropped = [];
@@ -130,21 +154,23 @@ function modelSignals(output, text, W) {
   return { kept, dropped };
 }
 
-// ctx: app.scam_context; modelOutput: P8 output or null (model unavailable); returns {score, level, signals, dropped}.
-function scamScore(ctx, modelOutput) {
+// ctx: app.scam_context; modelOutput: the agent's answer or null (model unavailable);
+// extra.contact_reuse: results of the contact_reuse tool. Returns {score, level, signals, dropped}.
+function scamScore(ctx, modelOutput, extra = {}) {
   const S = ctx.settings || {};
   requireSettings(S);
   const W = S['scam.weights'];
   const T = S['scam.thresholds'];
-  const signals = [], priceDropped = [];
+  const signals = [], ruleDropped = [];
   const p = priceSignal(ctx, W); if (p) signals.push(p);
-  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W, priceDropped); if (mm) signals.push(mm);
+  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W, ruleDropped); if (mm) signals.push(mm);
   signals.push(...profileSignals(ctx, S, W));
+  const cr = contactSignal(extra && extra.contact_reuse, ctx.text, W, ruleDropped); if (cr) signals.push(cr);
   const ms = modelSignals(modelOutput, ctx.text, W);
   signals.push(...ms.kept);
   const score = Math.min(100, signals.reduce((a, s) => a + (s.weight || 0), 0));
   const level = score >= T.block ? 'high' : score >= T.review ? 'medium' : 'low';
-  return { score, level, signals, dropped: [...ms.dropped, ...priceDropped] };
+  return { score, level, signals, dropped: [...ms.dropped, ...ruleDropped] };
 }
 
-if (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency, amountInText };
+if (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency, amountInText, contactInText };

@@ -1,0 +1,13 @@
+{
+  "name": "P8_scam_agent",
+  "agent": "A4 scam check",
+  "role": "System message of the A4 Scam check agent (n8n AI Agent node): decide which checks a listing needs with three tools (market price of a rent written in the text, owner profile, reuse of a phone or e-mail by other owners) and write a short plain-text note for the moderator. The quoted text signals come from P8_scam_detector; the score is computed in code (weights and thresholds in app.settings, scam.*), and contacts and numbers are checked against the listing and the tool results.",
+  "schema": "schemas/P8_scam_agent.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today"
+  ],
+  "golden_set": "p8_scam",
+  "active_version": 3
+}

@@ -1,0 +1,105 @@
+{
+  "id": "fsScamToolOwner1",
+  "name": "wf.scam.tool_owner",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "111fa9c8-c263-5eba-81fe-a494b8e42d74",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "listing_id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "9d58951a-3b17-5919-9f30-43d8a7d218e8",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.scam_context($1::uuid) as ctx",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "1acaffa7-2cf3-5c14-9975-7833d7f42459",
+      "name": "Tool answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.tool_owner > \"Tool answer\": facts about the listing's owner (no name, no contact).\nconst c = $input.first().json.ctx || {};\nif (c.ok !== true) return [{ json: { error: 'listing_not_found' } }];\nconst o = c.owner || {};\nreturn [{ json: { account_age_days: o.account_age_days ?? null, verified: o.verified_level == null ? null : o.verified_level > 0,\n  listings_last_24h: o.listings_24h ?? 0 } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Tool answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    }
+  ]
+}

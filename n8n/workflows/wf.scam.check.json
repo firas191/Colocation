@@ -77,18 +77,299 @@
       }
     },
     {
-      "id": "8c77aead-fe94-557f-9e77-ece9ee36f81b",
-      "name": "Call input",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "a9e391c9-f7dc-50f8-aeee-a0addc7af2c7",
+      "name": "Agent context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
       "position": [
         660,
         -100
       ],
       "parameters": {
+        "operation": "executeQuery",
+        "query": "select to_jsonb(ai.prompt_for('P8_scam_agent', nullif($1, '')::int)) as prompt_row, coalesce((select value #>> '{}' from app.settings where key = 'llm.model'), 'qwen3.5:4b') as model, coalesce((select (value #>> '{}')::int from app.settings where key = 'llm.num_ctx'), 4096) as num_ctx",
+        "options": {
+          "queryReplacement": "={{ [ '' ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "32fc4f55-9518-5448-8837-aab8056685fd",
+      "name": "Agent input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// wf.scam.check > \"Call input\"\n// Input: the listing's text and jurisdiction from app.scam_context.\n// Output: the wf.llm.call input for P8 (active version unless the caller asks for one).\nconst s = $('Start').first().json;\nconst c = $('Context').first().json.ctx;\nreturn [{ json: { prompt: 'P8_scam_detector', version: s.version ?? null, model: s.model || null,\n  vars: { message: c.text, jurisdiction: c.jurisdiction_code, today: new Date().toISOString().slice(0, 10) },\n  meta: { listing_id: c.listing_id } } }];"
+        "jsCode": "// wf.scam.check > \"Agent input\"\n// The system message is the active P8_scam_agent version from the prompt registry, with its variables filled in; the\n// user part (the listing between <message> tags) is what the agent receives. No memory: each check is independent.\nconst s = $('Start').first().json;\nconst c = $('Context').first().json.ctx;\nconst k = $('Agent context').first().json;\nconst p = k.prompt_row || {};\nconst template = p.template || p.body || '';\nconst params = p.params || {};\nconst base = { listing_id: c.listing_id, model: s.model || k.model, num_ctx: k.num_ctx, keep_alive: '10m',\n  max_iterations: 6, t0: Date.now(), prompt_version_id: p.version_id || p.id || null, prompt_version: p.version || null };\nif (!template) return [{ json: { ...base, ok: false, error_code: 'prompt_missing', prompt_keys: Object.keys(p) } }];\nconst vars = { message: c.text || '', jurisdiction: c.jurisdiction_code || 'unknown', today: new Date().toISOString().slice(0, 10) };\nconst fill = (t) => t.replace(/\\{\\{\\s*([a-z_]+)\\s*\\}\\}/gi, (m, n) => (n in vars ? String(vars[n]) : m));\nconst m = /##\\s*system\\s*\\n([\\s\\S]*?)\\n##\\s*user\\s*\\n([\\s\\S]*)$/i.exec(template);\nif (!m) return [{ json: { ...base, ok: false, error_code: 'prompt_invalid' } }];\nreturn [{ json: { ...base, ok: true, system: fill(m[1].trim()), text: fill(m[2].trim()), num_predict: params.num_predict || 200 } }];\n"
+      }
+    },
+    {
+      "id": "ae207102-f176-5bda-8780-8d2e0d851355",
+      "name": "Prompt ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5efd7169-2f09-5226-b44d-4d10c37825db",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "f556cc8b-5952-5551-8220-e375174a703e",
+      "name": "Scam agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1320,
+        -200
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "={{ $json.system }}",
+          "maxIterations": "={{ $json.max_iterations }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "30f1fc45-8698-5306-a6e2-01b1e63aa0cc",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        40
+      ],
+      "parameters": {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {
+          "temperature": 0,
+          "think": false,
+          "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+          "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+          "numPredict": "={{ $('Agent input').first().json.num_predict }}"
+        }
+      },
+      "credentials": {
+        "ollamaApi": {
+          "id": "fsCredOllama0001",
+          "name": "Ollama (local)"
+        }
+      }
+    },
+    {
+      "id": "60276d3f-905b-532b-b9fc-ac40d31f14fb",
+      "name": "market_price",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        40
+      ],
+      "parameters": {
+        "description": "Compare a rent amount with the median monthly rent of similar published listings (same city, kind and currency, else the whole country). Input: amount, a number in the main unit of the currency (450 for 450 DT). Returns the listing's own rent, the median, the ratio amount / median and how many listings were compared.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsScamToolMarket",
+          "mode": "id",
+          "cachedResultName": "wf.scam.tool_market"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "amount": "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit (450 for 450 DT)', 'number') }}",
+            "listing_id": "={{ $('Agent input').first().json.listing_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "listing_id",
+              "displayName": "listing_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "e20be364-816d-549e-b76e-433e9b036751",
+      "name": "owner_profile",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        40
+      ],
+      "parameters": {
+        "description": "Facts about the account that posted this listing: account age in days, whether it is verified, and how many listings it created in the last 24 hours. No input.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsScamToolOwner1",
+          "mode": "id",
+          "cachedResultName": "wf.scam.tool_owner"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "listing_id": "={{ $('Agent input').first().json.listing_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "listing_id",
+              "displayName": "listing_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "bc0da102-4f76-5020-81de-bea967028fd7",
+      "name": "contact_reuse",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        40
+      ],
+      "parameters": {
+        "description": "Check whether a phone number or e-mail written in this listing is also used in listings of other owners. Input: contact, copied exactly as written in the listing. Returns how many other listings and other owners use it.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsScamToolContct",
+          "mode": "id",
+          "cachedResultName": "wf.scam.tool_contact"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "contact": "={{ $fromAI('contact', 'A phone number or e-mail copied exactly as written in the listing', 'string') }}",
+            "listing_id": "={{ $('Agent input').first().json.listing_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contact",
+              "displayName": "contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "listing_id",
+              "displayName": "listing_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "2e4b7ae6-99c0-5d20-bd4f-09bb1bb3fbaf",
+      "name": "Agent output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.check > \"Agent output\"\n// The AI Agent node's answer and tool calls: the moderator note (plain text; kept only if every number in it comes from\n// the listing or a tool result, agent_check.checkAnswer), the contact_reuse results and the list of tools it chose.\n// No answer (model down, iteration limit) -> agent_ok false: the detector and the rules still score the listing.\n// A3 Match agent checks (D-084), shared by the agent workflow and the unit tests.\n//  - toolCalls(steps): the AI Agent node's intermediate steps as [{tool, input, output}] (output parsed when JSON).\n//  - numbersIn(text): every reading of every number written in a text (see readings).\n//  - checkAnswer(answer, sources): every number of two digits or more in the answer must appear in one of the\n//    sources (the user's message, the tool results). Small numbers (result positions, counts up to 10) pass.\n//  - fallbackMask(text): e-mails and long digit runs masked, used only when the Text service did not answer.\n//  - plainText(answer): Markdown removed (bold, italics, headings, list markers, links), lines joined (D-085).\n//  - shorten(text, max): cut at the last sentence end that fits, else at a word, with an ellipsis (D-085).\n\nfunction toolCalls(steps) {\n  return (Array.isArray(steps) ? steps : []).map((s) => {\n    const a = s.action || {};\n    let out = s.observation;\n    if (typeof out === 'string') { try { out = JSON.parse(out); } catch (e) { /* keep the text */ } }\n    if (Array.isArray(out) && out.length === 1) out = out[0];          // a workflow tool answers with its items\n    let input = a.toolInput;\n    if (typeof input === 'string') { try { input = JSON.parse(input); } catch (e) { /* keep the text */ } }\n    return { tool: a.tool || null, input: input ?? null, output: out ?? null };\n  });\n}\n\n// Each number written in a text, with its possible readings: \"450.000\" is 450 (Tunisian dinars, three decimals) or\n// 450000 (dot as thousands separator); \"1.225.000\" is 1225000; \"450,5\" is 450.5.\nfunction readings(text) {\n  const out = [];\n  for (const m of String(text || '').matchAll(/\\d{1,3}(?:\\.\\d{3})+(?!\\d|,\\d)|\\d+(?:[.,]\\d+)?/g)) {\n    const raw = m[0];\n    const alts = new Set();\n    if (/^\\d{1,3}(?:\\.\\d{3})+$/.test(raw)) alts.add(Number(raw.replace(/\\./g, '')));\n    const v = Number(raw.replace(',', '.'));\n    if (Number.isFinite(v)) alts.add(v);\n    out.push([...alts]);\n  }\n  return out;\n}\n\nfunction numbersIn(text) {\n  return readings(text).flat();\n}\n\nfunction checkAnswer(answer, sources) {\n  const allowed = new Set();\n  for (const src of sources || []) {\n    const text = typeof src === 'string' ? src : JSON.stringify(src ?? '');\n    for (const n of numbersIn(text)) {\n      allowed.add(n);\n      allowed.add(Math.round(n));\n    }\n  }\n  const unsupported = [];\n  for (const alts of readings(answer)) {\n    if (alts.some((n) => Number.isInteger(n) && n <= 10)) continue;\n    if (alts.some((n) => allowed.has(n) || allowed.has(Math.round(n)))) continue;\n    unsupported.push(alts[alts.length - 1]);\n  }\n  return { ok: unsupported.length === 0, unsupported };\n}\n\nfunction fallbackMask(text) {\n  return String(text || '')\n    .replace(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g, '<EMAIL>')\n    .replace(/\\+?\\d[\\d .-]{6,}\\d/g, (m) => (m.replace(/\\D/g, '').length >= 8 ? '<PHONE>' : m));\n}\n\nfunction plainText(answer) {\n  const lines = String(answer || '').replace(/\\r/g, '').split('\\n').map((l) => l\n    .replace(/^\\s{0,3}#{1,6}\\s+/, '')                      // headings\n    .replace(/^\\s*(?:[-*+\\u2022]|\\d+[.)])\\s+/, '')            // list markers (\"1.\" too: positions are said in words)\n    .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')                // links: keep the text\n    .replace(/(\\*\\*|__)(.+?)\\1/g, '$2')                       // bold\n    .replace(/(^|[^\\w*])[*_]([^*_\\n]+)[*_](?=[^\\w*]|$)/g, '$1$2') // italics\n    .replace(/`([^`]*)`/g, '$1')\n    .replace(/[*_]{2,}/g, '')\n    .trim()).filter(Boolean);\n  return lines.join(' ').replace(/\\s{2,}/g, ' ').trim();\n}\n\nfunction shorten(text, max) {\n  const t = String(text || '');\n  if (!max || Array.from(t).length <= max) return { text: t, cut: false };\n  const head = Array.from(t).slice(0, max).join('');\n  const ends = [...head.matchAll(/[.!?\\u061F\\u06D4](?=\\s|$)/g)].map((m) => m.index + 1);\n  if (ends.length && ends[ends.length - 1] >= max * 0.4) return { text: head.slice(0, ends[ends.length - 1]).trim(), cut: true };\n  const sp = head.lastIndexOf(' ');\n  return { text: (sp > max * 0.4 ? head.slice(0, sp) : head).trim() + '\\u2026', cut: true };\n}\n\nif (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask, plainText, shorten };\n\n// Scam agent (A4): reading the AI Agent node's final answer and its tool calls.\n// The final answer must be one JSON object {signals, prices_in_text, note}; text around it (a sentence, a ```json fence)\n// is ignored. Anything else is not trusted: the check then runs on the rules alone.\n\nfunction scamParseAnswer(raw) {\n  const s = String(raw || '');\n  const a = s.indexOf('{'), b = s.lastIndexOf('}');\n  if (a < 0 || b <= a) return null;\n  let o;\n  try { o = JSON.parse(s.slice(a, b + 1)); } catch (e) { return null; }\n  if (!o || typeof o !== 'object' || !Array.isArray(o.signals)) return null;\n  return { signals: o.signals.filter((x) => x && typeof x === 'object').slice(0, 8),\n    prices_in_text: Array.isArray(o.prices_in_text) ? o.prices_in_text.filter((x) => x && typeof x === 'object').slice(0, 10) : [],\n    note: typeof o.note === 'string' ? o.note.trim().slice(0, 400) : '' };\n}\n\nfunction scamToolOutput(x) {\n  if (x == null) return null;\n  if (typeof x === 'object') return x;\n  try { return JSON.parse(String(x)); } catch (e) { return null; }\n}\n\n// contact_reuse results seen by the agent: [{contact, other_listings, other_owners}] (database counts, not model words).\nfunction scamContactReuse(calls) {\n  const out = [];\n  for (const c of Array.isArray(calls) ? calls : []) {\n    if (!c || c.tool !== 'contact_reuse') continue;\n    const o = scamToolOutput(c.output);\n    if (o && o.contact != null) out.push({ contact: String(o.contact), other_listings: Number(o.other_listings) || 0,\n      other_owners: Number(o.other_owners) || 0 });\n  }\n  return out;\n}\n\nif (typeof module !== 'undefined') module.exports = { scamParseAnswer, scamContactReuse };\n\nconst a = $('Agent input').first().json;\nconst latency = Date.now() - (a.t0 || Date.now());\nconst base = { agent_model: a.model || null, agent_prompt_version_id: a.prompt_version_id || null, agent_latency_ms: latency };\nif (!a.ok) return [{ json: { ...base, agent_ok: false, agent_error: a.error_code || 'agent_input', note: null, contact_reuse: [], tool_calls: [] } }];\nconst r = $input.first().json;\nconst calls = toolCalls(r.intermediateSteps);\nconst err = r.error ? String(r.error.message || r.error).slice(0, 300) : null;\nlet note = typeof r.output === 'string' ? plainText(r.output) : '';\nlet dropped = null;\nif (note) {\n  const chk = checkAnswer(note, [a.text, ...calls.map((x) => (typeof x.output === 'string' ? x.output : JSON.stringify(x.output)))]);\n  if (chk.ok) note = shorten(note, 300).text; else { dropped = chk.unsupported; note = null; }\n}\nreturn [{ json: { ...base, agent_ok: !err && !!note, agent_error: err || (dropped ? 'note_unsupported_numbers' : (note ? null : 'no_answer')),\n  note: note || null, contact_reuse: scamContactReuse(calls), tool_calls: calls.map((x) => x.tool) } }];\n"
+      }
+    },
+    {
+      "id": "ca40dee4-02fc-5b82-a2a2-6a96a2902650",
+      "name": "Detect input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.check > \"Detect input\": the wf.llm.call input for P8_scam_detector (the evaluated single-call prompt) on the\n// listing's title and description; it gives the quoted text signals and the amounts written.\nconst s = $('Start').first().json;\nconst c = $('Context').first().json.ctx;\nreturn [{ json: { prompt: 'P8_scam_detector', version: s.version ?? null, model: s.model || null,\n  vars: { message: c.text, jurisdiction: c.jurisdiction_code, today: new Date().toISOString().slice(0, 10) },\n  meta: { listing_id: c.listing_id } } }];\n"
       }
     },
     {
@@ -97,7 +378,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        880,
+        1980,
         -100
       ],
       "parameters": {
@@ -120,13 +401,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1100,
+        2200,
         -100
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// wf.scam.check > \"Score\"\n// Deterministic part after P8: price, profile and price_mismatch signals, the model's quoted signals (checked against\n// the text), score and level from the scam.* settings. A model failure does not stop the check: rules still apply.\n// Scam check (A4): deterministic signals and score. The model only lists text signals with quotes (prompt P8);\n// price, profile, price_mismatch, weights and thresholds are computed here from app.scam_context (settings scam.*).\n// Evidence of rule signals is data (numbers, codes), never sentences.\nconst MODEL_TYPES = ['off_platform_payment', 'advance_payment', 'owner_abroad', 'urgency', 'external_contact'];\n// Contexts are normalized (no accents, lower case) before these tests.\nconst RENT_CTX = /\\b(rent|loyer|kra|price|prix|real|reel|vrai|actual|monthly|mensuel)\\b|per month|par mois/;\nconst OTHER_CTX = /\\b(deposit|caution|fees?|frais|bills?|transfer|virement)\\b/;\nconst RENT_WORD = /\\b(rent|loyer|kra)\\b/;\nconst CURRENCY_ALIAS = { 'dt': 'TND', 'tnd': 'TND', 'dinar': 'TND', 'dinars': 'TND',\n  '€': 'EUR', 'eur': 'EUR', 'euro': 'EUR', 'euros': 'EUR', '$': 'USD', 'usd': 'USD', '£': 'GBP', 'gbp': 'GBP' };\n\nfunction normText(s) {\n  return String(s || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/\\s+/g, ' ').trim();\n}\n\nfunction normCurrency(c) {\n  if (!c) return null;\n  const k = String(c).trim().toLowerCase();\n  return CURRENCY_ALIAS[k] || k.toUpperCase();\n}\n\nfunction quoteInText(quote, text) {\n  const q = normText(quote);\n  return q.length >= 4 && normText(text).includes(q);\n}\n\n// Numbers written in the text, with the usual separators: 1200, 1 200, 1.200, 1,200, 1200.50.\nfunction numbersIn(text) {\n  const out = new Set();\n  for (const m of String(text || '').matchAll(/\\d(?:[\\d.,]|\\s(?=\\d{3}\\b))*/g)) {\n    const s = m[0].replace(/[.,]+$/, '').replace(/\\s/g, '');\n    for (const c of [s.replace(/[.,]/g, ''), s.replace(/,/g, '.'), s.replace(/\\./g, '').replace(',', '.'), s.replace(/,/g, '')]) {\n      const n = Number(c);\n      if (Number.isFinite(n)) out.add(n);\n    }\n  }\n  return out;\n}\n\n// Anti-hallucination for amounts: the model's amount must be written in the listing text.\nfunction amountInText(amount, text) {\n  for (const n of numbersIn(text)) if (Math.abs(n - amount) < 0.005) return true;\n  return false;\n}\n\nfunction monthlyOf(amount, period) {\n  return period === 'week' ? (amount * 52) / 12 : amount;\n}\n\n// Missing settings must fail loudly: zero weights would silently pass every listing as \"low\".\nfunction requireSettings(S) {\n  const missing = ['scam.weights', 'scam.price_ratio', 'scam.thresholds'].filter((k) => !S[k] || typeof S[k] !== 'object');\n  if (missing.length) throw new Error(`scam settings missing: ${missing.join(', ')}`);\n}\n\n// Rent against the median of comparable listings (same unit: monthly, minor units).\nfunction priceSignal(ctx, W) {\n  const m = ctx.market || {};\n  const R = ctx.settings['scam.price_ratio'];\n  if (ctx.rent_minor == null || !m.median_monthly_minor || ctx.rent_scope === 'whole_flat') return null;\n  const ratio = monthlyOf(Number(ctx.rent_minor), ctx.rent_period) / Number(m.median_monthly_minor);\n  let type = null;\n  if (ratio <= R.very_low) type = 'price_very_low';\n  else if (ratio <= R.low) type = 'price_low';\n  else if (ratio >= R.very_high) type = 'price_very_high';\n  else if (ratio >= R.high) type = 'price_high';\n  if (!type) return null;\n  const full = W[type] || 0;\n  const weight = m.scope === 'jurisdiction' ? Math.round(full / 2) : full;\n  return { type, source: 'rule', weight,\n    evidence: { ratio: Math.round(ratio * 100) / 100, median_monthly_minor: m.median_monthly_minor, scope: m.scope, comparables: m.comparables } };\n}\n\n// An amount written as a rent in the text that is far from the stored rent (title says 300, text says 900).\n// Compared to the closest of stored / stored-as-monthly, so a weekly rent quoted per month is not a mismatch.\n// An amount the model gives but that is not in the text is dropped (reason amount_not_in_text).\nfunction mismatchSignal(ctx, pricesInText, W, dropped) {\n  if (ctx.rent_minor == null || !Array.isArray(pricesInText)) return null;\n  const exp = ctx.currency_exponent == null ? 2 : Number(ctx.currency_exponent);\n  const stored = Number(ctx.rent_minor) / Math.pow(10, exp);\n  const storedMonthly = monthlyOf(stored, ctx.rent_period);\n  const cur = normCurrency(ctx.currency);\n  for (const p of pricesInText) {\n    if (!p || typeof p.amount !== 'number' || p.amount <= 0) continue;\n    const pc = normCurrency(p.currency);\n    if (pc && cur && pc !== cur) continue;\n    const c = normText(p.context);\n    if (!RENT_CTX.test(c)) continue;\n    if (OTHER_CTX.test(c) && !RENT_WORD.test(c)) continue;\n    if (!amountInText(p.amount, ctx.text)) { dropped.push({ type: 'price_mismatch', reason: 'amount_not_in_text' }); continue; }\n    const r = (x) => Math.max(p.amount, x) / Math.min(p.amount, x);\n    const best = Math.min(r(stored), r(storedMonthly));\n    if (best >= 1.5) {\n      return { type: 'price_mismatch', source: 'rule', weight: W.price_mismatch || 0,\n        evidence: { stored_main: stored, text_amount: p.amount, ratio: Math.round(best * 100) / 100, context: c.slice(0, 40) } };\n    }\n  }\n  return null;\n}\n\nfunction profileSignals(ctx, S, W) {\n  const o = ctx.owner || {};\n  const out = [];\n  const days = S['scam.new_account_days'];\n  const burst = S['scam.burst_listings_24h'];\n  if (o.account_age_days != null && days != null && o.account_age_days < days) {\n    out.push({ type: 'new_account', source: 'rule', weight: W.new_account || 0, evidence: { account_age_days: o.account_age_days } });\n  }\n  if (o.account_age_days != null && o.verified_level === 0) {\n    out.push({ type: 'unverified_owner', source: 'rule', weight: W.unverified_owner || 0, evidence: { verified_level: 0 } });\n  }\n  if (burst != null && o.listings_24h != null && o.listings_24h >= burst) {\n    out.push({ type: 'listing_burst', source: 'rule', weight: W.listing_burst || 0, evidence: { listings_24h: o.listings_24h } });\n  }\n  return out;\n}\n\n// Signals of the model kept only if the type is allowed and the quote is really in the text (one per type).\nfunction modelSignals(output, text, W) {\n  const kept = [], dropped = [];\n  const seen = new Set();\n  const list = output && Array.isArray(output.signals) ? output.signals : [];\n  for (const s of list) {\n    if (!s || !MODEL_TYPES.includes(s.type)) { dropped.push({ type: (s && s.type) || null, reason: 'unknown_type' }); continue; }\n    if (!quoteInText(s.quote, text)) { dropped.push({ type: s.type, reason: 'quote_not_in_text' }); continue; }\n    if (seen.has(s.type)) continue;\n    seen.add(s.type);\n    kept.push({ type: s.type, source: 'model', weight: W[s.type] || 0, evidence: { quote: String(s.quote).slice(0, 160) } });\n  }\n  return { kept, dropped };\n}\n\n// ctx: app.scam_context; modelOutput: P8 output or null (model unavailable); returns {score, level, signals, dropped}.\nfunction scamScore(ctx, modelOutput) {\n  const S = ctx.settings || {};\n  requireSettings(S);\n  const W = S['scam.weights'];\n  const T = S['scam.thresholds'];\n  const signals = [], priceDropped = [];\n  const p = priceSignal(ctx, W); if (p) signals.push(p);\n  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W, priceDropped); if (mm) signals.push(mm);\n  signals.push(...profileSignals(ctx, S, W));\n  const ms = modelSignals(modelOutput, ctx.text, W);\n  signals.push(...ms.kept);\n  const score = Math.min(100, signals.reduce((a, s) => a + (s.weight || 0), 0));\n  const level = score >= T.block ? 'high' : score >= T.review ? 'medium' : 'low';\n  return { score, level, signals, dropped: [...ms.dropped, ...priceDropped] };\n}\n\nif (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency, amountInText };\nconst r = $input.first().json;\nconst c = $('Context').first().json.ctx;\nif (!c || c.ok === false) {\n  return [{ json: { ok: false, store: false, listing_id: (c && c.listing_id) || null, transient: false,\n    error: `context: ${(c && c.error_code) || 'no answer'}`, steps: [] } }];\n}\nconst out = r.ok ? r.output : null;\nconst res = scamScore(c, out);\nconst step = { agent: 'A4_scam', prompt_version_id: r.prompt_version_id || null, model: r.model || null,\n  input: { chars: Array.from(String(c.text || '')).length, jurisdiction: c.jurisdiction_code },\n  output: r.ok ? { signals: res.signals.length, dropped: res.dropped.length, score: res.score } : { error_code: r.error_code },\n  latency_ms: r.latency_ms || 0, tokens_in: r.tokens_in || 0, tokens_out: r.tokens_out || 0,\n  error: r.ok ? null : `${r.error_code}${r.detail ? ': ' + String(r.detail).slice(0, 200) : ''}` };\nconst detail = { prompt_version_id: r.prompt_version_id || null, model: r.model || null, model_ok: !!r.ok,\n  dropped: res.dropped, prices_in_text: out ? out.prices_in_text : null, market: c.market };\nreturn [{ json: { ok: true, store: true, listing_id: c.listing_id, steps: [step],\n  params: [c.listing_id, JSON.stringify({ score: res.score, level: res.level, signals: res.signals, detail })],\n  summary: { score: res.score, level: res.level, signals: res.signals.map((s) => s.type), model_ok: !!r.ok } } }];"
+        "jsCode": "// wf.scam.check > \"Score\"\n// Deterministic part: price, profile, price_mismatch and contact reuse signals, the detector's quoted signals (checked\n// against the text), score and level from the scam.* settings. The agent's tools and note are kept as evidence for the\n// moderator. A model or agent failure does not stop the check: the rules still apply.\n// Scam check (A4): deterministic signals and score. The agent only lists text signals with quotes (P8_scam_agent);\n// price, profile, price_mismatch, contact reuse, weights and thresholds are computed here from app.scam_context\n// (settings scam.*). Evidence of rule signals is data (numbers, codes), never sentences.\nconst MODEL_TYPES = ['off_platform_payment', 'advance_payment', 'owner_abroad', 'urgency', 'external_contact'];\n// Contexts are normalized (no accents, lower case) before these tests.\nconst RENT_CTX = /\\b(rent|loyer|kra|price|prix|real|reel|vrai|actual|monthly|mensuel)\\b|per month|par mois/;\nconst OTHER_CTX = /\\b(deposit|caution|fees?|frais|bills?|transfer|virement)\\b/;\nconst RENT_WORD = /\\b(rent|loyer|kra)\\b/;\nconst CURRENCY_ALIAS = { 'dt': 'TND', 'tnd': 'TND', 'dinar': 'TND', 'dinars': 'TND',\n  '€': 'EUR', 'eur': 'EUR', 'euro': 'EUR', 'euros': 'EUR', '$': 'USD', 'usd': 'USD', '£': 'GBP', 'gbp': 'GBP' };\nconst CONTACT_REUSED_WEIGHT = 20;   // used until scam.weights has a contact_reused entry\n\nfunction normText(s) {\n  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\\s+/g, ' ').trim();\n}\n\nfunction normCurrency(c) {\n  if (!c) return null;\n  const k = String(c).trim().toLowerCase();\n  return CURRENCY_ALIAS[k] || k.toUpperCase();\n}\n\nfunction quoteInText(quote, text) {\n  const q = normText(quote);\n  return q.length >= 4 && normText(text).includes(q);\n}\n\n// Numbers written in the text, with the usual separators: 1200, 1 200, 1.200, 1,200, 1200.50.\nfunction numbersIn(text) {\n  const out = new Set();\n  for (const m of String(text || '').matchAll(/\\d(?:[\\d.,]|\\s(?=\\d{3}\\b))*/g)) {\n    const s = m[0].replace(/[.,]+$/, '').replace(/\\s/g, '');\n    for (const c of [s.replace(/[.,]/g, ''), s.replace(/,/g, '.'), s.replace(/\\./g, '').replace(',', '.'), s.replace(/,/g, '')]) {\n      const n = Number(c);\n      if (Number.isFinite(n)) out.add(n);\n    }\n  }\n  return out;\n}\n\n// Anti-hallucination for amounts: the model's amount must be written in the listing text.\nfunction amountInText(amount, text) {\n  for (const n of numbersIn(text)) if (Math.abs(n - amount) < 0.005) return true;\n  return false;\n}\n\n// A phone (last 8 digits) or an e-mail is \"in the text\" only if the listing really contains it.\nfunction contactInText(contact, text) {\n  const c = String(contact || '').trim();\n  if (c.includes('@')) return c.length >= 6 && normText(text).includes(normText(c));\n  const d = c.replace(/\\D/g, '');\n  return d.length >= 8 && String(text || '').replace(/\\D/g, '').includes(d.slice(-8));\n}\n\nfunction monthlyOf(amount, period) {\n  return period === 'week' ? (amount * 52) / 12 : amount;\n}\n\n// Missing settings must fail loudly: zero weights would silently pass every listing as \"low\".\nfunction requireSettings(S) {\n  const missing = ['scam.weights', 'scam.price_ratio', 'scam.thresholds'].filter((k) => !S[k] || typeof S[k] !== 'object');\n  if (missing.length) throw new Error(`scam settings missing: ${missing.join(', ')}`);\n}\n\n// Rent against the median of comparable listings (same unit: monthly, minor units).\nfunction priceSignal(ctx, W) {\n  const m = ctx.market || {};\n  const R = ctx.settings['scam.price_ratio'];\n  if (ctx.rent_minor == null || !m.median_monthly_minor || ctx.rent_scope === 'whole_flat') return null;\n  const ratio = monthlyOf(Number(ctx.rent_minor), ctx.rent_period) / Number(m.median_monthly_minor);\n  let type = null;\n  if (ratio <= R.very_low) type = 'price_very_low';\n  else if (ratio <= R.low) type = 'price_low';\n  else if (ratio >= R.very_high) type = 'price_very_high';\n  else if (ratio >= R.high) type = 'price_high';\n  if (!type) return null;\n  const full = W[type] || 0;\n  const weight = m.scope === 'jurisdiction' ? Math.round(full / 2) : full;\n  return { type, source: 'rule', weight,\n    evidence: { ratio: Math.round(ratio * 100) / 100, median_monthly_minor: m.median_monthly_minor, scope: m.scope, comparables: m.comparables } };\n}\n\n// An amount written as a rent in the text that is far from the stored rent (title says 300, text says 900).\n// Compared to the closest of stored / stored-as-monthly, so a weekly rent quoted per month is not a mismatch.\n// An amount the model gives but that is not in the text is dropped (reason amount_not_in_text).\nfunction mismatchSignal(ctx, pricesInText, W, dropped) {\n  if (ctx.rent_minor == null || !Array.isArray(pricesInText)) return null;\n  const exp = ctx.currency_exponent == null ? 2 : Number(ctx.currency_exponent);\n  const stored = Number(ctx.rent_minor) / Math.pow(10, exp);\n  const storedMonthly = monthlyOf(stored, ctx.rent_period);\n  const cur = normCurrency(ctx.currency);\n  for (const p of pricesInText) {\n    if (!p || typeof p.amount !== 'number' || p.amount <= 0) continue;\n    const pc = normCurrency(p.currency);\n    if (pc && cur && pc !== cur) continue;\n    const c = normText(p.context);\n    if (!RENT_CTX.test(c)) continue;\n    if (OTHER_CTX.test(c) && !RENT_WORD.test(c)) continue;\n    if (!amountInText(p.amount, ctx.text)) { dropped.push({ type: 'price_mismatch', reason: 'amount_not_in_text' }); continue; }\n    const r = (x) => Math.max(p.amount, x) / Math.min(p.amount, x);\n    const best = Math.min(r(stored), r(storedMonthly));\n    if (best >= 1.5) {\n      return { type: 'price_mismatch', source: 'rule', weight: W.price_mismatch || 0,\n        evidence: { stored_main: stored, text_amount: p.amount, ratio: Math.round(best * 100) / 100, context: c.slice(0, 40) } };\n    }\n  }\n  return null;\n}\n\nfunction profileSignals(ctx, S, W) {\n  const o = ctx.owner || {};\n  const out = [];\n  const days = S['scam.new_account_days'];\n  const burst = S['scam.burst_listings_24h'];\n  if (o.account_age_days != null && days != null && o.account_age_days < days) {\n    out.push({ type: 'new_account', source: 'rule', weight: W.new_account || 0, evidence: { account_age_days: o.account_age_days } });\n  }\n  if (o.account_age_days != null && o.verified_level === 0) {\n    out.push({ type: 'unverified_owner', source: 'rule', weight: W.unverified_owner || 0, evidence: { verified_level: 0 } });\n  }\n  if (burst != null && o.listings_24h != null && o.listings_24h >= burst) {\n    out.push({ type: 'listing_burst', source: 'rule', weight: W.listing_burst || 0, evidence: { listings_24h: o.listings_24h } });\n  }\n  return out;\n}\n\n// Results of the agent's contact_reuse tool (database counts). Kept only for a contact that is really written in the\n// listing, so the agent cannot raise the score with a contact it made up; the largest reuse wins.\nfunction contactSignal(reuse, text, W, dropped) {\n  let best = null;\n  for (const x of Array.isArray(reuse) ? reuse : []) {\n    if (!x || !(Number(x.other_owners) > 0)) continue;\n    if (!contactInText(x.contact, text)) { dropped.push({ type: 'contact_reused', reason: 'contact_not_in_text' }); continue; }\n    if (!best || Number(x.other_listings) > best.other_listings) {\n      best = { other_listings: Number(x.other_listings) || 0, other_owners: Number(x.other_owners) || 0 };\n    }\n  }\n  if (!best) return null;\n  return { type: 'contact_reused', source: 'rule', weight: W.contact_reused ?? CONTACT_REUSED_WEIGHT, evidence: best };\n}\n\n// Signals of the model kept only if the type is allowed and the quote is really in the text (one per type).\nfunction modelSignals(output, text, W) {\n  const kept = [], dropped = [];\n  const seen = new Set();\n  const list = output && Array.isArray(output.signals) ? output.signals : [];\n  for (const s of list) {\n    if (!s || !MODEL_TYPES.includes(s.type)) { dropped.push({ type: (s && s.type) || null, reason: 'unknown_type' }); continue; }\n    if (!quoteInText(s.quote, text)) { dropped.push({ type: s.type, reason: 'quote_not_in_text' }); continue; }\n    if (seen.has(s.type)) continue;\n    seen.add(s.type);\n    kept.push({ type: s.type, source: 'model', weight: W[s.type] || 0, evidence: { quote: String(s.quote).slice(0, 160) } });\n  }\n  return { kept, dropped };\n}\n\n// ctx: app.scam_context; modelOutput: the agent's answer or null (model unavailable);\n// extra.contact_reuse: results of the contact_reuse tool. Returns {score, level, signals, dropped}.\nfunction scamScore(ctx, modelOutput, extra = {}) {\n  const S = ctx.settings || {};\n  requireSettings(S);\n  const W = S['scam.weights'];\n  const T = S['scam.thresholds'];\n  const signals = [], ruleDropped = [];\n  const p = priceSignal(ctx, W); if (p) signals.push(p);\n  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W, ruleDropped); if (mm) signals.push(mm);\n  signals.push(...profileSignals(ctx, S, W));\n  const cr = contactSignal(extra && extra.contact_reuse, ctx.text, W, ruleDropped); if (cr) signals.push(cr);\n  const ms = modelSignals(modelOutput, ctx.text, W);\n  signals.push(...ms.kept);\n  const score = Math.min(100, signals.reduce((a, s) => a + (s.weight || 0), 0));\n  const level = score >= T.block ? 'high' : score >= T.review ? 'medium' : 'low';\n  return { score, level, signals, dropped: [...ms.dropped, ...ruleDropped] };\n}\n\nif (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency, amountInText, contactInText };\n\nconst r = $input.first().json;\nconst g = $('Agent output').first().json;\nconst c = $('Context').first().json.ctx;\nif (!c || c.ok === false) {\n  return [{ json: { ok: false, store: false, listing_id: (c && c.listing_id) || null, transient: false,\n    error: `context: ${(c && c.error_code) || 'no answer'}`, steps: [] } }];\n}\nconst out = r.ok ? r.output : null;\nconst res = scamScore(c, out, { contact_reuse: g.contact_reuse });\nconst steps = [\n  { agent: 'A4_scam_agent', prompt_version_id: g.agent_prompt_version_id, model: g.agent_model,\n    input: { chars: Array.from(String(c.text || '')).length, jurisdiction: c.jurisdiction_code },\n    output: { note: !!g.note, contact_reuse: (g.contact_reuse || []).length }, tool_calls: (g.tool_calls || []).map((t) => ({ tool: t })),\n    latency_ms: g.agent_latency_ms || 0, tokens_in: 0, tokens_out: 0, error: g.agent_ok ? null : g.agent_error },\n  { agent: 'A4_scam_detector', prompt_version_id: r.prompt_version_id || null, model: r.model || null,\n    input: { chars: Array.from(String(c.text || '')).length },\n    output: r.ok ? { signals: res.signals.length, dropped: res.dropped.length, score: res.score } : { error_code: r.error_code },\n    latency_ms: r.latency_ms || 0, tokens_in: r.tokens_in || 0, tokens_out: r.tokens_out || 0,\n    error: r.ok ? null : `${r.error_code}${r.detail ? ': ' + String(r.detail).slice(0, 200) : ''}` }];\nconst detail = { prompt_version_id: r.prompt_version_id || null, model: r.model || null, model_ok: !!r.ok,\n  agent: { ok: !!g.agent_ok, prompt_version_id: g.agent_prompt_version_id, tool_calls: g.tool_calls || [], error: g.agent_error || null },\n  note: g.note || null, contact_reuse: g.contact_reuse || [],\n  dropped: res.dropped, prices_in_text: out ? out.prices_in_text : null, market: c.market };\nreturn [{ json: { ok: true, store: true, listing_id: c.listing_id, steps,\n  params: [c.listing_id, JSON.stringify({ score: res.score, level: res.level, signals: res.signals, detail })],\n  summary: { score: res.score, level: res.level, signals: res.signals.map((s) => s.type), model_ok: !!r.ok,\n    agent_ok: !!g.agent_ok, tool_calls: g.tool_calls || [], note: g.note || null } } }];\n"
       }
     },
     {
@@ -135,7 +416,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1320,
+        2420,
         -100
       ],
       "parameters": {
@@ -170,7 +451,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1540,
+        2640,
         -200
       ],
       "parameters": {
@@ -197,7 +478,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1760,
+        2860,
         -100
       ],
       "parameters": {
@@ -222,7 +503,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1980,
+        3080,
         0
       ],
       "parameters": {
@@ -259,7 +540,7 @@
       "main": [
         [
           {
-            "node": "Call input",
+            "node": "Agent context",
             "type": "main",
             "index": 0
           }
@@ -273,7 +554,69 @@
         ]
       ]
     },
-    "Call input": {
+    "Agent context": {
+      "main": [
+        [
+          {
+            "node": "Agent input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent input": {
+      "main": [
+        [
+          {
+            "node": "Prompt ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt ok?": {
+      "main": [
+        [
+          {
+            "node": "Scam agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scam agent": {
+      "main": [
+        [
+          {
+            "node": "Agent output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent output": {
+      "main": [
+        [
+          {
+            "node": "Detect input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect input": {
       "main": [
         [
           {
@@ -341,6 +684,50 @@
           {
             "node": "Result",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Scam agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "market_price": {
+      "ai_tool": [
+        [
+          {
+            "node": "Scam agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "owner_profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "Scam agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contact_reuse": {
+      "ai_tool": [
+        [
+          {
+            "node": "Scam agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]
