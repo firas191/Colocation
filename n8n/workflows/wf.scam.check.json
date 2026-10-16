@@ -1,0 +1,367 @@
+{
+  "id": "fsScamCheck00001",
+  "name": "wf.scam.check",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "b1f936a7-9d9c-5604-944f-182251503397",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "a215693d-5f2b-5ace-959f-5dab52ca731c",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.scam_context($1::uuid) as ctx",
+        "options": {
+          "queryReplacement": "={{ [ $json.listing_id ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "04f6bdd8-d5b3-5e0d-bf34-fba28156c84c",
+      "name": "Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d77ec585-5abc-5771-899e-1dc94cea6061",
+              "leftValue": "={{ !!$json.ctx && $json.ctx.ok === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "8c77aead-fe94-557f-9e77-ece9ee36f81b",
+      "name": "Call input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.check > \"Call input\"\n// Input: the listing's text and jurisdiction from app.scam_context.\n// Output: the wf.llm.call input for P8 (active version unless the caller asks for one).\nconst s = $('Start').first().json;\nconst c = $('Context').first().json.ctx;\nreturn [{ json: { prompt: 'P8_scam_detector', version: s.version ?? null, model: s.model || null,\n  vars: { message: c.text, jurisdiction: c.jurisdiction_code, today: new Date().toISOString().slice(0, 10) },\n  meta: { listing_id: c.listing_id } } }];"
+      }
+    },
+    {
+      "id": "f5d0731a-eb86-50f3-ac62-e96abeabf7b4",
+      "name": "Detect",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsLlmCall0000001",
+          "mode": "id",
+          "cachedResultName": "wf.llm.call"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "fbca0812-b9f2-5952-8bc7-cd2867cf9eba",
+      "name": "Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.check > \"Score\"\n// Deterministic part after P8: price, profile and price_mismatch signals, the model's quoted signals (checked against\n// the text), score and level from the scam.* settings. A model failure does not stop the check: rules still apply.\n// Scam check (A4): deterministic signals and score. The model only lists text signals with quotes (prompt P8);\n// price, profile, price_mismatch, weights and thresholds are computed here from app.scam_context (settings scam.*).\n// Evidence of rule signals is data (numbers, codes), never sentences.\nconst MODEL_TYPES = ['off_platform_payment', 'advance_payment', 'owner_abroad', 'urgency', 'external_contact'];\n// Contexts are normalized (no accents, lower case) before these tests.\nconst RENT_CTX = /\\b(rent|loyer|kra|price|prix|real|reel|vrai|actual|monthly|mensuel)\\b|per month|par mois/;\nconst OTHER_CTX = /\\b(deposit|caution|fees?|frais|bills?|transfer|virement)\\b/;\nconst RENT_WORD = /\\b(rent|loyer|kra)\\b/;\nconst CURRENCY_ALIAS = { 'dt': 'TND', 'tnd': 'TND', 'dinar': 'TND', 'dinars': 'TND',\n  '€': 'EUR', 'eur': 'EUR', 'euro': 'EUR', 'euros': 'EUR', '$': 'USD', 'usd': 'USD', '£': 'GBP', 'gbp': 'GBP' };\n\nfunction normText(s) {\n  return String(s || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/\\s+/g, ' ').trim();\n}\n\nfunction normCurrency(c) {\n  if (!c) return null;\n  const k = String(c).trim().toLowerCase();\n  return CURRENCY_ALIAS[k] || k.toUpperCase();\n}\n\nfunction quoteInText(quote, text) {\n  const q = normText(quote);\n  return q.length >= 4 && normText(text).includes(q);\n}\n\nfunction monthlyOf(amount, period) {\n  return period === 'week' ? (amount * 52) / 12 : amount;\n}\n\n// Missing settings must fail loudly: zero weights would silently pass every listing as \"low\".\nfunction requireSettings(S) {\n  const missing = ['scam.weights', 'scam.price_ratio', 'scam.thresholds'].filter((k) => !S[k] || typeof S[k] !== 'object');\n  if (missing.length) throw new Error(`scam settings missing: ${missing.join(', ')}`);\n}\n\n// Rent against the median of comparable listings (same unit: monthly, minor units).\nfunction priceSignal(ctx, W) {\n  const m = ctx.market || {};\n  const R = ctx.settings['scam.price_ratio'];\n  if (ctx.rent_minor == null || !m.median_monthly_minor || ctx.rent_scope === 'whole_flat') return null;\n  const ratio = monthlyOf(Number(ctx.rent_minor), ctx.rent_period) / Number(m.median_monthly_minor);\n  let type = null;\n  if (ratio <= R.very_low) type = 'price_very_low';\n  else if (ratio <= R.low) type = 'price_low';\n  else if (ratio >= R.very_high) type = 'price_very_high';\n  else if (ratio >= R.high) type = 'price_high';\n  if (!type) return null;\n  const full = W[type] || 0;\n  const weight = m.scope === 'jurisdiction' ? Math.round(full / 2) : full;\n  return { type, source: 'rule', weight,\n    evidence: { ratio: Math.round(ratio * 100) / 100, median_monthly_minor: m.median_monthly_minor, scope: m.scope, comparables: m.comparables } };\n}\n\n// An amount written as a rent in the text that is far from the stored rent (title says 300, text says 900).\n// Compared to the closest of stored / stored-as-monthly, so a weekly rent quoted per month is not a mismatch.\nfunction mismatchSignal(ctx, pricesInText, W) {\n  if (ctx.rent_minor == null || !Array.isArray(pricesInText)) return null;\n  const exp = ctx.currency_exponent == null ? 2 : Number(ctx.currency_exponent);\n  const stored = Number(ctx.rent_minor) / Math.pow(10, exp);\n  const storedMonthly = monthlyOf(stored, ctx.rent_period);\n  const cur = normCurrency(ctx.currency);\n  for (const p of pricesInText) {\n    if (!p || typeof p.amount !== 'number' || p.amount <= 0) continue;\n    const pc = normCurrency(p.currency);\n    if (pc && cur && pc !== cur) continue;\n    const c = normText(p.context);\n    if (!RENT_CTX.test(c)) continue;\n    if (OTHER_CTX.test(c) && !RENT_WORD.test(c)) continue;\n    const r = (x) => Math.max(p.amount, x) / Math.min(p.amount, x);\n    const best = Math.min(r(stored), r(storedMonthly));\n    if (best >= 1.5) {\n      return { type: 'price_mismatch', source: 'rule', weight: W.price_mismatch || 0,\n        evidence: { stored_main: stored, text_amount: p.amount, ratio: Math.round(best * 100) / 100, context: c.slice(0, 40) } };\n    }\n  }\n  return null;\n}\n\nfunction profileSignals(ctx, S, W) {\n  const o = ctx.owner || {};\n  const out = [];\n  const days = S['scam.new_account_days'];\n  const burst = S['scam.burst_listings_24h'];\n  if (o.account_age_days != null && days != null && o.account_age_days < days) {\n    out.push({ type: 'new_account', source: 'rule', weight: W.new_account || 0, evidence: { account_age_days: o.account_age_days } });\n  }\n  if (o.account_age_days != null && o.verified_level === 0) {\n    out.push({ type: 'unverified_owner', source: 'rule', weight: W.unverified_owner || 0, evidence: { verified_level: 0 } });\n  }\n  if (burst != null && o.listings_24h != null && o.listings_24h >= burst) {\n    out.push({ type: 'listing_burst', source: 'rule', weight: W.listing_burst || 0, evidence: { listings_24h: o.listings_24h } });\n  }\n  return out;\n}\n\n// Signals of the model kept only if the type is allowed and the quote is really in the text (one per type).\nfunction modelSignals(output, text, W) {\n  const kept = [], dropped = [];\n  const seen = new Set();\n  const list = output && Array.isArray(output.signals) ? output.signals : [];\n  for (const s of list) {\n    if (!s || !MODEL_TYPES.includes(s.type)) { dropped.push({ type: (s && s.type) || null, reason: 'unknown_type' }); continue; }\n    if (!quoteInText(s.quote, text)) { dropped.push({ type: s.type, reason: 'quote_not_in_text' }); continue; }\n    if (seen.has(s.type)) continue;\n    seen.add(s.type);\n    kept.push({ type: s.type, source: 'model', weight: W[s.type] || 0, evidence: { quote: String(s.quote).slice(0, 160) } });\n  }\n  return { kept, dropped };\n}\n\n// ctx: app.scam_context; modelOutput: P8 output or null (model unavailable); returns {score, level, signals, dropped}.\nfunction scamScore(ctx, modelOutput) {\n  const S = ctx.settings || {};\n  requireSettings(S);\n  const W = S['scam.weights'];\n  const T = S['scam.thresholds'];\n  const signals = [];\n  const p = priceSignal(ctx, W); if (p) signals.push(p);\n  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W); if (mm) signals.push(mm);\n  signals.push(...profileSignals(ctx, S, W));\n  const ms = modelSignals(modelOutput, ctx.text, W);\n  signals.push(...ms.kept);\n  const score = Math.min(100, signals.reduce((a, s) => a + (s.weight || 0), 0));\n  const level = score >= T.block ? 'high' : score >= T.review ? 'medium' : 'low';\n  return { score, level, signals, dropped: ms.dropped };\n}\n\nif (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency };\nconst r = $input.first().json;\nconst c = $('Context').first().json.ctx;\nif (!c || c.ok === false) {\n  return [{ json: { ok: false, store: false, listing_id: (c && c.listing_id) || null, transient: false,\n    error: `context: ${(c && c.error_code) || 'no answer'}`, steps: [] } }];\n}\nconst out = r.ok ? r.output : null;\nconst res = scamScore(c, out);\nconst step = { agent: 'A4_scam', prompt_version_id: r.prompt_version_id || null, model: r.model || null,\n  input: { chars: Array.from(String(c.text || '')).length, jurisdiction: c.jurisdiction_code },\n  output: r.ok ? { signals: res.signals.length, dropped: res.dropped.length, score: res.score } : { error_code: r.error_code },\n  latency_ms: r.latency_ms || 0, tokens_in: r.tokens_in || 0, tokens_out: r.tokens_out || 0,\n  error: r.ok ? null : `${r.error_code}${r.detail ? ': ' + String(r.detail).slice(0, 200) : ''}` };\nconst detail = { prompt_version_id: r.prompt_version_id || null, model: r.model || null, model_ok: !!r.ok,\n  dropped: res.dropped, prices_in_text: out ? out.prices_in_text : null, market: c.market };\nreturn [{ json: { ok: true, store: true, listing_id: c.listing_id, steps: [step],\n  params: [c.listing_id, JSON.stringify({ score: res.score, level: res.level, signals: res.signals, detail })],\n  summary: { score: res.score, level: res.level, signals: res.signals.map((s) => s.type), model_ok: !!r.ok } } }];"
+      }
+    },
+    {
+      "id": "ca78a831-0d38-5d5a-a541-2e8d544664f6",
+      "name": "Store?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a1ae7e21-2aa9-5c05-b01a-bb4783d0ceca",
+              "leftValue": "={{ $json.store }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "3c098f50-35bb-5d95-abbb-c03b080bd3b4",
+      "name": "Store check",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1540,
+        -200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.store_scam_check($1::uuid, $2::jsonb) as r",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "9586d10e-3f42-5512-aa9a-911572fcef23",
+      "name": "Record steps",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.record_job_steps(nullif($1, '')::uuid, 'wf.scam.check', $2, $3::jsonb) as execution_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Score').first().json.steps) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "74c30d32-9134-5033-8a71-28b22a4ecc51",
+      "name": "Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.scam.check > \"Result\": {ok, status, listing_id, check_id, score, level, signals, model_ok, transient, error, steps}.\n// status: checked, not_found (no such listing), failed (storage). A model failure is not a failure: rules still score.\nconst c = $('Context').first().json.ctx;\nif (!c || c.ok !== true) {\n  return [{ json: { ok: false, status: 'not_found', listing_id: $('Start').first().json.listing_id || null,\n    transient: false, error: `context: ${(c && c.error_code) || 'no answer'}`, steps: [] } }];\n}\nconst x = $('Score').first().json;\nif (!x.ok) return [{ json: { ok: false, status: 'failed', listing_id: x.listing_id, transient: x.transient, error: x.error, steps: x.steps } }];\nconst st = ($('Store check').first().json || {}).r || {};\nif (!st.ok) {\n  return [{ json: { ok: false, status: 'failed', listing_id: x.listing_id, transient: false,\n    error: `store: ${st.error_code || 'no answer'}${st.field ? ' (' + st.field + ')' : ''}`, steps: x.steps } }];\n}\nreturn [{ json: { ok: true, status: 'checked', listing_id: x.listing_id, check_id: st.check_id, ...x.summary,\n  transient: false, error: null, steps: x.steps } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found?": {
+      "main": [
+        [
+          {
+            "node": "Call input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call input": {
+      "main": [
+        [
+          {
+            "node": "Detect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect": {
+      "main": [
+        [
+          {
+            "node": "Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score": {
+      "main": [
+        [
+          {
+            "node": "Store?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store?": {
+      "main": [
+        [
+          {
+            "node": "Store check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store check": {
+      "main": [
+        [
+          {
+            "node": "Record steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record steps": {
+      "main": [
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "agent"
+    },
+    {
+      "name": "intake"
+    }
+  ]
+}

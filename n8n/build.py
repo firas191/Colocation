@@ -1274,6 +1274,7 @@ MEDIA_CONSENTS = ["terms", "privacy", "media_processing"]      # spec 11.1 priva
 ANALYZE_WF = "fsListingAnalyz1"
 INTAKE_PHOTOS_WF = "fsIntakePhotos01"
 LISTING_EXTRACT_WF = "fsListingExtr001"
+SCAM_CHECK_WF = "fsScamCheck00001"
 SETTINGS_SQL = ("select (select value #>> '{}' from app.settings where key = 'services.media_url') as media_url,"
                 " (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url,"
                 " (select value #>> '{}' from app.settings where key = 'services.asr_url') as asr_url")
@@ -1491,6 +1492,36 @@ def listing_extract():
     wf.link("Record steps", "Result")
     return wf
 
+
+def scam_check():
+    """A4 scam check (wf.scam.check, P8): listing -> rule signals (price, profile, price_mismatch) + quoted model signals -> score.
+    Input {listing_id, job_id?, model?, version?}; output see scam_result.js. A model failure does not stop the check."""
+    wf = WF(SCAM_CHECK_WF, "wf.scam.check", tags=["agent", "intake"], settings={"saveDataSuccessExecution": "all"})
+    wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
+    pg_node(wf, "Context", "select app.scam_context($1::uuid) as ctx", "={{ [ $json.listing_id ] }}", [220, 0], on_error=None)
+    if_node(wf, "Found?", "={{ !!$json.ctx && $json.ctx.ok === true }}", [440, 0])
+    code_node(wf, "Call input", "scam_vars.js", [660, -100])
+    exec_wf(wf, "Detect", LLM_CALL_WF, "wf.llm.call", pos=[880, -100])
+    code_node(wf, "Score", "scam_post.js", [1100, -100])
+    if_node(wf, "Store?", "={{ $json.store }}", [1320, -100])
+    pg_node(wf, "Store check", "select app.store_scam_check($1::uuid, $2::jsonb) as r", "={{ $json.params }}",
+            [1540, -200], on_error=None, retries=1)
+    pg_node(wf, "Record steps", "select app.record_job_steps(nullif($1, '')::uuid, 'wf.scam.check', $2, $3::jsonb) as execution_id",
+            "={{ [ $('Start').first().json.job_id || '', $execution.id, JSON.stringify($('Score').first().json.steps) ] }}",
+            [1760, -100], on_error="continueRegularOutput")
+    code_node(wf, "Result", "scam_result.js", [1980, 0])
+    wf.link("Start", "Context")
+    wf.link("Context", "Found?")
+    wf.link("Found?", "Call input", 0)
+    wf.link("Found?", "Result", 1)
+    wf.link("Call input", "Detect")
+    wf.link("Detect", "Score")
+    wf.link("Score", "Store?")
+    wf.link("Store?", "Store check", 0)
+    wf.link("Store?", "Record steps", 1)
+    wf.link("Store check", "Record steps")
+    wf.link("Record steps", "Result")
+    return wf
 
 def listing_analyze():
     """Job worker for POST /v1/listings/:id/analyze: photos (4.3), then the text extraction P3 (4.4).
@@ -1765,7 +1796,7 @@ BUILDS = {
                   llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, api_search, api_profiles_extract, api_profiles_me,
                   orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
                   api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
-                  listing_extract, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
+                  listing_extract, scam_check, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
     "workflows-test": [test_fail],
 }
 
