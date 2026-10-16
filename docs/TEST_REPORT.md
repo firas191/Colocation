@@ -1732,6 +1732,29 @@ Not run here: the compose build of the `web` image, Mailpit, and the website tes
 owner's PC (the new PLATFORM steps of `verify.ps1`); Garage's answer to the CORS preflight path (Caddy answers it, so
 Garage is not asked); the website's memory and CPU use on the PC.
 
+## T-65 Platform P1 on the owner's PC: the website container (2026-10-16, F-071) - FAIL, then PASS after the fix
+
+`verify.ps1` run `reports/verify-20261016-184116`: every step PASS except "PLATFORM: website end-to-end tests" (12
+failed, 4 passed). The website unit tests passed in the Node image. All 12 failures come from one cause: the `web`
+container restarted in a loop (exit 2, F-071), so the proxy answered 502 for every page. The 4 passing tests are the
+browser uploads (desktop and phone), which do not use the website server.
+
+Fix (F-071) checked in the sandbox only: `start.sh` and `run-as-node.cjs` run as root against a mode-600 secrets file;
+the server code runs as uid 1000 with the website key only.
+
+After the fix, `verify.ps1` run `reports/verify-20261016-193016`: every step PASS.
+
+| Step | Result |
+|---|---|
+| website container healthy (new) | healthy at the first check, 0 restarts |
+| website unit tests (Node image) | 13 passed |
+| website end-to-end tests (Playwright image) | 16 passed: sign-up to profile in fr, en, ar on desktop and at 360 px, log-in redirects, same answer for a wrong password and an unknown address, password reset by mail (Mailpit), browser upload from the website's origin and refusal from another origin |
+| unit and contract tests through the proxy | 203 passed, 81 skipped (the same count as the run before the fix; the skips are the sandbox-only tests) |
+| secret scan (workflow export and tracked files) | no finding |
+
+T-64 is now confirmed on the PC for the compose stack, Mailpit and the Playwright image. Still not measured: the
+website's memory and CPU use on the PC.
+
 ---
 
 ## Not run
@@ -1748,6 +1771,5 @@ Garage is not asked); the website's memory and CPU use on the PC.
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |
 | Owner assistant on the real model | built in the sandbox (T-54) | `p4.ps1 -Step owner-bench` on the PC |
-| Website image build, Mailpit and the website tests in the Playwright image (T-64) | sandbox has no Docker registry access | `verify.ps1` PLATFORM steps on the PC |
 | Website RAM and CPU on the PC next to the rest of the stack | not measured | `docker stats` during `verify.ps1` |
 | Legal agent on the real model (spec 10.7 figures) | built in the sandbox (T-53) | `p4.ps1 -Step legal-bench` on the PC, then the faithfulness sample by hand |

@@ -232,6 +232,20 @@ Step "PHASE 1 and 2: unit and contract tests through the proxy (includes outage 
   docker compose @files --profile test run --rm --no-deps tests @pytestArgs
 } | Out-Null
 
+# The website container must be healthy before its tests; if not, its log goes into verify.log (F-071: it was
+# restarting in a loop and every page answered 502 from the proxy).
+Step "PLATFORM: website container healthy (max 3 min; its log on failure)" {
+  $deadline = (Get-Date).AddMinutes(3)
+  $h = ""
+  while ((Get-Date) -lt $deadline) {
+    $h = docker inspect -f "{{.State.Health.Status}}" fs-web 2>$null
+    if ($h -eq "healthy") { break }
+    Start-Sleep -Seconds 5
+  }
+  docker inspect -f "status {{.State.Status}}, health {{.State.Health.Status}}, restarts {{.RestartCount}}, last exit {{.State.ExitCode}}" fs-web
+  if ($h -eq "healthy") { $global:LASTEXITCODE = 0 } else { docker compose @files logs --no-color --tail 100 web; $global:LASTEXITCODE = 1 }
+} | Out-Null
+
 # Website (platform P1). Both run in throw-away containers with the repository mounted; node_modules stays in an
 # anonymous volume so nothing is written to the Windows folder. Chromium reaches the proxy container as "localhost"
 # (PW_HOST_RULES), so pages keep the origin the stack expects (WEB_ORIGIN).
