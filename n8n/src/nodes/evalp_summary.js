@@ -10,6 +10,7 @@ for (const run of runs) {
     tokens_in: x.output.tokens_in, tokens_out: x.output.tokens_out, attempts: x.output.attempts, call_error: x.metrics.call_error }));
   const summary = run.config.prompt === 'P1_router' ? summarizeP1(rows)
     : run.config.prompt === 'P3_listing_extractor' ? summarizeP3(rows)
+    : run.config.prompt === 'P8_scam_detector' ? summarizeP8(rows)
     : run.config.prompt === 'P7_photo_analyzer' ? summarizeP7(rows) : summarizeP2(rows);
   summary.load_ms_total = (run.results || []).reduce((a, x) => a + (x.output.load_ms || 0), 0);
   summaries.push({ run_id: run.run_id, summary });

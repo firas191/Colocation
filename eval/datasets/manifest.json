@@ -40,5 +40,12 @@
   "version": 1,
   "file": "p7_photos_v1.jsonl",
   "notes": "50 room photos from Wikimedia Commons for P7 (spec 9.5, 11.2): bedrooms 13, living rooms 10, other rooms 9 (hallway, balcony, terrace, studio, rooms under works), not a room 7 (building fronts, an object, floor plans, a 3D render), bathrooms 6, kitchens 5; 9 with readable text, 5 with people, 5 dark, 5 in poor condition. CC0, public domain, CC BY or CC BY-SA, source and author per photo. Images are not in the repository (D-069). Labelled from the blurred copies by a model-based annotator (guide eval/datasets/guides/p7_photos.md), 20% re-labelled blind, 8 labels adjudicated."
+ },
+ {
+  "name": "p8_scam",
+  "kind": "extraction",
+  "version": 1,
+  "file": "p8_scam_v1.jsonl",
+  "notes": "50 synthetic listings for P8 (A4 scam check): 25 scam, 25 honest; fr 19, en 15, ar 8, arabizi 5, code-switched 3; 13 hard negatives, 4 subtle scams, 3 injection, 1 price trap. Gold = signal types, is_scam (text-only weight >= review threshold) and amounts. Guide: eval/datasets/guides/p8_scam.md. Model-written and model-labelled (D-055)."
  }
 ]

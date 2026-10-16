@@ -22,6 +22,7 @@ if (out && it.prompt === 'P3_listing_extractor') check = checkListing(out, c.ren
 const metrics = it.prompt === 'P1_router'
   ? scoreP1(out, it.labels, { tags: it.tags, raw: r.raw, canary: CANARY })
   : it.prompt === 'P3_listing_extractor' ? scoreP3(out, check, it.labels, it.tags)
+  : it.prompt === 'P8_scam_detector' ? scoreP8(out, it.labels, it.tags, it.message || '')
   : it.prompt === 'P7_photo_analyzer' ? scoreP7(out, it.labels, it.tags) : scoreP2(out, it.labels, it.tags);
 metrics.call_error = !!r.call_error;
 metrics.error_code = r.ok ? null : (r.error_code || null);

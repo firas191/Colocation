@@ -451,4 +451,108 @@ function groupBy(rows, key, fn) {
   return Object.fromEntries(Object.entries(g).sort().map(([k, v]) => [k, fn(v)]));
 }
 
-if (typeof module !== 'undefined') module.exports = { scoreP1, summarizeP1, scoreP2, summarizeP2, scoreP3, summarizeP3, scoreP7, summarizeP7, percentile, norm, fieldsOf, fieldsOfListing };
+// ---------------------------------------------------------------- P8 scam detector (A4)
+// Scored like wf.scam.check uses the answer: a signal counts only if its type is in the closed list and its quote is
+// written in the listing (same normalisation as n8n/src/lib/scam_signals.js), one per type. "flagged" is the text-only
+// score of the kept signals with P8_WEIGHTS (copy of the scam.* weights of migration 0017) at or above P8_REVIEW, i.e.
+// the text alone would send the listing to review. Gold: {is_scam, signals: [types], prices: [amounts in main units]}.
+const P8_TYPES = ['off_platform_payment', 'advance_payment', 'owner_abroad', 'urgency', 'external_contact'];
+const P8_WEIGHTS = { off_platform_payment: 30, advance_payment: 30, owner_abroad: 20, urgency: 10, external_contact: 10 };
+const P8_REVIEW = 30;
+
+function p8Norm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function scoreP8(out, gold, tags = [], message = '') {
+  const failures = [];
+  const valid = !!out && typeof out === 'object' && Array.isArray(out.signals);
+  const text = p8Norm(message);
+  const kept = new Set();
+  let quotes = 0, badQuotes = 0, unknownTypes = 0;
+  if (valid) {
+    for (const s of out.signals) {
+      if (!s || !P8_TYPES.includes(s.type)) { unknownTypes += 1; continue; }
+      quotes += 1;
+      const q = p8Norm(s.quote);
+      if (q.length < 4 || !text.includes(q)) { badQuotes += 1; continue; }
+      kept.add(s.type);
+    }
+  } else failures.push('json_invalid');
+  if (badQuotes) failures.push('quote_not_in_text');
+  if (unknownTypes) failures.push('unknown_type');
+  const G = new Set((gold && gold.signals) || []);
+  const per_type = {};
+  for (const t of P8_TYPES) {
+    const tp = kept.has(t) && G.has(t) ? 1 : 0;
+    const fp = kept.has(t) && !G.has(t) ? 1 : 0;
+    const fn = !kept.has(t) && G.has(t) ? 1 : 0;
+    per_type[t] = { tp, fp, fn };
+    if (fp) failures.push(`extra_${t}`);
+    if (fn) failures.push(`missed_${t}`);
+  }
+  const text_score = [...kept].reduce((a, t) => a + (P8_WEIGHTS[t] || 0), 0);
+  const flagged = text_score >= P8_REVIEW;
+  const is_scam = !!(gold && gold.is_scam);
+  if (is_scam && !flagged) failures.push('missed_scam');
+  if (!is_scam && flagged) failures.push('false_alert');
+  const goldPrices = [...new Set(((gold && gold.prices) || []).map(Number))];
+  const outPrices = valid && Array.isArray(out.prices_in_text)
+    ? out.prices_in_text.map((p) => Number(p && p.amount)).filter((n) => Number.isFinite(n)) : [];
+  const prices_found = goldPrices.filter((g) => outPrices.some((n) => Math.abs(n - g) < 0.005)).length;
+  if (prices_found < goldPrices.length) failures.push('price_missed');
+  return { json_valid: valid, is_scam, flagged, text_score, kept: [...kept], per_type, quotes, bad_quotes: badQuotes,
+    unknown_types: unknownTypes, prices_gold: goldPrices.length, prices_found, failures };
+}
+
+function p8Rate(n, d) { return d ? Math.round((n / d) * 10000) / 10000 : null; }
+
+function p8Prf(tp, fp, fn) {
+  const precision = p8Rate(tp, tp + fp), recall = p8Rate(tp, tp + fn);
+  const f1 = precision != null && recall != null && precision + recall > 0
+    ? Math.round(((2 * precision * recall) / (precision + recall)) * 10000) / 10000 : null;
+  return { tp, fp, fn, precision, recall, f1 };
+}
+
+function p8Counts(rows) {
+  let tp = 0, fp = 0, fn = 0, scams = 0, caught = 0, honest = 0, alerts = 0;
+  for (const r of rows) {
+    const m = r.metrics || {};
+    for (const t of P8_TYPES) { const c = (m.per_type || {})[t] || {}; tp += c.tp || 0; fp += c.fp || 0; fn += c.fn || 0; }
+    if (m.is_scam) { scams += 1; if (m.flagged) caught += 1; } else { honest += 1; if (m.flagged) alerts += 1; }
+  }
+  return { ...p8Prf(tp, fp, fn), scams, caught, honest, alerts, scam_recall: p8Rate(caught, scams), false_alert_rate: p8Rate(alerts, honest) };
+}
+
+function summarizeP8(rows) {
+  const n = rows.length;
+  const ms = rows.map((r) => r.metrics || {});
+  const total = p8Counts(rows);
+  const per_type = {};
+  for (const t of P8_TYPES) {
+    let tp = 0, fp = 0, fn = 0;
+    for (const m of ms) { const c = (m.per_type || {})[t] || {}; tp += c.tp || 0; fp += c.fp || 0; fn += c.fn || 0; }
+    per_type[t] = p8Prf(tp, fp, fn);
+  }
+  const quotes = ms.reduce((a, m) => a + (m.quotes || 0), 0);
+  const bad = ms.reduce((a, m) => a + (m.bad_quotes || 0), 0);
+  const pg = ms.reduce((a, m) => a + (m.prices_gold || 0), 0);
+  const pf = ms.reduce((a, m) => a + (m.prices_found || 0), 0);
+  const lat = rows.map((r) => Number(r.latency_ms)).filter((x) => Number.isFinite(x)).sort((a, b) => a - b);
+  const p95 = lat.length ? lat[Math.min(lat.length - 1, Math.ceil(0.95 * lat.length) - 1)] : null;
+  const by_tag = {};
+  for (const tag of [...new Set(rows.flatMap((r) => r.tags || []))].sort()) {
+    const sub = rows.filter((r) => (r.tags || []).includes(tag));
+    const c = p8Counts(sub);
+    by_tag[tag] = { items: sub.length, f1: c.f1, scam_recall: c.scam_recall, false_alert_rate: c.false_alert_rate };
+  }
+  return { items: n, json_valid: p8Rate(ms.filter((m) => m.json_valid).length, n),
+    precision: total.precision, recall: total.recall, f1: total.f1,
+    scam_recall: total.scam_recall, false_alert_rate: total.false_alert_rate,
+    scams: total.scams, scams_flagged: total.caught, honest: total.honest, honest_flagged: total.alerts,
+    hallucination_rate: p8Rate(bad, quotes), quotes, bad_quotes: bad,
+    price_recall: p8Rate(pf, pg), per_type, by_tag,
+    call_errors: rows.filter((r) => r.call_error).length, latency_p95_ms: p95 };
+}
+
+if (typeof module !== 'undefined') module.exports = { scoreP8, summarizeP8, scoreP1, summarizeP1, scoreP2, summarizeP2, scoreP3, summarizeP3, scoreP7, summarizeP7, percentile, norm, fieldsOf, fieldsOfListing };

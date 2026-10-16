@@ -1161,7 +1161,7 @@ components:
       additionalProperties: false
       required: [prompt, versions]
       properties:
-        prompt: { type: string, enum: [P1_router, P2_profile_extractor, P3_listing_extractor, P7_photo_analyzer] }
+        prompt: { type: string, enum: [P1_router, P2_profile_extractor, P3_listing_extractor, P7_photo_analyzer, P8_scam_detector] }
         versions: { type: array, minItems: 1, maxItems: 5, items: { type: integer, minimum: 1 } }
         models: { type: array, minItems: 1, maxItems: 5, items: { type: string }, description: "Default: setting llm.default_model" }
         dataset: { type: string, description: "Default: the prompt's golden set (p1_router, p2_profile, p3_listing, p7_photos)" }
