@@ -207,7 +207,7 @@
         40
       ],
       "parameters": {
-        "description": "Compare a rent amount with the median monthly rent of similar published listings (same city, kind and currency, else the whole country). Input: amount, a number in the main unit of the currency (450 for 450 DT). Returns the listing's own rent, the median, the ratio amount / median and how many listings were compared.",
+        "description": "Compare a rent amount with the median monthly rent of similar published listings (same city, kind and currency, else the whole country). Input: amount, a number in the main unit of the currency (only an amount written in the listing, 0 if it writes none). Returns the listing's own rent, the median, the ratios and how many listings were compared.",
         "source": "database",
         "workflowId": {
           "__rl": true,
@@ -218,7 +218,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "amount": "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit (450 for 450 DT)', 'number') }}",
+            "amount": "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit; 0 if the listing writes none', 'number') }}",
             "listing_id": "={{ $('Agent input').first().json.listing_id }}"
           },
           "matchingColumns": [],

@@ -1498,7 +1498,7 @@ def listing_extract():
 
 SCAM_MARKET_TOOL_DESC = ("Compare a rent amount with the median monthly rent of similar published listings (same city, kind "
                          "and currency, else the whole country). Input: amount, a number in the main unit of the currency "
-                         "(450 for 450 DT). Returns the listing's own rent, the median, the ratio amount / median and how "
+                         "(only an amount written in the listing, 0 if it writes none). Returns the listing's own rent, the median, the ratios and how "
                          "many listings were compared.")
 SCAM_OWNER_TOOL_DESC = ("Facts about the account that posted this listing: account age in days, whether it is verified, and "
                         "how many listings it created in the last 24 hours. No input.")
@@ -1581,7 +1581,7 @@ def scam_check():
         "description": SCAM_MARKET_TOOL_DESC, "source": "database",
         "workflowId": {"__rl": True, "value": SCAM_TOOL_MARKET_WF, "mode": "id", "cachedResultName": "wf.scam.tool_market"},
         "workflowInputs": tool_mapping([
-            ("amount", "number", "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit (450 for 450 DT)', 'number') }}"),
+            ("amount", "number", "={{ $fromAI('amount', 'A rent amount written in the listing, in the main unit; 0 if the listing writes none', 'number') }}"),
             ("listing_id", "string", "={{ %s.listing_id }}" % ai)])}, [1320, 40])
     wf.node("owner_profile", "@n8n/n8n-nodes-langchain.toolWorkflow", 2.2, {
         "description": SCAM_OWNER_TOOL_DESC, "source": "database",
