@@ -1,7 +1,7 @@
 // Unit tests for n8n/src/lib/scam_signals.js (A4 scam check).  Run: node --test n8n/tests/
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { scamScore, quoteInText, normCurrency } = require('../src/lib/scam_signals.js');
+const { scamScore, quoteInText, normCurrency, amountInText } = require('../src/lib/scam_signals.js');
 
 const S = {
   'scam.weights': { price_very_low: 35, price_low: 15, price_high: 5, price_very_high: 10, price_mismatch: 25,
@@ -15,6 +15,8 @@ const ctx = (o) => ({ listing_id: 'l1', text: 'Chambre meublee a Tunis, proche m
   market: { median_monthly_minor: 450000, scope: 'city', comparables: 20 },
   owner: { account_age_days: 400, verified_level: 1, listings_24h: 0 }, settings: S, ...o });
 const BAD_OWNER = { account_age_days: 2, verified_level: 0, listings_24h: 6 };
+const GBP_WEEK = { rent_minor: 20000, rent_period: 'week', currency: 'GBP', currency_exponent: 2,
+  market: { median_monthly_minor: 90000, scope: 'city', comparables: 12 } };
 const types = (r) => r.signals.map((s) => s.type);
 
 test('a normal listing without model output scores 0 (low)', () => {
@@ -36,13 +38,12 @@ test('price far below the median is flagged; half weight when the median is juri
 });
 
 test('weekly rents are compared per month to the median', () => {
-  const r = scamScore(ctx({ rent_minor: 20000, rent_period: 'week', currency: 'GBP', currency_exponent: 2,
-    market: { median_monthly_minor: 90000, scope: 'city', comparables: 12 } }), null);
+  const r = scamScore(ctx(GBP_WEEK), null);
   assert.deepEqual(r.signals, []);                                   // 200 pw = 866.67 a month, ratio 0.96
 });
 
 test('price_mismatch: a rent in the text far from the stored rent', () => {
-  const m = (p) => scamScore(ctx({}), { signals: [], prices_in_text: [p] });
+  const m = (p) => scamScore(ctx({ text: `Annonce. ${p.context}` }), { signals: [], prices_in_text: [p] });
   let r = m({ amount: 900, currency: 'DT', context: 'le vrai loyer est 900 dt' });
   assert.deepEqual(types(r), ['price_mismatch']);
   assert.equal(r.signals[0].evidence.text_amount, 900);
@@ -62,11 +63,24 @@ test('price_mismatch: a rent in the text far from the stored rent', () => {
 });
 
 test('price_mismatch: a weekly rent quoted per month is not a mismatch', () => {
-  const c = ctx({ rent_minor: 20000, rent_period: 'week', currency: 'GBP', currency_exponent: 2,
-    market: { median_monthly_minor: 90000, scope: 'city', comparables: 12 } });
   for (const amount of [900, 1000]) {
-    const r = scamScore(c, { signals: [], prices_in_text: [{ amount, currency: '£', context: `£${amount} per month` }] });
+    const context = `£${amount} per month`;
+    const r = scamScore(ctx({ ...GBP_WEEK, text: context }), { signals: [], prices_in_text: [{ amount, currency: '£', context }] });
     assert.deepEqual(r.signals, [], `amount ${amount}`);
+  }
+});
+
+test('price_mismatch: an amount that is not written in the text is dropped (model invention)', () => {
+  const r = scamScore(ctx({ text: 'Le vrai loyer est de neuf cents dinars.' }),
+    { signals: [], prices_in_text: [{ amount: 900, currency: 'TND', context: 'vrai loyer' }] });
+  assert.deepEqual(r.signals, []);
+  assert.deepEqual(r.dropped, [{ type: 'price_mismatch', reason: 'amount_not_in_text' }]);
+});
+
+test('price_mismatch: amounts written with separators are found in the text', () => {
+  for (const text of ['loyer 1 200 DT', 'loyer 1.200 DT', 'loyer 1,200 DT', 'loyer 1200DT']) {
+    const r = scamScore(ctx({ text }), { signals: [], prices_in_text: [{ amount: 1200, currency: 'TND', context: 'loyer' }] });
+    assert.deepEqual(types(r), ['price_mismatch'], text);
   }
 });
 
@@ -113,4 +127,7 @@ test('helpers', () => {
   assert.equal(normCurrency(null), null);
   assert.equal(quoteInText('  WESTERN   union ', 'par Western Union'), true);
   assert.equal(quoteInText('abc', 'abc def'), false);               // under 4 characters
+  assert.equal(amountInText(20000000, 'WhatsApp au +216 20 000 000'), true);
+  assert.equal(amountInText(450.5, 'loyer 450,50 DT'), true);
+  assert.equal(amountInText(900, 'loyer 9000 DT'), false);
 });

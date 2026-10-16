@@ -24,6 +24,25 @@ function quoteInText(quote, text) {
   return q.length >= 4 && normText(text).includes(q);
 }
 
+// Numbers written in the text, with the usual separators: 1200, 1 200, 1.200, 1,200, 1200.50.
+function numbersIn(text) {
+  const out = new Set();
+  for (const m of String(text || '').matchAll(/\d(?:[\d.,]|\s(?=\d{3}\b))*/g)) {
+    const s = m[0].replace(/[.,]+$/, '').replace(/\s/g, '');
+    for (const c of [s.replace(/[.,]/g, ''), s.replace(/,/g, '.'), s.replace(/\./g, '').replace(',', '.'), s.replace(/,/g, '')]) {
+      const n = Number(c);
+      if (Number.isFinite(n)) out.add(n);
+    }
+  }
+  return out;
+}
+
+// Anti-hallucination for amounts: the model's amount must be written in the listing text.
+function amountInText(amount, text) {
+  for (const n of numbersIn(text)) if (Math.abs(n - amount) < 0.005) return true;
+  return false;
+}
+
 function monthlyOf(amount, period) {
   return period === 'week' ? (amount * 52) / 12 : amount;
 }
@@ -54,7 +73,8 @@ function priceSignal(ctx, W) {
 
 // An amount written as a rent in the text that is far from the stored rent (title says 300, text says 900).
 // Compared to the closest of stored / stored-as-monthly, so a weekly rent quoted per month is not a mismatch.
-function mismatchSignal(ctx, pricesInText, W) {
+// An amount the model gives but that is not in the text is dropped (reason amount_not_in_text).
+function mismatchSignal(ctx, pricesInText, W, dropped) {
   if (ctx.rent_minor == null || !Array.isArray(pricesInText)) return null;
   const exp = ctx.currency_exponent == null ? 2 : Number(ctx.currency_exponent);
   const stored = Number(ctx.rent_minor) / Math.pow(10, exp);
@@ -67,6 +87,7 @@ function mismatchSignal(ctx, pricesInText, W) {
     const c = normText(p.context);
     if (!RENT_CTX.test(c)) continue;
     if (OTHER_CTX.test(c) && !RENT_WORD.test(c)) continue;
+    if (!amountInText(p.amount, ctx.text)) { dropped.push({ type: 'price_mismatch', reason: 'amount_not_in_text' }); continue; }
     const r = (x) => Math.max(p.amount, x) / Math.min(p.amount, x);
     const best = Math.min(r(stored), r(storedMonthly));
     if (best >= 1.5) {
@@ -115,15 +136,15 @@ function scamScore(ctx, modelOutput) {
   requireSettings(S);
   const W = S['scam.weights'];
   const T = S['scam.thresholds'];
-  const signals = [];
+  const signals = [], priceDropped = [];
   const p = priceSignal(ctx, W); if (p) signals.push(p);
-  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W); if (mm) signals.push(mm);
+  const mm = mismatchSignal(ctx, modelOutput && modelOutput.prices_in_text, W, priceDropped); if (mm) signals.push(mm);
   signals.push(...profileSignals(ctx, S, W));
   const ms = modelSignals(modelOutput, ctx.text, W);
   signals.push(...ms.kept);
   const score = Math.min(100, signals.reduce((a, s) => a + (s.weight || 0), 0));
   const level = score >= T.block ? 'high' : score >= T.review ? 'medium' : 'low';
-  return { score, level, signals, dropped: ms.dropped };
+  return { score, level, signals, dropped: [...ms.dropped, ...priceDropped] };
 }
 
-if (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency };
+if (typeof module !== 'undefined') module.exports = { scamScore, quoteInText, normCurrency, amountInText };
