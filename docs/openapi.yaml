@@ -15,6 +15,83 @@ servers:
 security:
   - signedRequest: []
 paths:
+  /v1/negotiations:
+    post:
+      operationId: createNegotiation
+      summary: Create a two round rent negotiation and draft the first renter offer
+      description: Requires terms, privacy and cloud_llm_processing consent. The AI draft is never sent to a landlord.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [listing_id, target_minor, max_minor]
+              properties:
+                listing_id: { type: string, format: uuid }
+                target_minor: { type: integer, minimum: 1, description: Integer minor units; TND uses millimes }
+                max_minor: { type: integer, minimum: 1 }
+      responses:
+        "201": { description: Draft offer awaiting renter approval; model_used identifies a valid AI response }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/negotiations/{id}:
+    get:
+      operationId: getNegotiation
+      summary: Read a negotiation and its authoritative event history as a participant
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+      responses:
+        "200": { description: Negotiation with complete ordered history }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/negotiations/{id}/renter-decision:
+    post:
+      operationId: renterNegotiationDecision
+      summary: Approve or reject the exact draft offer
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        $ref: "#/components/requestBodies/NegotiationDecision"
+      responses:
+        "200": { description: Recorded decision }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/negotiations/{id}/landlord-decision:
+    post:
+      operationId: landlordNegotiationDecision
+      summary: Verified listing owner accepts, rejects or counters an approved offer
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        $ref: "#/components/requestBodies/NegotiationDecision"
+      responses:
+        "200": { description: Recorded decision; first counter includes a guarded round 2 draft }
+        "409": { $ref: "#/components/responses/Conflict" }
   /v1/health:
     get:
       operationId: getHealth
@@ -682,6 +759,21 @@ paths:
         "429": { $ref: "#/components/responses/RateLimited" }
         "503": { $ref: "#/components/responses/UpstreamUnavailable" }
 components:
+  requestBodies:
+    NegotiationDecision:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [version, action, offer_minor, currency, round]
+            properties:
+              version: { type: integer, minimum: 1 }
+              action: { type: string, enum: [approve, reject, accept, counter] }
+              offer_minor: { type: integer, minimum: 1 }
+              currency: { type: string, minLength: 3, maxLength: 3 }
+              round: { type: integer, enum: [1, 2] }
   securitySchemes:
     signedRequest:
       type: apiKey

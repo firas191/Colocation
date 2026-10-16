@@ -46,6 +46,12 @@ cat > "$TMP/credentials.json" <<EOF
   "data": { "baseUrl": "${OLLAMA_BASE_URL:-http://ollama:11434}" }
 },
 {
+  "id": "fsCredApinex0001",
+  "name": "APInex (A4 only)",
+  "type": "openAiApi",
+  "data": { "apiKey": "${APINEX_API_KEY:-not-configured}", "url": "${APINEX_BASE_URL:-https://api.apinex.bond/v1}" }
+},
+{
   "id": "fsCredTelegram01",
   "name": "Telegram bot",
   "type": "telegramApi",

@@ -158,6 +158,8 @@ Example: `update app.settings set value = '120' where key = 'gateway.rate_limit_
 
 ## Known gaps
 
+- A4 Rent Negotiator setup and signed two-round demonstration: `docs/RENT_NEGOTIATOR_OMAR.md` and `docs/OMAR_DEMO.md`. The feature is disabled in `app.settings` until a live APInex credential and workflow import are verified.
+
 - During a full PostgreSQL outage requests are answered with 503 but not logged (FAILURES F-010).
 - `app.idempotency_keys` and `app.rate_counters` grow until the retention workflow exists (phase 7).
 - No backup or restore procedure yet (phase 9).

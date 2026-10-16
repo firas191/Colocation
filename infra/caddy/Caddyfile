@@ -114,6 +114,12 @@
 				rewrite @listing_presign /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001a{uri}
 				@listing_analyze path_regexp ^/v1/listings/[^/]+/analyze$
 				rewrite @listing_analyze /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001b{uri}
+				@neg_get path_regexp ^/v1/negotiations/[^/]+$
+				rewrite @neg_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0031{uri}
+				@neg_renter path_regexp ^/v1/negotiations/[^/]+/renter-decision$
+				rewrite @neg_renter /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0032{uri}
+				@neg_landlord path_regexp ^/v1/negotiations/[^/]+/landlord-decision$
+				rewrite @neg_landlord /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0033{uri}
 				@trace_get path_regexp ^/v1/admin/traces/[^/]+$
 				rewrite @trace_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001d{uri}
 				@not_rewritten not path /webhook/*

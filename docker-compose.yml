@@ -28,6 +28,8 @@ x-n8n-env: &n8n-env
   EXECUTIONS_DATA_PRUNE: "true"
   EXECUTIONS_DATA_MAX_AGE: "168"            # hours; failed executions keep input data for debugging
   N8N_PROXY_HOPS: "1"
+  APINEX_BASE_URL: ${APINEX_BASE_URL:-https://api.apinex.bond/v1}
+  APINEX_API_KEY: ${APINEX_API_KEY:-}
 
 services:
   postgres:

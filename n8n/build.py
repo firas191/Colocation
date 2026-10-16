@@ -1304,6 +1304,119 @@ def api_listings_create():
     return wf
 
 
+APINEX_CRED = {"openAiApi": {"id": "fsCredApinex0001", "name": "APInex (A4 only)"}}
+
+
+def api_negotiations_create():
+    wf = endpoint("fsApiNegCreate01", "wf.api.negotiations_create", "POST", "v1/negotiations",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0030",
+                  {"idempotent": True, "required_consents": ["terms", "privacy", "cloud_llm_processing"]})
+    code_node(wf, "Validate body", "neg_create_validate.js", [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Create", "select app.negotiation_create($1::uuid,$2::uuid,$3::bigint,$4::bigint) as r",
+            "={{ $json.params }}", [1320, -200], on_error=None)
+    code_node(wf, "AI input", "neg_ai_input.js", [1540, -200])
+    if_node(wf, "Created?", "={{ $json.ok }}", [1760, -200])
+    wf.node("Draft AI", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+        "promptType": "define", "text": "={{ $json.prompt }}", "hasOutputParser": False,
+        "options": {"systemMessage": "Draft a renter-side rent offer. Use only the JSON facts. Output only JSON with integer offer_minor and short French reasoning_summary. Never suggest deposits, fees, legal claims, property details or landlord approval. The offer cannot exceed asking_minor or max_minor. This is a draft for renter review, never a sent message.",
+                    "maxIterations": 1}}, [1980, -300], onError="continueRegularOutput")
+    wf.node("APInex Chat Model", "@n8n/n8n-nodes-langchain.lmChatOpenAi", 1.2,
+            {"model": {"__rl": True, "value": "={{ $('AI input').first().json.record.model }}", "mode": "id"},
+             "options": {"timeout": 30000, "maxRetries": 1}}, [1980, -60], credentials=APINEX_CRED)
+    code_node(wf, "Guard proposal", "neg_ai_proposal.js", [2200, -300])
+    pg_node(wf, "Save proposal", "select app.negotiation_transition($1::uuid,$2::uuid,$3::integer,$4,$5::bigint,$6::jsonb) as r",
+            "={{ $json.params }}", [2420, -300], on_error=None)
+    code_node(wf, "Build result", "neg_create_result.js", [2640, -300])
+    respond_tail(wf, 2860)
+    wf.link("Gateway ok?", "Validate body", 0)
+    wf.link("Validate body", "Valid?")
+    wf.link("Valid?", "Create", 0)
+    wf.link("Valid?", "Envelope", 1)
+    wf.link("Create", "AI input")
+    wf.link("AI input", "Created?")
+    wf.link("Created?", "Draft AI", 0)
+    wf.link("Created?", "Envelope", 1)
+    wf.link("Draft AI", "Guard proposal")
+    wf.link("Guard proposal", "Save proposal")
+    wf.link("Save proposal", "Build result")
+    wf.link("Build result", "Envelope")
+    wf.ai_link("APInex Chat Model", "Draft AI", "ai_languageModel")
+    return wf
+
+
+def api_negotiations_get():
+    wf = endpoint("fsApiNegGet0001", "wf.api.negotiations_get", "GET", "v1/negotiations/:id",
+                  "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0031")
+    pg_node(wf, "Load", "select app.negotiation_view(app.try_uuid($1),app.try_uuid($2)) as v",
+            "={{ [ $json.ctx.user_id, $json.ctx.params.id || '' ] }}", [880, -100], on_error=None)
+    code_node(wf, "Build result", "neg_get_result.js", [1100, -100])
+    respond_tail(wf, 1320)
+    wf.link("Gateway ok?", "Load", 0)
+    wf.link("Load", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def negotiation_decision(role):
+    suffix = "renter" if role == "renter" else "landlord"
+    wid = "fsApiNegRenter01" if role == "renter" else "fsApiNegLandl01"
+    hook = "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0032" if role == "renter" else "5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a0033"
+    wf = endpoint(wid, "wf.api.negotiations_" + suffix + "_decision", "POST",
+                  "v1/negotiations/:id/" + suffix + "-decision", hook,
+                  {"idempotent": True, "required_consents": ["terms", "privacy", "cloud_llm_processing"] if role == "landlord" else ["terms", "privacy"]})
+    js = code("neg_decision_validate.js").replace("__ROLE__", role)
+    wf.node("Validate decision", "n8n-nodes-base.code", 2,
+            {"mode": "runOnceForAllItems", "language": "javaScript", "jsCode": js}, [880, -100])
+    if_node(wf, "Valid?", "={{ $json.ok }}", [1100, -100])
+    pg_node(wf, "Decide", "select app.negotiation_transition($1::uuid,$2::uuid,$3::integer,$4,$5::bigint,$6::jsonb) as r",
+            "={{ $json.params }}", [1320, -200], on_error=None)
+    code_node(wf, "Build result", "neg_decision_result.js", [1540, -200])
+    if role == "landlord":
+        if_node(wf, "Round 2?", "={{ $json.r && $json.r.ok && $json.r.status === 'landlord_countered' }}", [1540, -400])
+        code_node(wf, "Round 2 input", "neg_round2_input.js", [1760, -500])
+        wf.node("Draft AI R2", "@n8n/n8n-nodes-langchain.agent", 3.1, {
+            "promptType": "define", "text": "={{ $json.prompt }}", "hasOutputParser": False,
+            "options": {"systemMessage": "Draft a second and final renter-side rent offer. Use only the JSON facts. Output only JSON with integer offer_minor and short French reasoning_summary. Never suggest deposits, fees, legal claims, property details or landlord approval. Offer cannot exceed asking_minor, max_minor or counter_minor. This is a draft for renter review, never a sent message.", "maxIterations": 1}},
+            [1980, -500], onError="continueRegularOutput")
+        wf.node("APInex Chat Model R2", "@n8n/n8n-nodes-langchain.lmChatOpenAi", 1.2,
+                {"model": {"__rl": True, "value": "={{ $('Round 2 input').first().json.record.model }}", "mode": "id"},
+                 "options": {"timeout": 30000, "maxRetries": 1}}, [1980, -260], credentials=APINEX_CRED)
+        code_node(wf, "Guard round 2", "neg_round2_proposal.js", [2200, -500])
+        pg_node(wf, "Save round 2", "select app.negotiation_transition($1::uuid,$2::uuid,$3::integer,$4,$5::bigint,$6::jsonb) as r",
+                "={{ $json.params }}", [2420, -500], on_error=None)
+        code_node(wf, "Round 2 result", "neg_round2_result.js", [2640, -500])
+        respond_tail(wf, 2860)
+    else:
+        respond_tail(wf, 1760)
+    wf.link("Gateway ok?", "Validate decision", 0)
+    wf.link("Validate decision", "Valid?")
+    wf.link("Valid?", "Decide", 0)
+    wf.link("Valid?", "Envelope", 1)
+    if role == "landlord":
+        wf.link("Decide", "Round 2?")
+        wf.link("Round 2?", "Round 2 input", 0)
+        wf.link("Round 2?", "Build result", 1)
+        wf.link("Round 2 input", "Draft AI R2")
+        wf.link("Draft AI R2", "Guard round 2")
+        wf.link("Guard round 2", "Save round 2")
+        wf.link("Save round 2", "Round 2 result")
+        wf.link("Round 2 result", "Envelope")
+        wf.ai_link("APInex Chat Model R2", "Draft AI R2", "ai_languageModel")
+    else:
+        wf.link("Decide", "Build result")
+    wf.link("Build result", "Envelope")
+    return wf
+
+
+def api_negotiations_renter_decision():
+    return negotiation_decision("renter")
+
+
+def api_negotiations_landlord_decision():
+    return negotiation_decision("landlord")
+
+
 def api_listings_get():
     wf = endpoint("fsApiListGet0001", "wf.api.listings_get", "GET", "v1/listings/:id", LISTING_GET_HOOK)
     pg_node(wf, "Load", "select app.listing_owner_view(app.try_uuid($1), app.try_uuid($2)) as v",
@@ -1765,6 +1878,7 @@ BUILDS = {
                   llm_call, eval_prompts, profile_extract, match_search, match_tool_search, match_tool_listing, match_agent, api_search, api_profiles_extract, api_profiles_me,
                   orchestrator, admin_eval_prompt_runs_create, listings_embed, admin_listings_embed, fx_refresh, admin_fx_refresh,
                   api_listings_create, api_listings_get, api_listings_presign, api_listings_analyze, intake_photos,
+                  api_negotiations_create, api_negotiations_get, api_negotiations_renter_decision, api_negotiations_landlord_decision,
                   listing_extract, listing_analyze, jobs_dispatch, api_me_consents, api_admin_traces_get, tg_api, tg_channel],
     "workflows-test": [test_fail],
 }
