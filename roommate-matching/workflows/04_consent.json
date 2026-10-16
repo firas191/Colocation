@@ -1,0 +1,293 @@
+{
+  "name": "Coloc – Consent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "requester_email"
+            },
+            {
+              "name": "target_name"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "30189cd4-f694-4159-9404-d8c0399be324",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.requester_email }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "6f44ecb7-4af8-49df-bd0b-d8f3808079d8",
+      "name": "Get requester"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name",
+              "keyValue": "={{ $('When Executed by Another Workflow').first().json.target_name }}"
+            },
+            {
+              "keyName": "zone",
+              "keyValue": "={{ $json.zone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "5cdf13ca-2ffc-4705-983f-f10fc7b5d7a2",
+      "name": "Get target"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $json.email }}",
+        "subject": "Coloc Match : quelqu'un aimerait être ton colocataire",
+        "message": "=Bonjour {{ $json.name }},\n\n{{ $('Get requester').first().json.name }} cherche un(e) colocataire à {{ $json.zone }} et vos profils sont très compatibles.\nSon profil : {{ $('Get requester').first().json.personality }}\nBudget : {{ $('Get requester').first().json.budget_min }} - {{ $('Get requester').first().json.budget_max }} TND\n\nAcceptes-tu d'être mis(e) en contact ?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Accepter",
+            "disapproveLabel": "Refuser"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        96
+      ],
+      "id": "f57bb5a2-fbe0-4483-88d7-7a76a1f22f36",
+      "name": "Send message and wait for response",
+      "webhookId": "9fdade5b-b58c-46f8-b7a7-cb75a66ce75d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "db4505b7-c7a9-4482-86a7-a5a50f17ae62",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        864,
+        80
+      ],
+      "id": "41e57de1-26b4-49d3-94f7-a87985ce2194",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get requester').first().json.email }}, {{ $('Get target').first().json.email }}",
+        "subject": "C'est un match ! 🎉",
+        "message": "=<div style=\"background:#f4f1ec;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;\">\n    <tr>\n      <td style=\"background:#2f6f5e;padding:32px 24px;text-align:center;\">\n        <div style=\"font-size:40px;line-height:1;\">🏡</div>\n        <h1 style=\"margin:12px 0 4px;color:#ffffff;font-size:26px;\">C'est un match !</h1>\n        <p style=\"margin:0;color:#d6ebe4;font-size:15px;\">Vous avez tous les deux accepté d'être mis en contact</p>\n      </td>\n    </tr>\n    <tr>\n      <td style=\"padding:28px 24px 8px;color:#2b2b2b;font-size:15px;line-height:1.6;\">\n        Bonjour <b>{{ $('Get requester').first().json.name }}</b> et <b>{{ $('Get target').first().json.name }}</b>,<br><br>\n        Bonne nouvelle : vos profils sont compatibles et vous souhaitez tous les deux vous rencontrer. Voici vos coordonnées :\n      </td>\n    </tr>\n    <tr>\n      <td style=\"padding:8px 24px;\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n          <tr>\n            <td width=\"50%\" style=\"padding:6px;\">\n              <div style=\"background:#f4f1ec;border-radius:12px;padding:16px;text-align:center;\">\n                <div style=\"font-size:13px;color:#7a7a7a;text-transform:uppercase;letter-spacing:1px;\">Colocataire</div>\n                <div style=\"font-size:18px;font-weight:bold;color:#2f6f5e;margin:6px 0;\">{{ $('Get requester').first().json.name }}</div>\n                <a href=\"mailto:{{ $('Get requester').first().json.email }}\" style=\"font-size:13px;color:#2b2b2b;\">{{ $('Get requester').first().json.email }}</a>\n              </div>\n            </td>\n            <td width=\"50%\" style=\"padding:6px;\">\n              <div style=\"background:#f4f1ec;border-radius:12px;padding:16px;text-align:center;\">\n                <div style=\"font-size:13px;color:#7a7a7a;text-transform:uppercase;letter-spacing:1px;\">Colocataire</div>\n                <div style=\"font-size:18px;font-weight:bold;color:#2f6f5e;margin:6px 0;\">{{ $('Get target').first().json.name }}</div>\n                <a href=\"mailto:{{ $('Get target').first().json.email }}\" style=\"font-size:13px;color:#2b2b2b;\">{{ $('Get target').first().json.email }}</a>\n              </div>\n            </td>\n          </tr>\n        </table>\n      </td>\n    </tr>\n    <tr>\n      <td style=\"padding:16px 24px;color:#2b2b2b;font-size:15px;line-height:1.6;\">\n        <b>Prochaines étapes :</b>\n        <ul style=\"margin:8px 0 0;padding-left:20px;\">\n          <li>Échangez par message ou appel pour faire connaissance</li>\n          <li>Visitez des logements ensemble à <b>{{ $('Get target').first().json.zone }}</b></li>\n          <li>Si le courant passe, décidez de vivre ensemble</li>\n        </ul>\n      </td>\n    </tr>\n    <tr>\n      <td style=\"padding:8px 24px 20px;text-align:center;\">\n        <a href=\"https://yosrk.app.n8n.cloud/form/af8cc56d-d0fa-4294-a505-c4d4a62b544c\" style=\"display:inline-block;background:#2f6f5e;color:#ffffff;text-decoration:none;border-radius:999px;padding:14px 26px;font-size:15px;font-weight:bold;\">Nous avons décidé de vivre ensemble 🏡</a>\n      </td>\n    </tr>\n    <tr>\n      <td style=\"padding:8px 24px 28px;\">\n        <div style=\"background:#fff6e5;border-left:4px solid #f0a830;border-radius:8px;padding:14px 16px;font-size:14px;color:#5a4a2a;\">\n          ✨ Si vous décidez de vivre ensemble, <b>Coloc Match</b> vous préparera un <b>plan de vie commune</b> : partage du loyer, tâches, règles de la maison…\n        </div>\n      </td>\n    </tr>\n    <tr>\n      <td style=\"background:#faf8f5;padding:18px 24px;text-align:center;font-size:12px;color:#9a9a9a;\">\n        L'équipe Coloc Match · Trouver le bon colocataire, simplement\n      </td>\n    </tr>\n  </table>\n</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        -16
+      ],
+      "id": "f258c5fb-2c6b-4f67-9bdb-3db8ba1a5aa3",
+      "name": "Send a message",
+      "webhookId": "3df356c7-1472-44cc-91d0-47c3ff2f8cf9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get requester').first().json.email }}",
+        "subject": "Coloc Match : réponse à ta demande",
+        "message": "=<div style=\"background:#f4f1ec;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;\">   <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;\">     <tr>       <td style=\"background:#5b6b8c;padding:28px 24px;text-align:center;\">         <div style=\"font-size:36px;line-height:1;\">💬</div>         <h1 style=\"margin:12px 0 0;color:#ffffff;font-size:22px;\">Réponse à ta demande</h1>       </td>     </tr>     <tr>       <td style=\"padding:28px 24px;color:#2b2b2b;font-size:15px;line-height:1.6;\">         Bonjour <b>{{ $('Get requester').first().json.name }}</b>,<br><br>         <b>{{ $('Get target').first().json.name }}</b> n'est pas disponible pour le moment.<br><br>         Pas d'inquiétude : d'autres profils compatibles t'attendent. Retourne sur le chat <b>Coloc Match</b> et choisis une autre personne de ta liste.       </td>     </tr>     <tr>       <td style=\"padding:0 24px 28px;text-align:center;\">         <div style=\"display:inline-block;background:#2f6f5e;color:#ffffff;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:bold;\">           Continue ta recherche sur Coloc Match 🏡         </div>       </td>     </tr>     <tr>       <td style=\"background:#faf8f5;padding:18px 24px;text-align:center;font-size:12px;color:#9a9a9a;\">         L'équipe Coloc Match · Trouver le bon colocataire, simplement       </td>     </tr>   </table> </div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        176
+      ],
+      "id": "312baeed-0f62-4ede-a53d-35ec9c96a47c",
+      "name": "Send a message1",
+      "webhookId": "d18ebbff-6ee9-4d55-9e3f-cd563665d1bd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "requester_email": "yosrkouka59@gmail.com",
+          "target_name": "Amira"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get requester",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get requester": {
+      "main": [
+        [
+          {
+            "node": "Get target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get target": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e85ae5b9-1ec8-4c4a-9803-9d328e000989",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad455715469c5d84fe43f42273d8cfa2c72ddd4ac5420f0766f18b73cc9d2ee8"
+  },
+  "nodeGroups": [],
+  "id": "0BqheDBaca3gviyj",
+  "tags": []
+}

@@ -1,0 +1,150 @@
+{
+  "name": "Coloc – Contact request",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "requester_email"
+            },
+            {
+              "name": "target_name"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "452c3907-eb05-4e01-9f3a-1d99592706aa",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0BqheDBaca3gviyj",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0BqheDBaca3gviyj",
+          "cachedResultName": "Coloc – Consent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "requester_email": "={{ $json.requester_email }}",
+            "target_name": "={{ $json.target_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "requester_email",
+              "displayName": "requester_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "target_name",
+              "displayName": "target_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "29762a18-859d-4b25-b8c2-f0eab07471b7",
+      "name": "Call 'Coloc – Consent'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46dd7b94-7098-4a01-aaeb-a469211e75d6",
+              "name": "result",
+              "value": "=Demande envoyée à {{ $('When Executed by Another Workflow').first().json.target_name }} par email. En attente de sa réponse.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "53f61c78-994f-4e77-bc85-2084041380f3",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "requester_email": "yosrkouka59@gmail.com",
+          "target_name": "Ayoub"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Call 'Coloc – Consent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Coloc – Consent'": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6eaf2247-ff23-4789-8197-7acd26e32bfb",
+  "meta": {
+    "instanceId": "ad455715469c5d84fe43f42273d8cfa2c72ddd4ac5420f0766f18b73cc9d2ee8"
+  },
+  "nodeGroups": [],
+  "id": "I9TRflj9d7KehMJt",
+  "tags": []
+}

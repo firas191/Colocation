@@ -1,0 +1,842 @@
+{
+  "name": "Coloc – Living plan",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Nous avons décidé de vivre ensemble 🏡",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ton email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email de ton/ta colocataire",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Loyer total (TND)",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Charges estimées par mois (TND)",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Date d'emménagement",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Remarques",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f0d95c6a-7837-411f-b176-fbda768ba445",
+      "name": "On form submission",
+      "webhookId": "af8cc56d-d0fa-4294-a505-c4d4a62b544c"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json['Ton email'] }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "a75e3956-e1c4-4b78-a05b-72edaeac9654",
+      "name": "Get A"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $('On form submission').first().json['Email de ton/ta colocataire'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "35a5470f-7c82-4c58-b292-813546c9abd3",
+      "name": "Get B"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Get B').first().json.email }}",
+        "subject": "=Confirmes-tu ta colocation avec {{ $('Get A').first().json.name }} ?",
+        "message": "={{ $('Get A').first().json.name }} indique que vous avez décidé de vivre ensemble. Confirmes-tu ?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Je confirme",
+            "disapproveLabel": "Non"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "300c85e0-5960-4390-9b69-1efb8d64c4da",
+      "name": "Send message and wait for response",
+      "webhookId": "fc9050ff-2d34-477e-92e8-515d4609105d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "45878c1e-9894-4bde-ae1f-a7a8ee7345da",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        0
+      ],
+      "id": "15b9f046-d62e-4f8b-85e4-45acba638600",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un expert en colocation. Rédige un plan de vie commune pour deux colocataires.\n\nCOLOCATAIRE A : {{ JSON.stringify($('Get A').first().json) }}\nCOLOCATAIRE B : {{ JSON.stringify($('Get B').first().json) }}\nINFOS : loyer total {{ $('On form submission').first().json['Loyer total (TND)'] }} TND, charges {{ $('On form submission').first().json['Charges estimées par mois (TND)'] }} TND, emménagement le {{ $('On form submission').first().json[\"Date d'emménagement\"] }}. Remarques : {{ $('On form submission').first().json['Remarques'] }}\n\nLe plan doit contenir, adapté à LEURS profils (propreté, horaires, invités, bruit, télétravail, animaux) :\n1. Répartition du loyer et des charges (montants précis par personne)\n2. Planning des tâches ménagères par semaine (tableau)\n3. Règles de la maison : heures calmes, invités, espaces communs\n4. Courses et dépenses communes\n5. Comment gérer un désaccord\n6. Un point d'étape après 1 mois\n\nRéponds UNIQUEMENT avec le contenu HTML d'un email (pas de ```, pas de <html> ni <body>), avec des styles inline, une palette verte (#2f6f5e) et beige (#f4f1ec), des tableaux pour le planning, en français, ton chaleureux.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "42c22a7c-6fe2-4a87-b9e8-e57a273176fd",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "4bb6cc4c-4ba1-4ae1-add5-0cf2d69eeb72",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "t4JKrTGVAGP5E5CP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get A').first().json.email }}, {{ $('Get B').first().json.email }}",
+        "subject": "Votre plan de vie commune 🏡",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -96
+      ],
+      "id": "70d2507d-d940-464b-840c-a3242eeee206",
+      "name": "Send a message",
+      "webhookId": "873057b0-afb0-459c-a91e-e418b3ce2b2a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $('Get A').first().json.email }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "found"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "zone",
+              "displayName": "zone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_min",
+              "displayName": "budget_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_max",
+              "displayName": "budget_max",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "move_in_date",
+              "displayName": "move_in_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "smoker",
+              "displayName": "smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "pets",
+              "displayName": "pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "cleanliness",
+              "displayName": "cleanliness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sleep_schedule",
+              "displayName": "sleep_schedule",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "guests",
+              "displayName": "guests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "noise_tolerance",
+              "displayName": "noise_tolerance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "works_from_home",
+              "displayName": "works_from_home",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "personality",
+              "displayName": "personality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dealbreakers",
+              "displayName": "dealbreakers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_smoker",
+              "displayName": "ok_with_smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_pets",
+              "displayName": "ok_with_pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        -96
+      ],
+      "id": "06bc2582-f23a-4ff2-bb56-1d9beb508bb8",
+      "name": "Update A",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $('Get B').first().json.email }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "found"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "zone",
+              "displayName": "zone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_min",
+              "displayName": "budget_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_max",
+              "displayName": "budget_max",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "move_in_date",
+              "displayName": "move_in_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "smoker",
+              "displayName": "smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "pets",
+              "displayName": "pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "cleanliness",
+              "displayName": "cleanliness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sleep_schedule",
+              "displayName": "sleep_schedule",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "guests",
+              "displayName": "guests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "noise_tolerance",
+              "displayName": "noise_tolerance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "works_from_home",
+              "displayName": "works_from_home",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "personality",
+              "displayName": "personality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dealbreakers",
+              "displayName": "dealbreakers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_smoker",
+              "displayName": "ok_with_smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_pets",
+              "displayName": "ok_with_pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1936,
+        -96
+      ],
+      "id": "e41c676b-a897-4b4e-9d3d-084ed73ead3a",
+      "name": "Update B",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get A').first().json.email }}",
+        "subject": "Coloc Match : ta colocation n'a pas été confirmée",
+        "emailType": "text",
+        "message": "=Bonjour {{ $('Get A').first().json.name }},  {{ $('Get B').first().json.name }} n'a pas confirmé la colocation pour le moment. Prenez le temps d'en discuter ensemble, ou retourne sur le chat Coloc Match pour trouver un autre profil compatible.  L'équipe Coloc Match",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        144
+      ],
+      "id": "e0e37acd-031e-412d-8b86-01037f5988df",
+      "name": "Send a message1",
+      "webhookId": "ec450a32-a327-4de7-a8c5-ba6bea70ea17",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ojjQiRfXcMoP8ZBt",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get A": {
+      "main": [
+        [
+          {
+            "node": "Get B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get B": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update A": {
+      "main": [
+        [
+          {
+            "node": "Update B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c3c20d20-eb27-47a5-a977-9437a35c7cd3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad455715469c5d84fe43f42273d8cfa2c72ddd4ac5420f0766f18b73cc9d2ee8"
+  },
+  "nodeGroups": [],
+  "id": "jf2sE6e8ZTOINEGb",
+  "tags": []
+}

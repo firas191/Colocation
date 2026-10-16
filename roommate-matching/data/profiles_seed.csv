@@ -1,0 +1,13 @@
+﻿name,email,zone,budget_min,budget_max,move_in_date,gender,smoker,pets,cleanliness,sleep_schedule,guests,noise_tolerance,works_from_home,personality,dealbreakers,ok_with_smoker,ok_with_pets,status
+Yosr,yosrkouka99@gmail.com,La Marsa,500,1000,2026-12-01T00:00:00.000Z,female,false,false,4,night owl,often,4,true,Extroverted and social individual who prefers direct communication for conflict resolution.,"Irresponsibility, lack of cleanliness, drugs, alcohol, and lack of respect.",true,false,searching
+Amira,yosrkouka59+amira@gmail.com,Ariana,250,400,2026-10-31T23:00:00.000Z,female,false,false,5,early bird,rarely,2,true,"Calm introvert, likes cooking and sharing meals sometimes","smoking, parties",false,true,searching
+Sarra,yosrkouka59+sarra@gmail.com,Ariana,300,450,2026-11-14T23:00:00.000Z,female,false,true,4,early bird,sometimes,3,false,"Organised student, friendly but independent",messiness,false,true,searching
+Yassine,yosrkouka59+yassine@gmail.com,Ariana,200,350,2026-10-31T23:00:00.000Z,male,true,false,2,night owl,often,5,false,"Very social extrovert, plays music",strict rules,true,false,searching
+Mehdi,yosrkouka59+mehdi@gmail.com,Ariana,300,500,2026-11-30T23:00:00.000Z,male,false,false,4,early bird,rarely,2,true,"Quiet developer, independent, gym in the morning",noise at night,true,true,searching
+Nour,yosrkouka59+nour@gmail.com,Ariana,350,600,2026-10-31T23:00:00.000Z,female,false,false,3,night owl,sometimes,3,true,"Creative, talkative, likes movie nights",pets,false,false,searching
+Ines,ines@example.com,Ariana,200,300,2026-11-09T23:00:00.000Z,female,false,false,5,early bird,rarely,1,false,"Shy medical student, needs quiet to study","smoking, guests at night",false,true,searching
+Karim,yosrkouka59+karim@gmail.com,La Marsa,400,700,2026-10-31T23:00:00.000Z,male,false,true,4,early bird,sometimes,3,true,"Easygoing, has a cat",smoking,false,true,searching
+Rania,rania@example.com,La Marsa,300,450,2026-11-30T23:00:00.000Z,female,false,false,3,night owl,often,4,false,"Outgoing, loves hosting friends",strict curfew,true,false,searching
+Ayoub,yosrkouka59+ayoub@gmail.com,Ariana,250,800,2026-10-31T23:00:00.000Z,female,false,false,5,early bird,rarely,2,true,"Introverted, enjoys sharing meals sometimes, handles conflicts calmly",smoking and loud parties,false,true,searching
+Yosr,yosrkouka59@gmail.com,Ariana,250,400,2026-10-31T23:00:00.000Z,female,false,false,5,early bird,rarely,2,true,"Introvert, shares meals sometimes, resolves conflicts calmly",Smoking and loud parties,false,true,searching
+Yossyoss,yosrkouka99+yoss@gmail.com,La Marsa,200,1000,2026-11-14T23:00:00.000Z,femme,false,false,4,night owl,souvent,4,true,"extraverti, aime partager les repas, préfère résoudre les conflits par discussion ouverte",,true,false,searching

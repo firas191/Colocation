@@ -1,0 +1,307 @@
+{
+  "name": "Coloc – Matching",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "email"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        352
+      ],
+      "id": "3fe4dff0-c9dc-4f40-8c72-3e2c8d0196ed",
+      "name": "Get my profile"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "zone",
+              "keyValue": "={{ $json.zone }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "searching"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        352
+      ],
+      "id": "792a9dcb-cd78-48fa-bec4-3f88a682aa1b",
+      "name": "Get same zone",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b1d970fc-8dde-4dde-b7d7-d4363d2a15aa",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "={{ $('Get my profile').first().json.email }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "e236fecf-a7df-4b9e-80c8-d53df9919471",
+              "leftValue": "={{ $json.budget_min }}",
+              "rightValue": "={{ $('Get my profile').first().json.budget_max }}",
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "42321bde-54b6-408b-b6ac-3457c9b2ec6b",
+              "leftValue": "={{ $json.budget_max }}",
+              "rightValue": "={{ $('Get my profile').first().json.budget_min }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        352
+      ],
+      "id": "481848f7-a18f-4118-846d-3ee60e61f112",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "candidates",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        352
+      ],
+      "id": "313c436a-dbcd-4d5f-aae6-635ac34ae90a",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a flatmate compatibility expert.\n\nUSER PROFILE:\n{{ JSON.stringify($('Get my profile').first().json) }}\n\nCANDIDATES (same zone, compatible budget):\n{{ JSON.stringify($json.candidates) }}\n\nFor each candidate, give a compatibility score 0-100:\n- Any dealbreaker conflict in EITHER direction (one smokes and the other does not accept smokers, one has pets and the other does not accept pets, or anything listed in the other person's dealbreakers) -> exclude the candidate completely.\n- Then weigh: cleanliness gap, sleep schedule, guests, noise tolerance, working from home, personality fit, move-in date closeness.\nReturn the top 5 (or fewer) sorted by score from highest to lowest, with a short concrete reason in French.\nIf no candidate fits, return an empty matches list.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1392,
+        352
+      ],
+      "id": "9814432b-404b-435e-b806-c84e5d6dc219",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        560
+      ],
+      "id": "9b72be2e-9bb1-4287-bea0-23715a71aac9",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "t4JKrTGVAGP5E5CP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"matches\":[{\"name\":\"Amira\",\"email\":\"amira@example.com\",\"score\":87,\"reason\":\"Toutes les deux très ordonnées, matinales et non-fumeuses\"}]}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1536,
+        560
+      ],
+      "id": "70cc1b9a-2799-453d-95d6-d7980ab802a2",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "email": "yosrkouka59@gmail.com"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get my profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get my profile": {
+      "main": [
+        [
+          {
+            "node": "Get same zone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get same zone": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7c692895-592c-4c61-a869-cc1c10edfa11",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad455715469c5d84fe43f42273d8cfa2c72ddd4ac5420f0766f18b73cc9d2ee8"
+  },
+  "nodeGroups": [],
+  "id": "d7PC6HyJPTbckQ2o",
+  "tags": []
+}

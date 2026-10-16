@@ -1,0 +1,486 @@
+{
+  "name": "Coloc – Profile onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4d6d3158-2750-4163-a1a2-cc9a1c1b8f7b",
+      "name": "When chat message received",
+      "webhookId": "c5fdbb67-ba73-4c88-ae30-2fe1bfdae103"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are \"Coloc Match\", a friendly assistant that helps people find a compatible flatmate (colocataire).\nReply in the language the user writes in (French, English or Tunisian Arabic).\n\nGOAL: build the user's flatmate profile through a natural conversation, save it, then propose compatible flatmates.\n\nHOW TO ASK (VERY IMPORTANT):\n- Ask AT MOST 2 related questions per message, never more.\n- NEVER send the full list of questions.\n- Wait for the answer before moving to the next group.\n- If the user gives several answers at once, do not ask those questions again.\n\nCollect, in this order:\n1. First name and email (needed to send matches)\n2. Zone/neighbourhood where they want to live\n3. Budget range per month for their share (min and max, in TND) and desired move-in date\n4. Their gender\n5. Do they smoke? Do they accept a smoker?\n6. Do they have pets? Do they accept pets?\n7. Cleanliness level 1-5 (1 = very relaxed, 5 = very tidy) and sleep schedule: early bird or night owl?\n8. Guests: rarely / sometimes / often, and noise tolerance 1-5 (1 = needs silence, 5 = noise doesn't bother them)\n9. Do they work or study from home?\n10. 2-3 questions about personality (introvert/extrovert, sharing meals or independent, how they handle conflicts) -> summarise in one sentence\n11. Dealbreakers: what they absolutely refuse\n\nRULES:\n- If an answer is vague, ask a quick follow-up instead of guessing.\n- Convert answers to the right format (yes/no -> true/false, numbers as numbers, dates as YYYY-MM-DD).\n- When you have everything, show a short recap and ask \"Is this correct?\".\n- Only after the user confirms, call the save_profile tool ONCE.\n- IMMEDIATELY after saving, call the find_matches tool with the user's email. Do not reply to the user before calling it.\n- Present the results: for each match show the first name, the score /100 and the reason. NEVER show their email.\n- Then ask which person they would like to get in touch with.\n- If there are no matches, say so kindly and tell them they will be notified when someone compatible joins.\n- If the user already has a saved profile and asks for matches, call find_matches directly.\n- When the user chooses a person, call request_contact with the user's email and that person's first name.\n- Then tell the user the request was sent by email and that they will receive the contact details by email if the person accepts. Never claim a request was sent without calling the tool.\n- Never invent information the user did not give."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "9cc2282b-c1a5-49c0-a33b-b7bd1e25b549",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "304f0702-5aab-4634-9cdc-c9a29891d212",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "save_profile",
+        "dataTableId": {
+          "__rl": true,
+          "value": "JqEj0saSqx6XeOmK",
+          "mode": "list",
+          "cachedResultName": "profiles",
+          "cachedResultUrl": "/projects/nVB98dU0CZou3dXs/datatables/JqEj0saSqx6XeOmK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "smoker": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('smoker', ``, 'boolean') }}",
+            "pets": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('pets', ``, 'boolean') }}",
+            "works_from_home": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('works_from_home', ``, 'boolean') }}",
+            "ok_with_smoker": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ok_with_smoker', ``, 'boolean') }}",
+            "ok_with_pets": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ok_with_pets', ``, 'boolean') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "zone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('zone', ``, 'string') }}",
+            "budget_min": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('budget_min', ``, 'number') }}",
+            "budget_max": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('budget_max', ``, 'number') }}",
+            "move_in_date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('move_in_date', ``, 'string') }}",
+            "gender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('gender', ``, 'string') }}",
+            "cleanliness": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cleanliness', ``, 'number') }}",
+            "sleep_schedule": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sleep_schedule', ``, 'string') }}",
+            "guests": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('guests', ``, 'string') }}",
+            "noise_tolerance": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('noise_tolerance', ``, 'number') }}",
+            "personality": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('personality', ``, 'string') }}",
+            "dealbreakers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('dealbreakers', ``, 'string') }}",
+            "status": "searching"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "zone",
+              "displayName": "zone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_min",
+              "displayName": "budget_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "budget_max",
+              "displayName": "budget_max",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "move_in_date",
+              "displayName": "move_in_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gender",
+              "displayName": "gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "smoker",
+              "displayName": "smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "pets",
+              "displayName": "pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "cleanliness",
+              "displayName": "cleanliness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sleep_schedule",
+              "displayName": "sleep_schedule",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "guests",
+              "displayName": "guests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "noise_tolerance",
+              "displayName": "noise_tolerance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "works_from_home",
+              "displayName": "works_from_home",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "personality",
+              "displayName": "personality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dealbreakers",
+              "displayName": "dealbreakers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_smoker",
+              "displayName": "ok_with_smoker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ok_with_pets",
+              "displayName": "ok_with_pets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        208
+      ],
+      "id": "0b1f38d4-c122-4da7-93ac-34dd32cfac54",
+      "name": "save_profile"
+    },
+    {
+      "parameters": {
+        "description": "Sends a contact request by email to the flatmate the user chose. Inputs: the user's email and the chosen person's first name.",
+        "workflowId": {
+          "__rl": true,
+          "value": "I9TRflj9d7KehMJt",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/I9TRflj9d7KehMJt",
+          "cachedResultName": "Coloc – Contact request"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "requester_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('requester_email', ``, 'string') }}",
+            "target_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('target_name', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "requester_email",
+              "displayName": "requester_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "target_name",
+              "displayName": "target_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        400
+      ],
+      "id": "24f830ed-d3e6-4d93-b63e-0d93c93761b0",
+      "name": "request_contact"
+    },
+    {
+      "parameters": {
+        "description": "Finds the top 5 most compatible flatmates for a user whose profile has just been saved. Input: the user's email.",
+        "workflowId": {
+          "__rl": true,
+          "value": "d7PC6HyJPTbckQ2o",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/d7PC6HyJPTbckQ2o",
+          "cachedResultName": "Coloc – Matching"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        304
+      ],
+      "id": "185d4edb-2070-4c25-b171-2881c2636aed",
+      "name": "find_matches"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.7-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "eac1fc4d-60fa-4e84-b822-66abf38f0755",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WUNl49hC7alnHXiL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "request_contact": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "find_matches": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "77f64b32-75c9-49f5-9877-f680d80037bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad455715469c5d84fe43f42273d8cfa2c72ddd4ac5420f0766f18b73cc9d2ee8"
+  },
+  "nodeGroups": [],
+  "id": "XhFpBScri7YdJco3",
+  "tags": []
+}
