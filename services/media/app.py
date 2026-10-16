@@ -220,6 +220,25 @@ def presign(body: PresignIn):
             "expires_at": expires.isoformat(timespec="seconds"), "key": body.key}
 
 
+class PresignGetIn(BaseModel):
+    """Signed GET URLs for processed listing photos (platform P2: listing page, search covers, favourites). Only keys
+    under media/ (the processed copies: EXIF removed, faces and text blurred); never raw uploads."""
+    keys: list[str] = Field(default_factory=list, max_length=60)
+    expires_s: int = Field(900, ge=60, le=3600)
+    model_config = {"extra": "forbid"}
+
+    @field_validator("keys")
+    @classmethod
+    def _ks(cls, v):
+        return [_listing_photo_key(k) for k in v]
+
+
+@app.post("/v1/storage/presign-get")
+def presign_get(body: PresignGetIn):
+    expires = (datetime.now(timezone.utc) + timedelta(seconds=body.expires_s)).isoformat(timespec="seconds")
+    return {"urls": [{"key": k, "url": storage.presign_get(k, body.expires_s), "expires_at": expires} for k in body.keys]}
+
+
 @app.post("/v1/storage/head")
 def head(body: DeleteIn):
     out = []

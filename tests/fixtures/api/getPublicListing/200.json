@@ -1,0 +1,78 @@
+{
+  "request_id": "05ae1ab7-5c39-45de-adec-8bd3e723f810",
+  "data": {
+    "listing": {
+      "id": "3d76d971-b727-40ff-b0bf-4f79c5795782",
+      "city": "Testville",
+      "kind": "room",
+      "rent": {
+        "scope": "per_room",
+        "period": "month",
+        "currency": "TND",
+        "exponent": 3,
+        "amount_minor": 400000,
+        "monthly_minor": 400000
+      },
+      "title": "Chambre meublée centre wifi",
+      "trust": {
+        "score": null,
+        "verdict": null
+      },
+      "is_own": false,
+      "status": "published",
+      "bedrooms": null,
+      "amenities": [
+        "wifi",
+        "desk"
+      ],
+      "bathrooms": null,
+      "furnished": true,
+      "updated_at": "2026-10-16T20:50:47.966465+00:00",
+      "description": "Chambre calme, wifi et bureau",
+      "house_rules": {
+        "smoking": "no"
+      },
+      "is_synthetic": true,
+      "published_at": "2026-10-16T17:50:47.741484+00:00",
+      "room_area_m2": null,
+      "deposit_minor": null,
+      "neighbourhood": null,
+      "total_area_m2": null,
+      "available_from": "2026-11-01",
+      "bills_included": true,
+      "min_stay_months": null,
+      "public_location": {
+        "lat": 35.9985,
+        "lng": 10.0025
+      },
+      "description_lang": "fr",
+      "current_flatmates": null,
+      "jurisdiction_code": "QY",
+      "is_favourite": false
+    },
+    "photos": [
+      {
+        "media_id": "b8bc48df-1ea6-47df-b8b6-400874027359",
+        "url": "http://localhost:8080/flatshare-media/media/3d76d971-b727-40ff-b0bf-4f79c5795782/4e7c9d7b-ee39-433c-97a6-28d6e73ec44e.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=redacted&X-Amz-Date=20261016T205053Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=redacted",
+        "expires_at": "2026-10-16T21:05:53+00:00",
+        "width": 900,
+        "height": 700
+      },
+      {
+        "media_id": "c4f8d5f6-de52-4c0d-83e4-703909f1067b",
+        "url": "http://localhost:8080/flatshare-media/media/3d76d971-b727-40ff-b0bf-4f79c5795782/c9aa401e-7718-4999-b914-469c9f24d28e.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=redacted&X-Amz-Date=20261016T205053Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=redacted",
+        "expires_at": "2026-10-16T21:05:53+00:00",
+        "width": 900,
+        "height": 700
+      }
+    ],
+    "photo_count": 2,
+    "warnings": [],
+    "data_attribution": [
+      "openstreetmap"
+    ]
+  },
+  "meta": {
+    "latency_ms": 105
+  }
+}

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Flatshare backend API
-  version: "1.2.0-platform-p1"
+  version: "1.3.0-platform-p2"
   description: |
     Contract for the website server (and test clients). Browsers never call this API
     directly: the website server signs every request (docs/API_SIGNING.md).
@@ -834,6 +834,226 @@ paths:
               schema: { $ref: "#/components/schemas/NotificationsReadResponse" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v2/search:
+    get:
+      operationId: searchV2
+      summary: Search with more filters, a map area, pages and cover photos (platform P2; terms and privacy consent)
+      description: |
+        The parameters and rules of GET /v1/search (which does not change), plus: kind, furnished, bills_included,
+        available_by (listings free on or before that date; an unknown date does not match), amenities (all of them;
+        the vocabulary of listing changes), house_rules (each name:yes|no), bbox (the visible map area), ids (cards of
+        these listings in this order, e.g. the assistant's results) and cursor (the meta.next_cursor of the previous
+        page; refused with other parameters). With q, the meaning ranking and the word ranking each take the best
+        search.v2_candidates listings, fused by reciprocal rank as in v1; pages are cut from that list. Each result has
+        cover_photo (a signed URL of the first processed photo, valid media.photo_url_ttl_s seconds, or null),
+        photo_count and is_favourite. Never the exact location. Warnings add photos_unavailable (Media service down:
+        results without photos).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: q, in: query, schema: { type: string, maxLength: 300 } }
+        - { name: jurisdiction, in: query, schema: { type: string } }
+        - { name: max_rent, in: query, schema: { type: string, pattern: "^[0-9]+$" } }
+        - { name: currency, in: query, schema: { type: string, pattern: "^[A-Z]{3}$" } }
+        - { name: period, in: query, schema: { type: string, enum: [month, week] } }
+        - { name: lat, in: query, schema: { type: string } }
+        - { name: lng, in: query, schema: { type: string } }
+        - { name: near, in: query, schema: { type: string, maxLength: 120 } }
+        - { name: radius_m, in: query, schema: { type: string } }
+        - { name: use_profile, in: query, schema: { type: string, enum: ["true", "false"] } }
+        - { name: kind, in: query, schema: { type: string, enum: [room, shared_flat, roommate_wanted] } }
+        - { name: furnished, in: query, schema: { type: string, enum: ["true", "false"] } }
+        - { name: bills_included, in: query, schema: { type: string, enum: ["true", "false"] } }
+        - { name: available_by, in: query, schema: { type: string, format: date } }
+        - { name: amenities, in: query, schema: { type: string }, description: "Comma separated, at most 10: wifi, washing_machine, air_conditioning, heating, parking, balcony, terrace, garden, elevator, dishwasher, equipped_kitchen, private_bathroom, desk, fridge, oven, microwave, tv, pool, gym, security, concierge" }
+        - { name: house_rules, in: query, schema: { type: string }, description: "Comma separated name:yes|no, names smoking, pets, guests, parties" }
+        - { name: bbox, in: query, schema: { type: string }, description: "min_lng,min_lat,max_lng,max_lat; at most 90 degrees each way (more: 422 too_large with max_degrees)" }
+        - { name: ids, in: query, schema: { type: string }, description: "Comma separated listing ids, at most 50" }
+        - { name: limit, in: query, schema: { type: string }, description: "1 to 50, default 20" }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SearchV2Response" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listings/{id}/public:
+    get:
+      operationId: getPublicListing
+      summary: Public view of a listing with its photos as signed URLs (platform P2; terms and privacy consent)
+      description: |
+        A published listing, or the caller's own listing in any state (a preview; is_own true). Anything else is 404,
+        whether it exists or not. Public fields only: the fuzzed public point, never the exact location or the
+        owner's identity. Photos are the processed copies (EXIF removed, faces and text blurred), as signed GET URLs
+        through the proxy, valid media.photo_url_ttl_s seconds. GET /v1/listings/{id} stays the owner view.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicListingResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me/favourites:
+    get:
+      operationId: listFavourites
+      summary: The caller's favourites, newest first, with their cards (platform P2; terms and privacy consent)
+      description: |
+        A favourite whose listing is no longer published stays in the list with available false and listing null,
+        so it can be removed. Pages: pass next_before as before.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: limit, in: query, schema: { type: string }, description: "1 to 50, default 20" }
+        - { name: before, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FavouritesResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me/favourites/{listing_id}:
+    put:
+      operationId: putFavourite
+      summary: Save a published listing (idempotent; platform P2; terms and privacy consent)
+      description: |
+        Saving it again keeps the first saved_at. Details issue limit_reached past favourites.max. The body is an
+        empty JSON object (a PUT carries a JSON object, like every PUT of this API).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - { name: listing_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FavouriteResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+    delete:
+      operationId: deleteFavourite
+      summary: Remove a favourite (idempotent, also for a listing no longer published; platform P2)
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - { name: listing_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FavouriteResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/listing-changes/{id}/cancel:
+    post:
+      operationId: cancelListingChange
+      summary: Cancel a change the owner assistant proposed (platform P2; terms and privacy consent)
+      description: |
+        The website's Cancel button; Confirm is PATCH /v1/listings/{id} with change_id. Someone else's proposal, or
+        none, is 404. A proposal already applied, cancelled or failed, or older than owner.change_minutes, is 409 with
+        details issue already_applied, already_cancelled, already_failed, already_superseded or expired.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingChangeCancelResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "409": { $ref: "#/components/responses/Conflict" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "429": { $ref: "#/components/responses/RateLimited" }
@@ -1699,3 +1919,181 @@ components:
           properties:
             updated: { type: integer, minimum: 0 }
             unread: { type: integer, minimum: 0 }
+    PhotoUrl:
+      type: object
+      required: [url, expires_at]
+      properties:
+        url: { type: string, description: "Signed GET URL through the proxy; valid until expires_at" }
+        expires_at: { type: string }
+    ListingResultV2:
+      allOf:
+        - $ref: "#/components/schemas/ListingResult"
+        - type: object
+          required: [photo_count, cover_photo, is_favourite]
+          properties:
+            photo_count: { type: integer, minimum: 0 }
+            cover_photo: { oneOf: [{ $ref: "#/components/schemas/PhotoUrl" }, { type: "null" }] }
+            is_favourite: { type: boolean }
+    SearchV2Response:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta:
+          allOf:
+            - $ref: "#/components/schemas/Meta"
+            - type: object
+              required: [next_cursor]
+              properties:
+                next_cursor: { type: [string, "null"], description: "Pass as cursor for the next page; null on the last page" }
+        data:
+          type: object
+          required: [mode, count, total_matching_filters, results, applied, warnings, data_attribution]
+          properties:
+            mode: { type: string, enum: [hybrid, filters, ids] }
+            count: { type: integer, description: "Results on this page" }
+            total_matching_filters: { type: integer, description: "Published listings matching the filters (text ranks them, it does not exclude)" }
+            results: { type: array, items: { $ref: "#/components/schemas/ListingResultV2" } }
+            applied: { type: object }
+            warnings: { type: array, items: { type: string, enum: [fx_rate_unavailable, place_not_found, place_ambiguous, embedding_unavailable, photos_unavailable] } }
+            data_attribution: { type: array, items: { type: string, enum: [openstreetmap] } }
+    PublicListing:
+      type: object
+      required: [id, status, is_own, kind, title, rent, public_location, is_synthetic, is_favourite]
+      not: { anyOf: [{ required: [location] }, { required: [owner_id] }] }
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [draft, processing, pending_review, published, rejected, archived] }
+        is_own: { type: boolean }
+        jurisdiction_code: { type: string }
+        kind: { type: string, enum: [room, shared_flat, roommate_wanted] }
+        title: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        description_lang: { type: [string, "null"] }
+        rent: { oneOf: [{ type: object }, { type: "null" }] }
+        deposit_minor: { type: [integer, "null"] }
+        bills_included: { type: [boolean, "null"] }
+        available_from: { type: [string, "null"], format: date }
+        min_stay_months: { type: [integer, "null"] }
+        bedrooms: { type: [integer, "null"] }
+        bathrooms: { type: [integer, "null"] }
+        total_area_m2: { type: [number, "null"] }
+        room_area_m2: { type: [number, "null"] }
+        furnished: { type: [boolean, "null"] }
+        current_flatmates: { type: [integer, "null"] }
+        amenities: { type: array, items: { type: string } }
+        house_rules: { type: object }
+        city: { type: [string, "null"] }
+        neighbourhood: { type: [string, "null"] }
+        public_location: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
+        trust: { type: object }
+        is_synthetic: { type: boolean }
+        published_at: { type: [string, "null"] }
+        updated_at: { type: string }
+        is_favourite: { type: boolean }
+    PublicListingResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [listing, photos, photo_count, warnings, data_attribution]
+          properties:
+            listing: { $ref: "#/components/schemas/PublicListing" }
+            photos:
+              type: array
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/PhotoUrl"
+                  - type: object
+                    required: [media_id]
+                    properties:
+                      media_id: { type: string, format: uuid }
+                      width: { type: [integer, "null"] }
+                      height: { type: [integer, "null"] }
+            photo_count: { type: integer }
+            warnings: { type: array, items: { type: string, enum: [photos_unavailable] } }
+            data_attribution: { type: array, items: { type: string, enum: [openstreetmap] } }
+    FavouriteResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          additionalProperties: false
+          required: [listing_id, favourite]
+          properties:
+            listing_id: { type: string, format: uuid }
+            favourite: { type: boolean }
+            saved_at: { type: string }
+            removed: { type: boolean }
+    FavouritesResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [items, next_before, total, warnings]
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                required: [id, listing_id, saved_at, available, listing]
+                properties:
+                  id: { type: integer }
+                  listing_id: { type: string, format: uuid }
+                  saved_at: { type: string }
+                  available: { type: boolean }
+                  listing:
+                    oneOf:
+                      - type: "null"
+                      - allOf:
+                          - $ref: "#/components/schemas/ListingResultCard"
+                          - type: object
+                            required: [photo_count, cover_photo, is_favourite]
+                            properties:
+                              photo_count: { type: integer }
+                              cover_photo: { oneOf: [{ $ref: "#/components/schemas/PhotoUrl" }, { type: "null" }] }
+                              is_favourite: { const: true }
+            next_before: { type: [integer, "null"] }
+            total: { type: integer, minimum: 0 }
+            warnings: { type: array, items: { type: string, enum: [photos_unavailable] } }
+    ListingResultCard:
+      type: object
+      description: A search card without the ranking fields
+      required: [id, kind, title, rent, public_location, is_synthetic]
+      not: { required: [location] }
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [room, shared_flat, roommate_wanted] }
+        title: { type: [string, "null"] }
+        rent: { $ref: "#/components/schemas/Money" }
+        public_location: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
+        is_synthetic: { type: boolean }
+    ListingChangeCancelResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          additionalProperties: false
+          required: [change_id, listing_id, status, decided_at]
+          properties:
+            change_id: { type: string, format: uuid }
+            listing_id: { type: string, format: uuid }
+            status: { const: cancelled }
+            decided_at: { type: string }

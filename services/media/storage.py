@@ -83,3 +83,10 @@ def delete(keys: list[str]) -> int:
 def presign_put(key: str, content_type: str, expires_s: int) -> str:
     return public().generate_presigned_url("put_object", Params={"Bucket": bucket(), "Key": key, "ContentType": content_type},
                                            ExpiresIn=expires_s, HttpMethod="PUT")
+
+
+def presign_get(key: str, expires_s: int) -> str:
+    """Signed GET for a browser (platform P2): signed for the public endpoint like uploads, so the proxy passes it to
+    the storage with the Host header the signature covers."""
+    return public().generate_presigned_url("get_object", Params={"Bucket": bucket(), "Key": key},
+                                           ExpiresIn=expires_s, HttpMethod="GET")

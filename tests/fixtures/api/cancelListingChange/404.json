@@ -1,0 +1,8 @@
+{
+  "request_id": "223d3d44-0d5b-48fa-a932-d32213c829f9",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Proposal not found",
+    "details": []
+  }
+}

@@ -35,3 +35,23 @@ rewrite @listings_analyze /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001b{uri}
 	path_regexp ^/v1/admin/traces/[^/]+$
 }
 rewrite @admin_traces_get /webhook/5d0c7a1e-8a51-4c43-9d6e-6b1f3f0a001d{uri}
+@listings_public {
+	method GET
+	path_regexp ^/v1/listings/[^/]+/public$
+}
+rewrite @listings_public /webhook/0aee4db2-8036-5428-8b93-7487bc667df5{uri}
+@favourite_put {
+	method PUT
+	path_regexp ^/v1/me/favourites/[^/]+$
+}
+rewrite @favourite_put /webhook/15d1f967-6216-5364-8614-d2b1d4d9c0fd{uri}
+@favourite_delete {
+	method DELETE
+	path_regexp ^/v1/me/favourites/[^/]+$
+}
+rewrite @favourite_delete /webhook/8a7a4f81-b1c5-59ef-94e6-2713b3e3b0b9{uri}
+@listing_change_cancel {
+	method POST
+	path_regexp ^/v1/listing-changes/[^/]+/cancel$
+}
+rewrite @listing_change_cancel /webhook/bccee01e-dddf-5611-91ab-1a679a76fbb9{uri}

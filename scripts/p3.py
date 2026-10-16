@@ -14,7 +14,7 @@ scripts/kb.py: `docker compose --profile test run --rm --no-deps tests python sc
   models          the LLMs installed in Ollama with their digests (read-only)
   eval            POST /v1/admin/eval/prompt-runs for a prompt, versions and models; wait
   report          docs/PROMPT_EVAL.md from the stored prompt runs, plus a JSON dump
-  search-bench    N signed GET /v1/search requests; latency percentiles (spec 2.6: p95 < 1.5 s)
+  search-bench    N signed GET /v1/search (or --path /v2/search) requests; latency percentiles (spec 2.6: p95 < 1.5 s)
 
 Environment: FS_API_BASE, FS_SECRETS_FILE, FS_TEST_DB_DSN (as for the contract tests),
 FS_OLLAMA_URL (default http://ollama:11434), FS_GEO_CONTACT (optional contact for the User-Agent).
@@ -342,7 +342,7 @@ def search_bench(args):
         if i == args.warmup:
             t_start = datetime.now(timezone.utc)      # ai.executions rows of the measured requests only
         t0 = time.perf_counter()
-        r = c.call("GET", "/v1/search", user_id=uid, params=p)
+        r = c.call("GET", args.path, user_id=uid, params=p)
         ms = (time.perf_counter() - t0) * 1000
         if i < args.warmup:
             continue
@@ -362,9 +362,9 @@ def search_bench(args):
     with psycopg.connect(kb.dsn()) as conn:
         ex = conn.execute("""select count(*), percentile_disc(0.5) within group (order by latency_ms),
                                     percentile_disc(0.95) within group (order by latency_ms), max(latency_ms)
-                             from ai.executions where workflow = 'wf.api.search' and started_at >= %s and user_id = %s""",
-                          (t_start, uid)).fetchone()
-    summary = {"date": datetime.now(timezone.utc).isoformat(timespec="seconds"), "requests": len(rows), "ok": len(ok),
+                             from ai.executions where workflow = %s and started_at >= %s and user_id = %s""",
+                          ("wf.api.search_v2" if args.path == "/v2/search" else "wf.api.search", t_start, uid)).fetchone()
+    summary = {"date": datetime.now(timezone.utc).isoformat(timespec="seconds"), "path": args.path, "requests": len(rows), "ok": len(ok),
                "warmup": args.warmup, "published_listings": n_listings, "interval_s": round(interval, 3),
                "load": "sequential, one request at a time, paced under the rate limit",
                "client_ms": {"p50": pct([x["client_ms"] for x in ok], 50), "p95": pct([x["client_ms"] for x in ok], 95), "max": pct([x["client_ms"] for x in ok], 100)},
@@ -376,7 +376,7 @@ def search_bench(args):
                                "server_p95": pct([x["server_ms"] for x in ok if x["mode"] == m], 95)} for m in ("hybrid", "filters")},
                "empty_results": len([x for x in ok if not x["count"]]), "errors": [x for x in rows if x["status"] != 200][:5]}
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    out = ROOT / "reports" / "eval" / f"search-bench-{stamp}.json"
+    out = ROOT / "reports" / "eval" / f"search-bench{'-v2' if args.path == '/v2/search' else ''}-{stamp}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"summary": summary, "requests": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(summary, indent=1))
@@ -400,6 +400,8 @@ def main():
     s.add_argument("--limit", type=int); s.add_argument("--label"); s.add_argument("--timeout", type=int, default=4 * 3600)
     s = sub.add_parser("report"); s.add_argument("--out", default=str(ROOT / "docs" / "PROMPT_EVAL.md"))
     s = sub.add_parser("search-bench"); s.add_argument("--n", type=int, default=200); s.add_argument("--warmup", type=int, default=10)
+    s.add_argument("--path", choices=["/v1/search", "/v2/search"], default="/v1/search",
+                   help="/v2/search (platform P2) takes the same parameters and adds cover photos and favourites")
     s.add_argument("--interval", type=float, help="seconds between request starts (default: from the gateway rate limits)")
     a = ap.parse_args()
     {"geo-fetch": geo_fetch, "geo-load": geo_load, "geo-coverage": geo_coverage, "seed": seed, "seed-listings": seed_listings_cmd,

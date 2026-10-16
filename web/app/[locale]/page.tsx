@@ -22,7 +22,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <p className="max-w-[58ch] text-lg text-ink-soft">{t("lead")}</p>
           <div className="flex flex-wrap items-center gap-4">
             {viewer ? (
-              <Link href="/profile" className="inline-flex min-h-11 items-center rounded-field bg-door px-5 font-semibold text-door-ink no-underline">{t("goProfile")}</Link>
+              <>
+                <Link href="/search" className="inline-flex min-h-11 items-center rounded-field bg-door px-5 font-semibold text-door-ink no-underline">{t("goSearch")}</Link>
+                <Link href="/profile">{t("goProfile")}</Link>
+              </>
             ) : (
               <>
                 <Link href="/signup" className="inline-flex min-h-11 items-center rounded-field bg-door px-5 font-semibold text-door-ink no-underline">{t("start")}</Link>

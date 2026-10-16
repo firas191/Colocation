@@ -1,0 +1,13 @@
+{
+  "request_id": "a75c99d6-631f-4e27-aad6-bdff7947eb3b",
+  "error": {
+    "code": "CONFLICT",
+    "message": "The proposal can no longer be cancelled",
+    "details": [
+      {
+        "field": "change_id",
+        "issue": "already_cancelled"
+      }
+    ]
+  }
+}

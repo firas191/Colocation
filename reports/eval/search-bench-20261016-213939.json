@@ -1,0 +1,3666 @@
+{
+ "summary": {
+  "date": "2026-10-16T21:39:39+00:00",
+  "path": "/v1/search",
+  "requests": 200,
+  "ok": 200,
+  "warmup": 10,
+  "published_listings": 128,
+  "interval_s": 1.1,
+  "load": "sequential, one request at a time, paced under the rate limit",
+  "client_ms": {
+   "p50": 301.7,
+   "p95": 394.0,
+   "max": 511.3
+  },
+  "server_ms": {
+   "p50": 248,
+   "p95": 332,
+   "max": 431
+  },
+  "embed_ms_p95": 200,
+  "db_ms": {
+   "p50": 2.1,
+   "p95": 5.03
+  },
+  "ai_executions": {
+   "n": 200,
+   "p50": 248,
+   "p95": 332,
+   "max": 431
+  },
+  "by_mode": {
+   "hybrid": {
+    "n": 142,
+    "server_p95": 352
+   },
+   "filters": {
+    "n": 58,
+    "server_p95": 160
+   }
+  },
+  "empty_results": 13,
+  "errors": []
+ },
+ "requests": [
+  {
+   "status": 200,
+   "client_ms": 222.0,
+   "server_ms": 148,
+   "embed_ms": 0,
+   "db_ms": 1.18,
+   "search_ms": 19,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 403.0,
+   "server_ms": 321,
+   "embed_ms": 171,
+   "db_ms": 3.27,
+   "search_ms": 192,
+   "count": 15,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "max_rent": "110000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 221.3,
+   "server_ms": 150,
+   "embed_ms": 0,
+   "db_ms": 4.18,
+   "search_ms": 21,
+   "count": 12,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 368.5,
+   "server_ms": 293,
+   "embed_ms": 148,
+   "db_ms": 4.15,
+   "search_ms": 164,
+   "count": 6,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "80000",
+    "near": "Jussieu",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 200.7,
+   "server_ms": 147,
+   "embed_ms": 0,
+   "db_ms": 1.06,
+   "search_ms": 19,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 468.5,
+   "server_ms": 415,
+   "embed_ms": 242,
+   "db_ms": 1.8,
+   "search_ms": 255,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 199.5,
+   "server_ms": 146,
+   "embed_ms": 0,
+   "db_ms": 3.75,
+   "search_ms": 22,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "810000",
+    "near": "Ennasr",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 210.1,
+   "server_ms": 159,
+   "embed_ms": 0,
+   "db_ms": 4.02,
+   "search_ms": 23,
+   "count": 15,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "near": "Paris 13e",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 349.6,
+   "server_ms": 298,
+   "embed_ms": 160,
+   "db_ms": 5.5,
+   "search_ms": 179,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 346.9,
+   "server_ms": 257,
+   "embed_ms": 115,
+   "db_ms": 5.51,
+   "search_ms": 134,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "near": "Ennasr",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 204.1,
+   "server_ms": 157,
+   "embed_ms": 0,
+   "db_ms": 3.85,
+   "search_ms": 27,
+   "count": 0,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "60000",
+    "near": "Paris 13e",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 366.6,
+   "server_ms": 311,
+   "embed_ms": 172,
+   "db_ms": 2.29,
+   "search_ms": 188,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "room near La Défense"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 196.4,
+   "server_ms": 138,
+   "embed_ms": 0,
+   "db_ms": 1.18,
+   "search_ms": 18,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 209.9,
+   "server_ms": 149,
+   "embed_ms": 0,
+   "db_ms": 1.06,
+   "search_ms": 19,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 386.5,
+   "server_ms": 304,
+   "embed_ms": 165,
+   "db_ms": 4.46,
+   "search_ms": 181,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2",
+    "max_rent": "600000",
+    "near": "INSAT",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 328.6,
+   "server_ms": 273,
+   "embed_ms": 128,
+   "db_ms": 2.54,
+   "search_ms": 143,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT",
+    "max_rent": "550000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 316.0,
+   "server_ms": 276,
+   "embed_ms": 140,
+   "db_ms": 4.43,
+   "search_ms": 157,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "80000",
+    "near": "Paris 13e",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 309.6,
+   "server_ms": 260,
+   "embed_ms": 109,
+   "db_ms": 1.36,
+   "search_ms": 123,
+   "count": 7,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "320000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 224.6,
+   "server_ms": 141,
+   "embed_ms": 0,
+   "db_ms": 0.96,
+   "search_ms": 20,
+   "count": 13,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 193.3,
+   "server_ms": 138,
+   "embed_ms": 0,
+   "db_ms": 1.04,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 413.7,
+   "server_ms": 374,
+   "embed_ms": 236,
+   "db_ms": 4.29,
+   "search_ms": 253,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre meublée Lyon Part-Dieu",
+    "near": "Paris 13e",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 326.0,
+   "server_ms": 248,
+   "embed_ms": 113,
+   "db_ms": 4.85,
+   "search_ms": 131,
+   "count": 19,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "740000",
+    "near": "Lafayette",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 328.9,
+   "server_ms": 248,
+   "embed_ms": 115,
+   "db_ms": 1.85,
+   "search_ms": 128,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "room near La Défense"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 313.4,
+   "server_ms": 248,
+   "embed_ms": 111,
+   "db_ms": 1.66,
+   "search_ms": 126,
+   "count": 3,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "flatshare Manchester Fallowfield",
+    "max_rent": "60000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 233.6,
+   "server_ms": 149,
+   "embed_ms": 0,
+   "db_ms": 1.16,
+   "search_ms": 21,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 369.3,
+   "server_ms": 323,
+   "embed_ms": 174,
+   "db_ms": 4.61,
+   "search_ms": 191,
+   "count": 9,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden",
+    "near": "Camden",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 298.3,
+   "server_ms": 254,
+   "embed_ms": 115,
+   "db_ms": 4.8,
+   "search_ms": 134,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "flatshare Manchester Fallowfield",
+    "max_rent": "100000",
+    "near": "Camden",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 327.9,
+   "server_ms": 275,
+   "embed_ms": 133,
+   "db_ms": 1.76,
+   "search_ms": 146,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 204.6,
+   "server_ms": 147,
+   "embed_ms": 0,
+   "db_ms": 1.36,
+   "search_ms": 21,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 477.9,
+   "server_ms": 420,
+   "embed_ms": 283,
+   "db_ms": 1.84,
+   "search_ms": 297,
+   "count": 19,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre meublée Lyon Part-Dieu",
+    "max_rent": "90000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 244.6,
+   "server_ms": 198,
+   "embed_ms": 60,
+   "db_ms": 1.49,
+   "search_ms": 73,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "70000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 309.6,
+   "server_ms": 249,
+   "embed_ms": 109,
+   "db_ms": 4.72,
+   "search_ms": 125,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2",
+    "max_rent": "870000",
+    "near": "INSAT",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 191.3,
+   "server_ms": 140,
+   "embed_ms": 0,
+   "db_ms": 1.2,
+   "search_ms": 19,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "530000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 226.9,
+   "server_ms": 150,
+   "embed_ms": 0,
+   "db_ms": 1.24,
+   "search_ms": 22,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 195.4,
+   "server_ms": 141,
+   "embed_ms": 0,
+   "db_ms": 3.63,
+   "search_ms": 20,
+   "count": 8,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "850000",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 495.7,
+   "server_ms": 403,
+   "embed_ms": 262,
+   "db_ms": 5.1,
+   "search_ms": 280,
+   "count": 13,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "near": "Paris 13e",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 201.3,
+   "server_ms": 143,
+   "embed_ms": 0,
+   "db_ms": 1.04,
+   "search_ms": 16,
+   "count": 18,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "410000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 331.1,
+   "server_ms": 245,
+   "embed_ms": 111,
+   "db_ms": 2.24,
+   "search_ms": 125,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 338.5,
+   "server_ms": 283,
+   "embed_ms": 147,
+   "db_ms": 1.97,
+   "search_ms": 161,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 298.2,
+   "server_ms": 240,
+   "embed_ms": 105,
+   "db_ms": 2.57,
+   "search_ms": 119,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room with balcony Ariana"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 294.4,
+   "server_ms": 246,
+   "embed_ms": 113,
+   "db_ms": 1.52,
+   "search_ms": 126,
+   "count": 13,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 272.7,
+   "server_ms": 219,
+   "embed_ms": 81,
+   "db_ms": 2.09,
+   "search_ms": 95,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 329.9,
+   "server_ms": 276,
+   "embed_ms": 143,
+   "db_ms": 2.1,
+   "search_ms": 156,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 206.9,
+   "server_ms": 149,
+   "embed_ms": 0,
+   "db_ms": 1.16,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 380.0,
+   "server_ms": 318,
+   "embed_ms": 177,
+   "db_ms": 1.81,
+   "search_ms": 191,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 232.4,
+   "server_ms": 179,
+   "embed_ms": 41,
+   "db_ms": 1.96,
+   "search_ms": 55,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "610000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 390.3,
+   "server_ms": 332,
+   "embed_ms": 147,
+   "db_ms": 1.85,
+   "search_ms": 160,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 335.7,
+   "server_ms": 245,
+   "embed_ms": 104,
+   "db_ms": 5.24,
+   "search_ms": 121,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room with balcony Ariana",
+    "max_rent": "800000",
+    "near": "El Menzah 6",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 235.2,
+   "server_ms": 148,
+   "embed_ms": 0,
+   "db_ms": 3.37,
+   "search_ms": 20,
+   "count": 13,
+   "mode": "filters",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "370000",
+    "near": "INSAT",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 339.5,
+   "server_ms": 294,
+   "embed_ms": 146,
+   "db_ms": 1.77,
+   "search_ms": 159,
+   "count": 10,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "80000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 302.1,
+   "server_ms": 244,
+   "embed_ms": 109,
+   "db_ms": 2.61,
+   "search_ms": 124,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 178.1,
+   "server_ms": 140,
+   "embed_ms": 0,
+   "db_ms": 3.59,
+   "search_ms": 19,
+   "count": 1,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "near": "Paris 13e",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 392.3,
+   "server_ms": 317,
+   "embed_ms": 173,
+   "db_ms": 2.13,
+   "search_ms": 187,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 245.3,
+   "server_ms": 179,
+   "embed_ms": 43,
+   "db_ms": 1.79,
+   "search_ms": 57,
+   "count": 13,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 320.6,
+   "server_ms": 281,
+   "embed_ms": 148,
+   "db_ms": 3.83,
+   "search_ms": 165,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "670000",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 315.8,
+   "server_ms": 252,
+   "embed_ms": 123,
+   "db_ms": 1.19,
+   "search_ms": 134,
+   "count": 3,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "60000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 210.7,
+   "server_ms": 150,
+   "embed_ms": 0,
+   "db_ms": 1.16,
+   "search_ms": 18,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 241.8,
+   "server_ms": 152,
+   "embed_ms": 0,
+   "db_ms": 3.41,
+   "search_ms": 19,
+   "count": 1,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 359.5,
+   "server_ms": 303,
+   "embed_ms": 171,
+   "db_ms": 1.77,
+   "search_ms": 185,
+   "count": 19,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "420000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 315.7,
+   "server_ms": 257,
+   "embed_ms": 115,
+   "db_ms": 2.25,
+   "search_ms": 129,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 296.9,
+   "server_ms": 244,
+   "embed_ms": 109,
+   "db_ms": 1.85,
+   "search_ms": 123,
+   "count": 13,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "flatshare Manchester Fallowfield",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 338.0,
+   "server_ms": 299,
+   "embed_ms": 150,
+   "db_ms": 4.37,
+   "search_ms": 168,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre meublée Lyon Part-Dieu",
+    "near": "Villeurbanne",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 308.3,
+   "server_ms": 245,
+   "embed_ms": 105,
+   "db_ms": 2.47,
+   "search_ms": 123,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "470000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 367.2,
+   "server_ms": 292,
+   "embed_ms": 145,
+   "db_ms": 1.88,
+   "search_ms": 159,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "coloc calme près de Jussieu",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 325.3,
+   "server_ms": 242,
+   "embed_ms": 107,
+   "db_ms": 4.91,
+   "search_ms": 124,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "near": "Lafayette",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 349.6,
+   "server_ms": 260,
+   "embed_ms": 115,
+   "db_ms": 2.28,
+   "search_ms": 129,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 300.1,
+   "server_ms": 239,
+   "embed_ms": 110,
+   "db_ms": 3.85,
+   "search_ms": 125,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "room near La Défense",
+    "max_rent": "40000",
+    "near": "Villeurbanne",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 291.1,
+   "server_ms": 250,
+   "embed_ms": 114,
+   "db_ms": 4,
+   "search_ms": 129,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden",
+    "near": "Fallowfield",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 332.2,
+   "server_ms": 257,
+   "embed_ms": 129,
+   "db_ms": 1.85,
+   "search_ms": 142,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 236.2,
+   "server_ms": 160,
+   "embed_ms": 0,
+   "db_ms": 3.69,
+   "search_ms": 20,
+   "count": 12,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 371.0,
+   "server_ms": 294,
+   "embed_ms": 148,
+   "db_ms": 2.01,
+   "search_ms": 163,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "740000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 312.2,
+   "server_ms": 259,
+   "embed_ms": 108,
+   "db_ms": 4.38,
+   "search_ms": 124,
+   "count": 8,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "780000",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 330.7,
+   "server_ms": 269,
+   "embed_ms": 117,
+   "db_ms": 7.24,
+   "search_ms": 144,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre meublée près de la fac",
+    "near": "Lafayette",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 339.3,
+   "server_ms": 275,
+   "embed_ms": 148,
+   "db_ms": 1.16,
+   "search_ms": 160,
+   "count": 4,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "70000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 322.8,
+   "server_ms": 265,
+   "embed_ms": 116,
+   "db_ms": 1.92,
+   "search_ms": 132,
+   "count": 19,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre meublée Lyon Part-Dieu",
+    "max_rent": "90000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 220.5,
+   "server_ms": 142,
+   "embed_ms": 0,
+   "db_ms": 1.08,
+   "search_ms": 16,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 351.2,
+   "server_ms": 280,
+   "embed_ms": 149,
+   "db_ms": 4.23,
+   "search_ms": 164,
+   "count": 10,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "100000",
+    "near": "Jussieu",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 305.4,
+   "server_ms": 265,
+   "embed_ms": 140,
+   "db_ms": 1.2,
+   "search_ms": 152,
+   "count": 5,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "50000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 221.1,
+   "server_ms": 146,
+   "embed_ms": 0,
+   "db_ms": 0.97,
+   "search_ms": 17,
+   "count": 15,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "110000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 394.0,
+   "server_ms": 315,
+   "embed_ms": 165,
+   "db_ms": 4.09,
+   "search_ms": 182,
+   "count": 14,
+   "mode": "hybrid",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "390000",
+    "near": "INSAT",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 313.0,
+   "server_ms": 259,
+   "embed_ms": 115,
+   "db_ms": 2.09,
+   "search_ms": 128,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "max_rent": "620000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 181.8,
+   "server_ms": 139,
+   "embed_ms": 0,
+   "db_ms": 3.44,
+   "search_ms": 22,
+   "count": 2,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "310000",
+    "near": "Ennasr",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 360.0,
+   "server_ms": 310,
+   "embed_ms": 171,
+   "db_ms": 1.45,
+   "search_ms": 184,
+   "count": 11,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "max_rent": "350000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 360.7,
+   "server_ms": 307,
+   "embed_ms": 172,
+   "db_ms": 1.79,
+   "search_ms": 186,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "room near La Défense"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 231.8,
+   "server_ms": 179,
+   "embed_ms": 41,
+   "db_ms": 4.29,
+   "search_ms": 58,
+   "count": 10,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "450000",
+    "near": "Ennasr",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 348.9,
+   "server_ms": 282,
+   "embed_ms": 148,
+   "db_ms": 5.25,
+   "search_ms": 165,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba",
+    "max_rent": "780000",
+    "near": "El Menzah 6",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 285.7,
+   "server_ms": 246,
+   "embed_ms": 116,
+   "db_ms": 1.24,
+   "search_ms": 129,
+   "count": 5,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "50000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 195.2,
+   "server_ms": 140,
+   "embed_ms": 0,
+   "db_ms": 1.05,
+   "search_ms": 18,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 511.3,
+   "server_ms": 431,
+   "embed_ms": 293,
+   "db_ms": 1.95,
+   "search_ms": 308,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "coloc calme près de Jussieu"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 253.4,
+   "server_ms": 185,
+   "embed_ms": 41,
+   "db_ms": 1.6,
+   "search_ms": 55,
+   "count": 14,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "380000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 308.8,
+   "server_ms": 254,
+   "embed_ms": 114,
+   "db_ms": 2.2,
+   "search_ms": 131,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 301.7,
+   "server_ms": 249,
+   "embed_ms": 108,
+   "db_ms": 2.21,
+   "search_ms": 124,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 227.6,
+   "server_ms": 156,
+   "embed_ms": 0,
+   "db_ms": 3.86,
+   "search_ms": 20,
+   "count": 8,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "790000",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 373.6,
+   "server_ms": 315,
+   "embed_ms": 171,
+   "db_ms": 1.8,
+   "search_ms": 186,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة",
+    "max_rent": "520000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 227.0,
+   "server_ms": 175,
+   "embed_ms": 40,
+   "db_ms": 1.81,
+   "search_ms": 53,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 296.3,
+   "server_ms": 256,
+   "embed_ms": 112,
+   "db_ms": 1.25,
+   "search_ms": 125,
+   "count": 4,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "310000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 355.6,
+   "server_ms": 279,
+   "embed_ms": 137,
+   "db_ms": 4.72,
+   "search_ms": 155,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba",
+    "max_rent": "730000",
+    "near": "Ennasr",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 192.6,
+   "server_ms": 132,
+   "embed_ms": 0,
+   "db_ms": 3.3,
+   "search_ms": 19,
+   "count": 0,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "420000",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 398.7,
+   "server_ms": 352,
+   "embed_ms": 178,
+   "db_ms": 4.18,
+   "search_ms": 197,
+   "count": 9,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "near": "Camden",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 342.8,
+   "server_ms": 303,
+   "embed_ms": 173,
+   "db_ms": 1.25,
+   "search_ms": 186,
+   "count": 4,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "max_rent": "70000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 196.3,
+   "server_ms": 143,
+   "embed_ms": 0,
+   "db_ms": 1.08,
+   "search_ms": 18,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "620000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 180.0,
+   "server_ms": 141,
+   "embed_ms": 0,
+   "db_ms": 0.76,
+   "search_ms": 20,
+   "count": 3,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "60000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 360.1,
+   "server_ms": 301,
+   "embed_ms": 163,
+   "db_ms": 2.06,
+   "search_ms": 180,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room with balcony Ariana",
+    "max_rent": "820000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 296.4,
+   "server_ms": 249,
+   "embed_ms": 113,
+   "db_ms": 4.37,
+   "search_ms": 128,
+   "count": 10,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "480000",
+    "near": "Lafayette",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 320.7,
+   "server_ms": 283,
+   "embed_ms": 149,
+   "db_ms": 5.03,
+   "search_ms": 165,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "90000",
+    "near": "Villeurbanne",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 299.4,
+   "server_ms": 261,
+   "embed_ms": 116,
+   "db_ms": 4.9,
+   "search_ms": 132,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "380000",
+    "near": "Lafayette",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 339.6,
+   "server_ms": 286,
+   "embed_ms": 151,
+   "db_ms": 2.12,
+   "search_ms": 164,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre meublée près de la fac",
+    "max_rent": "650000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 295.9,
+   "server_ms": 243,
+   "embed_ms": 114,
+   "db_ms": 1.81,
+   "search_ms": 127,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "coloc calme près de Jussieu",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 353.1,
+   "server_ms": 300,
+   "embed_ms": 149,
+   "db_ms": 1.82,
+   "search_ms": 162,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 308.2,
+   "server_ms": 252,
+   "embed_ms": 107,
+   "db_ms": 1.78,
+   "search_ms": 120,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 333.7,
+   "server_ms": 279,
+   "embed_ms": 148,
+   "db_ms": 1.78,
+   "search_ms": 161,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "110000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 323.4,
+   "server_ms": 268,
+   "embed_ms": 107,
+   "db_ms": 5.73,
+   "search_ms": 125,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "near": "Ennasr",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 306.1,
+   "server_ms": 252,
+   "embed_ms": 115,
+   "db_ms": 1.82,
+   "search_ms": 129,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة",
+    "max_rent": "430000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 285.2,
+   "server_ms": 239,
+   "embed_ms": 111,
+   "db_ms": 1.66,
+   "search_ms": 123,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden",
+    "max_rent": "90000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 332.7,
+   "server_ms": 284,
+   "embed_ms": 147,
+   "db_ms": 1.62,
+   "search_ms": 160,
+   "count": 13,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 300.2,
+   "server_ms": 244,
+   "embed_ms": 105,
+   "db_ms": 2.3,
+   "search_ms": 119,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 318.3,
+   "server_ms": 280,
+   "embed_ms": 148,
+   "db_ms": 3.97,
+   "search_ms": 163,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "70000",
+    "near": "Jussieu",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 315.2,
+   "server_ms": 254,
+   "embed_ms": 105,
+   "db_ms": 2.23,
+   "search_ms": 121,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 225.7,
+   "server_ms": 169,
+   "embed_ms": 0,
+   "db_ms": 1.21,
+   "search_ms": 24,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 172.9,
+   "server_ms": 135,
+   "embed_ms": 0,
+   "db_ms": 3.49,
+   "search_ms": 19,
+   "count": 2,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "near": "Fallowfield",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 369.1,
+   "server_ms": 309,
+   "embed_ms": 173,
+   "db_ms": 2.14,
+   "search_ms": 190,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2",
+    "max_rent": "700000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 244.4,
+   "server_ms": 206,
+   "embed_ms": 59,
+   "db_ms": 4.69,
+   "search_ms": 77,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba",
+    "max_rent": "310000",
+    "near": "La Marsa",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 288.3,
+   "server_ms": 252,
+   "embed_ms": 124,
+   "db_ms": 0.92,
+   "search_ms": 135,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington",
+    "max_rent": "50000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 297.9,
+   "server_ms": 245,
+   "embed_ms": 106,
+   "db_ms": 2.2,
+   "search_ms": 120,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation calme Ennasr",
+    "max_rent": "590000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 203.5,
+   "server_ms": 157,
+   "embed_ms": 0,
+   "db_ms": 3.99,
+   "search_ms": 25,
+   "count": 0,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "450000",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 196.7,
+   "server_ms": 144,
+   "embed_ms": 0,
+   "db_ms": 1.14,
+   "search_ms": 21,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "530000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 360.8,
+   "server_ms": 306,
+   "embed_ms": 172,
+   "db_ms": 2.22,
+   "search_ms": 186,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "max_rent": "860000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 245.4,
+   "server_ms": 187,
+   "embed_ms": 61,
+   "db_ms": 1.87,
+   "search_ms": 74,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre en colocation Paris 13e",
+    "max_rent": "110000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 323.4,
+   "server_ms": 270,
+   "embed_ms": 137,
+   "db_ms": 2.01,
+   "search_ms": 151,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "840000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 172.0,
+   "server_ms": 133,
+   "embed_ms": 0,
+   "db_ms": 3.24,
+   "search_ms": 18,
+   "count": 2,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "570000",
+    "near": "Ennasr",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 188.1,
+   "server_ms": 137,
+   "embed_ms": 0,
+   "db_ms": 1.15,
+   "search_ms": 18,
+   "count": 19,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "90000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 392.0,
+   "server_ms": 340,
+   "embed_ms": 200,
+   "db_ms": 2.04,
+   "search_ms": 214,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 277.1,
+   "server_ms": 240,
+   "embed_ms": 113,
+   "db_ms": 1.16,
+   "search_ms": 126,
+   "count": 3,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington",
+    "max_rent": "60000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 298.0,
+   "server_ms": 245,
+   "embed_ms": 110,
+   "db_ms": 1.99,
+   "search_ms": 125,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 194.7,
+   "server_ms": 138,
+   "embed_ms": 0,
+   "db_ms": 1.11,
+   "search_ms": 16,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "840000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 348.1,
+   "server_ms": 295,
+   "embed_ms": 151,
+   "db_ms": 2.55,
+   "search_ms": 167,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 294.4,
+   "server_ms": 256,
+   "embed_ms": 117,
+   "db_ms": 3.67,
+   "search_ms": 132,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "near": "UCL",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 298.6,
+   "server_ms": 243,
+   "embed_ms": 110,
+   "db_ms": 1.94,
+   "search_ms": 124,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT",
+    "max_rent": "550000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 321.3,
+   "server_ms": 266,
+   "embed_ms": 121,
+   "db_ms": 1.77,
+   "search_ms": 134,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 288.1,
+   "server_ms": 233,
+   "embed_ms": 102,
+   "db_ms": 4.76,
+   "search_ms": 119,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "near": "Lafayette",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 177.6,
+   "server_ms": 134,
+   "embed_ms": 0,
+   "db_ms": 0.82,
+   "search_ms": 16,
+   "count": 7,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "320000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 330.5,
+   "server_ms": 296,
+   "embed_ms": 158,
+   "db_ms": 3.54,
+   "search_ms": 172,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington",
+    "max_rent": "80000",
+    "near": "Camden",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 278.3,
+   "server_ms": 241,
+   "embed_ms": 112,
+   "db_ms": 3.58,
+   "search_ms": 126,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "max_rent": "50000",
+    "near": "Camden",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 198.7,
+   "server_ms": 147,
+   "embed_ms": 0,
+   "db_ms": 1.08,
+   "search_ms": 18,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 196.7,
+   "server_ms": 145,
+   "embed_ms": 0,
+   "db_ms": 1.35,
+   "search_ms": 20,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 350.8,
+   "server_ms": 296,
+   "embed_ms": 163,
+   "db_ms": 2.1,
+   "search_ms": 177,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة",
+    "max_rent": "880000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 189.9,
+   "server_ms": 137,
+   "embed_ms": 0,
+   "db_ms": 1.06,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 195.8,
+   "server_ms": 142,
+   "embed_ms": 0,
+   "db_ms": 4.42,
+   "search_ms": 23,
+   "count": 14,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "490000",
+    "near": "El Menzah 6",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 217.4,
+   "server_ms": 161,
+   "embed_ms": 0,
+   "db_ms": 4.31,
+   "search_ms": 21,
+   "count": 19,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "710000",
+    "near": "El Menzah 6",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 356.4,
+   "server_ms": 304,
+   "embed_ms": 165,
+   "db_ms": 5.7,
+   "search_ms": 184,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 324.2,
+   "server_ms": 260,
+   "embed_ms": 117,
+   "db_ms": 2.09,
+   "search_ms": 131,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 185.9,
+   "server_ms": 147,
+   "embed_ms": 0,
+   "db_ms": 2.99,
+   "search_ms": 21,
+   "count": 0,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "70000",
+    "near": "UCL",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 355.8,
+   "server_ms": 303,
+   "embed_ms": 174,
+   "db_ms": 1.77,
+   "search_ms": 186,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 192.9,
+   "server_ms": 139,
+   "embed_ms": 0,
+   "db_ms": 1.14,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "710000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 198.1,
+   "server_ms": 146,
+   "embed_ms": 0,
+   "db_ms": 1.27,
+   "search_ms": 25,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "630000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 407.4,
+   "server_ms": 359,
+   "embed_ms": 219,
+   "db_ms": 4.24,
+   "search_ms": 235,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre meublée près de la fac",
+    "near": "Ennasr",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 294.4,
+   "server_ms": 242,
+   "embed_ms": 112,
+   "db_ms": 2.21,
+   "search_ms": 126,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room with balcony Ariana"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 308.5,
+   "server_ms": 248,
+   "embed_ms": 116,
+   "db_ms": 1.78,
+   "search_ms": 129,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington",
+    "max_rent": "90000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 293.9,
+   "server_ms": 238,
+   "embed_ms": 109,
+   "db_ms": 2.12,
+   "search_ms": 122,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "690000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 282.1,
+   "server_ms": 245,
+   "embed_ms": 115,
+   "db_ms": 4.11,
+   "search_ms": 129,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "max_rent": "120000",
+    "near": "Fallowfield",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 299.1,
+   "server_ms": 260,
+   "embed_ms": 130,
+   "db_ms": 3.74,
+   "search_ms": 144,
+   "count": 0,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "chambre meublée Lyon Part-Dieu",
+    "max_rent": "60000",
+    "near": "Jussieu",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 189.5,
+   "server_ms": 142,
+   "embed_ms": 0,
+   "db_ms": 1.02,
+   "search_ms": 22,
+   "count": 13,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "360000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 361.4,
+   "server_ms": 308,
+   "embed_ms": 173,
+   "db_ms": 2.03,
+   "search_ms": 188,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 322.2,
+   "server_ms": 285,
+   "embed_ms": 147,
+   "db_ms": 4,
+   "search_ms": 162,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba",
+    "near": "La Marsa",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 325.9,
+   "server_ms": 254,
+   "embed_ms": 106,
+   "db_ms": 2.78,
+   "search_ms": 122,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 312.6,
+   "server_ms": 258,
+   "embed_ms": 116,
+   "db_ms": 5.11,
+   "search_ms": 134,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room with balcony Ariana",
+    "near": "El Menzah 6",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 195.9,
+   "server_ms": 147,
+   "embed_ms": 0,
+   "db_ms": 3.8,
+   "search_ms": 20,
+   "count": 10,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "max_rent": "100000",
+    "near": "Jussieu",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 183.3,
+   "server_ms": 136,
+   "embed_ms": 0,
+   "db_ms": 4.1,
+   "search_ms": 20,
+   "count": 13,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "near": "Paris 13e",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 351.2,
+   "server_ms": 313,
+   "embed_ms": 173,
+   "db_ms": 4.03,
+   "search_ms": 189,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden",
+    "max_rent": "120000",
+    "near": "Fallowfield",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 193.6,
+   "server_ms": 137,
+   "embed_ms": 0,
+   "db_ms": 1.11,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "610000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 204.5,
+   "server_ms": 151,
+   "embed_ms": 0,
+   "db_ms": 3.96,
+   "search_ms": 22,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "near": "Lafayette",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 400.8,
+   "server_ms": 344,
+   "embed_ms": 198,
+   "db_ms": 2.08,
+   "search_ms": 212,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "colocation étudiante Manouba",
+    "max_rent": "820000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 224.6,
+   "server_ms": 170,
+   "embed_ms": 40,
+   "db_ms": 1.74,
+   "search_ms": 53,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "quiet room Islington"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 287.7,
+   "server_ms": 241,
+   "embed_ms": 111,
+   "db_ms": 4.48,
+   "search_ms": 127,
+   "count": 12,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "near": "La Marsa",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 312.1,
+   "server_ms": 271,
+   "embed_ms": 134,
+   "db_ms": 1.28,
+   "search_ms": 150,
+   "count": 5,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "colocation étudiante Villeurbanne",
+    "max_rent": "50000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 172.0,
+   "server_ms": 135,
+   "embed_ms": 0,
+   "db_ms": 0.73,
+   "search_ms": 16,
+   "count": 3,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "60000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 357.8,
+   "server_ms": 303,
+   "embed_ms": 170,
+   "db_ms": 2.18,
+   "search_ms": 184,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "760000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 194.2,
+   "server_ms": 143,
+   "embed_ms": 0,
+   "db_ms": 1.03,
+   "search_ms": 16,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 195.2,
+   "server_ms": 137,
+   "embed_ms": 0,
+   "db_ms": 1.09,
+   "search_ms": 17,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 361.7,
+   "server_ms": 321,
+   "embed_ms": 175,
+   "db_ms": 5.57,
+   "search_ms": 197,
+   "count": 1,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross",
+    "near": "Camden",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 238.6,
+   "server_ms": 199,
+   "embed_ms": 59,
+   "db_ms": 3.9,
+   "search_ms": 75,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre meublée près de la fac",
+    "max_rent": "310000",
+    "near": "Ennasr",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 187.0,
+   "server_ms": 149,
+   "embed_ms": 0,
+   "db_ms": 3.12,
+   "search_ms": 21,
+   "count": 0,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "50000",
+    "near": "Camden",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 174.7,
+   "server_ms": 136,
+   "embed_ms": 0,
+   "db_ms": 0.66,
+   "search_ms": 16,
+   "count": 4,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "max_rent": "70000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 427.1,
+   "server_ms": 372,
+   "embed_ms": 224,
+   "db_ms": 1.99,
+   "search_ms": 238,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "770000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 249.2,
+   "server_ms": 193,
+   "embed_ms": 59,
+   "db_ms": 2.32,
+   "search_ms": 74,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "coloc calme près de Jussieu",
+    "max_rent": "100000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 315.4,
+   "server_ms": 264,
+   "embed_ms": 134,
+   "db_ms": 1.9,
+   "search_ms": 148,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "FR",
+    "limit": "20",
+    "q": "coloc calme près de Jussieu"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 167.1,
+   "server_ms": 129,
+   "embed_ms": 0,
+   "db_ms": 3.41,
+   "search_ms": 18,
+   "count": 4,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "840000",
+    "near": "Lafayette",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 347.3,
+   "server_ms": 303,
+   "embed_ms": 174,
+   "db_ms": 4.14,
+   "search_ms": 189,
+   "count": 8,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "studio Lac 2",
+    "max_rent": "670000",
+    "near": "Ennasr",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 230.6,
+   "server_ms": 182,
+   "embed_ms": 42,
+   "db_ms": 1.53,
+   "search_ms": 55,
+   "count": 16,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden",
+    "max_rent": "120000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 331.7,
+   "server_ms": 262,
+   "embed_ms": 115,
+   "db_ms": 4.58,
+   "search_ms": 133,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "chambre avec wifi et climatisation",
+    "max_rent": "500000",
+    "near": "INSAT",
+    "radius_m": "2000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 317.7,
+   "server_ms": 265,
+   "embed_ms": 112,
+   "db_ms": 1.84,
+   "search_ms": 126,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near King's Cross"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 311.9,
+   "server_ms": 256,
+   "embed_ms": 108,
+   "db_ms": 4.86,
+   "search_ms": 125,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "appartement à partager La Marsa",
+    "max_rent": "680000",
+    "near": "Lafayette",
+    "radius_m": "10000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 303.9,
+   "server_ms": 247,
+   "embed_ms": 115,
+   "db_ms": 4.64,
+   "search_ms": 131,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [
+    "place_not_found"
+   ],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT",
+    "max_rent": "790000",
+    "near": "INSAT",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 319.7,
+   "server_ms": 265,
+   "embed_ms": 130,
+   "db_ms": 1.88,
+   "search_ms": 142,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 329.1,
+   "server_ms": 284,
+   "embed_ms": 123,
+   "db_ms": 4.13,
+   "search_ms": 141,
+   "count": 2,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "room near UCL bills included",
+    "max_rent": "100000",
+    "near": "Camden",
+    "radius_m": "5000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 301.6,
+   "server_ms": 246,
+   "embed_ms": 113,
+   "db_ms": 2.07,
+   "search_ms": 126,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "bit lel kra fi lmarsa",
+    "max_rent": "690000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 295.0,
+   "server_ms": 250,
+   "embed_ms": 113,
+   "db_ms": 1.36,
+   "search_ms": 128,
+   "count": 7,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "غرفة للكراء قرب الجامعة",
+    "max_rent": "320000"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 306.1,
+   "server_ms": 251,
+   "embed_ms": 110,
+   "db_ms": 2.91,
+   "search_ms": 132,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "q": "room near INSAT"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 305.8,
+   "server_ms": 253,
+   "embed_ms": 115,
+   "db_ms": 2.1,
+   "search_ms": 129,
+   "count": 20,
+   "mode": "hybrid",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "GB",
+    "limit": "20",
+    "q": "double room Camden"
+   },
+   "error": null
+  },
+  {
+   "status": 200,
+   "client_ms": 184.3,
+   "server_ms": 133,
+   "embed_ms": 0,
+   "db_ms": 1.1,
+   "search_ms": 15,
+   "count": 20,
+   "mode": "filters",
+   "warnings": [],
+   "params": {
+    "jurisdiction": "TN",
+    "limit": "20",
+    "max_rent": "470000"
+   },
+   "error": null
+  }
+ ]
+}

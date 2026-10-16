@@ -1,0 +1,62 @@
+{
+  "request_id": "3d45924d-b031-40dd-b8ca-8a53438df437",
+  "data": {
+    "items": [
+      {
+        "id": 15,
+        "listing_id": "00000000-0000-4000-8000-0000000000c3",
+        "saved_at": "2026-10-16T20:50:52.950506+00:00",
+        "available": true,
+        "listing": {
+          "id": "00000000-0000-4000-8000-0000000000c3",
+          "city": "Testville",
+          "kind": "room",
+          "rent": {
+            "period": "month",
+            "currency": "TND",
+            "exponent": 3,
+            "amount_minor": 550000,
+            "monthly_minor": 550000
+          },
+          "title": "Chambre balcon",
+          "trust": {
+            "score": null,
+            "verdict": null
+          },
+          "bedrooms": null,
+          "amenities": [
+            "wifi",
+            "balcony"
+          ],
+          "furnished": true,
+          "description": "Chambre avec balcon lumineux",
+          "house_rules": {
+            "pets": "no",
+            "smoking": "no"
+          },
+          "is_synthetic": true,
+          "deposit_minor": null,
+          "neighbourhood": null,
+          "available_from": null,
+          "bills_included": null,
+          "min_stay_months": null,
+          "public_location": {
+            "lat": 36.01749,
+            "lng": 10.04917
+          },
+          "description_lang": null,
+          "current_flatmates": null,
+          "photo_count": 0,
+          "cover_photo": null,
+          "is_favourite": true
+        }
+      }
+    ],
+    "next_before": null,
+    "total": 1,
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 127
+  }
+}

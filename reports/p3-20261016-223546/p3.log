@@ -1,0 +1,114 @@
+
+===== stack is up (n8n healthy, migration 0008 applied) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker exec -u postgres fs-postgres psql -d flatshare -tAc "select max(version) from public.schema_migrations"
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0008%'"
+  if ("$v".Trim() -ne "1") { "migration 0008 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-16T22:35:47.6234829+01:00
+healthy
+0023
+exit=0 seconds=0.3
+
+===== search latency: 200 requests on GET /v1/search (same run, for comparison) =====
+command: docker @p3 search-bench --n $BenchN
+started: 2026-10-16T22:35:47.9289784+01:00
+ Container flatshare-tests-run-9f84d6bbc742 Creating 
+ Container flatshare-tests-run-9f84d6bbc742 Created 
+210 requests, one every 1.10 s (limit 60/min): about 3.9 min
+{
+ "date": "2026-10-16T21:39:39+00:00",
+ "path": "/v1/search",
+ "requests": 200,
+ "ok": 200,
+ "warmup": 10,
+ "published_listings": 128,
+ "interval_s": 1.1,
+ "load": "sequential, one request at a time, paced under the rate limit",
+ "client_ms": {
+  "p50": 301.7,
+  "p95": 394.0,
+  "max": 511.3
+ },
+ "server_ms": {
+  "p50": 248,
+  "p95": 332,
+  "max": 431
+ },
+ "embed_ms_p95": 200,
+ "db_ms": {
+  "p50": 2.1,
+  "p95": 5.03
+ },
+ "ai_executions": {
+  "n": 200,
+  "p50": 248,
+  "p95": 332,
+  "max": 431
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 142,
+   "server_p95": 352
+  },
+  "filters": {
+   "n": 58,
+   "server_p95": 160
+  }
+ },
+ "empty_results": 13,
+ "errors": []
+}
+wrote reports/eval/search-bench-20261016-213939.json
+exit=0 seconds=231.8
+
+===== search latency: 200 requests on GET /v2/search =====
+command: docker @p3 search-bench --n $BenchN --path /v2/search
+started: 2026-10-16T22:39:39.6980478+01:00
+ Container flatshare-tests-run-003b1e4664b8 Creating 
+ Container flatshare-tests-run-003b1e4664b8 Created 
+210 requests, one every 1.10 s (limit 60/min): about 3.9 min
+{
+ "date": "2026-10-16T21:43:30+00:00",
+ "path": "/v2/search",
+ "requests": 200,
+ "ok": 200,
+ "warmup": 10,
+ "published_listings": 128,
+ "interval_s": 1.1,
+ "load": "sequential, one request at a time, paced under the rate limit",
+ "client_ms": {
+  "p50": 309.3,
+  "p95": 419.5,
+  "max": 544.3
+ },
+ "server_ms": {
+  "p50": 250,
+  "p95": 360,
+  "max": 477
+ },
+ "embed_ms_p95": 228,
+ "db_ms": {
+  "p50": 5.21,
+  "p95": 8.18
+ },
+ "ai_executions": {
+  "n": 200,
+  "p50": 250,
+  "p95": 360,
+  "max": 477
+ },
+ "by_mode": {
+  "hybrid": {
+   "n": 142,
+   "server_p95": 367
+  },
+  "filters": {
+   "n": 58,
+   "server_p95": 180
+  }
+ },
+ "empty_results": 13,
+ "errors": []
+}
+wrote reports/eval/search-bench-v2-20261016-214330.json
+exit=0 seconds=231.3

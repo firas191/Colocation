@@ -850,6 +850,80 @@ Proposed and approved by the owner on 2026-10-16 ("lets start"). The plan is `do
 - **Mail in development:** Mailpit (`axllent/mailpit:v1.31.4`) catches every mail; `SMTP_*` in `.env` points the
   website at a real mail account later.
 
+### D-099 Platform P2: search v2, the public listing page, photos for browsers, favourites, cancelling a proposal
+
+- **`GET /v2/search`.** The parameters and rules of `GET /v1/search`, plus `kind`, `furnished`, `bills_included`,
+  `available_by`, `amenities` (all of them, from the vocabulary of listing changes), `house_rules` (`name:yes|no`),
+  `bbox` (the map's visible area, at most 90 degrees each way; first 10, raised by F-075), `ids` (cards of known listings in the order given:
+  the website shows the assistant's results with it) and `cursor`. `GET /v1/search` and `app.search_public` are not
+  changed; v2 has its own function, `app.search_public_v2` (migration 0023).
+- **Pages.** Results are cut from one ranked list by offset. With text, each ranking (meaning, words) takes the best
+  `search.v2_candidates` (200) before fusion, so pages go as deep as the candidates. The cursor is opaque
+  (`o<offset>.<fingerprint>` in base64url); the fingerprint is a hash of the other parameters, and a cursor sent with
+  other filters is refused (`invalid_cursor`), so one page can never mix two searches. `meta.next_cursor` is null on
+  the last page. `total_matching_filters` counts the published listings that pass the filters (the text ranks them; it
+  does not exclude any).
+- **An unknown date does not match a date filter.** `available_by` returns only listings whose date is known and not
+  later. Treating "no date" as "free now" would be a guess.
+- **Photos for browsers.** Photos stay private objects. The Media service signs short GET URLs
+  (`POST /v1/storage/presign-get`, only keys under `media/`, the processed copies with EXIF removed and faces and
+  text blurred; never `uploads/`). They are valid `media.photo_url_ttl_s` seconds (900). The proxy passes `GET` and
+  `HEAD` under `/<bucket>/media/` only when the query carries a signature; the storage checks the signature and the
+  expiry. In the sandbox the S3 stand-in checks neither, so the tampered and expired cases run on the PC only
+  (`test_photo_url_is_refused_when_tampered_or_expired`). If the Media service does not answer, results come without
+  photos and `warnings` holds `photos_unavailable`; the request does not fail.
+- **`GET /v1/listings/{id}/public`.** A published listing, or the caller's own in any state (a preview). Anything else
+  is 404 whether it exists or not. Public fields only: no exact point, no owner id, no storage keys.
+- **Favourites** (`social.favourites`) behind the row-level layer of D-096: `PUT` and `DELETE
+  /v1/me/favourites/{listing_id}` (both idempotent; only a published listing can be saved; at most `favourites.max`,
+  500) and `GET /v1/me/favourites`. A favourite whose listing is withdrawn stays in the list as `available: false`,
+  so it can be removed. Search results and the listing page carry `is_favourite`, read through
+  `api.favourite_flags`, which also runs as the caller. Erasing a user deletes their favourites.
+- **The PUT carries `{}`.** The gateway asks every POST, PUT and PATCH for a JSON object body. That rule belongs to
+  `/v1` and stays; a favourite PUT sends an empty object.
+- **`POST /v1/listing-changes/{id}/cancel`.** The website's Cancel button under an owner-assistant proposal. Someone
+  else's proposal, or none, is 404; one already applied, cancelled or failed, or older than `owner.change_minutes`,
+  is 409 with the reason in `details`. The Telegram button keeps `app.listing_change_cancel`.
+
+### D-100 Platform P2: the map
+
+- **Tiles from our own server.** MapLibre GL JS draws the OpenStreetMap basemap of Protomaps from one PMTiles file per
+  country (`geo/tiles/<country>.pmtiles`), served by the proxy on the website's own origin at `/tiles/`. The map reads
+  it with range requests. No outside tile server sees which area a person looks at, and the browser needs no CORS
+  rule. The glyph files (Noto Sans: Latin, Greek and Arabic ranges) and the icons of the Protomaps style are committed
+  in `web/public/map` with their licences. MapLibre's worker is copied there from `node_modules` before each build, so
+  the page loads scripts from its own origin only (CSP `worker-src 'self'`).
+- **No right-to-left plugin.** MapLibre 6 shapes Arabic and orders mixed text itself (its type definitions mark
+  `setRTLTextPlugin` as deprecated for that reason), so the plugin planned in PLATFORM_SPEC 6.5 is not used.
+- **The file is made on the PC.** The sandbox cannot reach build.protomaps.com. `scripts/windows/map.ps1` downloads
+  go-pmtiles 1.31.2 (checked against a pinned SHA-256), finds the newest daily build and cuts the country's box at zoom
+  0 to 14 (`-MaxZoom 15` for full detail). The file size is written in the script's log; it is **not measured** yet.
+  Without the file, the search page says the map is not installed and keeps the list.
+- **Markers** are the listings' public points (moved by the database away from the address). "Search this area" puts
+  the visible area into the page's address (`bbox`), and the server searches again. On the map view the filter form
+  folds away so the map is in view on a phone.
+
+### D-101 Platform P2: website pages and how they are tested
+
+- **Pages:** `/search` (a plain GET form, so a search is an address that can be bookmarked; list or map; next page by
+  cursor), `/listings/[id]`, `/favourites`, `/assistant`. The assistant page calls `POST /v1/assistant/message`, then
+  `GET /v2/search?ids=` for the cards of the results (cover photo, favourite), shows legal answers with their
+  numbered sources and the same notice as Telegram, and owner proposals with Confirm (`PATCH /v1/listings/{id}` with
+  `change_id`) and Cancel. The conversation stays in the browser tab (D-062). The server action waits up to 240 s,
+  above the agents' measured p95.
+- **A photo that cannot be loaded** (expired link, object missing) shows the "no photo" panel instead of a broken
+  image.
+- **End-to-end data.** Publishing through the API comes with P3's submit, so the website tests publish their own
+  listing directly in the database, as the contract tests do. Its two photos go through the normal path (presigned
+  upload, analysis job with `vision.enabled` off for the run). `verify.ps1` gives the Playwright container the
+  `n8n_worker` connection, read from `.env` and not written to the log.
+- **One sign-up per run.** Better Auth limits auth requests per address (30 a minute, D-098). Eight sign-ups in a row
+  from one address got 429 on the confirmation link, so the P2 tests sign up once and share the session cookies.
+- **Build log.** `next build` analyses the pages without the server's environment, and Better Auth logged a "default
+  secret" error for each (T-65's image build). During the build only, the secret falls back to a fixed placeholder;
+  at run time compose still refuses to start without `BETTER_AUTH_SECRET`. Checked in the sandbox: 2 such lines
+  without the change, 0 with it.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

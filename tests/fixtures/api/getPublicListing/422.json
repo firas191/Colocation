@@ -1,0 +1,13 @@
+{
+  "request_id": "f4784e77-0548-4635-a9c7-0ed6d99e3282",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "x",
+        "issue": "unknown_parameter"
+      }
+    ]
+  }
+}

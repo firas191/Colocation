@@ -142,5 +142,41 @@
   "regex": "^/v1/me/notifications/read$",
   "id": "readNotifications",
   "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v2/search$",
+  "id": "searchV2",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/listings/[^/]+/public$",
+  "id": "getPublicListing",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/favourites$",
+  "id": "listFavourites",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/me/favourites/[^/]+$",
+  "id": "putFavourite",
+  "success": 200
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/me/favourites/[^/]+$",
+  "id": "deleteFavourite",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listing-changes/[^/]+/cancel$",
+  "id": "cancelListingChange",
+  "success": 200
  }
 ]

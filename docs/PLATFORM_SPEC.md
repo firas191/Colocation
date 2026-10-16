@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Date | 2026-10-16 |
-| Status | P0 approved 2026-10-16. P1 built (T-64); later phases not started. |
+| Status | P0 approved 2026-10-16. P1 built (T-64) and checked on the PC (T-65). P2 built in the sandbox (T-66, D-099 to D-101); later phases not started. |
 | Scope | The whole flatshare life on one website: accounts, search, flatmates, contact and visits, owners, the household after move-in, documents, legal help, moving out, trust, notifications, admin, three languages |
 | Builds on | `FLATSHARE_BACKEND_SPEC.md` (sections 0, 2, 4.4, 5.4, 6, 8, 13, 17), `docs/ARCHITECTURE.md`, `docs/AI_AGENTS_EXPLAINED.md`, `docs/API_SIGNING.md`, `docs/openapi.yaml`, `docs/DECISIONS.md` up to D-094 |
 

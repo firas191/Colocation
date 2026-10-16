@@ -18,6 +18,9 @@ export async function SiteHeader({ locale }: { locale: string }) {
           <LogoMark className="size-7" /> Coloc
         </Link>
         <nav aria-label={t("menu")} className="flex flex-1 flex-wrap items-center gap-x-5 gap-y-1 text-[0.95rem]">
+          {member && <Link href="/search" className="text-ink no-underline hover:text-door">{t("search")}</Link>}
+          {member && <Link href="/assistant" className="text-ink no-underline hover:text-door">{t("assistant")}</Link>}
+          {member && <Link href="/favourites" className="text-ink no-underline hover:text-door">{t("favourites")}</Link>}
           {member && <Link href="/profile" className="text-ink no-underline hover:text-door">{t("profile")}</Link>}
           {member && (
             <Link href="/notifications" className="relative text-ink no-underline hover:text-door" aria-label={`${t("notifications")}: ${t("unread", { count: unread })}`}>

@@ -1,0 +1,12 @@
+{
+  "request_id": "08cf514d-abf2-4e09-89d8-13fed73a94cf",
+  "data": {
+    "change_id": "79858a11-8731-457c-b915-64cb53c78272",
+    "listing_id": "3d76d971-b727-40ff-b0bf-4f79c5795782",
+    "status": "cancelled",
+    "decided_at": "2026-10-16T20:50:59.129747+00:00"
+  },
+  "meta": {
+    "latency_ms": 192
+  }
+}

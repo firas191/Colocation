@@ -1,0 +1,4 @@
+Rolling back: 0023_platform_search.sql
+Rolled back: 0023_platform_search.sql in 6.0106ms
+Applying: 0023_platform_search.sql
+Applied: 0023_platform_search.sql in 12.416761ms

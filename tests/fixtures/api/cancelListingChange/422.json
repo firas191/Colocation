@@ -1,0 +1,13 @@
+{
+  "request_id": "e0bfea96-fe53-4617-a5e5-b560edd66574",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "why",
+        "issue": "additional_property"
+      }
+    ]
+  }
+}

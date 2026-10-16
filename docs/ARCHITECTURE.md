@@ -231,3 +231,35 @@ flowchart LR
 Notifications are written by workflows with `api.notify_emit(user, type, params, link)`; the website writes the text
 in the reader's language.
 
+
+### Search, listing page, favourites, map (platform P2, D-099 to D-101)
+
+```mermaid
+flowchart LR
+  B[Browser] -->|/fr/search, /fr/listings/id| W[web]
+  W -->|GET /v2/search| S[wf.api.search_v2]
+  S -->|bge-m3 when there is text| O[Ollama]
+  S -->|app.search_public_v2| DB[(app.listings)]
+  S -->|api.favourite_flags, as the caller| F[(social.favourites)]
+  S -->|POST /v1/storage/presign-get| M[Media service]
+  W -->|GET /v1/listings/id/public| L[wf.api.listings_public] --> M
+  B -->|img: signed GET /bucket/media/...| P[Caddy :8080] --> G[(Garage)]
+  B -->|/tiles/tn.pmtiles, range requests| C[Caddy :3000] --> T[(geo/tiles)]
+  B -->|/map/fonts, /map/sprites, worker| W
+```
+
+| Workflow | Route | Does |
+|---|---|---|
+| `wf.api.search_v2` | `GET /v2/search` | validator (`lib/search2_query.js`), saved profile when asked, query embedding, `app.search_public_v2`, the caller's favourites among the results (`api.favourite_flags`), signed cover URLs from the Media service, cursor for the next page |
+| `wf.api.listings_public` | `GET /v1/listings/{id}/public` | `app.listing_public_view` (published, or the caller's own), favourite flag, signed photo URLs |
+| `wf.api.favourite_put`, `wf.api.favourite_delete` | `PUT`, `DELETE /v1/me/favourites/{listing_id}` | `api.favourite_put`, `api.favourite_delete` (row-level layer) |
+| `wf.api.favourites_list` | `GET /v1/me/favourites` | `api.favourites_list` (row-level layer), then `app.public_cards` and cover photos |
+| `wf.api.listing_change_cancel` | `POST /v1/listing-changes/{id}/cancel` | `app.listing_change_cancel_request`: 200, 404 or 409 with the reason |
+
+- Photos never leave the storage without a signature: the Media service signs a GET for keys under `media/` only
+  (processed copies), for `media.photo_url_ttl_s` seconds; the proxy passes signed `GET`/`HEAD` under `media/` and
+  nothing else of the bucket except signed upload `PUT`s.
+- The map's data, fonts, icons and worker all come from our own origins. The country file is cut on the owner's PC
+  (`scripts/windows/map.ps1`); without it the search page shows the list only.
+- The website's assistant page uses the same orchestrator and agents as Telegram, then `GET /v2/search?ids=` to show
+  the result cards.

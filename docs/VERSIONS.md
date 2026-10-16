@@ -103,6 +103,11 @@ Next.js 16.4.1 and React 19.3.1, the releases of the Next.js security update of 
 | typescript | 5.9.3 | npm (7.x not used, D-098) |
 | vitest, vite | 5.0.3, 8.3.4 | npm, 2026-09-30, 2026-10-08 |
 | @playwright/test | 1.64.0 | npm, 2026-10-07; e2e image `mcr.microsoft.com/playwright:v1.64.0-noble` (not checked from the sandbox: the registry is not reachable there; `verify.ps1` checks the tag) |
+| maplibre-gl | 6.13.0 | npm, 2026-10-06 (6.14.0 of 2026-10-11 is less than 7 days old); platform P2 map. Draws Arabic itself, so no right-to-left plugin |
+| pmtiles | 4.5.0 | npm, 2026-08-10; the map reads the country file with range requests |
+| @protomaps/basemaps | 5.7.2 | npm, 2026-03-10; map style layers (flavour "light", labels in the page's language) |
+| Map fonts and icons | basemaps-assets `main` | fetched 2026-10-16 from https://github.com/protomaps/basemaps-assets into `web/public/map` (Noto Sans glyph ranges, sprites v4) |
+| go-pmtiles (owner's PC, `scripts/windows/map.ps1`) | 1.31.2 | GitHub release of 2026-07-22, Windows x86_64 zip, SHA-256 a658baa4d7e55020aef6ca17bd9ff9faa1582671266b36f58c52db0ac8e785a1 (computed 2026-10-16; the release publishes no checksum) |
 | @axe-core/playwright | 4.13.0 | npm, 2026-08-11 |
 | sharp (dependency of next) | 0.35.5 | resolved by npm; the version the security update names |
 | Mailpit | `axllent/mailpit:v1.31.4` | Docker Hub tag, 2026-10-03 |

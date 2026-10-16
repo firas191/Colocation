@@ -177,6 +177,8 @@ Every message goes through the same API as a website would, so its trace is in `
 | Work on pages without the stack | `cd web; $env:FLATSHARE_API_MODE="fixtures"; npm run dev` (answers come from `tests/fixtures/api`) |
 | Record new response fixtures | run the contract tests with `-e FS_RECORD_FIXTURES=1` after deleting the folders to refresh; `tests/unit/test_fixtures.py` checks them against `docs/openapi.yaml` |
 | Make an account an admin | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.users set role = 'admin' where email = '<address>';"` |
+| Make the map of a country (once; about one file per country, size written in the log) | `powershell -ExecutionPolicy Bypass -File scripts\windows\map.ps1` (Tunisia; `-Country FR` or `GB`, `-MaxZoom 15` for full detail), then open http://localhost:3000/fr/search?view=map |
+| Search latency of `/v2/search` next to `/v1/search` (200 requests each) | `powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step bench-v2` (results in `reports\eval\search-bench-v2-*.json`) |
 | Send real e-mail | set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` in `.env`, then `docker compose up -d web` |
 
 What the website server needs (spec 17.1 "browser boundary"): `FLATSHARE_API_BASE`, `FLATSHARE_WEBSITE_KEY_ID`,

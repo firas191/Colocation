@@ -1,0 +1,11 @@
+{
+  "request_id": "670ab4ab-7f73-4eae-8ede-d7a116e6d309",
+  "data": {
+    "removed": false,
+    "favourite": false,
+    "listing_id": "3d76d971-b727-40ff-b0bf-4f79c5795782"
+  },
+  "meta": {
+    "latency_ms": 129
+  }
+}

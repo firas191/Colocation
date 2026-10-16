@@ -13,6 +13,8 @@ const csp = [
   `img-src 'self' data: blob: ${media}`,
   "font-src 'self'",
   `connect-src 'self' ${media}`,
+  // the map's worker is a file of this website (public/map, platform P2)
+  "worker-src 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

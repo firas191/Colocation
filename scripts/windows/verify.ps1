@@ -252,9 +252,13 @@ Step "PLATFORM: website container healthy (max 3 min; its log on failure)" {
 Step "PLATFORM: website unit tests (signing vectors, messages in three languages)" {
   docker run --rm -v "${PWD}:/repo" -v /repo/web/node_modules -w /repo/web node:24.21.0-bookworm-slim sh -c "npm ci --no-audit --no-fund >/dev/null && npx vitest run"
 } | Out-Null
-Step "PLATFORM: website end-to-end tests (Playwright: sign-up to profile in fr, en, ar; desktop and 360 px; browser upload)" {
+# The P2 tests publish their own listing directly in the database (publishing through the API comes with P3's submit),
+# as the contract tests do: they get the n8n_worker connection, read from .env here and never written to the log.
+Step "PLATFORM: website end-to-end tests (Playwright: accounts, search, map, listing page, favourites, assistant; fr, en, ar; desktop and 360 px; browser upload)" {
+  $dbpw = [uri]::EscapeDataString((((Get-Content .env | Where-Object { $_ -match '^N8N_WORKER_DB_PASSWORD=' }) -replace '^N8N_WORKER_DB_PASSWORD=', '') | Select-Object -First 1).Trim())
   docker run --rm --network flatshare_default --ipc=host -v "${PWD}:/repo" -v /repo/web/node_modules -w /repo/web `
     -e E2E_API_BASE=http://proxy:8080 -e E2E_MAIL_API=http://mailpit:8025 -e FS_SECRETS_FILE=/repo/secrets/api-clients.env `
+    -e "E2E_DB_DSN=postgres://n8n_worker:${dbpw}@postgres:5432/flatshare" `
     -e E2E_OTHER_ORIGIN=http://other.test:3000 -e "PW_HOST_RULES=MAP localhost proxy, MAP other.test proxy" `
     mcr.microsoft.com/playwright:v1.64.0-noble sh -c "npm ci --no-audit --no-fund >/dev/null && npx playwright test"
 } | Out-Null

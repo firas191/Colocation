@@ -52,3 +52,8 @@
 .plan-draw path, .plan-draw rect, .plan-draw circle { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: plan-draw 1.6s ease-out forwards; }
 @keyframes plan-draw { to { stroke-dashoffset: 0; } }
 .plan-draw path[stroke-dasharray] { animation: none; stroke-dashoffset: 0; }
+
+/* Listing markers on the search map (platform P2): a door-coloured pin, a link to the listing. */
+.map-pin { display: block; width: 22px; height: 30px; background: var(--color-door); border: 2px solid var(--color-paper);
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); }
+.map-pin:focus-visible { outline: 3px solid var(--color-saffron); outline-offset: 2px; }

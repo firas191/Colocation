@@ -194,3 +194,18 @@ def test_detector_box_with_infinity_is_skipped(client):
     d.face = Fake()
     boxes = d.faces(np.zeros((480, 640, 3), dtype=np.uint8))
     assert len(boxes) == 1 and boxes[0].kind == "face"
+
+
+def test_signed_get_urls_for_processed_photos_only(client, s3):
+    """Platform P2: browsers load listing photos through short-lived signed GET URLs; raw uploads are never signed."""
+    s3.internal().put_object(Bucket="media-test", Key="media/l9/p1.jpg", Body=b"x", ContentType="image/jpeg")
+    r = client.post("/v1/storage/presign-get", json={"keys": ["media/l9/p1.jpg"], "expires_s": 120}, headers=H)
+    assert r.status_code == 200, r.text
+    u = r.json()["urls"][0]
+    assert u["key"] == "media/l9/p1.jpg" and "X-Amz-Signature=" in u["url"] and "X-Amz-Expires=120" in u["url"] and u["expires_at"]
+    assert httpx.get(u["url"]).content == b"x"
+    assert client.post("/v1/storage/presign-get", json={"keys": []}, headers=H).json() == {"urls": []}
+    for body in ({"keys": ["uploads/l9/raw.jpg"]}, {"keys": ["media/../x.jpg"]}, {"keys": ["media/l9/p1.jpg"], "expires_s": 30},
+                 {"keys": ["media/a.jpg"] * 61}):
+        r = client.post("/v1/storage/presign-get", json=body, headers=H)
+        assert r.status_code == 422, (body, r.text)

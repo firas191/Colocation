@@ -5,13 +5,14 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step geo     # gazetteer from OpenStreetMap (about 6 min), synthetic listings, embeddings
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step eval    # P1 and P2, versions 1 and 2, on the 3 models (long: about 1 to 3 h, not measured)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step bench   # 200 searches, latency percentiles
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step bench-v2   # the same 200 searches on GET /v2/search (platform P2)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step all     # all of the above, in this order
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step report  # apply the active prompt versions, then docs\PROMPT_EVAL.md from the stored runs
 # Options: -Models "qwen3.5:4b,granite4.2:3b,phi4-mini:3.8b"  -Versions "1,2"  -Prompts "P1_router,P2_profile_extractor"
 # Example, version 3 on the default model only (about 1.5 h, estimated from the v2 runs):
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step eval -Models "qwen3.5:4b" -Versions "3"
 # Output: reports\p3-<timestamp>\p3.log and summary.txt; geo\places_osm.csv; reports\eval\*.json; docs\PROMPT_EVAL.md.
-param([ValidateSet("setup", "geo", "eval", "bench", "all", "report")][string]$Step = "all",
+param([ValidateSet("setup", "geo", "eval", "bench", "bench-v2", "all", "report")][string]$Step = "all",
       [string]$Models = "qwen3.5:4b,granite4.2:3b,phi4-mini:3.8b", [string]$Versions = "1,2",
       [string]$Prompts = "P1_router,P2_profile_extractor", [int]$BenchN = 200)
 
@@ -103,6 +104,13 @@ if ($Step -in @("bench", "all")) {
     docker exec fs-ollama ollama ps
   } | Out-Null
   Step "search latency: $BenchN requests through the proxy" { docker @p3 search-bench --n $BenchN } | Out-Null
+}
+
+# Platform P2: the same requests on GET /v2/search (cover photos signed by the Media service, favourites), to compare
+# with the /v1 figure of the same run or of T-38.
+if ($Step -eq "bench-v2") {
+  Step "search latency: $BenchN requests on GET /v1/search (same run, for comparison)" { docker @p3 search-bench --n $BenchN } | Out-Null
+  Step "search latency: $BenchN requests on GET /v2/search" { docker @p3 search-bench --n $BenchN --path /v2/search } | Out-Null
 }
 
 Write-Host ""

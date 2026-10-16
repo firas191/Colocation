@@ -1755,6 +1755,74 @@ After the fix, `verify.ps1` run `reports/verify-20261016-193016`: every step PAS
 T-64 is now confirmed on the PC for the compose stack, Mailpit and the Playwright image. Still not measured: the
 website's memory and CPU use on the PC.
 
+## T-66 Platform P2: search v2, listing page, favourites, map, assistant page (2026-10-16) - PASS in the sandbox; not yet run on the PC
+
+Where: cloud sandbox as in T-64 (PostgreSQL 16, n8n 2.41.3 native, Caddy, the Media and Text services from their code,
+moto as the S3 stand-in, the Ollama mock), rebuilt from the owner's folder of 2026-10-16 (P1 commit plus F-071), and
+the website's standalone build behind Caddy's port 3000. The map ran on a small synthetic PMTiles file made in the
+sandbox (Protomaps layer names, not real geography; build.protomaps.com is not reachable from here). Nothing here
+measures a model or a latency. Logs in `reports/platform-p2/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 20 files, 474 tests, PASS. New `200_platform_search.sql` (22): `n8n_worker` refused on `social.favourites`; through the functions each user saves, lists and removes only their own favourites, and another user's id changes nothing; only published listings can be saved; erasure deletes favourites; search v2 never returns drafts, combines filters, cuts the map area and pages; no exact location in its results; a draft is visible only to its owner; someone else's proposal is not found |
+| `01b-migration-down-up.log` | 0023 rolled back and applied again |
+| `02-js-unit.log` | `node --test`: 162 pass, including `search2_query.test.js` (v1 rules kept, new filters, bad filters named one by one, cursor tied to its parameters) |
+| `03-build-check.log` | workflow JSON, `routes.caddy` and `web/lib/server/operations.json` up to date |
+| `04-pytest-unit-contract.log` | unit and contract tests through the proxy, outage tests included: 314 passed, 2 skipped (raw n8n check; the tampered and expired photo URL test, which needs a storage that checks signatures: PC only). New `test_platform_search.py` (13): every v2 filter with its exact expected result, text, ids in order, nearest first, pages and a cursor refused with other filters, validation, cover photos fetched through the proxy as JPEG, favourite flags per user, no exact location, owner id or storage key in any response, the public view's visibility rules, unsigned and raw-upload reads refused by the proxy, favourites (idempotent, replay, drafts refused, pages, withdrawn listing kept as unavailable), cancel (404 for someone else's, 409 already_cancelled, expired, already_applied, replay, body checked). `GET /v1/search` contract tests unchanged and passing. 6 new recorded fixtures validated against `openapi.yaml` (signatures and access keys redacted) |
+| `05-media-service-tests.log` | Media service: 33 passed (new: signed GET only for `media/` keys, 60 to 3600 s, at most 60 keys) |
+| `06-web-unit.log` | `tsc --noEmit`: no errors. Vitest 13 passed (messages: same keys in fr, en, ar, plurals format; logical classes only) |
+| `07-secret-scan.log` | detect-secrets: no new finding; exact-match scan: none found. Website build output (2,384 files) searched for the website, tests, Better Auth, auth database and n8n_worker secrets: none found |
+| `08-web-e2e.log` | Playwright, 24 passed (12 desktop, 12 at 360 px): the P1 account tests, and new: search with filters finds the published test listing with its cover photo loaded, a filter it does not match leaves it out; the listing page shows its 2 photos and amenities; the heart saves it, the favourites page lists it, removing it empties the list; the map loads the country file with a range request (206), shows the listing's marker, and "search this area" searches the visible box; the assistant page in Arabic is right to left and answers; a legal question shows the notice. No page wider than the window; no serious axe-core finding on the search, listing, favourites and assistant pages |
+| `screens/` | the map view (synthetic tiles), a listing page, the assistant in Arabic at 360 px |
+
+Found while building and fixed before this run: F-072 (Better Auth's rate limit reached by the tests' sign-ups); a
+favourite PUT without a body was refused by the gateway's rule for PUT (the website now sends `{}`, D-099); on the
+phone project, photos below the fold load lazily and the test now scrolls to them; in the sandbox the Media service
+signed photos for `127.0.0.1:8080` while the page's CSP allows `localhost:8080` (sandbox setting, now `localhost` as
+on the PC). The build no longer logs Better Auth's "default secret" error (2 lines before, 0 after, D-101).
+
+Not run here: the image builds and the website tests in the Playwright image on the PC; the real map file
+(`scripts/windows/map.ps1`) and its size; tampered and expired photo URLs against Garage; `/v2/search` latency on the
+PC next to T-38 (`p3.ps1 -Step bench-v2`); the assistant page with the real model (the e2e tests run against the mock
+here and against qwen3.5:4b on the PC).
+
+## T-67 Platform P2 on the owner's PC: verify, map file, search speed (2026-10-16) - 2 test failures, both in the tests (F-073, F-074)
+
+`scripts\windows\map.ps1` (`reports/` of the PC run, 22:08): pmtiles 1.31.2, Protomaps build 20261016, Tunisia
+(bounds 7.4,30.1 to 11.7,37.6), zoom 0 to 14: `geo/tiles/tn.pmtiles` 76.9 MB (80,654,577 bytes), 67,301 tile
+entries, made in 31 s. Not committed (`.gitignore`).
+
+`verify.ps1` (`reports/verify-20261016-220919/`): every step PASS except two, the website container healthy.
+- Contract tests: 234 passed, 81 skipped (sandbox-only), 1 failed: the expired photo link got 400 from Garage, the
+  test expected 403 (F-073; the link was refused).
+- Website e2e: 18 passed, 2 failed: the map test on desktop and phone could not reach the tile file from the test
+  process (F-074). The map itself was not checked in this run because the test stopped before it.
+Both tests fixed; to run again with `verify.ps1`.
+Rerun of `e2e/search.spec.ts` only, after F-073/F-074: contract `test_platform_search.py` 14 passed; e2e 5 passed,
+1 failed (the desktop map: no zoom to the listing, F-075), 2 did not run (they follow the failed one on desktop).
+The phone map test passed with the real tiles. Second rerun after a map-only change: same failure, same area sent;
+the real cause was the 10-degree limit (F-075). Limit raised to 90 degrees.
+Third rerun (2026-10-16 23:30, after recreating n8n-setup, n8n, proxy and web; n8n took 346 s to be healthy):
+contract `test_platform_search.py` 14 passed (122 s); e2e `search.spec.ts` 8 passed (5.5 min): desktop and phone,
+the map test included with the real tiles. The full `verify.ps1` was not run again after F-073 to F-075.
+
+`p3.ps1 -Step bench-v2` (`reports/eval/search-bench-20261016-213939.json`, `search-bench-v2-20261016-214330.json`),
+200 sequential requests each after 10 warm-up, paced under the rate limit, 128 published listings, same queries:
+
+| | /v1/search | /v2/search |
+|---|---|---|
+| server p50 / p95 / max (ms) | 248 / 332 / 431 | 250 / 360 / 477 |
+| client p50 / p95 (ms) | 301.7 / 394.0 | 309.3 / 419.5 |
+| database p50 / p95 (ms) | 2.1 / 5.03 | 5.21 / 8.18 |
+| query embedding p95 (ms) | 200 | 228 |
+| hybrid / filters-only server p95 (ms) | 352 / 160 | 367 / 180 |
+| errors | 0 | 0 |
+
+`/v2` costs about 3 ms more in the database (extra filters, cover photo, total count) and 28 ms more at p95 overall;
+most of a request is still the query embedding. One run each; run-to-run spread not measured. Concurrent load not
+measured (phase 9).
+
 ---
 
 ## Not run
@@ -1772,4 +1840,6 @@ website's memory and CPU use on the PC.
 | Load test, backup/restore | phase 9 | — |
 | Owner assistant on the real model | built in the sandbox (T-54) | `p4.ps1 -Step owner-bench` on the PC |
 | Website RAM and CPU on the PC next to the rest of the stack | not measured | `docker stats` during `verify.ps1` |
+| Map file size and the map on real tiles (P2) | build.protomaps.com not reachable from the sandbox | `scripts/windows/map.ps1` on the PC, then `verify.ps1` |
+| `/v2/search` latency next to `/v1/search` (P2) | needs the PC stack | `p3.ps1 -Step bench-v2` |
 | Legal agent on the real model (spec 10.7 figures) | built in the sandbox (T-53) | `p4.ps1 -Step legal-bench` on the PC, then the faithfulness sample by hand |

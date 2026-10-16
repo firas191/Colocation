@@ -9,7 +9,7 @@ import operations from "./operations.json";
 
 export interface ApiError { code: string; message: string; details: Array<Record<string, unknown>> }
 export type ApiResult<T> =
-  | { ok: true; status: number; data: T; requestId: string }
+  | { ok: true; status: number; data: T; requestId: string; meta: Record<string, unknown> }
   | { ok: false; status: number; error: ApiError; requestId: string | null };
 
 export interface CallOptions {
@@ -62,9 +62,11 @@ export async function api<T = Record<string, unknown>>(method: string, path: str
   } catch {
     return { ok: false, status: 503, error: UNAVAILABLE, requestId: null };
   }
-  let json: { request_id?: string; data?: T; error?: ApiError } = {};
+  let json: { request_id?: string; data?: T; meta?: Record<string, unknown>; error?: ApiError } = {};
   try { json = await res.json(); } catch { /* the proxy always answers JSON; anything else is an outage */ }
-  if (res.ok && json.data !== undefined) return { ok: true, status: res.status, data: json.data, requestId: json.request_id || requestId };
+  if (res.ok && json.data !== undefined) {
+    return { ok: true, status: res.status, data: json.data, requestId: json.request_id || requestId, meta: json.meta || {} };
+  }
   return { ok: false, status: res.status, error: json.error || UNAVAILABLE, requestId: json.request_id || null };
 }
 
@@ -77,7 +79,7 @@ async function fromFixture<T>(method: string, p: string): Promise<ApiResult<T>> 
   if (!op) return { ok: false, status: 404, error: { code: "NOT_FOUND", message: "No fixture", details: [] }, requestId: null };
   try {
     const j = JSON.parse(await readFile(path.join(dir, op.id, `${op.success}.json`), "utf8"));
-    return { ok: true, status: op.success, data: j.data as T, requestId: j.request_id };
+    return { ok: true, status: op.success, data: j.data as T, requestId: j.request_id, meta: j.meta || {} };
   } catch {
     return { ok: false, status: 404, error: { code: "NOT_FOUND", message: "No fixture", details: [] }, requestId: null };
   }

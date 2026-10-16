@@ -118,7 +118,11 @@ def _record(r):
     if target.exists():
         return
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(r.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    text = json.dumps(r.json(), indent=2, ensure_ascii=False) + "\n"
+    # signed photo URLs (platform P2): no signature or access key in the repository, even the sandbox's
+    text = re.sub(r"X-Amz-Signature=[0-9a-f]+", "X-Amz-Signature=redacted", text)
+    text = re.sub(r"X-Amz-Credential=[^&\"]+", "X-Amz-Credential=redacted", text)
+    target.write_text(text, encoding="utf-8")
 
 
 def assert_error(r, status, code):

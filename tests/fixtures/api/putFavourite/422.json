@@ -1,0 +1,8 @@
+{
+  "request_id": "505856a6-c8aa-4758-b0fb-485e948758bd",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "X-Idempotency-Key is required: 8 to 128 characters from A-Z a-z 0-9 _ . : -",
+    "details": []
+  }
+}

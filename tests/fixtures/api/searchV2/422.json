@@ -1,0 +1,13 @@
+{
+  "request_id": "6e9fe784-6e54-4030-a00d-3075b9412574",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Query parameters are invalid",
+    "details": [
+      {
+        "field": "cursor",
+        "issue": "invalid_cursor"
+      }
+    ]
+  }
+}

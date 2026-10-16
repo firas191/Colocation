@@ -1,0 +1,188 @@
+{
+  "request_id": "19607792-e4d5-4ed5-b615-08cc7e9ad0f8",
+  "data": {
+    "mode": "filters",
+    "count": 3,
+    "total_matching_filters": 3,
+    "results": [
+      {
+        "id": "00000000-0000-4000-8000-0000000000c3",
+        "city": "Testville",
+        "kind": "room",
+        "rank": 1,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 550000,
+          "monthly_minor": 550000
+        },
+        "score": null,
+        "title": "Chambre balcon",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [
+          "wifi",
+          "balcony"
+        ],
+        "furnished": true,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Chambre avec balcon lumineux",
+        "house_rules": {
+          "pets": "no",
+          "smoking": "no"
+        },
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": null,
+        "bills_included": null,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.01749,
+          "lng": 10.04917
+        },
+        "description_lang": null,
+        "current_flatmates": null,
+        "photo_count": 0,
+        "cover_photo": null,
+        "is_favourite": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000b2",
+        "city": "Testville",
+        "kind": "shared_flat",
+        "rank": 2,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 700000,
+          "monthly_minor": 700000
+        },
+        "score": null,
+        "title": "Colocation jardin parking",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [
+          "parking"
+        ],
+        "furnished": false,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Grande colocation avec jardin",
+        "house_rules": {
+          "pets": "yes"
+        },
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": "2027-01-15",
+        "bills_included": false,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.30676,
+          "lng": 10.31062
+        },
+        "description_lang": null,
+        "current_flatmates": null,
+        "photo_count": 0,
+        "cover_photo": null,
+        "is_favourite": false
+      },
+      {
+        "id": "3d76d971-b727-40ff-b0bf-4f79c5795782",
+        "city": "Testville",
+        "kind": "room",
+        "rank": 3,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 400000,
+          "monthly_minor": 400000
+        },
+        "score": null,
+        "title": "Chambre meublée centre wifi",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [
+          "wifi",
+          "desk"
+        ],
+        "furnished": true,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Chambre calme, wifi et bureau",
+        "house_rules": {
+          "smoking": "no"
+        },
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": "2026-11-01",
+        "bills_included": true,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 35.9985,
+          "lng": 10.0025
+        },
+        "description_lang": "fr",
+        "current_flatmates": null,
+        "photo_count": 2,
+        "cover_photo": {
+          "url": "http://localhost:8080/flatshare-media/media/3d76d971-b727-40ff-b0bf-4f79c5795782/4e7c9d7b-ee39-433c-97a6-28d6e73ec44e.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=redacted&X-Amz-Date=20261016T205048Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=redacted",
+          "expires_at": "2026-10-16T21:05:48+00:00"
+        },
+        "is_favourite": false
+      }
+    ],
+    "applied": {
+      "ids": null,
+      "bbox": null,
+      "kind": null,
+      "text": false,
+      "limit": 20,
+      "place": null,
+      "budget": null,
+      "center": null,
+      "vector": false,
+      "radius_m": null,
+      "amenities": null,
+      "furnished": null,
+      "candidates": null,
+      "house_rules": null,
+      "available_by": null,
+      "jurisdiction": "QY",
+      "bills_included": null,
+      "offset": 0,
+      "profile_fields_used": []
+    },
+    "warnings": [],
+    "data_attribution": [
+      "openstreetmap"
+    ]
+  },
+  "meta": {
+    "latency_ms": 142,
+    "next_cursor": null,
+    "timings": {
+      "embed_ms": 0,
+      "db_ms": 5.77,
+      "total_ms": 47
+    }
+  }
+}
