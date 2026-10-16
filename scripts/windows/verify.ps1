@@ -94,7 +94,8 @@ $c = Step "every pinned image tag exists in its registry" {
   $bad = 0
   foreach ($img in @("postgis/postgis:18-3.6", "amacneil/dbmate:2.36.0", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4",
                      "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "python:3.12.14-slim", "docker:29.8.1-cli",
-                     "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
+                     "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4",
+                     "node:24.21.0-bookworm-slim", "axllent/mailpit:v1.31.4", "mcr.microsoft.com/playwright:v1.64.0-noble")) {
     docker manifest inspect $img *> $null
     if ($LASTEXITCODE -eq 0) { "found    $img" } else { "MISSING  $img"; $bad++ }
   }
@@ -108,7 +109,7 @@ Stop-OnFail $c "build images"
 # n8n-setup imports the workflows from this folder, n8n loads them at start and Caddy reads
 # its config only at start: recreate the three so the code under test is the code in this folder.
 # This restarts n8n: do not run verify.ps1 while a kb.ps1 job is running.
-$c = Step "start stack" { docker compose @files up -d; docker compose @files up -d --force-recreate n8n-setup n8n proxy }
+$c = Step "start stack" { docker compose @files up -d; docker compose @files up -d --force-recreate n8n-setup n8n proxy web }
 Stop-OnFail $c "start stack"
 
 $c = Step "wait for n8n, proxy and model pull (max 20 min)" {
@@ -156,7 +157,8 @@ Step "one-shot service logs (db-bootstrap, n8n-setup, ollama-pull)" {
 
 Step "component versions" {
   docker compose @files images
-  foreach ($i in @("flatshare/postgres:18-3.6-pgvector0.8", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14", "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4")) {
+  foreach ($i in @("flatshare/postgres:18-3.6-pgvector0.8", "dxflrs/garage:v2.4.1", "ollama/ollama:0.34.4", "n8nio/n8n:2.41.3", "n8nio/runners:2.41.3", "caddy:2.11.4-alpine", "flatshare/tests:py3.12.14", "ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.4",
+                     "node:24.21.0-bookworm-slim", "axllent/mailpit:v1.31.4", "mcr.microsoft.com/playwright:v1.64.0-noble")) {
     docker image inspect --format "{{index .RepoTags 0}} id={{.Id}} digests={{.RepoDigests}}" $i
   }
   docker exec -u postgres fs-postgres psql -At -d flatshare -c "select version()" -c "select extname || ' ' || extversion from pg_extension order by 1" -c "select 'migration ' || max(version) from public.schema_migrations"
@@ -228,6 +230,19 @@ Step "PHASE 4: Telegram relay tests in its container (order, retry, no token in 
 Step "start the test fixture server (ingestion tests)" { docker compose @files --profile test up -d fixtures } | Out-Null
 Step "PHASE 1 and 2: unit and contract tests through the proxy (includes outage tests unless -SkipOutages)" {
   docker compose @files --profile test run --rm --no-deps tests @pytestArgs
+} | Out-Null
+
+# Website (platform P1). Both run in throw-away containers with the repository mounted; node_modules stays in an
+# anonymous volume so nothing is written to the Windows folder. Chromium reaches the proxy container as "localhost"
+# (PW_HOST_RULES), so pages keep the origin the stack expects (WEB_ORIGIN).
+Step "PLATFORM: website unit tests (signing vectors, messages in three languages)" {
+  docker run --rm -v "${PWD}:/repo" -v /repo/web/node_modules -w /repo/web node:24.21.0-bookworm-slim sh -c "npm ci --no-audit --no-fund >/dev/null && npx vitest run"
+} | Out-Null
+Step "PLATFORM: website end-to-end tests (Playwright: sign-up to profile in fr, en, ar; desktop and 360 px; browser upload)" {
+  docker run --rm --network flatshare_default --ipc=host -v "${PWD}:/repo" -v /repo/web/node_modules -w /repo/web `
+    -e E2E_API_BASE=http://proxy:8080 -e E2E_MAIL_API=http://mailpit:8025 -e FS_SECRETS_FILE=/repo/secrets/api-clients.env `
+    -e E2E_OTHER_ORIGIN=http://other.test:3000 -e "PW_HOST_RULES=MAP localhost proxy, MAP other.test proxy" `
+    mcr.microsoft.com/playwright:v1.64.0-noble sh -c "npm ci --no-audit --no-fund >/dev/null && npx playwright test"
 } | Out-Null
 
 Step "export workflows from n8n and scan for secrets" {

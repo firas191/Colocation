@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "title": "Coloc",
+    "description": "Trouver une colocation, des colocataires, et vivre ensemble."
+  },
+  "nav": {
+    "home": "Accueil",
+    "profile": "Mon profil",
+    "notifications": "Notifications",
+    "account": "Mon compte",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "signOut": "Se déconnecter",
+    "language": "Langue",
+    "menu": "Menu",
+    "unread": "{count, plural, =0 {Aucune notification non lue} one {# notification non lue} other {# notifications non lues}}"
+  },
+  "plan": {
+    "caption": "Plan d’un appartement en colocation",
+    "kitchen": "Cuisine",
+    "living": "Salon",
+    "bath": "Salle de bain",
+    "room": "Chambre",
+    "free": "Chambre libre",
+    "entrance": "Entrée",
+    "balcony": "Balcon"
+  },
+  "home": {
+    "title": "Une chambre, des colocataires, et tout ce qui vient après",
+    "lead": "Coloc vous aide à chercher une chambre, à trouver des colocataires qui vivent comme vous, puis à gérer la vie de l’appartement : dépenses partagées, tâches, documents.",
+    "start": "Créer un compte",
+    "signIn": "J’ai déjà un compte",
+    "steps": {
+      "search": "Chercher",
+      "searchText": "Une chambre près de votre faculté ou de votre travail, dans votre budget.",
+      "match": "Se rencontrer",
+      "matchText": "Des colocataires comparés sur le mode de vie seulement : horaires, ménage, tabac, animaux.",
+      "live": "Vivre ensemble",
+      "liveText": "Qui a payé quoi, à qui c’est le tour, et les papiers de la colocation."
+    },
+    "soon": "La recherche et les annonces arrivent dans la prochaine version. Pour l’instant : votre compte et votre profil.",
+    "welcomeBack": "Bonjour {name}",
+    "goProfile": "Voir mon profil"
+  },
+  "auth": {
+    "signup": {
+      "title": "Créer un compte",
+      "lead": "Une adresse e-mail et un mot de passe suffisent. Nous vous envoyons un lien pour confirmer l’adresse.",
+      "name": "Prénom ou pseudo",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "passwordHint": "Au moins 10 caractères.",
+      "submit": "Créer le compte",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "signIn": "Se connecter"
+    },
+    "login": {
+      "title": "Se connecter",
+      "submit": "Se connecter",
+      "noAccount": "Pas encore de compte ?",
+      "signUp": "Créer un compte",
+      "forgot": "Mot de passe oublié ?"
+    },
+    "verify": {
+      "title": "Confirmez votre adresse",
+      "body": "Nous avons envoyé un lien à {email}. Ouvrez-le pour activer le compte. Le lien reste valable 24 heures.",
+      "bodyNoEmail": "Ouvrez le lien que nous vous avons envoyé par e-mail pour activer le compte.",
+      "resend": "Renvoyer le lien",
+      "resent": "Un nouveau lien est parti. Regardez aussi dans les indésirables.",
+      "back": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Mot de passe oublié",
+      "lead": "Indiquez votre adresse : si un compte existe, nous y envoyons un lien pour choisir un nouveau mot de passe.",
+      "submit": "Envoyer le lien",
+      "sent": "Si un compte existe pour cette adresse, le lien vient de partir.",
+      "newTitle": "Nouveau mot de passe",
+      "newSubmit": "Enregistrer le mot de passe",
+      "done": "Mot de passe changé. Vous pouvez vous connecter.",
+      "invalidToken": "Ce lien n’est plus valable. Demandez-en un nouveau."
+    },
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "Adresse ou mot de passe incorrect.",
+      "EMAIL_NOT_VERIFIED": "Cette adresse n’est pas encore confirmée. Nous venons de renvoyer le lien.",
+      "USER_ALREADY_EXISTS": "Un compte existe déjà avec cette adresse. Connectez-vous ou choisissez « Mot de passe oublié ».",
+      "PASSWORD_TOO_SHORT": "Le mot de passe doit faire au moins 10 caractères.",
+      "PASSWORD_TOO_LONG": "Le mot de passe est trop long (128 caractères au plus).",
+      "INVALID_EMAIL": "Cette adresse e-mail n’est pas valable.",
+      "INVALID_TOKEN": "Ce lien n’est plus valable. Demandez-en un nouveau.",
+      "TOO_MANY_REQUESTS": "Trop d’essais. Attendez une minute avant de recommencer.",
+      "PLATFORM_UNAVAILABLE": "Le compte est créé, mais la plateforme ne répond pas. Réessayez dans un instant.",
+      "UNKNOWN": "Ça n’a pas marché. Réessayez dans un instant."
+    }
+  },
+  "consent": {
+    "title": "Avant de commencer",
+    "lead": "Coloc a besoin de votre accord pour garder votre compte et traiter vos demandes. Les modèles d’IA tournent sur le serveur de la plateforme ; vos textes ne sont pas envoyés à un service externe.",
+    "terms": "J’accepte les conditions d’utilisation",
+    "termsLink": "Lire les conditions",
+    "privacy": "J’accepte la politique de confidentialité",
+    "privacyLink": "Lire la politique",
+    "media": "J’accepte que mes photos soient traitées (données de lieu retirées, visages et textes floutés). Nécessaire seulement pour publier une annonce avec photos.",
+    "adult": "J’ai 18 ans ou plus",
+    "submit": "Continuer",
+    "required": "Ces trois cases sont nécessaires pour utiliser Coloc.",
+    "saved": "Merci, c’est enregistré."
+  },
+  "profile": {
+    "title": "Mon profil",
+    "lead": "Ce que vous cherchez et comment vous vivez. Seuls le mode de vie et le budget servent à comparer les colocataires ; jamais le genre, la religion ou l’origine.",
+    "quick": {
+      "title": "Le dire en une phrase",
+      "hint": "Par exemple : « chambre près de la fac de Tunis, 400 dt max, non-fumeur, à partir de novembre ». L’assistant remplit le formulaire ; vous vérifiez avant d’enregistrer.",
+      "placeholder": "Décrivez ce que vous cherchez",
+      "submit": "Remplir le formulaire",
+      "working": "L’assistant lit votre phrase. Cela peut prendre jusqu’à une minute.",
+      "done": "Formulaire rempli. Vérifiez chaque champ, puis enregistrez.",
+      "notUnderstood": "L’assistant n’a pas compris. Remplissez le formulaire à la main."
+    },
+    "where": "Où et quand",
+    "country": "Pays",
+    "area": "Quartier, ville ou lieu de référence",
+    "areaHint": "Votre faculté, votre travail ou un quartier.",
+    "moveIn": "Emménagement à partir du",
+    "minStay": "Durée minimale (mois)",
+    "budget": "Budget",
+    "budgetMin": "Minimum",
+    "budgetMax": "Maximum",
+    "period": "Par",
+    "month": "mois",
+    "week": "semaine",
+    "life": "Mode de vie",
+    "smoking": "Je fume",
+    "pets": "J’ai un animal ou j’accepte les animaux",
+    "guests": "Je reçois des invités",
+    "quiet_hours": "Je tiens au calme le soir",
+    "schedule": "Mes horaires",
+    "cleanliness": "Le ménage, pour moi",
+    "yes": "Oui",
+    "no": "Non",
+    "unset": "Je ne dis pas",
+    "scheduleOptions": {
+      "early": "Plutôt tôt",
+      "late": "Plutôt tard",
+      "irregular": "Irréguliers"
+    },
+    "cleanlinessOptions": {
+      "high": "Très important",
+      "medium": "Normal",
+      "relaxed": "Détendu"
+    },
+    "languages": "Langues parlées",
+    "languageNames": {
+      "ar": "Arabe",
+      "aeb": "Tunisien",
+      "fr": "Français",
+      "en": "Anglais",
+      "de": "Allemand",
+      "es": "Espagnol",
+      "it": "Italien"
+    },
+    "submit": "Enregistrer le profil",
+    "saved": "Profil enregistré.",
+    "version": "Version {version}, enregistrée le {date}",
+    "warnings": {
+      "anchor_not_found": "Lieu introuvable dans notre liste : il est gardé comme texte.",
+      "anchor_ambiguous": "Plusieurs lieux portent ce nom : précisez la ville.",
+      "preference_not_allowed": "Une préférence n’est pas autorisée dans ce pays et a été retirée.",
+      "currency_assumed": "Devise du pays utilisée."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Rien de nouveau pour l’instant.",
+    "markAll": "Tout marquer comme lu",
+    "more": "Plus anciennes",
+    "unread": "Non lue",
+    "types": {
+      "welcome": "Bienvenue sur Coloc.",
+      "visit_requested": "Nouvelle demande de visite.",
+      "other": "Notification : {type}"
+    }
+  },
+  "account": {
+    "title": "Mon compte",
+    "email": "Adresse e-mail",
+    "language": "Langue",
+    "role": "Rôle",
+    "since": "Membre depuis",
+    "roles": {
+      "user": "Membre",
+      "owner": "Propriétaire",
+      "moderator": "Modération",
+      "admin": "Administration"
+    },
+    "consents": "Accords donnés",
+    "granted": "accordé le {date}",
+    "withdrawn": "retiré",
+    "purposes": {
+      "terms": "Conditions",
+      "privacy": "Confidentialité",
+      "media_processing": "Traitement des photos",
+      "cloud_llm_processing": "IA hors serveur",
+      "marketing": "Actualités"
+    },
+    "deleteSoon": "La suppression du compte depuis cette page arrive dans une prochaine version."
+  },
+  "legal": {
+    "draft": "Brouillon. Ce texte décrit le fonctionnement de la plateforme ; il n’a pas été relu par un juriste.",
+    "termsTitle": "Conditions d’utilisation",
+    "terms": [
+      "Coloc met en relation des personnes qui cherchent une chambre, des colocataires ou un logement à partager, et aide les colocataires à s’organiser.",
+      "Coloc ne vérifie pas la propriété des logements. Un badge dit exactement ce qui a été vérifié, et rien de plus.",
+      "Coloc ne gère aucun paiement. Les dépenses et loyers inscrits sont des notes entre colocataires.",
+      "Les informations juridiques et les documents générés sont des informations générales, pas un conseil juridique.",
+      "Il est interdit de publier une annonce qui écarte quelqu’un pour son genre, sa religion, son origine ou un autre trait protégé."
+    ],
+    "privacyTitle": "Politique de confidentialité",
+    "privacy": [
+      "Compte : adresse e-mail, nom choisi, mot de passe (stocké chiffré).",
+      "Profil : budget, lieu de référence, dates et mode de vie que vous déclarez. Ils servent à la recherche et à la comparaison des colocataires.",
+      "Photos : les données de lieu sont retirées ; les visages et les textes lisibles sont floutés avant toute analyse.",
+      "Assistant : vos messages sont analysés par des modèles qui tournent sur le serveur de la plateforme. Une copie masquée (téléphones, e-mails et noms remplacés) est gardée 30 jours pour suivre la conversation.",
+      "Vous pouvez retirer votre accord à tout moment ; la conversation avec l’assistant est alors effacée."
+    ]
+  },
+  "errors": {
+    "UNAUTHENTICATED": "Votre session a expiré. Reconnectez-vous.",
+    "FORBIDDEN": "Vous n’avez pas accès à cette page.",
+    "CONSENT_REQUIRED": "Votre accord est nécessaire pour continuer.",
+    "NOT_FOUND": "Introuvable.",
+    "VALIDATION_FAILED": "Certains champs sont à corriger.",
+    "RATE_LIMITED": "Trop de demandes. Attendez une minute.",
+    "CONFLICT": "Cette action a déjà été faite.",
+    "UPSTREAM_UNAVAILABLE": "La plateforme ne répond pas. Réessayez dans un instant.",
+    "EXTRACTION_FAILED": "L’assistant n’a pas compris la demande.",
+    "INTERNAL": "Erreur de la plateforme. Réessayez.",
+    "POLICY_BLOCKED": "Action non permise.",
+    "PAYLOAD_TOO_LARGE": "Envoi trop volumineux."
+  },
+  "issues": {
+    "required": "Champ obligatoire.",
+    "type": "Valeur non valable.",
+    "enum": "Choix non valable.",
+    "minimum": "Valeur trop petite.",
+    "maximum": "Valeur trop grande.",
+    "out_of_range": "Valeur hors limites.",
+    "invalid_format": "Format non valable.",
+    "too_long": "Trop long.",
+    "unknown_parameter": "Paramètre inconnu.",
+    "minLength": "Trop court.",
+    "maxLength": "Trop long.",
+    "pattern": "Format non valable."
+  },
+  "mail": {
+    "verify": {
+      "subject": "Confirmez votre adresse e-mail",
+      "body": "Bonjour, pour activer votre compte Coloc, ouvrez ce lien (valable 24 heures) :",
+      "action": "Confirmer mon adresse",
+      "ignore": "Si vous n’avez pas créé de compte, ignorez ce message."
+    },
+    "reset": {
+      "subject": "Choisir un nouveau mot de passe",
+      "body": "Bonjour, pour choisir un nouveau mot de passe Coloc, ouvrez ce lien :",
+      "action": "Choisir un mot de passe",
+      "ignore": "Si vous n’avez rien demandé, ignorez ce message : votre mot de passe ne change pas."
+    }
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "loading": "Chargement…",
+    "skip": "Aller au contenu",
+    "close": "Fermer",
+    "optional": "facultatif"
+  },
+  "countries": {
+    "TN": "Tunisie",
+    "FR": "France",
+    "GB": "Royaume-Uni"
+  }
+}

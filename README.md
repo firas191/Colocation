@@ -1,8 +1,9 @@
-# Flatshare backend
+# Flatshare platform
 
-Backend of a worldwide flatshare platform, built on n8n for the ESPRIT Advanced Deep Learning
-final project (AI automation). Specification: `FLATSHARE_BACKEND_SPEC.md` (one folder up).
-This repository is at **phase 2 of 10** (environment, database, API gateway, knowledge base and retrieval evaluation). No frontend.
+A worldwide flatshare platform whose logic runs in n8n, built for the ESPRIT Advanced Deep Learning final project
+(AI automation). Specifications: `FLATSHARE_BACKEND_SPEC.md` (one folder up) for the backend, `docs/PLATFORM_SPEC.md`
+for the website and the features after search. Backend phases 0 to 4 are done; the website is at **platform phase P1**
+(accounts, consent, lifestyle profile, notifications; `web/`).
 
 ## Requirements
 
@@ -38,6 +39,7 @@ Linux/macOS: `scripts/setup-env.sh`, then `docker compose up -d` and the command
 
 After start:
 
+- Website: http://localhost:3000 (fr, /en, /ar); the mails it sends: http://localhost:8025 (Mailpit)
 - API (through the proxy): http://localhost:8080/v1/... (signed requests only, see `docs/API_SIGNING.md`)
 - n8n editor: http://localhost:5678 (create the owner account on first visit)
 - API keys: `secrets/api-clients.env` (not committed)
@@ -50,7 +52,7 @@ After start:
 | API | `GET /v1/health`, `POST /v1/users/sync`, `GET /v1/jobs/:id`, admin: `POST /v1/admin/kb/ingest`, `POST /v1/admin/eval/runs`, `GET /v1/admin/eval/runs/:id`; signed-request gateway with replay protection, rate limits, idempotency, error envelope; `docs/openapi.yaml` |
 | n8n workflows | gateway, health, users sync, error handler; knowledge-base ingestion (`wf.kb.ingest`, `wf.kb.ingest_source`), retrieval evaluation (`wf.eval.retrieval`), jobs and admin endpoints |
 | Knowledge base | TN pack v1 and global sources (`kb/packs`), chunkers A and B (`kb/chunkers`), bge-m3 (Ollama) and multilingual-e5-large (TEI) |
-| Not yet | legal answers with citations (phase 6), agents and prompts (3 to 6), multimodal services (4), documents and privacy workflows (7), full ablation and reranker (8), hardening (9), 3D (10) |
+| Later | see `docs/AI_AGENTS_EXPLAINED.md` and `docs/ARCHITECTURE.md` for phases 3 and 4 (agents, multimodal intake, Telegram); `docs/PLATFORM_SPEC.md` section 9 for the platform phases P2 to P12 |
 
 ## Layout
 
@@ -60,7 +62,8 @@ infra/        postgres image, Caddyfile, garage.toml, test-runner image
 kb/           packs (sources per jurisdiction), lib (cleaning, robots, tokens), chunkers, tests
 eval/         lib (metrics), runners (report), datasets (gold sets), tests
 db/           migrations (dbmate), tests (pgTAP), seed, baseline (original files)
-n8n/          build.py, src (Code-node JS), workflows (generated JSON), tests
+n8n/          build.py, build_platform.py, src (Code-node JS), workflows (generated JSON), tests
+web/          website and BFF (Next.js): app (pages), lib/server (signed API client, accounts), messages (fr, en, ar), tests, e2e
 scripts/      db-bootstrap.sh, n8n-setup.sh, db-test.sh, secret-scan.sh, setup-env.sh, kb.py, windows/*.ps1
 tests/        client (signing reference), contract, unit, mocks (sandbox only), vectors
 docs/         DECISIONS, FAILURES, TEST_REPORT, VERSIONS, ARCHITECTURE, API_SIGNING, RUNBOOK, openapi.yaml

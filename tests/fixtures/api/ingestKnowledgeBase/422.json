@@ -1,0 +1,25 @@
+{
+  "request_id": "bdee54f6-62a4-481d-95ea-33a3814eba6c",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "x",
+        "issue": "unknown_field"
+      },
+      {
+        "field": "jurisdiction",
+        "issue": "invalid_format"
+      },
+      {
+        "field": "force",
+        "issue": "must_be_boolean"
+      },
+      {
+        "field": "sources[0]",
+        "issue": "invalid_format"
+      }
+    ]
+  }
+}

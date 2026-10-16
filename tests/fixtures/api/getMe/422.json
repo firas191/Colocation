@@ -1,0 +1,13 @@
+{
+  "request_id": "d7cedb05-c76a-4116-87cd-16936b156707",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "x",
+        "issue": "unknown_parameter"
+      }
+    ]
+  }
+}

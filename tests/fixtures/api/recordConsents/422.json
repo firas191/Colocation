@@ -1,0 +1,37 @@
+{
+  "request_id": "6cd18a2b-b2ef-4d0f-a461-578d6b1a095e",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "consents[0].purpose",
+        "issue": "enum"
+      },
+      {
+        "field": "consents[0].granted",
+        "issue": "type"
+      },
+      {
+        "field": "consents[1].purpose",
+        "issue": "enum"
+      },
+      {
+        "field": "policy_version",
+        "issue": "minLength"
+      },
+      {
+        "field": "policy_version",
+        "issue": "pattern"
+      },
+      {
+        "field": "x",
+        "issue": "additional_property"
+      },
+      {
+        "field": "consents",
+        "issue": "duplicate_purpose"
+      }
+    ]
+  }
+}

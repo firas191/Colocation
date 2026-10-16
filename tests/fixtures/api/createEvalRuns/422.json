@@ -1,0 +1,29 @@
+{
+  "request_id": "822757d8-50ea-4a6b-8ad4-252d66a1c4d4",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "dataset",
+        "issue": "invalid_format"
+      },
+      {
+        "field": "k",
+        "issue": "must_be_integer_1_50"
+      },
+      {
+        "field": "configs[0].extra",
+        "issue": "unknown_field"
+      },
+      {
+        "field": "configs[0].model",
+        "issue": "unknown"
+      },
+      {
+        "field": "configs[0].mode",
+        "issue": "unknown"
+      }
+    ]
+  }
+}

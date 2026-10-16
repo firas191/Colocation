@@ -1,0 +1,36 @@
+{
+  "request_id": "6f6be288-ec9a-42bb-a032-022ab36bd49f",
+  "data": {
+    "id": "06c07036-1693-4c40-8505-e3dfdda09191",
+    "anchor": null,
+    "currency": "TND",
+    "unparsed": [],
+    "languages": [
+      "fr",
+      "ar"
+    ],
+    "updated_at": "2026-10-16T17:02:28.326449+00:00",
+    "anchor_label": null,
+    "move_in_from": "2026-11-01",
+    "budget_period": "month",
+    "anchor_geocode": null,
+    "max_commute_min": null,
+    "min_stay_months": 6,
+    "profile_version": 1,
+    "search_radius_m": null,
+    "budget_max_minor": 450000,
+    "budget_min_minor": null,
+    "jurisdiction_code": "QX",
+    "declared_preferences": {
+      "pets": "yes",
+      "guests": "yes",
+      "smoking": "no",
+      "schedule": "early",
+      "cleanliness": "high",
+      "quiet_hours": "yes"
+    }
+  },
+  "meta": {
+    "latency_ms": 186
+  }
+}

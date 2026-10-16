@@ -1,0 +1,47 @@
+{
+  "request_id": "c95a6aa7-38e6-4a51-8e4c-b5f9e8e8fc6e",
+  "data": {
+    "intent": "legal_question",
+    "language": "fr",
+    "status": "answered",
+    "answer": "Selon Code de test du louage, Article 2 Le dépôt de garantie est rendu au preneur dans un délai de 30 jours après la remise des clés, déduction faite des sommes dues [1]. Voir aussi [2].",
+    "abstained": false,
+    "abstain_reason": null,
+    "conflict": false,
+    "citations": [
+      {
+        "n": 1,
+        "title": "Code de test du louage",
+        "cite_as": null,
+        "url": "https://example.org/test-ql-law",
+        "source_type": "primary_law",
+        "reliability": 5,
+        "article": "TST-L art. 2",
+        "retrieved_at": "2026-10-01T09:00:00+00:00",
+        "chunk_id": "a52d593f-368c-4158-be70-bbdc754315ce"
+      },
+      {
+        "n": 2,
+        "title": "Code de test du louage",
+        "cite_as": null,
+        "url": "https://example.org/test-ql-law",
+        "source_type": "primary_law",
+        "reliability": 5,
+        "article": "TST-L art. 3",
+        "retrieved_at": "2026-10-01T09:00:00+00:00",
+        "chunk_id": "2f3a693a-d169-4de4-b2e9-5e351b89e1cc"
+      }
+    ],
+    "missing_information": null,
+    "notice_version": "legal-notice-v1",
+    "jurisdiction": "QL",
+    "warnings": [],
+    "agent": {
+      "tool_calls": [],
+      "memory_messages": 0
+    }
+  },
+  "meta": {
+    "latency_ms": 1949
+  }
+}

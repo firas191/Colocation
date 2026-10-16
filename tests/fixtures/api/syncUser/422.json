@@ -1,0 +1,8 @@
+{
+  "request_id": "bc9d2e28-6989-4c78-9410-fe22bf5b0959",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is not valid JSON",
+    "details": []
+  }
+}

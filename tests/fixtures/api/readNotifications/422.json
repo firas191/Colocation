@@ -1,0 +1,13 @@
+{
+  "request_id": "2212b414-7a16-4407-9e2f-5e989a015de8",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "ids|all",
+        "issue": "one_required"
+      }
+    ]
+  }
+}

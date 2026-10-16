@@ -1,0 +1,13 @@
+{
+  "request_id": "18c95ecc-3e60-48b2-90fb-c783799d09ce",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "text",
+        "issue": "required"
+      }
+    ]
+  }
+}

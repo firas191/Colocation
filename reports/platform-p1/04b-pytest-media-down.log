@@ -1,0 +1,20 @@
+$ pytest -v -rs tests/contract/test_intake_media.py tests/contract/test_photo_analysis.py   (after F-070, with the sandbox helper /opt/lab/services.sh the outage test calls)
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.7.0 -- /home/claude/sandbox/venv/bin/python3
+rootdir: /home/claude/work/flatshare
+plugins: anyio-4.15.1
+collecting ... collected 11 items
+
+tests/contract/test_intake_media.py::test_create_listing_and_validation PASSED [  9%]
+tests/contract/test_intake_media.py::test_presign_rules PASSED           [ 18%]
+tests/contract/test_intake_media.py::test_upload_route_only_takes_signed_puts PASSED [ 27%]
+tests/contract/test_intake_media.py::test_photo_intake_end_to_end PASSED [ 36%]
+tests/contract/test_intake_media.py::test_analyze_needs_text_or_files PASSED [ 45%]
+tests/contract/test_photo_analysis.py::test_photo_is_analyzed_and_compared_with_the_text PASSED [ 54%]
+tests/contract/test_photo_analysis.py::test_free_text_about_a_person_is_not_stored PASSED [ 63%]
+tests/contract/test_photo_analysis.py::test_failed_analysis_keeps_the_photo_and_flags_the_listing PASSED [ 72%]
+tests/contract/test_photo_analysis.py::test_vision_can_be_switched_off PASSED [ 81%]
+tests/contract/test_photo_analysis.py::test_p7_eval_run_scores_both_versions PASSED [ 90%]
+tests/contract/test_intake_media.py::test_media_service_down_job_is_retried PASSED [100%]
+
+============================= 11 passed in 55.18s ==============================

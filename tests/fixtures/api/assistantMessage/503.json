@@ -1,0 +1,8 @@
+{
+  "request_id": "c4a1b322-d955-4a77-b134-1a5d81145846",
+  "error": {
+    "code": "UPSTREAM_UNAVAILABLE",
+    "message": "The language model is unavailable",
+    "details": []
+  }
+}

@@ -1,4 +1,4 @@
-# Architecture (services as of phase 4; request paths as of phase 2)
+# Architecture (services as of platform P1; request paths as of phase 2)
 
 This file describes what exists. The target architecture is in FLATSHARE_BACKEND_SPEC.md
 sections 5 and 8; deviations are in DECISIONS.md.
@@ -7,9 +7,11 @@ sections 5 and 8; deviations are in DECISIONS.md.
 
 | Service | Role | Reachable from |
 |---|---|---|
-| `proxy` (Caddy) | Public entry: `/v1/*` → n8n production webhooks; envelopes n8n's own error answers; 1 MiB body limit | host 127.0.0.1:8080 |
+| `proxy` (Caddy) | Public entry: `/v1/*` → n8n production webhooks (rewrites for routes with parameters generated into `routes.caddy`, D-097); envelopes n8n's own error answers; 1 MiB body limit; signed uploads with CORS for the website's origin. Second site on port 3000: the website (D-097) | host 127.0.0.1:8080 and :3000 |
+| `web` (Next.js) | Website and BFF (platform P1): pages, accounts (Better Auth, database `auth`), server actions that call `/v1` signed with the `website` key. No business rules | proxy only |
+| `mailpit` | Catches the website's e-mails in development (web interface :8025) | host 127.0.0.1:8025 |
 | `n8n` + `n8n-runners` | All API logic: gateway, endpoints, error handler. Code nodes run in the external runner | proxy; editor on host 127.0.0.1:5678 |
-| `postgres` | One server, two databases: `flatshare` (app, kb, ai, eval, sec schemas) and `n8n` (n8n's own data) | compose network |
+| `postgres` | One server, three databases: `flatshare` (app, kb, ai, eval, sec, and the platform's api, social, home, notify schemas), `n8n` (n8n's own data) and `auth` (website accounts) | compose network |
 | `garage` | S3-compatible object storage (bucket created at start) | compose network |
 | `ollama` | Embeddings (bge-m3); the local LLM qwen3.5:4b for P1 to P3 and, with images, P7 (D-081) | compose network |
 | `media` (FastAPI) | Photo processing (type, size, EXIF strip, hashes, blurring, metrics), presigned uploads, the smaller copy of a photo for P7 (`/v1/images/vision`), evaluation photos (`/v1/eval/photos`, keys under `eval/` only). Compute only; reads and writes objects, no database (D-070, D-071) | compose network, internal token |
@@ -93,6 +95,8 @@ the HMAC is computed inside PostgreSQL by a function `n8n_worker` can call but w
 | `n8n_worker` | workflows (credential "Flatshare DB (n8n_worker)") | CRUD on app/kb/ai/eval, bypasses RLS, calls `sec.verify_request`; cannot read `sec.api_clients` |
 | `api_user` | reserved for a future API layer | RLS-limited reads and owner-limited writes; three functions |
 | `sec_owner` | owns `sec.*` | no login |
+| `app_rls` | owns the platform functions in `api` (D-096) | no login, no BYPASSRLS: RLS filters every row its functions touch; table rights on `social`, `home`, `notify` |
+| `auth_app` | the website's accounts | owns database `auth` only; nobody else may connect to it |
 
 ## Knowledge base (phase 2)
 
@@ -194,4 +198,36 @@ from `llm.default_model` unless the caller names one. Agent steps (prompt versio
 latency, errors; never the request text) are written to `ai.agent_steps` with the request record by
 `app.api_finish`. Search, money conversion, geocoding and location fuzzing are PostgreSQL functions
 (migration 0008); scoring of prompt outputs is `eval/lib/prompt_metrics.js`, inlined into the worker.
+
+## Website and platform layer (platform P1, docs/PLATFORM_SPEC.md)
+
+```mermaid
+flowchart LR
+  B[Browser] -->|https, port 3000| C[Caddy :3000]
+  C -->|X-Forwarded-For| W[web: Next.js pages + server actions]
+  W -->|sessions| ADB[(auth database)]
+  W -->|signed /v1 call, X-Client-Ip| P[Caddy :8080]
+  P --> G[wf.gateway.auth] --> E[wf.api.* platform workflow]
+  E -->|select api.fn&#40;user, input&#41;| F[api functions, owner app_rls]
+  F -->|RLS on app.current_user_id| T[(social, home, notify tables)]
+  B -->|signed PUT, CORS for WEB_ORIGIN| P --> S[(Garage)]
+  W -->|SMTP| M[Mailpit]
+```
+
+- Every page renders on the server. Forms post to server actions; each calls one API operation with an idempotency
+  key generated when the page was shown. The browser never sees the API key and never calls n8n.
+- Platform workflows (`n8n/build_platform.py`) all have the same nodes: webhook, route, gateway, shared validator
+  with the endpoint's rules, one `api.*` call, result, envelope. The `api` functions set the caller first, so the
+  forced RLS policies of the platform tables decide which rows exist for the caller (D-096). `n8n_worker` has no
+  privilege on those tables.
+
+| Workflow | Route | Function |
+|---|---|---|
+| `wf.api.me_get` | `GET /v1/me` | `api.me` |
+| `wf.api.profiles_get` | `GET /v1/profiles/me` | `api.profile_get` |
+| `wf.api.notifications_list` | `GET /v1/me/notifications` | `api.notifications_list` |
+| `wf.api.notifications_read` | `POST /v1/me/notifications/read` | `api.notifications_read` |
+
+Notifications are written by workflows with `api.notify_emit(user, type, params, link)`; the website writes the text
+in the reader's language.
 

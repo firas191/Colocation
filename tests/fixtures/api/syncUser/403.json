@@ -1,0 +1,8 @@
+{
+  "request_id": "3923a116-92f9-4756-bbe8-3f07381873d6",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "This account has been erased",
+    "details": []
+  }
+}

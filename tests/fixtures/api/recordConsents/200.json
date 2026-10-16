@@ -1,0 +1,21 @@
+{
+  "request_id": "1d667615-8ce8-4b5b-b6e8-5a0b10a8e2ea",
+  "data": {
+    "consents": {
+      "terms": {
+        "granted": true,
+        "granted_at": "2026-10-16T17:01:47.364699+00:00",
+        "policy_version": "v-test"
+      },
+      "privacy": {
+        "granted": true,
+        "granted_at": "2026-10-16T17:01:47.364699+00:00",
+        "policy_version": "v-test"
+      }
+    },
+    "consent_required": []
+  },
+  "meta": {
+    "latency_ms": 208
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "request_id": "46cb83a5-8822-401b-957e-5ac4af37d1e4",
+  "data": {
+    "listing_id": "d7965069-53d0-4c3e-b081-41ff66029670",
+    "status": "draft",
+    "next": {
+      "upload": "/v1/listings/d7965069-53d0-4c3e-b081-41ff66029670/media/presign",
+      "analyze": "/v1/listings/d7965069-53d0-4c3e-b081-41ff66029670/analyze"
+    }
+  },
+  "meta": {
+    "latency_ms": 149
+  }
+}

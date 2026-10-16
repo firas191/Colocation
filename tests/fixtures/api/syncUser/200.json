@@ -1,0 +1,18 @@
+{
+  "request_id": "aa5ec44c-3b59-448f-8a6b-f42fcebaafd7",
+  "data": {
+    "user_id": "8d245531-0826-4d12-9205-a9089ef5e1d7",
+    "created": false,
+    "role": "user",
+    "locale": "en-GB",
+    "jurisdiction_code": "TN",
+    "consents": {},
+    "consent_required": [
+      "terms",
+      "privacy"
+    ]
+  },
+  "meta": {
+    "latency_ms": 142
+  }
+}

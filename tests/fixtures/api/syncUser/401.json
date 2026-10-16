@@ -1,0 +1,8 @@
+{
+  "request_id": "8189bbce-e298-4218-a476-66f60479da5b",
+  "error": {
+    "code": "UNAUTHENTICATED",
+    "message": "Request signature could not be verified",
+    "details": []
+  }
+}

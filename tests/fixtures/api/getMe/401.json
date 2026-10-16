@@ -1,0 +1,8 @@
+{
+  "request_id": "059f50da-0a23-47be-b296-987c49269581",
+  "error": {
+    "code": "UNAUTHENTICATED",
+    "message": "X-User-Id is required for this endpoint",
+    "details": []
+  }
+}

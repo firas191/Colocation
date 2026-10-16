@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "title": "Coloc",
+    "description": "Find a flatshare, find flatmates, and live together."
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "My profile",
+    "notifications": "Notifications",
+    "account": "My account",
+    "signIn": "Log in",
+    "signUp": "Create an account",
+    "signOut": "Log out",
+    "language": "Language",
+    "menu": "Menu",
+    "unread": "{count, plural, =0 {No unread notifications} one {# unread notification} other {# unread notifications}}"
+  },
+  "plan": {
+    "caption": "Floor plan of a shared flat",
+    "kitchen": "Kitchen",
+    "living": "Living room",
+    "bath": "Bathroom",
+    "room": "Room",
+    "free": "Free room",
+    "entrance": "Entrance",
+    "balcony": "Balcony"
+  },
+  "home": {
+    "title": "A room, flatmates, and everything that comes after",
+    "lead": "Coloc helps you look for a room, find flatmates who live the way you do, then run the flat together: shared costs, chores, paperwork.",
+    "start": "Create an account",
+    "signIn": "I already have an account",
+    "steps": {
+      "search": "Look",
+      "searchText": "A room near your university or your work, within your budget.",
+      "match": "Meet",
+      "matchText": "Flatmates compared on how they live, and nothing else: hours, cleaning, smoking, pets.",
+      "live": "Live together",
+      "liveText": "Who paid for what, whose turn it is, and the flatshare's papers."
+    },
+    "soon": "Search and listings come in the next version. For now: your account and your profile.",
+    "welcomeBack": "Hello {name}",
+    "goProfile": "See my profile"
+  },
+  "auth": {
+    "signup": {
+      "title": "Create an account",
+      "lead": "An e-mail address and a password are enough. We send you a link to confirm the address.",
+      "name": "First name or nickname",
+      "email": "E-mail address",
+      "password": "Password",
+      "passwordHint": "At least 10 characters.",
+      "submit": "Create the account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Log in"
+    },
+    "login": {
+      "title": "Log in",
+      "submit": "Log in",
+      "noAccount": "No account yet?",
+      "signUp": "Create an account",
+      "forgot": "Forgot your password?"
+    },
+    "verify": {
+      "title": "Confirm your address",
+      "body": "We sent a link to {email}. Open it to activate the account. The link works for 24 hours.",
+      "bodyNoEmail": "Open the link we sent you by e-mail to activate the account.",
+      "resend": "Send the link again",
+      "resent": "A new link is on its way. Check your spam folder too.",
+      "back": "Back to log in"
+    },
+    "reset": {
+      "title": "Forgot your password",
+      "lead": "Enter your address. If an account exists, we send it a link to choose a new password.",
+      "submit": "Send the link",
+      "sent": "If an account exists for this address, the link is on its way.",
+      "newTitle": "New password",
+      "newSubmit": "Save the password",
+      "done": "Password changed. You can log in.",
+      "invalidToken": "This link no longer works. Ask for a new one."
+    },
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "Wrong address or password.",
+      "EMAIL_NOT_VERIFIED": "This address is not confirmed yet. We just sent the link again.",
+      "USER_ALREADY_EXISTS": "An account already uses this address. Log in, or choose “Forgot your password”.",
+      "PASSWORD_TOO_SHORT": "The password needs at least 10 characters.",
+      "PASSWORD_TOO_LONG": "The password is too long (128 characters at most).",
+      "INVALID_EMAIL": "This e-mail address is not valid.",
+      "INVALID_TOKEN": "This link no longer works. Ask for a new one.",
+      "TOO_MANY_REQUESTS": "Too many attempts. Wait a minute and try again.",
+      "PLATFORM_UNAVAILABLE": "Your account exists, but the platform is not answering. Try again in a moment.",
+      "UNKNOWN": "That did not work. Try again in a moment."
+    }
+  },
+  "consent": {
+    "title": "Before you start",
+    "lead": "Coloc needs your agreement to keep your account and handle your requests. The AI models run on the platform's server; your texts are not sent to an outside service.",
+    "terms": "I accept the terms of use",
+    "termsLink": "Read the terms",
+    "privacy": "I accept the privacy policy",
+    "privacyLink": "Read the policy",
+    "media": "I agree that my photos are processed (location data removed, faces and text blurred). Needed only to post a listing with photos.",
+    "adult": "I am 18 or older",
+    "submit": "Continue",
+    "required": "These three boxes are needed to use Coloc.",
+    "saved": "Thank you, it is saved."
+  },
+  "profile": {
+    "title": "My profile",
+    "lead": "What you are looking for and how you live. Only lifestyle and budget are used to compare flatmates; never gender, religion or origin.",
+    "quick": {
+      "title": "Say it in one sentence",
+      "hint": "For example: “room near the Tunis law faculty, 400 dt max, non-smoker, from November”. The assistant fills in the form; you check it before saving.",
+      "placeholder": "Describe what you are looking for",
+      "submit": "Fill in the form",
+      "working": "The assistant is reading your sentence. This can take up to a minute.",
+      "done": "Form filled in. Check every field, then save.",
+      "notUnderstood": "The assistant did not understand. Fill in the form by hand."
+    },
+    "where": "Where and when",
+    "country": "Country",
+    "area": "Neighbourhood, town or landmark",
+    "areaHint": "Your university, your work or a neighbourhood.",
+    "moveIn": "Moving in from",
+    "minStay": "Minimum stay (months)",
+    "budget": "Budget",
+    "budgetMin": "Minimum",
+    "budgetMax": "Maximum",
+    "period": "Per",
+    "month": "month",
+    "week": "week",
+    "life": "Lifestyle",
+    "smoking": "I smoke",
+    "pets": "I have a pet or I am fine with pets",
+    "guests": "I have guests over",
+    "quiet_hours": "I care about quiet evenings",
+    "schedule": "My hours",
+    "cleanliness": "Cleaning, for me",
+    "yes": "Yes",
+    "no": "No",
+    "unset": "I'd rather not say",
+    "scheduleOptions": {
+      "early": "Early riser",
+      "late": "Night owl",
+      "irregular": "Irregular"
+    },
+    "cleanlinessOptions": {
+      "high": "Very important",
+      "medium": "Normal",
+      "relaxed": "Relaxed"
+    },
+    "languages": "Languages I speak",
+    "languageNames": {
+      "ar": "Arabic",
+      "aeb": "Tunisian",
+      "fr": "French",
+      "en": "English",
+      "de": "German",
+      "es": "Spanish",
+      "it": "Italian"
+    },
+    "submit": "Save the profile",
+    "saved": "Profile saved.",
+    "version": "Version {version}, saved on {date}",
+    "warnings": {
+      "anchor_not_found": "Place not in our list: it is kept as text.",
+      "anchor_ambiguous": "Several places have this name: add the town.",
+      "preference_not_allowed": "One preference is not allowed in this country and was removed.",
+      "currency_assumed": "The country's currency was used."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Nothing new for now.",
+    "markAll": "Mark all as read",
+    "more": "Older",
+    "unread": "Unread",
+    "types": {
+      "welcome": "Welcome to Coloc.",
+      "visit_requested": "New visit request.",
+      "other": "Notification: {type}"
+    }
+  },
+  "account": {
+    "title": "My account",
+    "email": "E-mail address",
+    "language": "Language",
+    "role": "Role",
+    "since": "Member since",
+    "roles": {
+      "user": "Member",
+      "owner": "Owner",
+      "moderator": "Moderation",
+      "admin": "Administration"
+    },
+    "consents": "Agreements given",
+    "granted": "given on {date}",
+    "withdrawn": "withdrawn",
+    "purposes": {
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "media_processing": "Photo processing",
+      "cloud_llm_processing": "AI outside the server",
+      "marketing": "News"
+    },
+    "deleteSoon": "Deleting the account from this page comes in a later version."
+  },
+  "legal": {
+    "draft": "Draft. This text describes how the platform works; no lawyer has reviewed it.",
+    "termsTitle": "Terms of use",
+    "terms": [
+      "Coloc puts people looking for a room, for flatmates or for a place to share in touch, and helps flatmates organise themselves.",
+      "Coloc does not check who owns a home. A badge says exactly what was checked, and nothing more.",
+      "Coloc handles no payments. Costs and rents entered are notes between flatmates.",
+      "Legal information and generated documents are general information, not legal advice.",
+      "Listings that exclude someone for their gender, religion, origin or another protected trait are not allowed."
+    ],
+    "privacyTitle": "Privacy policy",
+    "privacy": [
+      "Account: e-mail address, chosen name, password (stored hashed).",
+      "Profile: the budget, reference place, dates and lifestyle you give. They are used for search and to compare flatmates.",
+      "Photos: location data is removed; faces and readable text are blurred before any analysis.",
+      "Assistant: your messages are analysed by models that run on the platform's server. A masked copy (phone numbers, e-mails and names replaced) is kept for 30 days to follow the conversation.",
+      "You can withdraw your agreement at any time; the conversation with the assistant is then deleted."
+    ]
+  },
+  "errors": {
+    "UNAUTHENTICATED": "Your session expired. Log in again.",
+    "FORBIDDEN": "You do not have access to this page.",
+    "CONSENT_REQUIRED": "Your agreement is needed to continue.",
+    "NOT_FOUND": "Not found.",
+    "VALIDATION_FAILED": "Some fields need fixing.",
+    "RATE_LIMITED": "Too many requests. Wait a minute.",
+    "CONFLICT": "This was already done.",
+    "UPSTREAM_UNAVAILABLE": "The platform is not answering. Try again in a moment.",
+    "EXTRACTION_FAILED": "The assistant did not understand the request.",
+    "INTERNAL": "Platform error. Try again.",
+    "POLICY_BLOCKED": "Not allowed.",
+    "PAYLOAD_TOO_LARGE": "Upload too large."
+  },
+  "issues": {
+    "required": "Required.",
+    "type": "Not a valid value.",
+    "enum": "Not a valid choice.",
+    "minimum": "Too small.",
+    "maximum": "Too large.",
+    "out_of_range": "Out of range.",
+    "invalid_format": "Wrong format.",
+    "too_long": "Too long.",
+    "unknown_parameter": "Unknown parameter.",
+    "minLength": "Too short.",
+    "maxLength": "Too long.",
+    "pattern": "Wrong format."
+  },
+  "mail": {
+    "verify": {
+      "subject": "Confirm your e-mail address",
+      "body": "Hello, to activate your Coloc account, open this link (it works for 24 hours):",
+      "action": "Confirm my address",
+      "ignore": "If you did not create an account, ignore this message."
+    },
+    "reset": {
+      "subject": "Choose a new password",
+      "body": "Hello, to choose a new Coloc password, open this link:",
+      "action": "Choose a password",
+      "ignore": "If you did not ask for this, ignore this message: your password stays the same."
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "skip": "Skip to content",
+    "close": "Close",
+    "optional": "optional"
+  },
+  "countries": {
+    "TN": "Tunisia",
+    "FR": "France",
+    "GB": "United Kingdom"
+  }
+}

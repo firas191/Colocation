@@ -1,0 +1,8 @@
+{
+  "request_id": "668bbf4d-a618-4a9f-b0e1-e91a9dd07927",
+  "error": {
+    "code": "CONFLICT",
+    "message": "X-Idempotency-Key was already used for a different request",
+    "details": []
+  }
+}

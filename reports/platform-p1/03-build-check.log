@@ -1,0 +1,4 @@
+$ python3 n8n/build.py --check
+workflow JSON is up to date
+$ python3 scripts/web_operations.py --check
+operations.json is up to date

@@ -33,6 +33,8 @@ $values = @{
   S3_ACCESS_KEY_ID       = "GK" + (Hex 12)
   S3_SECRET_ACCESS_KEY   = Hex 32
   INTERNAL_SERVICE_TOKEN = Hex 32
+  AUTH_DB_PASSWORD       = Hex 24
+  BETTER_AUTH_SECRET     = Hex 32
 }
 
 if (Test-Path $envPath) {

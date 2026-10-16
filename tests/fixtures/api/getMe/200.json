@@ -1,0 +1,77 @@
+{
+  "request_id": "d8f426e6-cba1-44e9-880a-e28d32024a32",
+  "data": {
+    "role": "user",
+    "email": null,
+    "flags": {
+      "is_staff": false,
+      "has_profile": false,
+      "has_listings": false,
+      "telegram_linked": false
+    },
+    "badges": [],
+    "counts": {
+      "listings": 0,
+      "unread_notifications": 0
+    },
+    "locale": "en",
+    "user_id": "e6bc03be-46da-4214-8d45-cce192b7a9bd",
+    "consents": {},
+    "created_at": "2026-10-16T17:02:25.646401+00:00",
+    "display_name": null,
+    "jurisdictions": [
+      {
+        "code": "FR",
+        "name": "France",
+        "currency": "EUR",
+        "exponent": 2,
+        "timezone": "Europe/Paris",
+        "languages": [
+          "fr",
+          "en"
+        ]
+      },
+      {
+        "code": "GB",
+        "name": "United Kingdom",
+        "currency": "GBP",
+        "exponent": 2,
+        "timezone": "Europe/London",
+        "languages": [
+          "en"
+        ]
+      },
+      {
+        "code": "QX",
+        "name": "Test jurisdiction (tests only)",
+        "currency": "TND",
+        "exponent": 3,
+        "timezone": "Africa/Tunis",
+        "languages": [
+          "fr",
+          "ar"
+        ]
+      },
+      {
+        "code": "TN",
+        "name": "Tunisia",
+        "currency": "TND",
+        "exponent": 3,
+        "timezone": "Africa/Tunis",
+        "languages": [
+          "ar",
+          "fr",
+          "en"
+        ]
+      }
+    ],
+    "consent_required": [
+      "terms",
+      "privacy"
+    ],
+    "jurisdiction_code": "QX"
+  },
+  "meta": {
+    "latency_ms": 165
+  }
+}

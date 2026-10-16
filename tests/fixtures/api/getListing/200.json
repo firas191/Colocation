@@ -1,0 +1,203 @@
+{
+  "request_id": "475e1322-8359-4c92-b866-d716093676f2",
+  "data": {
+    "city": null,
+    "kind": "room",
+    "media": [
+      {
+        "kind": "photo",
+        "bytes": 31119,
+        "width": 900,
+        "height": 700,
+        "analysis": {
+          "blur": {
+            "counts": {
+              "face": 0,
+              "text": 1,
+              "screen": 0
+            },
+            "applied": true
+          },
+          "exif": {
+            "make": "TestPhone",
+            "model": null,
+            "has_gps": true,
+            "software": null,
+            "captured_at": null,
+            "gps_distance_m": 0
+          },
+          "source": {
+            "mime": "image/jpeg",
+            "bytes": 42442,
+            "width": 900,
+            "height": 700
+          },
+          "vision": {
+            "flags": [],
+            "model": "qwen3.5:4b",
+            "fields": {
+              "beds": 1,
+              "windows": 1,
+              "bed_kinds": [
+                "double"
+              ],
+              "condition": "good",
+              "furnished": "yes",
+              "furniture": [
+                "wardrobe",
+                "desk"
+              ],
+              "room_type": "bedroom",
+              "appliances": [
+                "tv",
+                "air_conditioning"
+              ],
+              "natural_light": "good",
+              "readable_text": false,
+              "people_visible": false,
+              "condition_signs": [],
+              "bathroom_fixtures": []
+            },
+            "issues": [],
+            "status": "analyzed",
+            "dropped": [],
+            "version": 1,
+            "stored_at": "2026-10-16T16:59:09.057736+00:00",
+            "tokens_in": 275,
+            "latency_ms": 68,
+            "tokens_out": 97,
+            "description": "A bright bedroom with a double bed, a wardrobe and a desk.",
+            "model_output": {
+              "beds": 1,
+              "windows": 1,
+              "bed_kinds": [
+                "double"
+              ],
+              "condition": "good",
+              "furnished": "yes",
+              "furniture": [
+                "wardrobe",
+                "desk"
+              ],
+              "room_type": "bedroom",
+              "appliances": [
+                "tv",
+                "air_conditioning"
+              ],
+              "description": "A bright bedroom with a double bed, a wardrobe and a desk.",
+              "natural_light": "good",
+              "readable_text": false,
+              "people_visible": false,
+              "condition_signs": [],
+              "bathroom_fixtures": []
+            },
+            "field_confidence": {},
+            "prompt_version_id": "ee000fe4-3ff7-4d2b-aa89-33caff3557fe"
+          },
+          "metrics": {
+            "sharpness": 377.1,
+            "dark_fraction": 0.0077,
+            "bright_fraction": 0.0023,
+            "brightness_mean": 147.32
+          },
+          "near_duplicates": []
+        },
+        "media_id": "362e1ffb-b978-4b7f-a1be-ce3ca8b0d36f",
+        "created_at": "2026-10-16T16:59:08.806235+00:00",
+        "moderation": "blurred",
+        "transcript": null,
+        "transcript_lang": null
+      }
+    ],
+    "title": null,
+    "status": "draft",
+    "uploads": [
+      {
+        "kind": "photo",
+        "status": "pending",
+        "media_id": null,
+        "upload_id": "afcc63aa-2bf9-4033-981c-d68be10eb69b",
+        "error_code": null
+      },
+      {
+        "kind": "photo",
+        "status": "rejected",
+        "media_id": null,
+        "upload_id": "838dbc39-67f6-4e97-a0b0-32ece746ec17",
+        "error_code": "UNSUPPORTED_TYPE"
+      }
+    ],
+    "bedrooms": null,
+    "currency": "TND",
+    "amenities": [],
+    "furnished": true,
+    "created_at": "2026-10-16T16:59:07.160353+00:00",
+    "extraction": {
+      "model": "qwen3.5:4b",
+      "issues": [
+        "photos_show_amenities_not_in_text"
+      ],
+      "photos": {
+        "failed": 0,
+        "analyzed": 1,
+        "amenities_seen_not_in_text": [
+          "air_conditioning",
+          "desk",
+          "tv"
+        ]
+      },
+      "language": {
+        "method": "lingua",
+        "script": "latin",
+        "language": "fr",
+        "confidence": 0.98
+      },
+      "stored_at": "2026-10-16T16:59:09.794023+00:00",
+      "pii_counts": {},
+      "address_text": null,
+      "model_issues": [],
+      "model_output": {
+        "city": null,
+        "kind": "room",
+        "issues": [],
+        "bedrooms": null,
+        "amenities": [],
+        "furnished": true,
+        "rent_scope": "per_room",
+        "house_rules": {},
+        "rent_amount": 450,
+        "rent_period": "month",
+        "address_text": null,
+        "neighbourhood": null,
+        "rent_currency": "TND",
+        "available_from": null,
+        "bills_included": null,
+        "deposit_amount": null,
+        "deposit_currency": null,
+        "field_confidence": {
+          "rent_amount": 0.9
+        }
+      },
+      "checks_changed": [],
+      "field_confidence": {
+        "rent_amount": 0.9
+      },
+      "prompt_version_id": "b7b17fc7-8a42-4f0f-ad6c-9d97b0d279bb"
+    },
+    "listing_id": "fd72f3e5-2d47-4d84-83de-0453111dbb9f",
+    "rent_minor": 450000,
+    "rent_scope": "per_room",
+    "updated_at": "2026-10-16T16:59:09.794023+00:00",
+    "description": "Chambre meublée à Testville, 450 DT, libre en novembre",
+    "house_rules": {},
+    "rent_period": "month",
+    "deposit_minor": null,
+    "neighbourhood": null,
+    "available_from": null,
+    "bills_included": null,
+    "jurisdiction_code": "QX"
+  },
+  "meta": {
+    "latency_ms": 186
+  }
+}

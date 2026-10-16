@@ -1,0 +1,12 @@
+{
+  "request_id": "2ecf5cf8-db07-46fc-9067-1575e581ef59",
+  "data": {
+    "job_id": "c4c0bdad-0710-4d48-bd95-fabd8fb1c4b7",
+    "type": "listing_analyze",
+    "status": "queued",
+    "status_url": "/v1/jobs/c4c0bdad-0710-4d48-bd95-fabd8fb1c4b7"
+  },
+  "meta": {
+    "latency_ms": 215
+  }
+}

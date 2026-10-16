@@ -1,0 +1,17 @@
+{
+  "request_id": "94a712ff-0606-46cf-a93c-eb36a8566ddd",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "The change is invalid",
+    "details": [
+      {
+        "field": "rent",
+        "issue": "invalid_number"
+      },
+      {
+        "field": "colour",
+        "issue": "unknown_field"
+      }
+    ]
+  }
+}

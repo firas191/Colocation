@@ -1,0 +1,5 @@
+$ dbmate rollback; dbmate up   (flatshare database, migration 0022)
+Rolling back: 0022_platform_foundation.sql
+Rolled back: 0022_platform_foundation.sql in 30.724864ms
+Applying: 0022_platform_foundation.sql
+Applied: 0022_platform_foundation.sql in 13.697322ms

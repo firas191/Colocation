@@ -744,6 +744,112 @@ migration 0021), a message P1 calls a search goes to the owner assistant when it
 rent, caution, dépôt, garantie, prix, الكراء...), contains a number, and does not ask to search (cherche, looking,
 n7eb...). "Je cherche une chambre, loyer 380 dt" still goes to the search. Not measured on the real model yet.
 
+### D-094 Phase 4 closed by the owner without ASR, video frames, PDF extraction and the P7 benchmark
+
+Decided by the owner on 2026-10-16. Spec 17 closes phase 4 when "ASR benchmark table exists" and "photo pipeline tests
+pass"; the second is met (Media service tests, verify.ps1), the first is waived: no ASR service is built. Also not built:
+frames from walkthrough videos, text extraction from PDFs, and the P7 accuracy benchmark on the PC (P7 runs in the
+listing analysis; its accuracy is not measured, only its time, T-59, T-62). Consequences: the bot answers a voice note
+that voice notes are not supported (it used to say "coming soon"); uploads of kind audio, video and pdf stay accepted by
+the API (presign) but are not analysed. What phase 4 delivered: Text service (language, PII masking), Media service
+(validation, EXIF, perceptual hash, face and text blur), P3 and P7 in the listing analysis, the Telegram channel
+with albums and photo cards, and, ahead of their phases or outside the spec, the Match agent (D-084), the Legal
+agent (D-087, D-089) and the owner assistant (D-088). Evidence: TEST_REPORT T-41 to T-63.
+
+### D-095 Platform plan: the website and the new features (P0)
+
+Proposed and approved by the owner on 2026-10-16 ("lets start"). The plan is `docs/PLATFORM_SPEC.md`. Main choices:
+
+- **Scope grows past spec 2.5.** In-app messaging and the household after move-in (expenses, chores, documents,
+  moving out) were non-goals of the backend phase; the owner's platform goal brings them in. Payments, online
+  signing and 3D stay out.
+- **Row-level rules that bind n8n too.** `n8n_worker` bypasses RLS, so the new schemas (`social`, `home`, `notify`)
+  give it no table rights. It calls `SECURITY DEFINER` functions owned by a role without `BYPASSRLS` that set
+  `app.user_id` first; forced RLS policies then filter every row (PLATFORM_SPEC 7.1).
+- **Website stack:** Next.js as pages and BFF in one server, Better Auth self-hosted with its own database, Tailwind
+  and shadcn/ui in RTL mode, MapLibre with a local PMTiles extract, next-intl (fr, en, ar). Hosted auth (Clerk, Auth0)
+  was rejected because account data would leave the machine; Keycloak because it is one more heavy service on the PC.
+- **Two new AI Agent nodes:** the Trust agent (A4, spec phase 5) and the Document agent (A6). Both have no write
+  tool; scores, verdicts and documents are produced by fixed nodes. Compatibility, splits, balances and reminders are
+  SQL, with no model; private messages are not sent to a model.
+- **/v1 is not changed.** More search filters are `GET /v2/search`; a public listing view is a new path
+  (`GET /v1/listings/{id}/public`) because `GET /v1/listings/{id}` stays the owner view.
+
+### D-096 Platform P1: row-level rules that bind n8n, and one API function per endpoint
+
+- **Why.** `n8n_worker` has `BYPASSRLS` (spec 5.4), so the RLS policies of migration 0001 never applied to what a
+  workflow reads. For households, messages and applications that is not enough: a wrong `WHERE` in one workflow would
+  show another user's data.
+- **How (migration 0022).** Platform tables go in schemas `social`, `home`, `notify`, on which `n8n_worker` has no
+  privilege at all. Workflows call functions in schema `api`; each is `SECURITY DEFINER`, owned by `app_rls` (a role
+  without `BYPASSRLS`), and starts with `api._as(user)`, which sets `app.user_id` for the transaction. The tables have
+  RLS enabled and forced, with policies on `app.current_user_id()`. `app_rls` also reads a few app tables
+  (`app.profiles`, `app.consents`, `app.listings` columns) through their existing policies. pgTAP checks: `n8n_worker`
+  and `api_user` are refused on the tables; every `api` function is owned by `app_rls` and not executable by PUBLIC;
+  one user's ids do not touch another user's rows (`db/tests/190_platform_foundation.sql`). Erasing a user deletes
+  their notifications (trigger on `app.users.deleted_at`).
+- **Endpoint shape (`n8n/build_platform.py`).** Each endpoint is its own workflow, as before: webhook, route, gateway,
+  a shared validator (`platform_validate.js`, the endpoint's rules written into it at build time), one call
+  `select api.<fn>(user, input)`, a shared result node, the usual envelope. The function returns `{status, data}` or
+  `{status, error}`. Workflows that do more than one call (notifications to others, storage, jobs, agents) are written
+  out node by node in later phases. Whether this is "logic in n8n" was weighed: the rules that touch private rows sit
+  in SQL so that RLS covers them, which is how search, listing checks and owner changes already work (D-088); the
+  steps, side effects and agents are n8n nodes.
+- **New endpoints:** `GET /v1/me` (no consent needed: it says which consents are missing), `GET /v1/profiles/me`,
+  `GET /v1/me/notifications`, `POST /v1/me/notifications/read`. The notification endpoints were planned for P4; they
+  came now because the first `notify` table needed a reader to prove the layer through the API.
+- **Response fields of platform endpoints.** A platform endpoint may gain optional response fields in a later phase
+  of the plan (for example `counts.households` in P5); it never loses or changes one. A change of behaviour or of an
+  existing field goes to `/v2`, as the owner asked. `/v1` endpoints from before the platform are not touched.
+- `GET /v1/me` lists the countries the website offers from the setting `platform.jurisdictions` (TN, FR, GB), plus the
+  user's own, with the currency exponent clients need to enter amounts. `app.jurisdictions.active` is false for all
+  three and could not be used.
+
+### D-097 Platform P1: the proxy in front of the website, generated routes, browser uploads
+
+- **The website behind Caddy.** Browsers reach the website on port 3000 of the proxy, not the web container. Caddy
+  drops forwarding headers sent by clients and sets `X-Forwarded-For`, so the website server knows the visitor's
+  address and sends it signed as `X-Client-Ip`. Without this, every website user would share the website container's
+  address and the API's per-IP limit (120 a minute).
+- **Generated rewrites.** `n8n/build.py` writes `infra/caddy/routes.caddy` (one rewrite per route with a path
+  parameter, with its method) from the workflows, and `python3 n8n/build.py --check` fails when it is out of date. The
+  Caddyfile imports it. The seven hand-written rewrites moved there unchanged except for an explicit method. Full
+  contract suite unchanged after the move (T-64).
+- **CORS for uploads (spec 17.1).** The proxy answers the browser's `OPTIONS` on `/<bucket>/uploads/*` for
+  `WEB_ORIGIN` only, method PUT, header Content-Type, and sets `Access-Control-Allow-Origin` on the PUT answer with
+  `header_down`, which replaces whatever the storage sends (F-065). A Chromium page on the website's origin uploads;
+  the same page on another origin is blocked (`web/e2e/upload-cors.spec.ts`).
+
+### D-098 Platform P1: website choices made concrete
+
+- **Versions.** Each npm package is pinned to the newest release published at least seven days before 2026-10-16,
+  except Next.js 16.4.1 and React 19.3.1, the releases of the Next.js security update of 2026-10-14 (two critical
+  remote code execution issues). `sharp` resolved to 0.35.5, the version that advisory names. Image optimisation is
+  off anyway (photos are already processed by the Media service). `typescript` stays on 5.9.3: 7.x is a rewrite that
+  Next.js does not document yet. Node 24.21.0 (image `node:24.21.0-bookworm-slim`).
+- **npm peer dependencies.** `npm install` stopped with an internal error while resolving Better Auth's optional peer
+  dependencies (F-066). `web/.npmrc` sets `legacy-peer-deps=true`; peers the project needs are listed directly
+  (`vite` for Vitest).
+- **Accounts.** Better Auth with e-mail and password, e-mail confirmation required, password reset, 10 to 128
+  characters, sessions 14 days, its own rate limit. Its database `auth` and role `auth_app` are created by
+  `db-bootstrap.sh` with `CONNECT` revoked from PUBLIC. Its tables are created at server start (`instrumentation.ts`,
+  with the running options, so they cannot drift). After login the website calls `POST /v1/users/sync` with
+  `external_auth_id = web:<id>` and stores the platform id on the auth user (`platformUserId`, not settable by users).
+  The sync's idempotency key is a hash of what is sent, so an unchanged sync returns the stored answer.
+- **Forms without client-side rules.** Pages are server components; forms post to server actions, which call the API.
+  Every state-changing form carries an idempotency key made when the page is shown. The only conversion in the website
+  is amounts between main and minor units, with the exponent `GET /v1/me` gives for the currency (the API's `Money`
+  contract asks clients to do that).
+- **Type and colour.** IBM Plex Sans and IBM Plex Sans Arabic (one family drawn for both scripts, SIL OFL, served by
+  the website) instead of the Noto pair named in PLATFORM_SPEC 6.4. Colours of a lime-washed flat (page), plan ink
+  (text), a cobalt door (actions); one drawing, the floor plan with the free room, on the account pages. Logical CSS
+  classes only, checked by a unit test that fails on `ml-`, `left-`, `text-right` and the like.
+- **Terms and privacy pages** describe what the platform does (data kept, local models, photo processing, 30-day
+  masked assistant memory, D-084). They are marked as drafts not reviewed by a lawyer; policy version `draft-2026-10`
+  is what the consent records.
+- **Mail in development:** Mailpit (`axllent/mailpit:v1.31.4`) catches every mail; `SMTP_*` in `.env` points the
+  website at a real mail account later.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

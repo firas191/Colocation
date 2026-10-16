@@ -1,0 +1,21 @@
+{
+  "request_id": "fc0e6707-aac3-4c11-a0b6-e2517d4e5819",
+  "data": {
+    "listing_id": "eaba2fa4-9948-474a-b64f-633492d391ad",
+    "status": "published",
+    "diff": [
+      {
+        "after": 420,
+        "field": "rent",
+        "before": 350,
+        "currency": "TND"
+      }
+    ],
+    "publication": null,
+    "photos_deleted_from_storage": 0,
+    "embedded": null
+  },
+  "meta": {
+    "latency_ms": 359
+  }
+}

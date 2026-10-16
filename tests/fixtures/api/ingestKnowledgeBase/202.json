@@ -1,0 +1,12 @@
+{
+  "request_id": "5b7b906f-5b17-438d-8242-b9b12cfaf136",
+  "data": {
+    "job_id": "fa13d5af-7d6c-4f95-b05f-84483f6a5de8",
+    "type": "kb_ingest",
+    "status": "queued",
+    "status_url": "/v1/jobs/fa13d5af-7d6c-4f95-b05f-84483f6a5de8"
+  },
+  "meta": {
+    "latency_ms": 164
+  }
+}

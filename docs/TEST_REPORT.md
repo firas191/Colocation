@@ -1702,6 +1702,36 @@ Owner's PC, Telegram, 14:47: "le loyer est 350 DT" under the bot's "not publishe
 `test_owner_agent.py`: with P1 forced to "search", "le loyer est 380 dt" from a user who just posted a draft gives a
 proposal for that draft (rent 380, warning `followup`), and "je cherche une chambre, loyer 380 dt" stays a search.
 
+## T-64 Platform P1: accounts, consent, profile, notifications, the row-level layer (2026-10-16) - PASS in the sandbox; not yet run on the PC
+
+Where: cloud sandbox as in T-41 (PostgreSQL 16.13, pgvector 0.6.0, PostGIS 3.4.2, n8n 2.41.3 native with its internal
+runner, Caddy 2.6.2, the Media and Text services from their code, moto as the S3 stand-in, the Ollama mock), plus the
+website: Next.js 16.4.1 standalone server on Node 24.22.0 behind Caddy's port 3000, the auth database, and
+`tests/mocks/mail_sink.py` in place of Mailpit (it answers the part of Mailpit's API the tests use). Chromium 1194.
+Nothing here measures a model. Logs in `reports/platform-p1/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 19 files, 452 tests, PASS. New `190_platform_foundation.sql` (27): `n8n_worker` and `api_user` refused on the notify table; every `api` function owned by `app_rls` and not executable by PUBLIC; `app_rls` has no BYPASSRLS; notifications listed and marked read only for their owner, whatever ids are sent; `GET /v1/me` flags count only the caller's listings; profiles not shared; erasure deletes notifications. `020_security_fixes.sql` caught a trigger function left executable by PUBLIC (fixed before the run) |
+| `01b-migration-down-up.log` | 0022 rolled back and applied again on the sandbox database |
+| `02-js-unit.log` | `node --test`: 152 pass, including the shared validator (`platform_validate.test.js`) and the check that every parameterised webhook has a rewrite in the generated `routes.caddy` |
+| `03-build-check.log` | workflow JSON, `routes.caddy` and `web/lib/server/operations.json` up to date |
+| `04-pytest-unit-contract.log` | unit and contract tests through the proxy, outage tests included: 283 passed, 1 skipped (raw n8n check). New: `test_platform_accounts.py` (10), `test_fixtures.py` (72 recorded responses of all 24 operations validated against `openapi.yaml`), `test_routes_documented.py` (every served route documented, every documented route served), `test_web_operations.py` |
+| `04b-pytest-media-down.log` | intake and photo tests after F-070: 11 passed |
+| `05-media-service-tests.log` | Media service: 32 passed (new: a detector box with an infinite coordinate is dropped) |
+| `06-web-unit.log` | `tsc --noEmit`: no errors. Vitest 13 passed: the four signing vectors of `tests/vectors/signing.json` reproduced by `web/lib/server/signing.ts` (canonical query, canonical string, signature); French, English and Arabic messages have the same keys and every plural form formats (Arabic: zero, one, two, few, many, other); no physical left/right CSS class in pages and components |
+| `07-secret-scan-web-build.log` | exact-match scan of `web/.next` (3,549 files) against the website, tests and Better Auth secrets: none found |
+| `08-web-e2e.log` | Playwright, 16 passed: for fr, en and ar, on desktop and at 360 px: sign up, mail in the page's language, confirmation link, consent, profile saved, log out, log in, values found again; `html` has `dir="rtl"` for Arabic; no page wider than the window; no serious or critical axe-core finding on the sign-up, consent and profile pages. Also: pages that need an account redirect to log in; wrong password and unknown address give the same message; password reset by mail; a page on the website's origin uploads to a presigned URL, the same page on another origin is blocked by CORS |
+| `screens/` | screenshots of the home, consent and profile pages (fr desktop, ar 360 px) |
+
+Found while building and fixed before this run: F-065 (doubled CORS header), F-066 (npm peer resolution), F-067 (the
+"check your e-mail" page crashed), F-068 (links told apart by colour only), F-069 (header not refreshed after consent),
+F-070 (Media service 500 on a non-finite detector box).
+
+Not run here: the compose build of the `web` image, Mailpit, and the website tests inside the Playwright image on the
+owner's PC (the new PLATFORM steps of `verify.ps1`); Garage's answer to the CORS preflight path (Caddy answers it, so
+Garage is not asked); the website's memory and CPU use on the PC.
+
 ---
 
 ## Not run
@@ -1718,4 +1748,6 @@ proposal for that draft (rent 380, warning `followup`), and "je cherche une cham
 | Request latency on the compose stack | T-8 is sandbox only | phase 9 load test |
 | Load test, backup/restore | phase 9 | — |
 | Owner assistant on the real model | built in the sandbox (T-54) | `p4.ps1 -Step owner-bench` on the PC |
+| Website image build, Mailpit and the website tests in the Playwright image (T-64) | sandbox has no Docker registry access | `verify.ps1` PLATFORM steps on the PC |
+| Website RAM and CPU on the PC next to the rest of the stack | not measured | `docker stats` during `verify.ps1` |
 | Legal agent on the real model (spec 10.7 figures) | built in the sandbox (T-53) | `p4.ps1 -Step legal-bench` on the PC, then the faithfulness sample by hand |

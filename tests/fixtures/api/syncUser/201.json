@@ -1,0 +1,18 @@
+{
+  "request_id": "5b08ce52-6e3e-4798-aa01-21fe67c08847",
+  "data": {
+    "user_id": "8d245531-0826-4d12-9205-a9089ef5e1d7",
+    "created": true,
+    "role": "user",
+    "locale": "fr-TN",
+    "jurisdiction_code": "TN",
+    "consents": {},
+    "consent_required": [
+      "terms",
+      "privacy"
+    ]
+  },
+  "meta": {
+    "latency_ms": 165
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "request_id": "33d32ad3-e372-4124-b92b-5878567426d3",
+  "data": {
+    "mode": "filters",
+    "count": 4,
+    "results": [
+      {
+        "id": "4c23c7b9-9def-4b40-8152-8d0ef6774d68",
+        "city": null,
+        "kind": "room",
+        "rank": 1,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 450000,
+          "monthly_minor": 450000
+        },
+        "score": null,
+        "title": "Chambre meublée près de la fac",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": 3,
+        "amenities": [
+          "wifi"
+        ],
+        "furnished": true,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Chambre meublée près de la fac\nS+3, 450 DT, wifi [mock:place=Autopub Quarter]",
+        "house_rules": {},
+        "is_synthetic": false,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": "Autopub Quarter",
+        "available_from": null,
+        "bills_included": null,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.19839,
+          "lng": 10.19854
+        },
+        "description_lang": "mixed",
+        "current_flatmates": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000c003",
+        "city": "Testville",
+        "kind": "room",
+        "rank": 2,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 300000,
+          "monthly_minor": 300000
+        },
+        "score": null,
+        "title": "Chambre loin",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [],
+        "furnished": null,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Chambre en banlieue, parking",
+        "house_rules": {},
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": null,
+        "bills_included": null,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.60175,
+          "lng": 10.5981
+        },
+        "description_lang": null,
+        "current_flatmates": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000c002",
+        "city": "Testville",
+        "kind": "room",
+        "rank": 3,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 900000,
+          "monthly_minor": 900000
+        },
+        "score": null,
+        "title": "Studio plage",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [],
+        "furnished": null,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Studio lumineux près de la plage, balcon",
+        "house_rules": {},
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": null,
+        "bills_included": null,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.00616,
+          "lng": 10.01286
+        },
+        "description_lang": null,
+        "current_flatmates": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000c001",
+        "city": "Testville",
+        "kind": "room",
+        "rank": 4,
+        "rent": {
+          "period": "month",
+          "currency": "TND",
+          "exponent": 3,
+          "amount_minor": 400000,
+          "monthly_minor": 400000
+        },
+        "score": null,
+        "title": "Chambre simple centre",
+        "trust": {
+          "score": null,
+          "verdict": null
+        },
+        "bedrooms": null,
+        "amenities": [],
+        "furnished": null,
+        "dense_rank": null,
+        "distance_m": null,
+        "description": "Chambre calme au centre, wifi",
+        "house_rules": {},
+        "is_synthetic": true,
+        "lexical_rank": null,
+        "deposit_minor": null,
+        "neighbourhood": null,
+        "available_from": null,
+        "bills_included": null,
+        "min_stay_months": null,
+        "public_location": {
+          "lat": 36.00395,
+          "lng": 10.00095
+        },
+        "description_lang": null,
+        "current_flatmates": null
+      }
+    ],
+    "applied": {
+      "text": false,
+      "limit": 20,
+      "place": null,
+      "budget": null,
+      "center": null,
+      "vector": false,
+      "radius_m": null,
+      "jurisdiction": "QX",
+      "profile_fields_used": []
+    },
+    "warnings": [],
+    "data_attribution": [
+      "openstreetmap"
+    ]
+  },
+  "meta": {
+    "latency_ms": 275,
+    "timings": {
+      "embed_ms": 0,
+      "db_ms": 2.45,
+      "total_ms": 36
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "request_id": "4bc246aa-2902-48d8-847a-ed9ed033f101",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "No trace for this request id",
+    "details": []
+  }
+}

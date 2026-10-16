@@ -1,0 +1,22 @@
+{
+  "request_id": "13f99319-153c-4a17-9dc8-43a3706d6efb",
+  "data": {
+    "executions": [
+      {
+        "error": null,
+        "steps": [],
+        "status": "succeeded",
+        "channel": "api",
+        "workflow": "wf.api.health",
+        "tokens_in": 0,
+        "latency_ms": 177,
+        "started_at": "2026-10-16T17:01:48.141849+00:00",
+        "tokens_out": 0
+      }
+    ],
+    "request_id": "dfdee24a-36f3-4dbb-b73d-ed60096d287c"
+  },
+  "meta": {
+    "latency_ms": 182
+  }
+}

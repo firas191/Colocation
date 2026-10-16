@@ -174,3 +174,23 @@ def test_public_photo_is_a_resized_processed_copy(client, s3):
     assert Image.open(io.BytesIO(r.content)).size == (1280, 960)
     assert client.post("/v1/images/public", json={"key": "eval/p7/a.jpg"}, headers=H).status_code == 422
     assert client.post("/v1/images/public", json={"key": "media/none.jpg"}, headers=H).status_code == 404
+
+
+@pytest.mark.skipif(not (os.path.isdir(os.environ.get("MEDIA_MODEL_DIR", "models"))), reason="detector models not present")
+def test_detector_box_with_infinity_is_skipped(client):
+    # F-070: on the sandbox the face network once answered a box with an infinite coordinate, and the whole photo
+    # failed with a 500. Such a box is now dropped; the others are kept.
+    import numpy as np
+    from detectors import Detectors
+    d = Detectors()
+
+    class Fake:
+        def setInputSize(self, size):
+            pass
+
+        def detect(self, img):
+            return 1, np.array([[np.inf, 10, 20, 20] + [0] * 10 + [0.9], [5, 5, 30, 30] + [0] * 10 + [0.95]], dtype=np.float32)
+
+    d.face = Fake()
+    boxes = d.faces(np.zeros((480, 640, 3), dtype=np.uint8))
+    assert len(boxes) == 1 and boxes[0].kind == "face"

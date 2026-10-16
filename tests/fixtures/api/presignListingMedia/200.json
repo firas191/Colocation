@@ -1,0 +1,24 @@
+{
+  "request_id": "f8de8cc7-f89b-47ae-a4b3-c1d5e0b1557d",
+  "data": {
+    "uploads": [
+      {
+        "upload_id": "40777109-0a53-45ae-b534-7febfbe8afdd",
+        "kind": "photo",
+        "content_type": "image/jpeg",
+        "method": "PUT",
+        "url": "http://localhost:8080/flatshare-media/uploads/39397d39-b585-47de-9b98-d45d39b6253c/40777109-0a53-45ae-b534-7febfbe8afdd.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=GK0123456789abcdef01234567%2F20261016%2Fgarage%2Fs3%2Faws4_request&X-Amz-Date=20261016T165906Z&X-Amz-Expires=600&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=05e8069d6bb031d9ce5468477a1214058fc59316bec81bc9b6f7f64229b528cb",
+        "headers": {
+          "Content-Type": "image/jpeg"
+        },
+        "expires_at": "2026-10-16T17:09:06+00:00"
+      }
+    ],
+    "next": {
+      "analyze": "/v1/listings/39397d39-b585-47de-9b98-d45d39b6253c/analyze"
+    }
+  },
+  "meta": {
+    "latency_ms": 213
+  }
+}

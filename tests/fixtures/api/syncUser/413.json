@@ -1,0 +1,8 @@
+{
+  "request_id": "b257db9f-7649-418e-9a89-60815cd56956",
+  "error": {
+    "code": "PAYLOAD_TOO_LARGE",
+    "message": "Request body is too large",
+    "details": []
+  }
+}

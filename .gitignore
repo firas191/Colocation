@@ -17,3 +17,10 @@ kb/packs/*/documents/
 
 # detector and speech models are downloaded at build or run time (models.lock), not committed
 services/*/models/
+
+# website build output and test reports (web/, platform P1)
+web/.next/
+web/test-results/
+web/playwright-report/
+web/*.tsbuildinfo
+web/.env*

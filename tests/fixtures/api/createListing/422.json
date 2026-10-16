@@ -1,0 +1,17 @@
+{
+  "request_id": "9d8a0220-8532-4cb4-a44f-1254daee0983",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "text",
+        "issue": "minLength"
+      },
+      {
+        "field": "x",
+        "issue": "additional_property"
+      }
+    ]
+  }
+}

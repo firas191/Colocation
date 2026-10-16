@@ -1,0 +1,23 @@
+{
+  "request_id": "dd202116-ea5e-4c16-bfd3-779e4e2a79c7",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "x",
+        "issue": "unknown_parameter"
+      },
+      {
+        "field": "limit",
+        "issue": "out_of_range",
+        "min": 1,
+        "max": 50
+      },
+      {
+        "field": "unread_only",
+        "issue": "must_be_true_or_false"
+      }
+    ]
+  }
+}

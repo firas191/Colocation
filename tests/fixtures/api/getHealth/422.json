@@ -1,0 +1,12 @@
+{
+  "request_id": "bccec88a-3c00-4995-ad62-a5c689b3b02c",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Nested query parameters are not supported",
+    "details": [
+      {
+        "field": "a"
+      }
+    ]
+  }
+}

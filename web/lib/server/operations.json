@@ -1,0 +1,146 @@
+[
+ {
+  "method": "GET",
+  "regex": "^/v1/health$",
+  "id": "getHealth",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/users/sync$",
+  "id": "syncUser",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/kb/ingest$",
+  "id": "ingestKnowledgeBase",
+  "success": 202
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/eval/runs$",
+  "id": "createEvalRuns",
+  "success": 202
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/eval/runs/[^/]+$",
+  "id": "getEvalRun",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/consents$",
+  "id": "recordConsents",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/traces/[^/]+$",
+  "id": "getTrace",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/jobs/[^/]+$",
+  "id": "getJob",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/search$",
+  "id": "search",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/profiles/extract$",
+  "id": "extractProfile",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/profiles/me$",
+  "id": "getProfile",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/profiles/me$",
+  "id": "putProfile",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/assistant/message$",
+  "id": "assistantMessage",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/eval/prompt-runs$",
+  "id": "createPromptEvalRuns",
+  "success": 202
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listings$",
+  "id": "createListing",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/listings/[^/]+$",
+  "id": "getListing",
+  "success": 200
+ },
+ {
+  "method": "PATCH",
+  "regex": "^/v1/listings/[^/]+$",
+  "id": "changeListing",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listings/[^/]+/media/presign$",
+  "id": "presignListingMedia",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listings/[^/]+/analyze$",
+  "id": "analyzeListing",
+  "success": 202
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/listings/embed$",
+  "id": "embedListings",
+  "success": 202
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/fx/refresh$",
+  "id": "refreshFxRates",
+  "success": 202
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me$",
+  "id": "getMe",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/notifications$",
+  "id": "listNotifications",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/notifications/read$",
+  "id": "readNotifications",
+  "success": 200
+ }
+]

@@ -1,0 +1,45 @@
+{
+  "request_id": "7d2dbbf5-bcc6-4ec4-b0f2-1853dd1c5e5b",
+  "data": {
+    "profile": {
+      "jurisdiction_code": null,
+      "budget_min_minor": null,
+      "budget_max_minor": 450000,
+      "currency": "TND",
+      "budget_period": "month",
+      "anchor_label": "Testville centre",
+      "max_commute_min": null,
+      "move_in_from": null,
+      "min_stay_months": null,
+      "declared_preferences": {
+        "smoking": "no"
+      },
+      "languages": [],
+      "unparsed": [
+        "pets: yes"
+      ],
+      "field_confidence": {}
+    },
+    "search_jurisdiction": "QX",
+    "anchor": {
+      "status": "found",
+      "place": {
+        "lat": 36,
+        "lng": 10,
+        "city": "Testville",
+        "kind": "neighbourhood",
+        "name": "Testville centre",
+        "score": 1,
+        "place_key": "qx-centre"
+      },
+      "candidates": []
+    },
+    "warnings": [
+      "preference_not_allowed"
+    ],
+    "saved": null
+  },
+  "meta": {
+    "latency_ms": 463
+  }
+}

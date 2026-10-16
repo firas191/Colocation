@@ -1,0 +1,13 @@
+{
+  "request_id": "239fdda8-7bd8-4964-bd08-55b0a0a2772b",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "prompt",
+        "issue": "unknown"
+      }
+    ]
+  }
+}

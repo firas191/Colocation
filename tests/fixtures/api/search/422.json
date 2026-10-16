@@ -1,0 +1,25 @@
+{
+  "request_id": "6e766003-7999-4ac6-9041-8cc543edd34c",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Query parameters are invalid",
+    "details": [
+      {
+        "field": "foo",
+        "issue": "unknown_parameter"
+      },
+      {
+        "field": "max_rent",
+        "issue": "must_be_integer_0_1000000000000"
+      },
+      {
+        "field": "period",
+        "issue": "must_be_month_or_week"
+      },
+      {
+        "field": "lng",
+        "issue": "lat_and_lng_go_together"
+      }
+    ]
+  }
+}

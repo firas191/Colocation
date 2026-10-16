@@ -163,6 +163,30 @@ Every message goes through the same API as a website would, so its trace is in `
 - Revoke: `update sec.api_clients set active = false, revoked_at = now() where key_id = 'name';` (as postgres).
 - The website server needs `FLATSHARE_API_BASE`, `FLATSHARE_WEBSITE_KEY_ID`, `FLATSHARE_WEBSITE_SECRET`.
 
+## Website (platform P1, docs/PLATFORM_SPEC.md)
+
+| Task | Command |
+|---|---|
+| Open the website | http://localhost:3000 (French; /en, /ar for English and Arabic) |
+| Read the mails it sends (sign-up and reset links) | http://localhost:8025 (Mailpit) |
+| New settings after updating (AUTH_DB_PASSWORD, BETTER_AUTH_SECRET, WEB_ORIGIN, SMTP_*) | `powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -AddMissing` (verify.ps1 does it) |
+| Rebuild and restart after a change in `web/` | `docker compose build web; docker compose up -d web` |
+| Website logs | `docker compose logs -f web` |
+| Unit tests (signing vectors, messages, logical classes) | `docker run --rm -v "${PWD}:/repo" -v /repo/web/node_modules -w /repo/web node:24.21.0-bookworm-slim sh -c "npm ci && npx vitest run"` |
+| End-to-end tests (stack running) | see the PLATFORM steps in `scripts\windows\verify.ps1` (Playwright image, Chromium told that "localhost" is the proxy container) |
+| Work on pages without the stack | `cd web; $env:FLATSHARE_API_MODE="fixtures"; npm run dev` (answers come from `tests/fixtures/api`) |
+| Record new response fixtures | run the contract tests with `-e FS_RECORD_FIXTURES=1` after deleting the folders to refresh; `tests/unit/test_fixtures.py` checks them against `docs/openapi.yaml` |
+| Make an account an admin | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.users set role = 'admin' where email = '<address>';"` |
+| Send real e-mail | set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` in `.env`, then `docker compose up -d web` |
+
+What the website server needs (spec 17.1 "browser boundary"): `FLATSHARE_API_BASE`, `FLATSHARE_WEBSITE_KEY_ID`,
+`FLATSHARE_WEBSITE_SECRET` (read from `secrets/api-clients.env` by `web/scripts/start.sh`), `AUTH_DATABASE_URL`,
+`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (= `WEB_ORIGIN`), `PUBLIC_MEDIA_ORIGIN` (= `S3_PUBLIC_ENDPOINT`), `SMTP_*`.
+None of them reaches the browser: the API client is a `server-only` module, and the secret scan runs over the build.
+
+Uploads from a browser go straight to the signed URL on the proxy; the proxy accepts them only from `WEB_ORIGIN`
+(CORS). If the website is served under another address, change `WEB_ORIGIN` and recreate `proxy` and `web`.
+
 ## Settings without restart
 
 Non-secret runtime settings are rows in `app.settings` (rate limits, timestamp window, Ollama URL, model name).

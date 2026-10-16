@@ -81,3 +81,31 @@ TEI, from `GET /info` on the owner's PC (`reports/verify-20261001-021026/verify.
 version 1.9.4 (image sha e80ef22), model `intfloat/multilingual-e5-large` at `3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3`,
 dtype float32, pooling mean, max_input_length 512, max_batch_tokens 16384, max_client_batch_size 64, auto_truncate true.
 First start (model download) took 1661 s.
+
+## Website (platform P1, `web/package.json`, checked 2026-10-16)
+
+Rule (D-098): the newest release published at least 7 days before 2026-10-16 (`npm view <package> time`), except
+Next.js 16.4.1 and React 19.3.1, the releases of the Next.js security update of 2026-10-14
+(https://nextjs.org/blog/nextjs-security-update-october-14-2026).
+
+| Component | Version | Source |
+|---|---|---|
+| Node.js (image) | `node:24.21.0-bookworm-slim` | Docker Hub tag, updated 2026-10-06 |
+| next | 16.4.1 | npm, 2026-10-14 (security release) |
+| react, react-dom | 19.3.1 | npm, 2026-10-15 |
+| better-auth | 1.7.7 | npm, 2026-09-30 |
+| next-intl | 4.14.9 | npm, 2026-10-02 |
+| tailwindcss, @tailwindcss/postcss | 4.3.3 | npm, 2026-07-16 |
+| pg | 8.23.1 | npm, 2026-09-30 |
+| nodemailer | 7.0.13 | npm, 2026-01-27 |
+| @fontsource/ibm-plex-sans, @fontsource/ibm-plex-sans-arabic | 5.3.0 | npm, 2026-07-19 |
+| clsx, server-only | 2.1.1, 0.0.1 | npm |
+| typescript | 5.9.3 | npm (7.x not used, D-098) |
+| vitest, vite | 5.0.3, 8.3.4 | npm, 2026-09-30, 2026-10-08 |
+| @playwright/test | 1.64.0 | npm, 2026-10-07; e2e image `mcr.microsoft.com/playwright:v1.64.0-noble` (not checked from the sandbox: the registry is not reachable there; `verify.ps1` checks the tag) |
+| @axe-core/playwright | 4.13.0 | npm, 2026-08-11 |
+| sharp (dependency of next) | 0.35.5 | resolved by npm; the version the security update names |
+| Mailpit | `axllent/mailpit:v1.31.4` | Docker Hub tag, 2026-10-03 |
+
+The cloud sandbox ran the website on Node 24.22.0 (npm package `node-linux-x64`), Chromium 1194 from `/opt/pw-browsers`.
+

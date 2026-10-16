@@ -1,0 +1,13 @@
+{
+  "request_id": "c8dd6f52-c583-4767-8b39-f439816ee8da",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Nothing to analyze",
+    "details": [
+      {
+        "field": "uploads",
+        "issue": "none_pending"
+      }
+    ]
+  }
+}

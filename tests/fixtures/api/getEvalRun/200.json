@@ -1,0 +1,139 @@
+{
+  "request_id": "c9d46181-10d2-4a9c-9c49-d0ff6c659ea4",
+  "data": {
+    "run_id": "6fc1076f-dcaf-4936-ad9d-cf41dd3ab495",
+    "dataset": "test_retrieval v1",
+    "status": "succeeded",
+    "config": {
+      "k": 5,
+      "mode": "lexical",
+      "label": null,
+      "model": "bge-m3",
+      "rrf_k": 60,
+      "rerank": false,
+      "dataset": "test_retrieval",
+      "version": 1,
+      "strategy": "structure_aware_v1",
+      "candidates": 50,
+      "jurisdiction": "QZ",
+      "overlap_fraction": 0.5
+    },
+    "git_sha": "test",
+    "job_id": "a43a6069-6016-4575-8c85-c16c5837f544",
+    "started_at": "2026-10-16T16:59:32.947Z",
+    "finished_at": "2026-10-16T16:59:32.979Z",
+    "summary": {
+      "mrr": 0.6667,
+      "hit@1": 0.6667,
+      "hit@3": 0.6667,
+      "hit@5": 0.6667,
+      "hit@10": 0.6667,
+      "scored": 3,
+      "ndcg@10": 0.6667,
+      "queries": 4,
+      "recall@1": 0.6667,
+      "recall@3": 0.6667,
+      "recall@5": 0.6667,
+      "recall@10": 0.6667,
+      "latency_ms_p50": 0.53,
+      "latency_ms_p95": 1.25
+    },
+    "queries": [
+      {
+        "tags": [],
+        "metrics": {
+          "mrr": 1,
+          "hit@1": 1,
+          "hit@3": 1,
+          "hit@5": 1,
+          "hit@10": 1,
+          "ndcg@10": 1,
+          "recall@1": 1,
+          "recall@3": 1,
+          "recall@5": 1,
+          "recall@10": 1,
+          "search_ms": 1.25,
+          "gold_spans": 1,
+          "relevant_ranks": [
+            1
+          ],
+          "embed_ms_amortised": 0
+        },
+        "language": "fr",
+        "query_id": "q1"
+      },
+      {
+        "tags": [],
+        "metrics": {
+          "mrr": 1,
+          "hit@1": 1,
+          "hit@3": 1,
+          "hit@5": 1,
+          "hit@10": 1,
+          "ndcg@10": 1,
+          "recall@1": 1,
+          "recall@3": 1,
+          "recall@5": 1,
+          "recall@10": 1,
+          "search_ms": 0.79,
+          "gold_spans": 1,
+          "relevant_ranks": [
+            1
+          ],
+          "embed_ms_amortised": 0
+        },
+        "language": "fr",
+        "query_id": "q2"
+      },
+      {
+        "tags": [
+          "cross_lingual"
+        ],
+        "metrics": {
+          "mrr": 0,
+          "hit@1": 0,
+          "hit@3": 0,
+          "hit@5": 0,
+          "hit@10": 0,
+          "ndcg@10": 0,
+          "recall@1": 0,
+          "recall@3": 0,
+          "recall@5": 0,
+          "recall@10": 0,
+          "search_ms": 0.53,
+          "gold_spans": 1,
+          "relevant_ranks": [],
+          "embed_ms_amortised": 0
+        },
+        "language": "en",
+        "query_id": "q3"
+      },
+      {
+        "tags": [
+          "abstain"
+        ],
+        "metrics": {
+          "mrr": null,
+          "hit@1": null,
+          "hit@3": null,
+          "hit@5": null,
+          "hit@10": null,
+          "ndcg@10": null,
+          "recall@1": null,
+          "recall@3": null,
+          "recall@5": null,
+          "recall@10": null,
+          "search_ms": 0.5,
+          "gold_spans": 0,
+          "relevant_ranks": [],
+          "embed_ms_amortised": 0
+        },
+        "language": "fr",
+        "query_id": "q4"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 133
+  }
+}

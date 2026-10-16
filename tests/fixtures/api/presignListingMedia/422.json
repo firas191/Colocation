@@ -1,0 +1,18 @@
+{
+  "request_id": "bacb4789-9b37-4de9-86eb-0fc3f6e869c7",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body is invalid",
+    "details": [
+      {
+        "field": "files[0].content_type",
+        "issue": "not_accepted"
+      },
+      {
+        "field": "files[1].bytes",
+        "issue": "too_large",
+        "limit": 15728640
+      }
+    ]
+  }
+}

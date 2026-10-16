@@ -1,0 +1,12 @@
+{
+  "request_id": "2e649c19-83e5-46cc-a635-b5dbfde320f3",
+  "error": {
+    "code": "CONSENT_REQUIRED",
+    "message": "Consent is required for this action",
+    "details": [
+      {
+        "purpose": "media_processing"
+      }
+    ]
+  }
+}

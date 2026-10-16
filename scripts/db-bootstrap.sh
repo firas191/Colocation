@@ -33,6 +33,24 @@ psql_admin -v db="$N8N_DB" -v u="$N8N_DB_USER" <<'SQL'
 select format('create database %I owner %I', :'db', :'u') where not exists (select 1 from pg_database where datname = :'db') \gexec
 SQL
 
+echo "== website accounts database (Better Auth, PLATFORM_SPEC 6.3)"
+# Its own database and role: the auth library never touches the app schemas, and no other role may even
+# connect to it (password hashes live there). Skipped when AUTH_DB_PASSWORD is not set (older .env files).
+AUTH_DB="${AUTH_DB:-auth}"
+AUTH_DB_USER="${AUTH_DB_USER:-auth_app}"
+if [[ -n "${AUTH_DB_PASSWORD:-}" ]]; then
+psql_admin -v u="$AUTH_DB_USER" -v pw="$AUTH_DB_PASSWORD" <<'SQL'
+select format('create role %I login', :'u') where not exists (select 1 from pg_roles where rolname = :'u') \gexec
+alter role :"u" with login password :'pw';
+SQL
+psql_admin -v db="$AUTH_DB" -v u="$AUTH_DB_USER" <<'SQL'
+select format('create database %I owner %I', :'db', :'u') where not exists (select 1 from pg_database where datname = :'db') \gexec
+select format('revoke all on database %I from public', :'db') \gexec
+SQL
+else
+  echo "AUTH_DB_PASSWORD not set: website accounts database skipped"
+fi
+
 echo "== application database"
 psql_admin -v db="$FLATSHARE_DB" <<'SQL'
 select format('create database %I', :'db') where not exists (select 1 from pg_database where datname = :'db') \gexec

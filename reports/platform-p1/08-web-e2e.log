@@ -1,0 +1,22 @@
+$ npx playwright test   (sandbox: website behind Caddy :3000, API :8080, mail sink :8025; Chromium 1194)
+
+Running 16 tests using 1 worker
+
+  ✓   1 [desktop] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (fr) (11.4s)
+  ✓   2 [desktop] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (en) (10.9s)
+  ✓   3 [desktop] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (ar) (10.1s)
+  ✓   4 [desktop] › e2e/accounts.spec.ts:69:1 › pages that need an account send the visitor to log in (1.4s)
+  ✓   5 [desktop] › e2e/accounts.spec.ts:76:1 › wrong password and unknown address give the same answer (921ms)
+  ✓   6 [desktop] › e2e/accounts.spec.ts:84:1 › password reset by e-mail (5.1s)
+  ✓   7 [desktop] › e2e/upload-cors.spec.ts:30:1 › the website's origin can upload to a presigned URL (1.4s)
+  ✓   8 [desktop] › e2e/upload-cors.spec.ts:37:1 › another origin cannot (1.3s)
+  ✓   9 [phone] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (fr) (9.1s)
+  ✓  10 [phone] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (en) (9.1s)
+  ✓  11 [phone] › e2e/accounts.spec.ts:20:3 › sign up, confirm, consent, profile, log out and in (ar) (9.1s)
+  ✓  12 [phone] › e2e/accounts.spec.ts:69:1 › pages that need an account send the visitor to log in (1.3s)
+  ✓  13 [phone] › e2e/accounts.spec.ts:76:1 › wrong password and unknown address give the same answer (827ms)
+  ✓  14 [phone] › e2e/accounts.spec.ts:84:1 › password reset by e-mail (4.5s)
+  ✓  15 [phone] › e2e/upload-cors.spec.ts:30:1 › the website's origin can upload to a presigned URL (1.5s)
+  ✓  16 [phone] › e2e/upload-cors.spec.ts:37:1 › another origin cannot (1.4s)
+
+  16 passed (1.4m)

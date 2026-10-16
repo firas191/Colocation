@@ -11,6 +11,7 @@ Chinese text, so Arabic text is a likely gap; COCO has no 'document' class (text
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
 
 import cv2
@@ -25,6 +26,7 @@ SCREEN_CLASSES = {62: "tv", 63: "laptop", 67: "cell phone"}       # COCO indices
 class Detectors:
     def __init__(self, model_dir: Path = MODEL_DIR, face_score: float = 0.7, text_box_min: int = 8,
                  screen_score: float = 0.4):
+        self._lock = threading.Lock()
         self.model_dir = Path(model_dir)
         self.face_score, self.text_box_min, self.screen_score = face_score, text_box_min, screen_score
         self.face = cv2.FaceDetectorYN.create(str(self.model_dir / "face_detection_yunet_2023mar.onnx"), "", (320, 320),
@@ -60,6 +62,8 @@ class Detectors:
             _, faces = self.face.detect(img)
             for f in (faces if faces is not None else []):
                 x, y, fw, fh, score = f[0] / scale + ox, f[1] / scale + oy, f[2] / scale, f[3] / scale, f[-1]
+                if not np.all(np.isfinite([x, y, fw, fh, score])):     # F-070: a box with inf/nan is no box
+                    continue
                 found.append(Box("face", int(x), int(y), int(fw), int(fh), float(score)))
         return _nms(found)
 
@@ -108,11 +112,16 @@ class Detectors:
         for i in np.array(keep).flatten():
             if int(cls[i]) in SCREEN_CLASSES:
                 x, y, bw, bh = (xywh[i] / r).tolist()
+                if not np.all(np.isfinite([x, y, bw, bh])):
+                    continue
                 out.append(Box("screen", int(max(0, x)), int(max(0, y)), int(bw), int(bh), float(best[i])))
         return out
 
     def __call__(self, rgb: np.ndarray) -> list[Box]:
-        return self.faces(rgb) + self.texts(rgb) + self.screens(rgb)
+        # One image at a time: the OpenCV networks are shared by the server's worker threads and are not documented
+        # as safe to run concurrently (F-070).
+        with self._lock:
+            return self.faces(rgb) + self.texts(rgb) + self.screens(rgb)
 
 
 def _nms(boxes: list[Box], thr: float = 0.3) -> list[Box]:

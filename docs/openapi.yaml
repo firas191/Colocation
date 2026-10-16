@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Flatshare backend API
-  version: "1.1.0-phase2"
+  version: "1.2.0-platform-p1"
   description: |
     Contract for the website server (and test clients). Browsers never call this API
     directly: the website server signs every request (docs/API_SIGNING.md).
@@ -370,6 +370,30 @@ paths:
         "429": { $ref: "#/components/responses/RateLimited" }
         "503": { $ref: "#/components/responses/UpstreamUnavailable" }
   /v1/profiles/me:
+    get:
+      operationId: getProfile
+      summary: The caller's saved search and lifestyle profile, or null (platform P1, D-096; terms and privacy consent)
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProfileGetResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
     put:
       operationId: putProfile
       summary: Save or correct the caller's search profile (the whole profile is replaced)
@@ -714,6 +738,100 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/JobAcceptedResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me:
+    get:
+      operationId: getMe
+      summary: The calling user, consents, flags and counts (platform P1, D-096; no consent needed)
+      description: |
+        Read through the row-level layer of migration 0022: counts and flags only ever cover the caller's own rows.
+        consent_required lists the purposes the platform needs before use (terms, privacy). jurisdictions lists the
+        countries with their currency exponent, which clients need to show and enter amounts (Money.exponent).
+        No query parameters.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MeResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me/notifications:
+    get:
+      operationId: listNotifications
+      summary: The caller's in-app notifications, newest first (platform P1; terms and privacy consent)
+      description: |
+        Each notification is a type code with parameters; the client writes the text in the reader's language.
+        Page with before = next_before of the previous answer. Unknown parameters answer 422.
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - { name: limit, in: query, schema: { type: string }, description: "1 to 50, default 20" }
+        - { name: before, in: query, schema: { type: string }, description: "id; only older notifications" }
+        - { name: unread_only, in: query, schema: { type: string, enum: ["true", "false"] } }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationsResponse" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/UpstreamUnavailable" }
+  /v1/me/notifications/read:
+    post:
+      operationId: readNotifications
+      summary: Mark notifications as read, by id or all (platform P1; terms and privacy consent)
+      description: Ids of other users' notifications are ignored (updated counts only the caller's rows).
+      parameters:
+        - $ref: "#/components/parameters/XKeyId"
+        - $ref: "#/components/parameters/XTimestamp"
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XSignature"
+        - $ref: "#/components/parameters/XUserIdRequired"
+        - $ref: "#/components/parameters/XClientIp"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/XIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NotificationsReadRequest" }
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-Id: { $ref: "#/components/headers/XRequestId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationsReadResponse" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "409": { $ref: "#/components/responses/Conflict" }
@@ -1456,3 +1574,128 @@ components:
             applied: { type: [object, "null"] }
             warnings: { type: array, items: { type: string } }
             data_attribution: { type: array, items: { type: string } }
+    MeResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [user_id, role, locale, consents, consent_required, flags, counts, badges, jurisdictions]
+          properties:
+            user_id: { type: string, format: uuid }
+            email: { type: [string, "null"] }
+            display_name: { type: [string, "null"] }
+            role: { type: string, enum: [user, owner, moderator, admin] }
+            locale: { type: string }
+            jurisdiction_code: { type: [string, "null"] }
+            created_at: { type: string, format: date-time }
+            consents: { type: object, additionalProperties: { $ref: "#/components/schemas/Consent" } }
+            consent_required: { type: array, items: { type: string, enum: [terms, privacy] } }
+            flags:
+              type: object
+              required: [has_profile, has_listings, is_staff, telegram_linked]
+              properties:
+                has_profile: { type: boolean }
+                has_listings: { type: boolean, description: "Owns a listing that is not rejected (the 'owner' side of the account)" }
+                is_staff: { type: boolean, description: "role moderator or admin" }
+                telegram_linked: { type: boolean }
+            counts:
+              type: object
+              required: [unread_notifications, listings]
+              properties:
+                unread_notifications: { type: integer, minimum: 0 }
+                listings: { type: integer, minimum: 0, description: "Not rejected or archived" }
+            badges: { type: array, items: { type: object }, description: "What was verified about the user; empty until platform P8" }
+            jurisdictions:
+              type: array
+              items:
+                type: object
+                required: [code, name, currency, exponent]
+                properties:
+                  code: { type: string }
+                  name: { type: string }
+                  currency: { type: string }
+                  exponent: { type: integer, minimum: 0, maximum: 4 }
+                  languages: { type: array, items: { type: string } }
+                  timezone: { type: string }
+    ProfileGetResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [profile]
+          properties:
+            profile:
+              type: [object, "null"]
+              description: Same fields as PUT /v1/profiles/me returns; null when none was saved
+              required: [id, profile_version, jurisdiction_code, declared_preferences, languages]
+              properties:
+                id: { type: string, format: uuid }
+                profile_version: { type: integer }
+                jurisdiction_code: { type: [string, "null"] }
+                budget_min_minor: { type: [integer, "null"] }
+                budget_max_minor: { type: [integer, "null"] }
+                currency: { type: [string, "null"] }
+                budget_period: { type: [string, "null"], enum: [month, week, null] }
+                anchor_label: { type: [string, "null"] }
+                anchor: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
+                max_commute_min: { type: [integer, "null"] }
+                search_radius_m: { type: [integer, "null"] }
+                move_in_from: { type: [string, "null"], format: date }
+                min_stay_months: { type: [integer, "null"] }
+                declared_preferences: { $ref: "#/components/schemas/Preferences" }
+                languages: { type: array, items: { type: string } }
+                unparsed: { type: array, items: { type: string } }
+                updated_at: { type: string }
+    Notification:
+      type: object
+      required: [id, type, params, created_at, read_at]
+      properties:
+        id: { type: integer }
+        type: { type: string, pattern: "^[a-z][a-z0-9_]{2,60}$", description: "Code; the client writes the text" }
+        params: { type: object }
+        link_kind: { type: [string, "null"] }
+        link_id: { type: [string, "null"] }
+        created_at: { type: string }
+        read_at: { type: [string, "null"] }
+    NotificationsResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [items, next_before, unread]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/Notification" } }
+            next_before: { type: [integer, "null"] }
+            unread: { type: integer, minimum: 0 }
+    NotificationsReadRequest:
+      type: object
+      additionalProperties: false
+      description: One of ids or all
+      properties:
+        ids: { type: array, minItems: 1, maxItems: 200, items: { type: integer, minimum: 1 } }
+        all: { const: true }
+    NotificationsReadResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta]
+      properties:
+        request_id: { type: string, format: uuid }
+        meta: { $ref: "#/components/schemas/Meta" }
+        data:
+          type: object
+          required: [updated, unread]
+          properties:
+            updated: { type: integer, minimum: 0 }
+            unread: { type: integer, minimum: 0 }

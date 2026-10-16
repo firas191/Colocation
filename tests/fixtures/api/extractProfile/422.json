@@ -1,0 +1,8 @@
+{
+  "request_id": "fcdd06be-5ede-4c41-b641-fb2fdf2b349d",
+  "error": {
+    "code": "EXTRACTION_FAILED",
+    "message": "The request could not be turned into a profile",
+    "details": []
+  }
+}

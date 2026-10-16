@@ -9,7 +9,11 @@ Environment:
   FS_VIA_PROXY       "1" when FS_API_BASE is the reverse proxy (enables proxy-only tests)
   FS_SANDBOX_MOCKS   "1" only in the cloud sandbox, where Ollama and storage are mocks
                      controlled by tests/mocks/deps_mock.py (enables dependency-outage tests)
+  FS_RECORD_FIXTURES "1" to save the first response of each operation and status to tests/fixtures/api/
+                     (spec 17.1 response fixtures; validated by tests/unit/test_fixtures.py)
 """
+import json
+import re
 import os
 import sys
 import time
@@ -90,8 +94,36 @@ def idem():
     return lambda: "t-" + uuid.uuid4().hex
 
 
+_FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "api"
+_OPS = []
+for _path, _item in _SPEC["paths"].items():
+    for _method, _op in _item.items():
+        if isinstance(_op, dict) and "operationId" in _op:
+            _OPS.append((_method.upper(), re.compile("^" + re.sub(r"\{[^/]+\}", "[^/]+", _path) + "$"), _op["operationId"]))
+
+
+def operation_id(method, path):
+    """operationId of docs/openapi.yaml for a request (None when the route is not documented)."""
+    return next((op for m, rx, op in _OPS if m == method.upper() and rx.match(path)), None)
+
+
+def _record(r):
+    """Save the first response of each (operation, status) as a fixture for the website (FS_RECORD_FIXTURES=1)."""
+    if os.environ.get("FS_RECORD_FIXTURES") != "1":
+        return
+    op = operation_id(r.request.method, r.request.url.path)
+    if not op:
+        return
+    target = _FIXTURES / op / f"{r.status_code}.json"
+    if target.exists():
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(r.json(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def assert_error(r, status, code):
     assert r.status_code == status, (r.status_code, r.text)
+    _record(r)
     j = r.json()
     assert set(j) == {"request_id", "error"}, j
     validate(j, "ErrorEnvelope")
@@ -105,6 +137,7 @@ def assert_error(r, status, code):
 
 def assert_ok(r, status=200, schema=None):
     assert r.status_code == status, (r.status_code, r.text)
+    _record(r)
     j = r.json()
     if schema:
         validate(j, schema)

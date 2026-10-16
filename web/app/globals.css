@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Coloc design tokens (platform P1). Lime-washed walls, ink lines of a floor plan, a cobalt door.
+   Names are what the colour is for, so a page never picks a raw value. */
+@theme {
+  --color-plaster: #eef2ef;     /* page */
+  --color-paper: #fbfcfb;       /* fields, panels */
+  --color-ink: #16233a;         /* text, plan lines */
+  --color-ink-soft: #4a586d;    /* secondary text */
+  --color-line: #c9d2cc;        /* hairlines, borders */
+  --color-door: #1d4fb8;        /* primary action, links, the free room */
+  --color-door-ink: #ffffff;    /* text on door */
+  --color-olive: #4f6128;       /* success */
+  --color-saffron: #d9952a;     /* attention, unread */
+  --color-brick: #a3392a;       /* errors */
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.08;
+  --radius-field: 0.375rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-plaster: #111821;
+    --color-paper: #18212d;
+    --color-ink: #e6ebf2;
+    --color-ink-soft: #a6b1c2;
+    --color-line: #2c3747;
+    --color-door: #7ea3f2;
+    --color-door-ink: #0d1626;
+    --color-olive: #a9bf6c;
+    --color-saffron: #f0b65a;
+    --color-brick: #f08b78;
+  }
+}
+
+@layer base {
+  html { background: var(--color-plaster); color: var(--color-ink); }
+  body { font-family: var(--font-sans); background: var(--color-plaster); -webkit-text-size-adjust: 100%; }
+  [dir="rtl"] body { font-family: var(--font-arabic); line-height: 1.7; }
+  :focus-visible { outline: 2px solid var(--color-door); outline-offset: 2px; }
+  /* Links in text are underlined (colour alone is not enough, WCAG 1.4.1); navigation links opt out. */
+  a { color: var(--color-door); text-decoration-line: underline; text-underline-offset: 0.2em; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Numbers, e-mails and amounts inside Arabic sentences keep their own direction. */
+.ltr-island { unicode-bidi: isolate; direction: ltr; }
+
+/* The plan draws itself once when the page opens (the page's single motion). */
+.plan-draw path, .plan-draw rect, .plan-draw circle { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: plan-draw 1.6s ease-out forwards; }
+@keyframes plan-draw { to { stroke-dashoffset: 0; } }
+.plan-draw path[stroke-dasharray] { animation: none; stroke-dashoffset: 0; }
