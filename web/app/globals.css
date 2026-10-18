@@ -196,6 +196,20 @@
   border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: var(--shadow-pin); transition: transform 160ms var(--ease-door); }
 .map-pin:hover, .map-pin[data-active="true"] { background: var(--color-bougain); transform: rotate(-45deg) scale(1.15); }
 .map-pin:focus-visible { outline: 3px solid var(--color-saffron); outline-offset: 2px; }
+/* The card a pin opens on the map (D-119). */
+.pin-popup .maplibregl-popup-content { padding: 0; overflow: hidden; border-radius: var(--radius-panel); background: var(--color-paper);
+  border: 1px solid var(--color-line); box-shadow: var(--shadow-lift); }
+.pin-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--color-paper); }
+.pin-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--color-paper); }
+.pin-card { width: 240px; color: var(--color-ink); font-family: var(--font-sans); }
+.pin-card-photo { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--color-raised); }
+.pin-card-body { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.75rem 0.85rem 0.85rem; }
+.pin-card-kind { font-size: 0.75rem; font-weight: 600; color: var(--color-door); }
+.pin-card-title { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; line-height: 1.3; overflow-wrap: anywhere; }
+.pin-card-price { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.pin-card-per { font-family: var(--font-sans); font-weight: 400; font-size: 0.8rem; color: var(--color-ink-soft); }
+.pin-card-place { font-size: 0.8rem; color: var(--color-ink-soft); }
+.pin-card-open { margin-top: 0.5rem; min-height: 2.25rem; font-size: 0.85rem; }
 .maplibregl-ctrl-group { background: var(--color-paper) !important; border: 1px solid var(--color-line); }
 .maplibregl-ctrl-group button { filter: none; }
 :root[data-theme="dark"] .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1); }

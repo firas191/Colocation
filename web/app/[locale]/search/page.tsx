@@ -12,7 +12,7 @@ import { api } from "@/lib/server/api";
 import { clientIp } from "@/lib/server/viewer";
 import { fieldErrors, type Detail } from "@/lib/errors";
 import { apiQuery, pageHref, readForm, type PageParams } from "@/lib/search-query";
-import type { ListingCard as Card } from "@/lib/listing";
+import { money, place, type ListingCard as Card } from "@/lib/listing";
 
 interface SearchData { mode: string; count: number; total_matching_filters: number; results: Card[]; warnings: string[];
   applied: { jurisdiction: string; center?: { lat: number; lng: number } | null } }
@@ -48,7 +48,14 @@ export default async function Search({ params, searchParams }: { params: Promise
   const errors = !r.ok && r.error.code === "VALIDATION_FAILED" ? fieldErrors(r.error.details as Detail[]) : {};
   const list = me.jurisdictions.map((j) => ({ code: j.code, label: countries.has(j.code) ? countries(j.code) : j.name }));
   const next = r.ok ? (r.meta.next_cursor as string | null | undefined) || null : null;
-  const pins = r.ok ? r.data.results.filter((c) => c.public_location).map((c) => ({ id: c.id, title: c.title || "", ...c.public_location! })) : [];
+  // what the pin's card shows (D-119): photo, title, price, place, kind; formatted here, drawn by the map
+  const card = await getTranslations("card");
+  const pins = r.ok ? r.data.results.filter((c) => c.public_location).map((c) => {
+    const price = c.rent ? money(locale, c.rent.amount_minor, c.rent.currency, c.rent.exponent ?? 2) : null;
+    return { id: c.id, title: c.title || card("untitled"), ...c.public_location!, photo: c.cover_photo?.url || null,
+      price, per: price ? (c.rent?.period === "week" ? card("perWeek") : card("perMonth")) : null,
+      place: place(c), kind: t(`kinds.${c.kind}`) };
+  }) : [];
   const split = f.view === "map";
   return (
     <div className="flex flex-col gap-6">

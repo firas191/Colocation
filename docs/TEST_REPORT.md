@@ -2103,6 +2103,16 @@ Changes after this run, checked in the sandbox (the agent's behaviour needs the 
 | `verify.ps1` (`reports\verify-20261018-113940`) | every step PASS: database tests, JavaScript tests, workflows match `build.py`, Media, Text and Telegram relay tests, unit and contract tests through the proxy (with the per-IP counter cleared per module), website unit tests, website end-to-end tests (desktop and 360 px, fr, en, ar) on the new interface with the country picker, secret scan of the exported workflows |
 | Not run on the PC this time | the benchmarks (last results in T-84 and T-86) |
 
+## T-88 Sandbox, 2026-10-18: the map pin card (D-119)
+
+| Check | Result |
+|---|---|
+| Website type check, unit tests | PASS (23 tests) |
+| `e2e/search.spec.ts` (desktop and phone), the map test now also focuses a pin, reads its card and opens the listing from the button | 8 of 8 PASS |
+| Scratch checks: pointing at a pin (fr and ar, light and dark), the card stays open when the pointer moves onto the button, closes when it leaves, opens on keyboard focus; touch: the first tap opens the card and stays on the search page | PASS |
+| axe on the open card, light and dark | no violations |
+| Note | the sandbox has no real map file; these runs used a small test file with land only (sandbox only, not shipped). The card on the real tiles is checked by the next `verify.ps1` on the PC |
+
 ## Not run
 
 | Item | Why | How it will be run |

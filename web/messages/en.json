@@ -611,7 +611,8 @@
     "saveSearchAlert": "Tell me every day about new listings",
     "city": "City",
     "allCities": "All cities",
-    "nearPrecise": "Area, university or exact place"
+    "nearPrecise": "Area, university or exact place",
+    "mapOpen": "View listing"
   },
   "amenities": {
     "wifi": "Wi-Fi",

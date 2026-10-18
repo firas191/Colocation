@@ -1493,6 +1493,19 @@ Proposed and approved by the owner on 2026-10-16 ("lets start"). The plan is `do
   its code. The flags are small SVGs, not emoji: Windows draws flag emoji as two letters. The site's icon
   (`app/icon.svg`, `app/apple-icon.png`) is the door of the logo on cobalt blue.
 
+### D-119 A small card on each map pin
+
+- **Asked for**: pointing at a pin on the search map shows a few details of the listing and a button to open it.
+- **How**: `components/search/search-map.tsx` gives each pin a MapLibre popup with the cover photo (when there is one),
+  the kind, the title, the rent per month or week, the place, and a "Voir l'annonce" / "View listing" / "عرض الإعلان"
+  button (`search.mapOpen`). The search page formats these from the search results it already has; no new API call.
+  The card is built with DOM calls and `textContent` only (the safety test still forbids HTML strings).
+- **When it opens**: the mouse pointing at the pin, or the pin getting keyboard focus. It closes a moment after the
+  pointer leaves both the pin and the card, so the pointer can move onto the button. On a touch screen the first tap
+  opens the card and a second tap (or the button) opens the listing; a tap on the map closes it.
+- **Not changed**: each pin is still a link to the listing (`a.map-pin[data-listing]`), so a click with the mouse still
+  opens it directly, as before.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

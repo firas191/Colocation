@@ -611,7 +611,8 @@
     "saveSearchAlert": "أعلمني كل يوم بالإعلانات الجديدة",
     "city": "المدينة",
     "allCities": "كل المدن",
-    "nearPrecise": "حي أو كلية أو مكان محدد"
+    "nearPrecise": "حي أو كلية أو مكان محدد",
+    "mapOpen": "عرض الإعلان"
   },
   "amenities": {
     "wifi": "واي فاي",

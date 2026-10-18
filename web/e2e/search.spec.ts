@@ -84,6 +84,12 @@ test("the map shows the listing and searches the visible area", async ({ page })
   await expect(page).toHaveURL(/bbox=/);
   await expect(page.getByRole("article").filter({ hasText: `Chambre ${WORD}` })).toHaveCount(1);
   await expectNoSideScroll(page);
+  // the pin's card (D-119): focusing the pin (as pointing at it does) shows the listing and a button to open it
+  await page.locator(`a.map-pin[data-listing="${listing}"]`).focus();
+  const card = page.locator(".pin-popup .pin-card");
+  await expect(card).toContainText(`Chambre ${WORD}`);
+  await card.getByRole("link", { name: "View listing" }).click();
+  await expect(page).toHaveURL(new RegExp(`/en/listings/${listing}`));
 });
 
 test("the assistant in Arabic: right to left, a search answer with cards", async ({ page }) => {

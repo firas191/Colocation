@@ -611,7 +611,8 @@
     "saveSearchAlert": "Me prévenir chaque jour des nouvelles annonces",
     "city": "Ville",
     "allCities": "Toutes les villes",
-    "nearPrecise": "Quartier, faculté ou lieu précis"
+    "nearPrecise": "Quartier, faculté ou lieu précis",
+    "mapOpen": "Voir l'annonce"
   },
   "amenities": {
     "wifi": "Wi-Fi",

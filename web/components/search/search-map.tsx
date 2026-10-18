@@ -12,7 +12,39 @@ import { Notice } from "@/components/ui/field";
 import { currentTheme } from "@/components/theme-toggle";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-export interface MapPoint { id: string; title: string; lat: number; lng: number }
+export interface MapPoint { id: string; title: string; lat: number; lng: number; photo?: string | null; price?: string | null; per?: string | null;
+  place?: string | null; kind?: string | null }
+
+/** The small card a pin opens (D-119): built with DOM calls and textContent only, no HTML strings (safety test). */
+function pinCard(p: MapPoint, href: string, open: string): HTMLElement {
+  const el = (tag: string, cls: string, text?: string | null) => {
+    const e = document.createElement(tag);
+    e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  };
+  const box = el("div", "pin-card");
+  if (p.photo) {
+    const img = document.createElement("img");
+    img.src = p.photo; img.alt = ""; img.loading = "lazy"; img.className = "pin-card-photo";
+    img.addEventListener("error", () => img.remove());
+    box.append(img);
+  }
+  const body = el("div", "pin-card-body");
+  if (p.kind) body.append(el("p", "pin-card-kind", p.kind));
+  body.append(el("p", "pin-card-title", p.title));
+  if (p.price) {
+    const price = el("p", "pin-card-price", p.price);
+    if (p.per) price.append(" ", el("span", "pin-card-per", p.per));
+    body.append(price);
+  }
+  if (p.place) body.append(el("p", "pin-card-place", p.place));
+  const a = el("a", "btn btn-primary pin-card-open", open) as HTMLAnchorElement;
+  a.href = href;
+  body.append(a);
+  box.append(body);
+  return box;
+}
 
 // Rough view of each country when there is nothing else to fit (centre, zoom).
 const COUNTRY_VIEW: Record<string, [number, number, number]> = { TN: [9.6, 34.2, 5.6], FR: [2.4, 46.6, 4.8], GB: [-2.5, 54.0, 4.8] };
@@ -87,12 +119,46 @@ export function SearchMap({ locale, country, points, bbox, center, baseHref, cla
         }
         if (center) m.jumpTo({ center: [center.lng, center.lat], zoom: 12 });
       };
+      // Each pin is still a link to the listing. Pointing at it (or focusing it with the keyboard) opens a small card
+      // with the photo, price and place and a "View listing" button; on a touch screen the first tap opens the card.
+      let openPopup: import("maplibre-gl").Popup | null = null;
+      let hideTimer: ReturnType<typeof setTimeout> | null = null;
+      const keep = () => { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } };
+      const hideSoon = () => { keep(); hideTimer = setTimeout(() => { openPopup?.remove(); openPopup = null; }, 220); };
+      // a finger lifting also counts as "leaving": only a mouse or a pen closes the card that way
+      const leave = (e: PointerEvent) => { if (e.pointerType !== "touch") hideSoon(); };
+      // a click on the map closes the card, but not the click (or tap) on a pin that just opened it
+      m.on("click", (e) => {
+        if ((e.originalEvent.target as Element | null)?.closest?.(".map-pin, .pin-popup")) return;
+        keep(); openPopup?.remove(); openPopup = null;
+      });
       for (const p of points) {
+        const href = `/${locale}/listings/${p.id}`;
         const a = document.createElement("a");
-        a.href = `/${locale}/listings/${p.id}`;
+        a.href = href;
         a.className = "map-pin";
         a.setAttribute("aria-label", p.title || p.id);
         a.dataset.listing = p.id;
+        const popup = new maplibre.Popup({ offset: [0, -30], closeButton: false, closeOnClick: false, maxWidth: "260px",
+          className: "pin-popup", focusAfterOpen: false }).setDOMContent(pinCard(p, href, t("mapOpen")));
+        const show = () => {
+          keep();
+          if (openPopup === popup) return;
+          openPopup?.remove();
+          popup.setLngLat([p.lng, p.lat]).addTo(m);
+          openPopup = popup;
+          const el = popup.getElement();
+          el.addEventListener("pointerenter", keep);
+          el.addEventListener("pointerleave", leave);
+          el.addEventListener("focusout", (e) => { if (!el.contains((e as FocusEvent).relatedTarget as Node)) hideSoon(); });
+        };
+        let touch = false;
+        a.addEventListener("pointerdown", (e) => { touch = e.pointerType === "touch"; });
+        a.addEventListener("click", (e) => { if (touch && openPopup !== popup) { e.preventDefault(); show(); } });
+        a.addEventListener("pointerenter", (e) => { if (e.pointerType !== "touch") show(); });
+        a.addEventListener("pointerleave", leave);
+        a.addEventListener("focus", show);
+        a.addEventListener("blur", () => { if (!touch) hideSoon(); });
         new maplibre.Marker({ element: a, anchor: "bottom" }).setLngLat([p.lng, p.lat]).addTo(m);
       }
       m.once("load", () => { if (gone) return; place(); setState("ready"); });
