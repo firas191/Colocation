@@ -72,14 +72,22 @@ if [ "${N8N_IMPORT_TEST_WORKFLOWS:-0}" = "1" ]; then
 fi
 
 echo "== publish"
+publish_workflow() {
+  f="$1"
+  # Generated workflow JSON may have CRLF endings on Windows checkouts.
+  id=$(tr -d '\r' < "$f" | sed -n 's/^  "id": "\([A-Za-z0-9_-]*\)",$/\1/p' | head -n 1)
+  if [ -z "$id" ]; then
+    echo "Could not read workflow id from $f" >&2
+    exit 1
+  fi
+  "$N8N" publish:workflow --id="$id"
+}
 for f in "$WF_DIR"/*.json; do
-  id=$(sed -n 's/^  "id": "\([A-Za-z0-9]*\)",$/\1/p' "$f" | head -n 1)
-  "$N8N" publish:workflow --id="$id" 2>&1 | grep -v -i "restart n8n\|will not take effect" || true
+  publish_workflow "$f"
 done
 if [ "${N8N_IMPORT_TEST_WORKFLOWS:-0}" = "1" ]; then
   for f in "$WF_TEST_DIR"/*.json; do
-    id=$(sed -n 's/^  "id": "\([A-Za-z0-9]*\)",$/\1/p' "$f" | head -n 1)
-    "$N8N" publish:workflow --id="$id" 2>&1 | grep -v -i "restart n8n\|will not take effect" || true
+    publish_workflow "$f"
   done
 fi
 echo "== done"
