@@ -92,6 +92,21 @@ test("the map shows the listing and searches the visible area", async ({ page })
   await expect(page).toHaveURL(new RegExp(`/en/listings/${listing}`));
 });
 
+test("changing the country on the search page changes the header, the search bar and the results", async ({ page }) => {
+  await signedIn(page);
+  await page.goto(`/fr/search?country=TN&view=map`);
+  // the picker is in the header from 640 px and in the footer below (D-118): use the one on screen
+  const picker = page.locator('summary[aria-label^="Pays du site"]:visible');
+  await expect(picker).toHaveAttribute("aria-label", "Pays du site: Tunisie");
+  await picker.click();
+  await page.locator("details[open] button", { hasText: "France" }).click();
+  // the address drops its own country and keeps the map view; the header follows (it kept "Tunisie" before)
+  await expect(page).toHaveURL(/\/fr\/search\?view=map$/);
+  await expect(picker).toHaveAttribute("aria-label", "Pays du site: France");
+  await expect(page.locator("form[role=search] p", { hasText: "Pays" })).toContainText("France");
+  await expect(page.getByRole("article").filter({ hasText: `Chambre ${WORD}` })).toHaveCount(0);   // the listing is in Tunisia
+});
+
 test("the assistant in Arabic: right to left, a search answer with cards", async ({ page }) => {
   test.setTimeout(300_000);                                          // an agent answer takes up to a minute or more on the PC
   await signedIn(page);

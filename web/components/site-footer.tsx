@@ -19,16 +19,18 @@ export async function SiteFooter({ locale }: { locale: string }) {
     <footer className="mt-16 border-t border-line">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-ink-soft sm:px-6 lg:px-8">
         <p className="flex items-center gap-2"><LogoMark className="size-5" /> {t("tagline")}</p>
-        <p className="flex flex-wrap items-center gap-x-5 gap-y-1">
+        {/* a div, not a p: the pickers are <details>, which may not sit inside a paragraph (the browser closed the
+            paragraph early and the pickers escaped "sm:hidden", so they showed in the footer on wide screens too) */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
           <Link href="/terms" className="text-ink-soft">{l("termsTitle")}</Link>
           <Link href="/privacy" className="text-ink-soft">{l("privacyTitle")}</Link>
           <span>{t("made")}</span>
-          <span className="flex gap-2 sm:hidden">
+          <div className="flex gap-2 sm:hidden">
             {member && country && <CountrySwitcher country={country} label={n("country")}
               countries={member.jurisdictions.map((j) => ({ code: j.code, name: c.has(j.code) ? c(j.code) : j.name }))} />}
             <LocaleSwitcher locale={locale} label={n("language")} />
-          </span>
-        </p>
+          </div>
+        </div>
       </div>
     </footer>
   );
