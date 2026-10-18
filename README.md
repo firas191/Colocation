@@ -1,71 +1,154 @@
-# Flatshare platform
+# Coloc, a flatshare platform run by n8n
 
-A worldwide flatshare platform whose logic runs in n8n, built for the ESPRIT Advanced Deep Learning final project
-(AI automation). Specifications: `FLATSHARE_BACKEND_SPEC.md` (one folder up) for the backend, `docs/PLATFORM_SPEC.md`
-for the website and the features after search. Backend phases 0 to 4 are done; the website is at **platform phase P1**
-(accounts, consent, lifestyle profile, notifications; `web/`).
+ESPRIT final project (Advanced Deep Learning, AI automation). People find a room or flatmates in Tunisia, France or
+the United Kingdom, then share rent, chores and documents once they live together. All the logic runs in **n8n**
+with **PostgreSQL**; the AI agents use local models through **Ollama**; the website (Next.js) only displays pages and
+calls the API.
 
-## Requirements
+- Repository: https://github.com/firas191/Colocation
+- The n8n workflows, exported as JSON: [`n8n/workflows/`](n8n/workflows) (imported into n8n automatically at start)
+- What the platform does and how it is built: [`docs/PLATFORM_SPEC.md`](docs/PLATFORM_SPEC.md),
+  [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); decisions in [`docs/DECISIONS.md`](docs/DECISIONS.md), test runs in
+  [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md)
 
-- Windows 10/11 with Docker Desktop (WSL 2 backend), or Linux/macOS with Docker Engine and Compose v2.
-- About 10 GB of free disk for images and the embedding model.
-- Optional: an NVIDIA GPU visible to Docker (checked automatically).
-- Internet access for the first build (images, a few PostgreSQL packages, the `bge-m3` model). On a slow connection the first run takes a long time: the Ollama image alone is several GB.
+## What you need
 
-## Git history
+- Windows 10 or 11 with **Docker Desktop** (WSL 2 backend), and **Git**. Linux or macOS with Docker Engine and
+  Compose v2 also works (see the end of this page).
+- At least **25 GB of free disk**: the images, the two embedding models (bge-m3, and multilingual-e5-large about
+  2.2 GB) and the three language models (about 8 GB). The total was not measured.
+- **Internet** for the first start (images, models, packages).
+- Optional: an **NVIDIA GPU** that Docker can see. It is detected automatically; without one everything runs on the
+  CPU, only slower.
+- Free ports on your machine: 3000 (website), 8080 (API), 5678 (n8n editor), 8025 (test mailbox).
 
-The folder is delivered without `.git` (the delivery tool cannot write it). The history is in
-`flatshare.bundle`; `verify.ps1` restores it automatically when git is installed, or by hand:
-`git init -b main; git fetch flatshare.bundle main; git reset --mixed FETCH_HEAD`.
+## Install and run
 
-## Run and verify (Windows)
+Open PowerShell. Each step is one command.
+
+**1. Get the code**
 
 ```powershell
-cd D:\Projects\coloc\flatshare
+git clone https://github.com/firas191/Colocation.git; cd Colocation
+```
+
+**2. Build, start and check everything**
+
+```powershell
 powershell -ExecutionPolicy Bypass -File scripts\windows\verify.ps1
 ```
 
-This creates `.env` with random secrets if it does not exist, builds the images, starts the
-stack, pulls `bge-m3`, and runs every check: embedding dimension, database tests, unit tests,
-contract tests through the proxy (including outage tests that stop and restart containers),
-and a secret scan. Results: `reports\verify-<timestamp>\summary.txt` and `verify.log`.
-Add `-Cpu` to ignore the GPU, `-SkipOutages` to skip the tests that stop containers.
-The first start after phase 2 also downloads multilingual-e5-large (about 2.2 GB) into the `tei` service.
+This creates `.env` with random passwords if it does not exist, builds the images, starts every container, downloads
+the embedding models, imports the n8n workflows and runs all the checks (database tests, unit and contract tests,
+website tests in French, English and Arabic, a secret scan). On the owner's PC a full run took about one hour
+(most of it is the first download). The result of each step is in `reports\verify-<date>\summary.txt`.
+Use `-Cpu` to ignore the GPU.
 
-Knowledge base: `powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step ingest` (sources,
-ingestion, exported texts), then `-Step eval` (retrieval evaluation, writes `docs/RETRIEVAL_EVAL.md`).
+**3. Load the language models, the places and the demo listings**
 
-Linux/macOS: `scripts/setup-env.sh`, then `docker compose up -d` and the commands in `docs/RUNBOOK.md`.
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step setup; powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step geo
+```
 
-After start:
+`setup` downloads the three language models and stores the prompts; `geo` loads the cities and areas of the three
+countries (from OpenStreetMap) and creates synthetic listings, marked as test data on the site.
 
-- Website: http://localhost:3000 (fr, /en, /ar); the mails it sends: http://localhost:8025 (Mailpit)
-- API (through the proxy): http://localhost:8080/v1/... (signed requests only, see `docs/API_SIGNING.md`)
-- n8n editor: http://localhost:5678 (create the owner account on first visit)
-- API keys: `secrets/api-clients.env` (not committed)
+**4. Load the legal sources used by the legal assistant**
 
-## What exists
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\kb.ps1 -Step ingest
+```
 
-| Area | State |
+**5. Optional: the map of the search page**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\map.ps1; powershell -ExecutionPolicy Bypass -File scripts\windows\map.ps1 -Country FR
+```
+
+Without it the search works as a list and the map column says the map is not installed.
+
+## Use it
+
+| What | Where |
 |---|---|
-| Database | 7 migrations (baseline schema unchanged + gateway, security fixes, settings, rate limits, request log, knowledge-base pipeline), 193 pgTAP assertions |
-| API | `GET /v1/health`, `POST /v1/users/sync`, `GET /v1/jobs/:id`, admin: `POST /v1/admin/kb/ingest`, `POST /v1/admin/eval/runs`, `GET /v1/admin/eval/runs/:id`; signed-request gateway with replay protection, rate limits, idempotency, error envelope; `docs/openapi.yaml` |
-| n8n workflows | gateway, health, users sync, error handler; knowledge-base ingestion (`wf.kb.ingest`, `wf.kb.ingest_source`), retrieval evaluation (`wf.eval.retrieval`), jobs and admin endpoints |
-| Knowledge base | TN pack v1 and global sources (`kb/packs`), chunkers A and B (`kb/chunkers`), bge-m3 (Ollama) and multilingual-e5-large (TEI) |
-| Later | see `docs/AI_AGENTS_EXPLAINED.md` and `docs/ARCHITECTURE.md` for phases 3 and 4 (agents, multimodal intake, Telegram); `docs/PLATFORM_SPEC.md` section 9 for the platform phases P2 to P12 |
+| The website | http://localhost:3000 (French; `/en` English, `/ar` Arabic) |
+| The mails it sends (account confirmation, notifications) | http://localhost:8025 |
+| The n8n editor | http://localhost:5678 (create the owner account on the first visit) |
+| The API | http://localhost:8080/v1/... (signed requests only, see [`docs/API_SIGNING.md`](docs/API_SIGNING.md)) |
+
+To try it: create an account on the website, open the confirmation mail at http://localhost:8025, accept the terms,
+then pick the country and the language in the header. The assistant, flatmates, households and documents are in the
+menu. To see the moderation and admin pages, make your account an admin:
+
+```powershell
+docker exec -u postgres fs-postgres psql -d flatshare -c "update app.users set role = 'admin' where email = 'you@example.com';"
+```
+
+## Start and stop
+
+| What | Command |
+|---|---|
+| Start (CPU) | `docker compose up -d` |
+| Start with the NVIDIA GPU | `docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d` |
+| Stop, keep the data | `docker compose down` |
+| Delete all the data | `docker compose down -v`, then delete `secrets\api-clients.env` |
+
+## The AI agents
+
+| Agent | What it does |
+|---|---|
+| A0 orchestrator | reads each message to the assistant and sends it to the right agent |
+| A1 owner assistant | turns "the rent is now 450" into a proposed change the owner confirms |
+| A1 intake | reads a new listing's text and describes its photos |
+| A2 profile | turns a sentence into search criteria |
+| A3 match agent | searches listings for a seeker, asks when something is missing |
+| A4 trust check | reads a listing before it is published (rules, then one detector call by default) |
+| A5 legal agent | answers rental-law questions from the loaded sources, with citations |
+| A6 document agent | prepares household documents (agreement, inventory, rules, living plan) |
+| A7 flatmate profile | fills a flatmate profile by chatting, two questions at a time |
+
+Their prompts are in [`prompts/`](prompts), their test sets in [`eval/datasets/`](eval/datasets). The benchmarks run
+on the real model with `scripts\windows\p4.ps1` (for example `-Step trust-compare`, `-Step flatmate-bench`); results go
+to `reports\eval\`.
+
+## Optional settings
+
+- **Telegram bot**: put the bot token in `TELEGRAM_BOT_TOKEN` in `.env`, then `docker compose up -d`.
+- **Real e-mail** instead of the test mailbox: set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
+  `SMTP_PASSWORD`, `SMTP_FROM` in `.env`, then `docker compose up -d web`.
+- More operations (backups, restore, prompts, settings): [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+
+## If something fails
+
+- **A step says `ECONNRESET` or another network error** (npm, image download): run `verify.ps1` again; downloads are
+  retried and finished steps are quick the second time.
+- **A port is already used**: stop the program that uses it (3000, 8080, 5678 or 8025), then start again.
+- **No GPU**: add `-Cpu` to `verify.ps1`; everything works, the agents answer more slowly.
+- The full log of a run is in `reports\verify-<date>\verify.log`.
+
+## Linux or macOS
+
+```bash
+git clone https://github.com/firas191/Colocation.git && cd Colocation
+scripts/setup-env.sh
+docker compose up -d
+```
+
+Then follow [`docs/RUNBOOK.md`](docs/RUNBOOK.md) for the models, places and tests (the same steps as the Windows
+scripts, as `docker compose` commands).
 
 ## Layout
 
 ```
-docker-compose.yml, docker-compose.gpu.yml, .env.example
-infra/        postgres image, Caddyfile, garage.toml, test-runner image
-kb/           packs (sources per jurisdiction), lib (cleaning, robots, tokens), chunkers, tests
-eval/         lib (metrics), runners (report), datasets (gold sets), tests
-db/           migrations (dbmate), tests (pgTAP), seed, baseline (original files)
-n8n/          build.py, build_platform.py, src (Code-node JS), workflows (generated JSON), tests
-web/          website and BFF (Next.js): app (pages), lib/server (signed API client, accounts), messages (fr, en, ar), tests, e2e
-scripts/      db-bootstrap.sh, n8n-setup.sh, db-test.sh, secret-scan.sh, setup-env.sh, kb.py, windows/*.ps1
-tests/        client (signing reference), contract, unit, mocks (sandbox only), vectors
-docs/         DECISIONS, FAILURES, TEST_REPORT, VERSIONS, ARCHITECTURE, API_SIGNING, RUNBOOK, openapi.yaml
-reports/      evidence logs (phase1: sandbox runs; verify-*: runs on the owner's machine)
+docker-compose.yml   all the services; docker-compose.gpu.yml adds the GPU
+n8n/                 workflows (exported JSON), the code of their Code nodes (src), build.py, tests
+db/                  PostgreSQL migrations and database tests
+web/                 the website (Next.js): pages, components, texts in fr, en and ar, tests
+prompts/             the agents' prompts, by version
+eval/                test sets and evaluation code
+kb/                  legal and practical sources per country
+services/            media (photos), text (language and personal data), telegram relay
+scripts/             setup and test scripts; scripts/windows/*.ps1 for Windows
+tests/               API contract tests, unit tests
+docs/                specification, architecture, decisions, test report, runbook, API description (openapi.yaml)
 ```
