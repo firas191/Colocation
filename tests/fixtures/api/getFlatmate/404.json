@@ -1,0 +1,8 @@
+{
+  "request_id": "a5d36176-07b0-43ce-a72d-298a75b1ab20",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Profile not found",
+    "details": []
+  }
+}

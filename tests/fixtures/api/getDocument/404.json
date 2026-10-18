@@ -1,0 +1,8 @@
+{
+  "request_id": "8573e5a9-3505-48d5-b39c-83708e5017be",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Document not found",
+    "details": []
+  }
+}

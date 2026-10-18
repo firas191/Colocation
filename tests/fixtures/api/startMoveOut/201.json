@@ -1,0 +1,45 @@
+{
+  "request_id": "7bc596f0-4980-4603-b0cb-67b3921cce31",
+  "data": {
+    "move_out": {
+      "items": [
+        {
+          "key": "notice_flatmates",
+          "done": false,
+          "kind": "manual"
+        },
+        {
+          "key": "balance_settled",
+          "done": false,
+          "kind": "computed",
+          "balance_minor": 45000
+        },
+        {
+          "key": "exit_inventory",
+          "done": false,
+          "kind": "computed"
+        },
+        {
+          "key": "deposit_returned",
+          "done": true,
+          "kind": "computed"
+        },
+        {
+          "key": "keys_returned",
+          "done": false,
+          "kind": "manual"
+        },
+        {
+          "key": "bills_transferred",
+          "done": false,
+          "kind": "manual"
+        }
+      ],
+      "created_at": "2026-10-17T09:49:24.69797+00:00",
+      "planned_on": "2027-06-30"
+    }
+  },
+  "meta": {
+    "latency_ms": 185
+  }
+}

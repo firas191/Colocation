@@ -1,0 +1,324 @@
+{
+  "request_id": "aade4e40-6db5-4ecf-bdbb-3198e3cf3377",
+  "data": {
+    "items": [
+      {
+        "name": "P11_owner_assistant",
+        "role": "System message of the owner assistant (n8n AI Agent node): read the owner's listings, turn a request such as \"the rent is now 400\" or \"remove photo 2\" into a proposed change with the propose_change tool, and say in one or two sentences what is proposed. Nothing is written until the owner confirms; the change and its checks are in code and in the database (D-088).",
+        "agent": "A1 owner assistant",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "First version (D-088). Read the listings first, propose only what the owner asked, with the field names of the tool; the owner confirms with a button, so the answer says what is proposed and nothing else.",
+            "created_at": "2026-10-16T16:11:17.745212+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 2,
+            "changelog": "After the PC run of v1 (T-56, 13 of 15 changes exact): for 'non-fumeur et pas d'animaux' it proposed pets=yes, copying the example 'smoking=no, pets=yes'; for 'colocataire femme uniquement' it proposed four house rules nobody asked for and said it had added 'femme uniquement'; it wrote the code 'archived' to a French user; it missed 'mfarcha' (furnished). v2: rules written as allowed / not allowed with a neutral example, rules about who may live there refused without a tool call, only the rules named, status said in words, a few Tunisian words, and 'proposed' never 'done'.",
+            "created_at": "2026-10-16T16:11:17.748285+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P1_router",
+        "role": "Classify a message: intent, language, script, jurisdiction hint, confidence, and whether to ask a clarifying question. The orchestrator routes on the intent with a deterministic switch (spec 8.1).",
+        "agent": "A0 orchestrator",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "Baseline: zero-shot instruction and the output schema (spec 9.3 planned iteration v1).",
+            "created_at": "2026-10-16T16:11:17.752621+00:00",
+            "techniques": [
+              "structured_output"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 2,
+            "changelog": "Adds the intent and language rules of the labelling guide, untrusted-text guardrail, and 8 few-shot examples in French, English, Arabic, Tunisian (Arabic script and arabizi), German and code-switched text, including an injection and an ambiguous case (spec 9.3 planned iteration v2). Written from the spec's expected failures, before any v1 run.",
+            "created_at": "2026-10-16T16:11:17.753991+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 3,
+            "changelog": "One change from v2: the clarifying-question path (spec 9.3 planned iteration v3). In v2, qwen3.5:4b asked for clarification on 4 of the 10 golden messages that need it (recall 0.400) and sent short housing messages in Tunisian to smalltalk_or_unsupported. The needs_clarification rule now says a vague message about housing is never smalltalk, gives the most likely task with confidence below 0.6 (the orchestrator's router.min_confidence) and asks in the message's language and script; two examples added (Tunisian in Latin and Arabic script), written for this version and not taken from the golden set; the Latin-script one was reworded by a native speaker (the owner). Everything else is v2 unchanged.",
+            "created_at": "2026-10-16T16:11:17.755578+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P2_profile_extractor",
+        "role": "Turn a seeker's free-text request into a structured search profile: budget in minor units, place to be near, dates, stay length, declared preferences and languages (spec 2.4 journey A step 4).",
+        "agent": "A2 profile",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "Baseline: field list and output schema, no unit or currency-exponent rules (spec 9.3 planned iteration v1).",
+            "created_at": "2026-10-16T16:11:17.76035+00:00",
+            "techniques": [
+              "structured_output"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 2,
+            "changelog": "Adds explicit money rules (currency exponents passed in, Tunisian millimes usage, thousands separators, weekly rents), null-when-absent rules, date resolution against today, the allowed-preference guardrail, and 5 few-shot examples in French, Tunisian arabizi, Arabic and English (spec 9.3 planned iteration v2). Written from the spec's expected failures, before any v1 run.",
+            "created_at": "2026-10-16T16:11:17.762003+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 3,
+            "changelog": "One change from v2: budget amounts are returned in the currency's main unit (budget_min, budget_max: 450 for 450 dinars) and code converts them to minor units with the exponent from app.currencies (D-066). In v2 the model did the conversion itself and 7 of 110 items on qwen3.5:4b (30 on granite4.2:3b) had a power-of-ten error, 5 of the 7 being TND read with two decimals. Rule 2 and the budget values of the 5 examples are rewritten in main units; the currency_exponents variable is no longer used. Everything else is v2 unchanged.",
+            "created_at": "2026-10-16T16:11:17.763754+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P3_listing_extractor",
+        "role": "Turn the text of a rental listing into structured fields: kind, rent with currency, period and scope, deposit, bills, availability date, bedrooms, furnished, amenities, house rules and location words (spec 2.4 journey B step 3). Amounts in main units; code converts them and checks plausible ranges (D-066, D-076).",
+        "agent": "A1 intake",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "Baseline (spec 9.3 planned iteration v1, direct): field list and output schema, no normalisation rules and no examples.",
+            "created_at": "2026-10-16T16:11:17.766795+00:00",
+            "techniques": [
+              "structured_output"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 2,
+            "changelog": "Spec 9.3 planned iteration v2: normalisation rules for money (millimes, alf, malyoun, thousands separators, k, weekly), rent scope, bills, deposits in months, national room notations (S+n, T/F), dates relative to today, furnished words, the amenity vocabulary and house rules, plus 6 examples in French, English, Arabic script and arabizi written for the prompt (none from the golden set). Post-validation ranges are applied in code to every version (D-076).",
+            "created_at": "2026-10-16T16:11:17.768032+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 3,
+            "changelog": "v1 with the output kept short (F-058). On the owner's PC, 17 of 90 v1 answers were cut at the 500-token limit and refused as invalid JSON: in the 3 cut answers read, the model wrote 5 to 8 long sentences in issues (mostly fields that were simply missing) and a confidence for every field, indented. v3 caps issues at 3 short notes about unclear or inconsistent points, asks for confidence only on filled fields and for one-line JSON, and raises the limit to 800 tokens. Still the direct baseline: no normalisation rules, no examples.",
+            "created_at": "2026-10-16T16:11:17.769771+00:00",
+            "techniques": [
+              "structured_output"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 4,
+            "changelog": "v2 with the output kept short (F-058), the same change as v3 makes to v1: issues capped at 3 short notes about unclear or inconsistent points (rule 11), confidence only on filled fields, one-line JSON (rule 12), limit 800 tokens. v2 was never run to the end: the evaluation was stopped before it started, because v1 answers were being cut at 500 tokens. Rules 1 to 10 and the 6 examples are v2 unchanged.",
+            "created_at": "2026-10-16T16:11:17.771305+00:00",
+            "techniques": [
+              "structured_output",
+              "few_shot",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P4_trust_assessor",
+        "role": "System message of the Trust agent (n8n AI Agent node): read a listing before publication, look up what the first findings call for (photos used elsewhere, price against the area, the owner's history, the listing's fields, the phrase rules) and return risk signals with a quote from the text. The agent has no write tool; the score and the verdict are computed in code from capped points, and a block needs a hard signal (backend spec 12.2, D-107).",
+        "agent": "A4 trust",
+        "versions": [
+          {
+            "model": null,
+            "status": "active",
+            "version": 1,
+            "changelog": "First version (D-107). Rubric with the signal list of backend spec 12.2 and the points each may take at most; every signal needs a short quote copied from the listing; the tools give the facts the database already checked, so the model only reads the wording. Spec 9.4 plans v1 free-form against v2 rubric; this v1 is the rubric, because the answer is read by code.",
+            "created_at": "2026-10-17T09:16:26.51724+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "rubric",
+              "guardrails",
+              "structured_output"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P5_legal_answerer",
+        "role": "System message of the A5 Legal agent (n8n AI Agent node): read the excerpts already found for the question (and search again with the search_law tool if they do not answer), then answer only from the numbered excerpts, citing each claim as [n]; say [NOT_FOUND] when the excerpts do not answer and [CONFLICT] when they disagree. Citations, abstention and the notice are checked and added in code (D-087).",
+        "agent": "A5 legal",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "First version (D-087). Spec 10.6 answering policy as an agent: search first, answer only from numbered excerpts with [n] after each claim, fixed tokens for no answer and for disagreeing sources so code can read them.",
+            "created_at": "2026-10-16T16:11:17.775046+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "grounding",
+              "citations",
+              "abstention",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 2,
+            "changelog": "After the PC run of v1 (T-55): the model skipped search_law for 6 of 39 answerable questions (5 of the 6 in Arabic) and its rewritten queries found a gold passage for 18 of 33. From v2 the question itself is searched before the model runs (D-089) and the excerpts are in this message; search_law stays for a second search with other words. Conflicts were flagged for 1 of 10 contradiction questions: the rule now says what counts as disagreeing.",
+            "created_at": "2026-10-16T16:11:17.776133+00:00",
+            "techniques": [
+              "role",
+              "retrieval_first",
+              "tool_use",
+              "grounding",
+              "citations",
+              "abstention",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P6_match_agent",
+        "role": "System message of the A3 Match agent (n8n AI Agent node): decide when to search and when to read one result, rewrite follow-ups (\"cheaper\", \"closer\") into a full request for the search tool, then answer in two or three sentences from the tool results only. The result cards are shown by the channel, not written by the model (D-084).",
+        "agent": "A3 match",
+        "versions": [
+          {
+            "model": null,
+            "status": "draft",
+            "version": 1,
+            "changelog": "First version (D-084): two tools (search_listings, listing_details), follow-ups rewritten into a full request, answer from tool results only; the filters and the list of results are shown by the channel, not written by the model.",
+            "created_at": "2026-10-16T16:11:17.779376+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 2,
+            "changelog": "v1 after the PC run (T-48, D-085): answers ran to 1,088 characters with Markdown lists, Tunisian in Latin letters was answered in Arabic script, and after a search with fewer results the agent searched again instead of reading result N. v2 asks for two plain sentences under 300 characters, the user's alphabet, at most one search per message, and listing_details whenever a result is named by its number.",
+            "created_at": "2026-10-16T16:11:17.780215+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "guardrails"
+            ]
+          },
+          {
+            "model": null,
+            "status": "active",
+            "version": 3,
+            "changelog": "v2 after the PC run (T-50): v2 fixed length, Markdown and alphabet, but answered 2 of 7 questions about a numbered result from the conversation instead of calling listing_details, once about the wrong result. v3 keeps v2 and makes listing_details the required first action for any question about a numbered result, with examples in the four languages.",
+            "created_at": "2026-10-16T16:11:17.781084+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P7_photo_analyzer",
+        "role": "Describe one listing photo as room facts (spec 11.2 step 5, 9.4 P7): room type, beds, furniture, appliances, bathroom fixtures, windows and daylight, condition and its visible signs, furnished, whether text can still be read and whether a person is in view. Runs on the blurred copy. Contradictions with the listing text are computed in code, not by the model (D-081).",
+        "agent": "A1 intake",
+        "versions": [
+          {
+            "model": null,
+            "status": "active",
+            "version": 1,
+            "changelog": "Baseline (spec 9.4 P7 v1): a short open description of the room and the same closed lists as later versions; every field must be answered, there is no 'not visible' option and no confidence. Measures what the model does when it cannot say it does not know.",
+            "created_at": "2026-10-16T16:11:17.784036+00:00",
+            "techniques": [
+              "structured_output"
+            ]
+          },
+          {
+            "model": null,
+            "status": "draft",
+            "version": 2,
+            "changelog": "Spec 9.4 P7 v2: the open description is removed (free text is where a model describes people or invents details) and every field that the photo may not show can be 'not_visible'; a confidence for each filled field; at most 3 short issues; rules on what counts as visible, on people and on text, and on dark or partial photos. Same closed lists as v1, so the two versions are scored on the same fields.",
+            "created_at": "2026-10-16T16:11:17.785145+00:00",
+            "techniques": [
+              "structured_output",
+              "guardrails"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "P9_document_agent",
+        "role": "System message of the Document agent (n8n AI Agent node): help a household member prepare a document from the platform's templates (flatmate agreement, entry or exit inventory, house rules), ask for the values the template needs, and propose them with the propose_document tool. It never writes document text: the template's text is fixed and the person confirms the proposal before the PDF is made (D-108).",
+        "agent": "A6 document",
+        "versions": [
+          {
+            "model": null,
+            "status": "active",
+            "version": 1,
+            "changelog": "First version (D-108). Find the document type, read its slots, ask only for the values the template needs from the person, propose them; the platform fills names, address and rules from the household, and the template's text never changes.",
+            "created_at": "2026-10-17T09:33:52.659442+00:00",
+            "techniques": [
+              "role",
+              "tool_use",
+              "slot_filling",
+              "guardrails"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 279
+  }
+}

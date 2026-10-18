@@ -1,0 +1,13 @@
+{
+  "request_id": "172f0627-9c32-4b33-942a-ef1f0413d420",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "action",
+        "issue": "enum"
+      }
+    ]
+  }
+}

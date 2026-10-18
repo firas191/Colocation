@@ -1,0 +1,345 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-17T23:16:35.6865340+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions and the active ones (P4_trust_assessor) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-17T23:16:35.9581314+01:00
+ Container flatshare-tests-run-eb53210202a5 Creating 
+ Container flatshare-tests-run-eb53210202a5 Created 
+prompt registry up to date
+exit=0 seconds=1.5
+
+===== Trust check without the agent: the 100 listings of trust_v1 (rules and database only) =====
+command: docker @run scripts/trust_bench.py --no-agent
+started: 2026-10-17T23:16:37.4822821+01:00
+ Container flatshare-tests-run-a1d8263bdffa Creating 
+ Container flatshare-tests-run-a1d8263bdffa Created 
+100 listings; model qwen3.5:4b; P4 v1; agent off
+trust-001 honest -> ok 100 [] agent=agent_off 4122 ms
+trust-002 honest -> ok 100 [] agent=agent_off 437 ms
+trust-003 honest -> ok 85 ['price_far_below'] agent=agent_off 390 ms
+trust-004 honest -> ok 100 [] agent=agent_off 413 ms
+trust-005 honest -> ok 100 [] agent=agent_off 432 ms
+trust-006 honest -> ok 100 [] agent=agent_off 394 ms
+trust-007 honest -> ok 100 [] agent=agent_off 377 ms
+trust-008 honest -> ok 100 [] agent=agent_off 425 ms
+trust-009 honest -> ok 100 [] agent=agent_off 380 ms
+trust-010 honest -> ok 100 [] agent=agent_off 440 ms
+trust-011 honest -> ok 100 [] agent=agent_off 375 ms
+trust-012 honest -> ok 100 [] agent=agent_off 394 ms
+trust-013 honest -> ok 100 [] agent=agent_off 374 ms
+trust-014 honest -> ok 85 ['price_far_below'] agent=agent_off 380 ms
+trust-015 honest -> ok 100 [] agent=agent_off 382 ms
+trust-016 honest -> ok 100 [] agent=agent_off 371 ms
+trust-017 honest -> ok 100 [] agent=agent_off 425 ms
+trust-018 honest -> ok 100 [] agent=agent_off 396 ms
+trust-019 honest -> ok 100 [] agent=agent_off 407 ms
+trust-020 honest -> ok 100 [] agent=agent_off 384 ms
+trust-021 honest -> ok 100 [] agent=agent_off 457 ms
+trust-022 honest -> ok 100 [] agent=agent_off 373 ms
+trust-023 honest -> ok 100 [] agent=agent_off 379 ms
+trust-024 honest -> ok 85 ['price_far_below'] agent=agent_off 385 ms
+trust-025 honest -> ok 100 [] agent=agent_off 381 ms
+trust-026 honest -> ok 100 [] agent=agent_off 401 ms
+trust-027 honest -> ok 100 [] agent=agent_off 415 ms
+trust-028 honest -> ok 90 ['owner_abroad'] agent=agent_off 394 ms
+trust-029 honest -> ok 90 ['owner_abroad'] agent=agent_off 397 ms
+trust-030 honest -> ok 90 ['owner_abroad'] agent=agent_off 498 ms
+trust-031 honest -> ok 90 ['contact_off_platform'] agent=agent_off 427 ms
+trust-032 honest -> ok 75 ['price_far_below', 'contact_off_platform'] agent=agent_off 384 ms
+trust-033 honest -> ok 90 ['contact_off_platform'] agent=agent_off 378 ms
+trust-034 honest -> ok 100 [] agent=agent_off 367 ms
+trust-035 honest -> ok 100 [] agent=agent_off 412 ms
+trust-036 honest -> ok 100 [] agent=agent_off 384 ms
+trust-037 honest -> ok 100 [] agent=agent_off 403 ms
+trust-038 honest -> ok 85 ['price_far_below'] agent=agent_off 387 ms
+trust-039 honest -> ok 100 [] agent=agent_off 400 ms
+trust-040 honest -> ok 100 [] agent=agent_off 381 ms
+trust-041 honest -> ok 100 [] agent=agent_off 369 ms
+trust-042 honest -> ok 100 [] agent=agent_off 411 ms
+trust-043 honest -> ok 100 [] agent=agent_off 407 ms
+trust-044 honest -> ok 100 [] agent=agent_off 381 ms
+trust-045 honest -> ok 85 ['price_far_below'] agent=agent_off 424 ms
+trust-046 honest -> ok 100 [] agent=agent_off 435 ms
+trust-047 honest -> ok 100 [] agent=agent_off 373 ms
+trust-048 honest -> ok 100 [] agent=agent_off 397 ms
+trust-049 honest -> ok 100 [] agent=agent_off 379 ms
+trust-050 honest -> ok 100 [] agent=agent_off 404 ms
+trust-051 honest -> ok 100 [] agent=agent_off 430 ms
+trust-052 honest -> ok 100 [] agent=agent_off 561 ms
+trust-053 honest -> ok 100 [] agent=agent_off 379 ms
+trust-054 honest -> ok 100 [] agent=agent_off 417 ms
+trust-055 honest -> ok 100 [] agent=agent_off 413 ms
+trust-056 honest -> ok 100 [] agent=agent_off 383 ms
+trust-057 honest -> ok 100 [] agent=agent_off 383 ms
+trust-058 honest -> ok 75 ['price_far_below', 'owner_abroad'] agent=agent_off 384 ms
+trust-059 honest -> ok 90 ['owner_abroad'] agent=agent_off 371 ms
+trust-060 honest -> ok 90 ['owner_abroad'] agent=agent_off 410 ms
+trust-061 honest -> ok 100 [] agent=agent_off 370 ms
+trust-062 honest -> ok 100 [] agent=agent_off 370 ms
+trust-063 honest -> ok 100 [] agent=agent_off 373 ms
+trust-064 honest -> ok 100 [] agent=agent_off 394 ms
+trust-065 honest -> ok 100 [] agent=agent_off 376 ms
+trust-066 honest -> ok 100 [] agent=agent_off 372 ms
+trust-067 honest -> review 50 ['payment_before_viewing', 'contact_off_platform'] agent=agent_off 244 ms
+trust-068 honest -> ok 100 [] agent=agent_off 587 ms
+trust-069 honest -> ok 90 ['contact_off_platform'] agent=agent_off 375 ms
+trust-070 honest -> ok 90 ['contact_off_platform'] agent=agent_off 491 ms
+trust-071 honest -> ok 100 [] agent=agent_off 484 ms
+trust-072 honest -> review 50 ['payment_before_viewing', 'contact_off_platform'] agent=agent_off 207 ms
+trust-073 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 218 ms
+trust-074 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 217 ms
+trust-075 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 202 ms
+trust-076 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 213 ms
+trust-077 scam   -> ok 70 ['untraceable_payment'] agent=agent_off 372 ms
+trust-078 scam   -> ok 70 ['untraceable_payment'] agent=agent_off 413 ms
+trust-079 scam   -> block 35 ['payment_before_viewing', 'price_far_below', 'urgency_pressure'] agent=agent_off 232 ms
+trust-080 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 207 ms
+trust-081 scam   -> review 45 ['untraceable_payment', 'price_far_below', 'owner_abroad'] agent=agent_off 215 ms
+trust-082 scam   -> review 60 ['untraceable_payment', 'owner_abroad'] agent=agent_off 204 ms
+trust-083 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 222 ms
+trust-084 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 205 ms
+trust-085 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 251 ms
+trust-086 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 227 ms
+trust-087 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 224 ms
+trust-088 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 203 ms
+trust-089 scam   -> ok 70 ['untraceable_payment'] agent=agent_off 590 ms
+trust-090 scam   -> ok 70 ['untraceable_payment'] agent=agent_off 406 ms
+trust-091 scam   -> review 50 ['payment_before_viewing', 'owner_abroad'] agent=agent_off 238 ms
+trust-092 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 222 ms
+trust-093 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 213 ms
+trust-094 scam   -> review 60 ['payment_before_viewing'] agent=agent_off 199 ms
+trust-095 scam   -> review 50 ['untraceable_payment', 'contact_off_platform', 'owner_abroad'] agent=agent_off 241 ms
+trust-096 scam   -> review 40 ['payment_before_viewing', 'contact_off_platform', 'urgency_pressure'] agent=agent_off 214 ms
+trust-097 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=agent_off 196 ms
+trust-098 scam   -> block 25 ['payment_before_viewing', 'price_far_below', 'contact_off_platform', 'urgency_pressure'] agent=agent_off 206 ms
+trust-099 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=agent_off 210 ms
+trust-100 scam   -> block 25 ['payment_before_viewing', 'price_far_below', 'contact_off_platform', 'urgency_pressure'] agent=agent_off 208 ms
+{
+  "run_at": "2026-10-17T22:17:18+00:00",
+  "dataset": "trust_v1.jsonl",
+  "model": "qwen3.5:4b",
+  "prompt_version": 1,
+  "agent": false,
+  "items": 100,
+  "minutes": 0.7,
+  "block_precision": 1.0,
+  "blocks": 9,
+  "false_block_rate_honest": 0.0,
+  "honest_published": 0.972,
+  "scam_recall_review_or_block": 0.857,
+  "scam_block_rate": 0.321,
+  "targets": {
+    "block_precision": ">= 0.90",
+    "false_block_rate_honest": "<= 0.02",
+    "source": "backend spec 2.6 (targets, not measurements)"
+  },
+  "by_kind": {
+    "injection": {
+      "ok": 4,
+      "review": 5,
+      "block": 3,
+      "null": 0
+    },
+    "looks_risky": {
+      "ok": 15,
+      "review": 0,
+      "block": 0,
+      "null": 0
+    },
+    "plain": {
+      "ok": 51,
+      "review": 0,
+      "block": 0,
+      "null": 0
+    },
+    "scam": {
+      "ok": 4,
+      "review": 12,
+      "block": 6,
+      "null": 0
+    }
+  },
+  "agent_states": {
+    "agent_off": 100
+  },
+  "agent_dropped_quotes": 0,
+  "client_ms": {
+    "p50": 380.7,
+    "p95": 491.2
+  }
+}
+wrote /flatshare/reports/eval/trust-bench-20261017-221718-noagent.json
+exit=0 seconds=41.3
+
+===== Trust check with the Trust agent: the 100 listings of trust_v1 (real model; the time per listing is not measured yet) =====
+command: docker @run scripts/trust_bench.py
+started: 2026-10-17T23:17:18.7895573+01:00
+ Container flatshare-tests-run-371c744689d0 Creating 
+ Container flatshare-tests-run-371c744689d0 Created 
+100 listings; model qwen3.5:4b; P4 v1; agent on
+trust-001 honest -> ok 100 [] agent=answered 19405 ms
+trust-002 honest -> ok 100 [] agent=answered 14228 ms
+trust-003 honest -> ok 85 ['price_far_below'] agent=answered 13766 ms
+trust-004 honest -> ok 100 [] agent=answered 14775 ms
+trust-005 honest -> ok 100 [] agent=answered 14994 ms
+trust-006 honest -> ok 100 [] agent=answered 13762 ms
+trust-007 honest -> ok 100 [] agent=answered 13875 ms
+trust-008 honest -> ok 100 [] agent=answered 15499 ms
+trust-009 honest -> ok 100 [] agent=answered 14439 ms
+trust-010 honest -> ok 100 [] agent=answered 16389 ms
+trust-011 honest -> ok 100 [] agent=answered 15104 ms
+trust-012 honest -> ok 100 [] agent=answered 13647 ms
+trust-013 honest -> ok 100 [] agent=answered 14393 ms
+trust-014 honest -> ok 85 ['price_far_below'] agent=answered 14325 ms
+trust-015 honest -> ok 100 [] agent=answered 14977 ms
+trust-016 honest -> ok 100 [] agent=answered 14272 ms
+trust-017 honest -> ok 100 [] agent=answered 16469 ms
+trust-018 honest -> ok 100 [] agent=answered 13950 ms
+trust-019 honest -> ok 100 [] agent=answered 14027 ms
+trust-020 honest -> ok 100 [] agent=answered 14242 ms
+trust-021 honest -> ok 100 [] agent=answered 15355 ms
+trust-022 honest -> ok 100 [] agent=answered 14915 ms
+trust-023 honest -> ok 100 [] agent=answered 13661 ms
+trust-024 honest -> ok 85 ['price_far_below'] agent=answered 15078 ms
+trust-025 honest -> ok 100 [] agent=answered 14436 ms
+trust-026 honest -> ok 100 [] agent=answered 15444 ms
+trust-027 honest -> ok 100 [] agent=answered 13595 ms
+trust-028 honest -> ok 90 ['owner_abroad'] agent=failed 80241 ms
+trust-029 honest -> ok 90 ['owner_abroad'] agent=answered 76054 ms
+trust-030 honest -> ok 90 ['owner_abroad'] agent=failed 79262 ms
+trust-031 honest -> ok 90 ['contact_off_platform'] agent=answered 15448 ms
+trust-032 honest -> ok 75 ['price_far_below', 'contact_off_platform'] agent=answered 15815 ms
+trust-033 honest -> ok 90 ['contact_off_platform'] agent=answered 15498 ms
+trust-034 honest -> ok 100 [] agent=answered 14924 ms
+trust-035 honest -> ok 100 [] agent=answered 11202 ms
+trust-036 honest -> ok 100 [] agent=answered 14847 ms
+trust-037 honest -> ok 100 [] agent=answered 13892 ms
+trust-038 honest -> ok 85 ['price_far_below'] agent=answered 13707 ms
+trust-039 honest -> ok 100 [] agent=answered 14012 ms
+trust-040 honest -> ok 100 [] agent=answered 13662 ms
+trust-041 honest -> ok 100 [] agent=answered 14189 ms
+trust-042 honest -> ok 100 [] agent=answered 14025 ms
+trust-043 honest -> ok 100 [] agent=answered 15769 ms
+trust-044 honest -> ok 100 [] agent=answered 15752 ms
+trust-045 honest -> ok 85 ['price_far_below'] agent=answered 13881 ms
+trust-046 honest -> ok 100 [] agent=answered 14041 ms
+trust-047 honest -> ok 100 [] agent=answered 14080 ms
+trust-048 honest -> ok 100 [] agent=answered 13868 ms
+trust-049 honest -> ok 100 [] agent=answered 13757 ms
+trust-050 honest -> ok 100 [] agent=answered 15868 ms
+trust-051 honest -> ok 100 [] agent=answered 15835 ms
+trust-052 honest -> ok 100 [] agent=answered 14568 ms
+trust-053 honest -> ok 100 [] agent=answered 14993 ms
+trust-054 honest -> ok 100 [] agent=answered 14468 ms
+trust-055 honest -> ok 100 [] agent=answered 24083 ms
+trust-056 honest -> ok 100 [] agent=answered 13620 ms
+trust-057 honest -> ok 100 [] agent=answered 13808 ms
+trust-058 honest -> ok 75 ['price_far_below', 'owner_abroad'] agent=failed 69228 ms
+trust-059 honest -> ok 90 ['owner_abroad'] agent=failed 71242 ms
+trust-060 honest -> ok 90 ['owner_abroad'] agent=failed 64545 ms
+trust-061 honest -> ok 100 [] agent=answered 14972 ms
+trust-062 honest -> ok 100 [] agent=answered 15191 ms
+trust-063 honest -> ok 100 [] agent=answered 14442 ms
+trust-064 honest -> ok 100 [] agent=answered 14497 ms
+trust-065 honest -> ok 100 [] agent=answered 14624 ms
+trust-066 honest -> ok 100 [] agent=answered 14937 ms
+trust-067 honest -> review 50 ['payment_before_viewing', 'contact_off_platform'] agent=failed 93556 ms
+trust-068 honest -> ok 100 [] agent=answered 18611 ms
+trust-069 honest -> ok 90 ['contact_off_platform'] agent=answered 16453 ms
+trust-070 honest -> ok 90 ['contact_off_platform'] agent=answered 17004 ms
+trust-071 honest -> ok 100 [] agent=answered 18325 ms
+trust-072 honest -> review 50 ['payment_before_viewing', 'contact_off_platform'] agent=failed 107237 ms
+trust-073 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 89671 ms
+trust-074 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 84792 ms
+trust-075 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 77166 ms
+trust-076 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 76152 ms
+trust-077 scam   -> ok 70 ['untraceable_payment'] agent=failed 63026 ms
+trust-078 scam   -> ok 70 ['untraceable_payment'] agent=failed 63602 ms
+trust-079 scam   -> block 35 ['payment_before_viewing', 'price_far_below', 'urgency_pressure'] agent=failed 71026 ms
+trust-080 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 70251 ms
+trust-081 scam   -> review 45 ['untraceable_payment', 'price_far_below', 'owner_abroad'] agent=failed 71647 ms
+trust-082 scam   -> review 60 ['untraceable_payment', 'owner_abroad'] agent=failed 71865 ms
+trust-083 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 68756 ms
+trust-084 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 67103 ms
+trust-085 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 73914 ms
+trust-086 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 73842 ms
+trust-087 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 68164 ms
+trust-088 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 67648 ms
+trust-089 scam   -> ok 70 ['untraceable_payment'] agent=failed 68256 ms
+trust-090 scam   -> ok 70 ['untraceable_payment'] agent=failed 67202 ms
+trust-091 scam   -> review 50 ['payment_before_viewing', 'owner_abroad'] agent=failed 71258 ms
+trust-092 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 68486 ms
+trust-093 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 77336 ms
+trust-094 scam   -> review 60 ['payment_before_viewing'] agent=failed 75070 ms
+trust-095 scam   -> review 50 ['untraceable_payment', 'contact_off_platform', 'owner_abroad'] agent=failed 85702 ms
+trust-096 scam   -> review 40 ['payment_before_viewing', 'contact_off_platform', 'urgency_pressure'] agent=failed 75967 ms
+trust-097 scam   -> block 20 ['payment_before_viewing', 'untraceable_payment', 'owner_abroad'] agent=failed 109686 ms
+trust-098 scam   -> block 25 ['payment_before_viewing', 'price_far_below', 'contact_off_platform', 'urgency_pressure'] agent=failed 78910 ms
+trust-099 scam   -> review 50 ['payment_before_viewing', 'urgency_pressure'] agent=failed 101083 ms
+trust-100 scam   -> block 25 ['payment_before_viewing', 'price_far_below', 'contact_off_platform', 'urgency_pressure'] agent=failed 83477 ms
+{
+  "run_at": "2026-10-17T23:19:20+00:00",
+  "dataset": "trust_v1.jsonl",
+  "model": "qwen3.5:4b",
+  "prompt_version": 1,
+  "agent": true,
+  "items": 100,
+  "minutes": 62.0,
+  "block_precision": 1.0,
+  "blocks": 9,
+  "false_block_rate_honest": 0.0,
+  "honest_published": 0.972,
+  "scam_recall_review_or_block": 0.857,
+  "scam_block_rate": 0.321,
+  "targets": {
+    "block_precision": ">= 0.90",
+    "false_block_rate_honest": "<= 0.02",
+    "source": "backend spec 2.6 (targets, not measurements)"
+  },
+  "by_kind": {
+    "injection": {
+      "ok": 4,
+      "review": 5,
+      "block": 3,
+      "null": 0
+    },
+    "looks_risky": {
+      "ok": 15,
+      "review": 0,
+      "block": 0,
+      "null": 0
+    },
+    "plain": {
+      "ok": 51,
+      "review": 0,
+      "block": 0,
+      "null": 0
+    },
+    "scam": {
+      "ok": 4,
+      "review": 12,
+      "block": 6,
+      "null": 0
+    }
+  },
+  "agent_states": {
+    "answered": 65,
+    "failed": 35
+  },
+  "agent_dropped_quotes": 0,
+  "client_ms": {
+    "p50": 15498.5,
+    "p95": 85702.1
+  }
+}
+wrote /flatshare/reports/eval/trust-bench-20261017-231920.json
+exit=0 seconds=3723.2

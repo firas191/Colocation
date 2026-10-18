@@ -1,0 +1,13 @@
+{
+  "request_id": "bf672b3a-d134-4da1-b761-959059f4c14c",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "bio",
+        "issue": "maxLength"
+      }
+    ]
+  }
+}

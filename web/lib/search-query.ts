@@ -10,7 +10,7 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?
 const many = (v: string | string[] | undefined) => (Array.isArray(v) ? v : v ? [v] : []).map((x) => x.trim()).filter(Boolean);
 
 export interface SearchForm {
-  q: string; near: string; country: string; max: string; period: string; kind: string; furnished: string; bills: string;
+  q: string; near: string; city: string; country: string; max: string; period: string; kind: string; furnished: string; bills: string;
   available_by: string; amenity: string[]; rules: Record<string, string>; use_profile: boolean; view: "list" | "map";
   bbox: string; cursor: string;
 }
@@ -19,7 +19,7 @@ export function readForm(p: PageParams, defaultCountry: string): SearchForm {
   const rules: Record<string, string> = {};
   for (const r of RULES) { const v = one(p[`rule_${r}`]); if (v === "yes" || v === "no") rules[r] = v; }
   return {
-    q: one(p.q).slice(0, 300), near: one(p.near).slice(0, 120), country: one(p.country) || defaultCountry, max: one(p.max),
+    q: one(p.q).slice(0, 300), near: one(p.near).slice(0, 120), city: one(p.city).slice(0, 120), country: one(p.country) || defaultCountry, max: one(p.max),
     period: one(p.period) === "week" ? "week" : "month", kind: (KINDS as readonly string[]).includes(one(p.kind)) ? one(p.kind) : "",
     furnished: ["true", "false"].includes(one(p.furnished)) ? one(p.furnished) : "",
     bills: ["true", "false"].includes(one(p.bills)) ? one(p.bills) : "", available_by: one(p.available_by),
@@ -40,7 +40,8 @@ export function apiQuery(f: SearchForm, currency: string, exponent: number) {
   const max = toMinor(f.max, exponent);
   const q: Record<string, string> = { jurisdiction: f.country, limit: f.view === "map" ? "50" : "20" };
   if (f.q) q.q = f.q;
-  if (f.near) q.near = f.near;
+  // a precise place wins over the city filter; the city is searched as a place too (D-118)
+  if (f.near || f.city) q.near = f.near || f.city;
   if (max !== null) { q.max_rent = Number.isNaN(max) ? f.max : String(max); q.currency = currency; q.period = f.period; }
   if (f.kind) q.kind = f.kind;
   if (f.furnished) q.furnished = f.furnished;
@@ -59,7 +60,7 @@ export function apiQuery(f: SearchForm, currency: string, exponent: number) {
 export function pageHref(f: SearchForm, change: Partial<SearchForm> = {}) {
   const g = { ...f, ...change };
   const u = new URLSearchParams();
-  for (const k of ["q", "near", "max", "kind", "furnished", "bills", "available_by", "bbox", "cursor"] as const) if (g[k]) u.set(k, g[k]);
+  for (const k of ["q", "near", "city", "max", "kind", "furnished", "bills", "available_by", "bbox", "cursor"] as const) if (g[k]) u.set(k, g[k]);
   u.set("country", g.country);
   if (g.max) u.set("period", g.period);
   for (const a of g.amenity) u.append("amenity", a);

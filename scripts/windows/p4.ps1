@@ -11,11 +11,15 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step agent-bench  # A3 Match agent: match_agent_v2 for P6 v3 (option -AgentVersions "2,3"), then the fixed path (D-084, D-085)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step legal-bench  # A5 Legal agent: the 48 tn_retrieval v2 questions (D-087)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step owner-bench  # owner assistant: the 24 owner_agent v1 requests (D-088)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step document-bench  # Document agent: the 16 document_agent_v1 requests (D-108)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step flatmate-bench  # flatmate profile agent A7: the 20 first messages of flatmate_onboarding_v1 (D-115)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step trust-bench  # trust check on the 100 listings of trust_v1: rules only, with the agent, with the detector (D-107, D-114)
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step trust-compare  # the same three, then on Emna Safer's 50 listings of p8_scam_v1 (D-114)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step p7-timing -Listing <id>  # P3 and P7 calls of a listing timed one by one, no 120 s limit (D-091)
 #   powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step all         # setup, text-eval, p3-eval, report
 # Options: -Models "qwen3.5:4b"  -Versions "3,4"
 # Output: reports\p4-<timestamp>\p4.log and summary.txt; reports\eval\text-*.json and prompts-*.json; docs\PROMPT_EVAL.md.
-param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "legal-bench", "owner-bench", "p7-timing", "all")][string]$Step = "all",
+param([ValidateSet("setup", "text-eval", "p3-eval", "report", "photos-fetch", "p7-setup", "p7-eval", "agent-bench", "legal-bench", "owner-bench", "trust-bench", "trust-compare", "document-bench", "flatmate-bench", "p7-timing", "all")][string]$Step = "all",
       [string]$Models = "qwen3.5:4b", [string]$Versions = "3,4", [string]$P7Versions = "1,2", [string]$AgentVersions = "3", [string]$Listing = "")
 
 $ErrorActionPreference = "Continue"
@@ -168,6 +172,35 @@ if ($Step -eq "p7-timing") {
     if ($Listing) { docker @run scripts/p7_timing.py --listing $Listing } else { docker @run scripts/p7_timing.py }
   } | Out-Null
   Step "Ollama memory placement after" { docker exec fs-ollama ollama ps } | Out-Null
+}
+
+if ($Step -eq "document-bench") {
+  $c = Step "prompts: store new versions and the active ones (P9_document_agent)" { docker @run scripts/prompts.py sync }
+  if ($c -ne 0) { Write-Host "Stopped: prompt registry sync failed. Log: $log"; exit 1 }
+  Step "Document agent: the 16 requests of document_agent_v1, one new household each (real model)" {
+    docker @run scripts/document_bench.py
+  } | Out-Null
+}
+
+if ($Step -eq "flatmate-bench") {
+  $c = Step "prompts: store new versions and the active ones (P13_flatmate_onboarding)" { docker @run scripts/prompts.py sync }
+  if ($c -ne 0) { Write-Host "Stopped: prompt registry sync failed. Log: $log"; exit 1 }
+  Step "Flatmate profile agent: the 20 messages of flatmate_onboarding_v1, one new user each (real model)" {
+    docker @run scripts/flatmate_bench.py
+  } | Out-Null
+}
+
+if ($Step -in @("trust-bench", "trust-compare")) {
+  $c = Step "prompts: store new versions and the active ones (P4_trust_assessor, P8_scam_detector)" { docker @run scripts/prompts.py sync }
+  if ($c -ne 0) { Write-Host "Stopped: prompt registry sync failed. Log: $log"; exit 1 }
+  # trust-bench: our set (trust_v1); trust-compare: the same three ways on Emna Safer's set too (p8_scam_v1, D-114)
+  $sets = @("eval/datasets/trust_v1.jsonl")
+  if ($Step -eq "trust-compare") { $sets += "eval/datasets/p8_scam_v1.jsonl" }
+  foreach ($ds in $sets) {
+    Step "Trust check, rules and database only: $ds" { docker @run scripts/trust_bench.py --dataset $ds --model none } | Out-Null
+    Step "Trust check with the Trust agent (P4_trust_assessor): $ds" { docker @run scripts/trust_bench.py --dataset $ds --model agent } | Out-Null
+    Step "Trust check with the detector (P8_scam_detector, one call): $ds" { docker @run scripts/trust_bench.py --dataset $ds --model detector } | Out-Null
+  }
 }
 
 if ($Step -eq "owner-bench") {

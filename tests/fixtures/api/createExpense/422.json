@@ -1,0 +1,15 @@
+{
+  "request_id": "adc27234-edf1-4dff-a64a-e3de0c062463",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "sum": 3,
+        "field": "values",
+        "issue": "sum_differs",
+        "amount": 12000
+      }
+    ]
+  }
+}

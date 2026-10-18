@@ -209,3 +209,29 @@ def test_signed_get_urls_for_processed_photos_only(client, s3):
                  {"keys": ["media/a.jpg"] * 61}):
         r = client.post("/v1/storage/presign-get", json=body, headers=H)
         assert r.status_code == 422, (body, r.text)
+
+
+def test_pdf_render_arabic_french_english(client, s3):
+    """P9 (PLATFORM_SPEC 6.7): Arabic shaping and right to left, French and English, read back from the PDF. An image
+    or style from elsewhere is not loaded."""
+    import pdfplumber
+    html = ('<html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>body{font-family:"DejaVu Sans"}</style>'
+            '<link rel="stylesheet" href="http://127.0.0.1:9/x.css"></head><body><h1>إيصال الإيجار</h1>'
+            '<p>استلمت مبلغ 450 دينار</p><p dir="ltr" lang="fr">Quittance de loyer : 450 TND reçus.</p>'
+            '<p dir="ltr" lang="en">Rent receipt: 450 TND received.</p><img src="file:///etc/passwd"></body></html>')
+    r = client.post("/v1/pdf/render", headers={"X-Internal-Token": TOKEN}, json={"html": html, "key": "documents/test/a.pdf"})
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j["pages"] == 1 and j["bytes"] > 1000
+    data = s3.get("documents/test/a.pdf", 10_000_000)
+    assert data[:5] == b"%PDF-" and len(data) == j["bytes"]
+    with pdfplumber.open(io.BytesIO(data)) as pdf:
+        text = pdf.pages[0].extract_text()
+    assert "Quittance de loyer : 450 TND reçus." in text and "Rent receipt: 450 TND received." in text
+    assert "450" in text and any("؀" <= ch <= "ۿ" or "ﹰ" <= ch <= "﻿" for ch in text), text
+    assert "root:" not in text
+    bad = client.post("/v1/pdf/render", headers={"X-Internal-Token": TOKEN}, json={"html": html, "key": "media/x.pdf"})
+    assert bad.status_code == 422
+    url = client.post("/v1/storage/presign-get", headers={"X-Internal-Token": TOKEN}, json={"keys": ["documents/test/a.pdf"]})
+    assert url.status_code == 200 and "documents/test/a.pdf" in url.json()["urls"][0]["url"]
+    assert client.post("/v1/storage/presign-get", headers={"X-Internal-Token": TOKEN}, json={"keys": ["uploads/x.jpg"]}).status_code == 422

@@ -1,0 +1,8 @@
+{
+  "request_id": "ecd011c5-822d-4e7e-be17-3ea2b3a353f9",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Not yours to decide",
+    "details": []
+  }
+}

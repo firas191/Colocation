@@ -1,0 +1,8 @@
+{
+  "request_id": "0a4089cb-8590-49bb-9c1e-a9c3956ac830",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Deposits are recorded by the owner member",
+    "details": []
+  }
+}

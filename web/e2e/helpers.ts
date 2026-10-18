@@ -45,6 +45,27 @@ export async function expectAccessible(page: Page) {
   expect(bad.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`)).toEqual([]);
 }
 
+/** Photos nobody else has, drawn in the browser: random shapes on a random background, JPEG. The fixture room photos
+ *  are used by every run and by other tests, so the trust check (D-107) rightly finds them on another owner's listing
+ *  (duplicate_photo_other_owner) and sends the listing to review (T-79). */
+export async function uniquePhotos(page: Page, n: number) {
+  const data = await page.evaluate((count) => Array.from({ length: count }, () => {
+    const c = document.createElement("canvas");
+    c.width = 960; c.height = 720;
+    const g = c.getContext("2d")!;
+    const rnd = (k: number) => Math.floor(Math.random() * k);
+    g.fillStyle = `rgb(${rnd(256)},${rnd(256)},${rnd(256)})`;
+    g.fillRect(0, 0, c.width, c.height);
+    for (let i = 0; i < 60; i++) {
+      g.fillStyle = `rgb(${rnd(256)},${rnd(256)},${rnd(256)})`;
+      if (i % 2) g.fillRect(rnd(c.width), rnd(c.height), 40 + rnd(300), 40 + rnd(300));
+      else { g.beginPath(); g.arc(rnd(c.width), rnd(c.height), 20 + rnd(150), 0, Math.PI * 2); g.fill(); }
+    }
+    return c.toDataURL("image/jpeg", 0.9).split(",")[1];
+  }), n);
+  return data.map((b64, i) => ({ name: `room-${i + 1}.jpg`, mimeType: "image/jpeg", buffer: Buffer.from(b64, "base64") }));
+}
+
 // ---- signed calls with the tests key, for arranging state (upload test) ---------------------------------------
 function secrets() {
   const file = process.env.FS_SECRETS_FILE || "../secrets/api-clients.env";
@@ -154,4 +175,10 @@ export async function withdrawListing(id: string) {
   const c = await db();
   await c.query("update app.listings set status = 'archived' where id = $1", [id]);
   await c.end();
+}
+
+/** One statement on the stack's database (n8n_worker), for arranging what the website cannot (a test place). */
+export async function sql(query: string, params: unknown[] = []) {
+  const c = await db();
+  try { return (await c.query(query, params)).rows; } finally { await c.end(); }
 }

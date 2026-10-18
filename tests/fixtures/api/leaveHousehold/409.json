@@ -1,0 +1,14 @@
+{
+  "request_id": "2f7d3249-6a4c-48db-8205-20a9c54fd34e",
+  "error": {
+    "code": "CONFLICT",
+    "message": "The balance is not settled",
+    "details": [
+      {
+        "field": "balance",
+        "issue": "balance_not_settled",
+        "balance_minor": -45000
+      }
+    ]
+  }
+}

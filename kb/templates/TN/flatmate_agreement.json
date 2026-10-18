@@ -1,0 +1,104 @@
+{
+  "key": "tn.flatmate_agreement",
+  "kind": "flatmate_agreement",
+  "jurisdiction": "TN",
+  "version": 1,
+  "legal": true,
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "slots": [
+    {
+      "name": "flatmates",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "from": "user",
+      "required": true
+    },
+    {
+      "name": "shares",
+      "type": "items",
+      "from": "user",
+      "required": true,
+      "max": 12,
+      "columns": [
+        "name",
+        "share"
+      ]
+    },
+    {
+      "name": "notice_days",
+      "type": "integer",
+      "from": "user",
+      "required": true,
+      "min": 0,
+      "max": 365
+    },
+    {
+      "name": "rules",
+      "type": "text",
+      "from": "household",
+      "required": false
+    }
+  ],
+  "sources": [
+    {
+      "cite_as": "COC art. 772-774",
+      "title": "Code des obligations et des contrats (COC), version française : sous-location et cession du bail",
+      "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+      "retrieved_at": "2026-10-17",
+      "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+    }
+  ],
+  "text": {
+    "fr": {
+      "title": "Accord de colocation",
+      "paragraphs": [
+        "Entre les colocataires {{flatmates}}, pour le logement situé {{address}}, à partir du {{start_date}}.",
+        "Chacun paie la part du loyer et des charges indiquée ci-dessous :",
+        "{{shares}}",
+        "Un colocataire qui part prévient les autres au moins {{notice_days}} jours à l'avance.",
+        "Règles de la maison : {{rules}}",
+        "À vérifier : le preneur peut sous-louer ou céder son bail, sauf si le bail l'interdit (COC art. 772). Le colocataire qui a signé le bail reste tenu envers le bailleur et garantit les autres occupants (COC art. 774). Cet accord lie les colocataires entre eux ; il ne change pas le bail signé avec le bailleur.",
+        "Signatures des colocataires :"
+      ]
+    },
+    "ar": {
+      "title": "اتفاق السكن المشترك",
+      "paragraphs": [
+        "بين شركاء السكن {{flatmates}}، بخصوص المسكن الكائن بـ {{address}}، ابتداءً من {{start_date}}.",
+        "يدفع كل واحد حصته من الكراء والأعباء كما هي مبيّنة أدناه:",
+        "{{shares}}",
+        "على من يغادر من الشركاء أن يُعلم الآخرين قبل {{notice_days}} يومًا على الأقل.",
+        "قواعد المنزل: {{rules}}",
+        "للتثبّت: يجوز للمكتري أن يُكري من الباطن أو أن يحيل الكراء ما لم يمنعه عقد الكراء (الفصل 772 من مجلة الالتزامات والعقود). ويبقى الشريك الذي أمضى عقد الكراء ملزمًا تجاه المكري وضامنًا لبقية الساكنين (الفصل 774). هذا الاتفاق يُلزم الشركاء فيما بينهم ولا يغيّر عقد الكراء المبرم مع المكري. النص الفرنسي للمجلة هو المرجع هنا.",
+        "إمضاءات الشركاء:"
+      ]
+    },
+    "en": {
+      "title": "Flatmate agreement",
+      "paragraphs": [
+        "Between the flatmates {{flatmates}}, for the home at {{address}}, from {{start_date}}.",
+        "Each pays the share of rent and charges shown below:",
+        "{{shares}}",
+        "A flatmate who leaves tells the others at least {{notice_days}} days in advance.",
+        "House rules: {{rules}}",
+        "To check: the tenant may sublet or assign the lease unless the lease forbids it (COC art. 772). The flatmate who signed the lease stays bound to the landlord and answers for the other occupants (COC art. 774). This agreement binds the flatmates to each other; it does not change the lease signed with the landlord.",
+        "Signatures of the flatmates:"
+      ]
+    }
+  }
+}

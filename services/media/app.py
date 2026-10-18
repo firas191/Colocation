@@ -135,6 +135,15 @@ def _listing_photo_key(v: str) -> str:
     return v
 
 
+def _readable_key(v: str) -> str:
+    """Keys a signed GET URL may be given for: processed photos (media/...) and generated documents (documents/...,
+    platform P9). Never raw uploads."""
+    v = _key(v)
+    if not (v.startswith("media/") or v.startswith("documents/")):
+        raise ValueError("only processed photos (media/...) and generated documents (documents/...) can be read")
+    return v
+
+
 class CardIn(BaseModel):
     """A listing's photo card for Telegram (D-086): the processed copies of its first photos, and how many there are."""
     keys: list[str] = Field(min_length=1, max_length=4)
@@ -221,8 +230,9 @@ def presign(body: PresignIn):
 
 
 class PresignGetIn(BaseModel):
-    """Signed GET URLs for processed listing photos (platform P2: listing page, search covers, favourites). Only keys
-    under media/ (the processed copies: EXIF removed, faces and text blurred); never raw uploads."""
+    """Signed GET URLs for processed listing photos (platform P2: listing page, search covers, favourites) and for
+    generated documents (P9). Only keys under media/ (the processed copies: EXIF removed, faces and text blurred) and
+    documents/; never raw uploads."""
     keys: list[str] = Field(default_factory=list, max_length=60)
     expires_s: int = Field(900, ge=60, le=3600)
     model_config = {"extra": "forbid"}
@@ -230,7 +240,7 @@ class PresignGetIn(BaseModel):
     @field_validator("keys")
     @classmethod
     def _ks(cls, v):
-        return [_listing_photo_key(k) for k in v]
+        return [_readable_key(k) for k in v]
 
 
 @app.post("/v1/storage/presign-get")
@@ -257,3 +267,35 @@ def delete(body: DeleteIn):
     return {"deleted": storage.delete(body.keys)}
 
 
+# ---------- PDF rendering (platform P9, PLATFORM_SPEC 6.7, D-108) ----------------------------------------------------
+class PdfIn(BaseModel):
+    """HTML filled by n8n from a document template -> a PDF written to storage under documents/. The HTML may not
+    load anything: every external URL, file and image reference is refused (the template is self-contained)."""
+    html: str = Field(min_length=1, max_length=500_000)
+    key: str
+    model_config = {"extra": "forbid"}
+
+    @field_validator("key")
+    @classmethod
+    def _k(cls, v):
+        v = _key(v)
+        if not v.startswith("documents/") or not v.endswith(".pdf"):
+            raise ValueError("documents are written under documents/ as .pdf")
+        return v
+
+
+def _no_fetch(url, *a, **k):
+    # WeasyPrint logs a refused resource and renders without it
+    raise ValueError(f"resource refused: {url[:80]}")
+
+
+@app.post("/v1/pdf/render")
+def pdf_render(body: PdfIn):
+    import hashlib
+    import weasyprint
+    t0 = time.perf_counter()
+    doc = weasyprint.HTML(string=body.html, url_fetcher=_no_fetch).render()
+    data = doc.write_pdf()
+    storage.put(body.key, data, "application/pdf")
+    return {"key": body.key, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(), "pages": len(doc.pages),
+            "ms": round((time.perf_counter() - t0) * 1000, 1)}

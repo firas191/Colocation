@@ -1,0 +1,46 @@
+{
+  "request_id": "53f8723f-8435-43d0-813c-daecbb2488ba",
+  "data": {
+    "items": [
+      {
+        "kind": "inventory_entry",
+        "bytes": 12178,
+        "status": "ready",
+        "sources": [
+          {
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+            "title": "Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux",
+            "cite_as": "COC art. 780-783",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)",
+            "retrieved_at": "2026-10-17"
+          },
+          {
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm",
+            "title": "Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée",
+            "cite_as": "COC art. 742-744",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)",
+            "retrieved_at": "2026-10-17"
+          }
+        ],
+        "language": "fr",
+        "template": {
+          "key": "tn.inventory_entry",
+          "version": 1
+        },
+        "created_at": "2026-10-17T09:34:23.818519+00:00",
+        "created_by": {
+          "user_id": "0d9ace72-4598-45dd-80d5-d56cd73b6ea4",
+          "display_name": "Amel"
+        },
+        "error_code": null,
+        "document_id": "23809f7a-6792-4edd-ba50-acd49435e315",
+        "household_id": "fb972966-8f8c-402c-a200-a5b25672a163",
+        "notice_version": "documents-notice-v1",
+        "jurisdiction_code": "TN"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 138
+  }
+}

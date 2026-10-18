@@ -1,0 +1,12 @@
+{
+  "request_id": "f39d1041-e4c5-4940-b3ec-f65894059782",
+  "data": {
+    "issue_id": "81c63c30-172e-4e23-ab9a-ea78e077807e",
+    "processed": 1,
+    "rejected": [],
+    "pending": 0
+  },
+  "meta": {
+    "latency_ms": 1903
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "request_id": "8c4b21c3-90f7-49a2-8503-9fd4c936f49c",
+  "data": {
+    "name": "Dar Zitouna",
+    "status": "active",
+    "members": [
+      {
+        "me": true,
+        "role": "flatmate",
+        "status": "leaving",
+        "user_id": "2d07d0c5-0beb-4a8b-a185-17958adbd213",
+        "joined_at": "2026-10-17T09:50:40.248596+00:00",
+        "move_in_on": null,
+        "move_out_on": "2027-06-30",
+        "display_name": "Amel"
+      },
+      {
+        "me": false,
+        "role": "owner",
+        "status": "active",
+        "user_id": "3af50459-0621-4027-a0b3-f22f877296a3",
+        "joined_at": "2026-10-17T09:50:41.349092+00:00",
+        "move_in_on": null,
+        "move_out_on": null,
+        "display_name": "Omar"
+      }
+    ],
+    "my_role": "flatmate",
+    "currency": "TND",
+    "exponent": 3,
+    "timezone": "Africa/Tunis",
+    "upcoming": [],
+    "created_at": "2026-10-17T09:50:40.248596+00:00",
+    "listing_id": null,
+    "address_text": "4 rue du Jasmin, Tunis",
+    "household_id": "2400a044-96b7-47ab-99d7-b1218dc9568c",
+    "announcements": [],
+    "my_balance_minor": 45000,
+    "jurisdiction_code": "TN"
+  },
+  "meta": {
+    "latency_ms": 137
+  }
+}

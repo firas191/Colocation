@@ -1,0 +1,8 @@
+{
+  "request_id": "70b5809d-5640-4562-9ed5-efb6bf46cda3",
+  "error": {
+    "code": "UNAUTHENTICATED",
+    "message": "Request signature could not be verified",
+    "details": []
+  }
+}

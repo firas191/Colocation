@@ -1,0 +1,9 @@
+{
+  "name": "P12_match_explainer",
+  "agent": "none (one call)",
+  "role": "One or two sentences that explain a compatibility score to the person who looks at a flatmate profile, from the factor states computed in SQL (social.compatibility) only, never the other person's answers (D-115). The idea comes from Yosr's matching (branch roommate-matching), where a model also gave the reason; there the model also scored, here the score stays in code.",
+  "schema": "schemas/P12_match_explainer.schema.json",
+  "variables": ["name", "score", "factors", "language"],
+  "golden_set": null,
+  "active_version": 1
+}

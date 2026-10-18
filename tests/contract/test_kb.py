@@ -53,7 +53,12 @@ def zz(request):
                          (key, key, FIX + path, stype, rel, lang, json.dumps(fetch), cite))
         admin = make_user(conn, "admin")
         user = make_user(conn, "user")
-    return {"admin": admin, "user": user}
+        # the fixtures server is inside the stack; the fetcher refuses such hosts unless allowed (D-111)
+        host = FIX.split("://", 1)[1].split("/", 1)[0].lower()
+        conn.execute("update app.settings set value = %s::jsonb where key = 'kb.fetch_allow_hosts'", (json.dumps([host]),))
+    yield {"admin": admin, "user": user}
+    with psycopg.connect(os.environ["FS_TEST_DB_DSN"], autocommit=True) as conn:
+        conn.execute("update app.settings set value = '[]' where key = 'kb.fetch_allow_hosts'")
 
 
 def wait_job(client, uid, status_url):
@@ -228,6 +233,26 @@ def test_no_network_fails_the_job(client, zz, db, idem):
             assert s["status"] == "skipped" and s["reason"].startswith("robots_unreachable [robots.txt HTTP 0] "), s
     finally:
         db.execute("delete from kb.sources where source_key like 'test-offline-%'")
+
+
+def test_source_inside_the_stack_is_not_fetched(client, zz, db, idem):
+    """D-111, backend spec 15.4 (server-side request forgery): a source pointing at a service of the stack or a
+    private address is refused before any request; the job fails and names the reason."""
+    db.execute("""insert into app.jurisdictions (code, country_code, name, default_currency, default_locale, languages, timezone)
+                  values ('QV', 'QV', 'Test jurisdiction, internal sources (tests only)', 'TND', 'fr-TN', '{fr}', 'Africa/Tunis')
+                  on conflict do nothing""")
+    db.execute("delete from kb.sources where source_key like 'test-ssrf-%'")
+    for key, url in (("test-ssrf-1", "http://postgres:5432/"), ("test-ssrf-2", "http://169.254.169.254/latest/meta-data/")):
+        db.execute("""insert into kb.sources (source_key, jurisdiction_code, title, url, publisher, source_type, reliability, language)
+                      values (%s, 'QV', %s, %s, 'test fixtures', 'blog', 1, 'fr')""", (key, key, url))
+    try:
+        r = client.call("POST", "/v1/admin/kb/ingest", body={"jurisdiction": "QV", "include_global": False}, user_id=zz["admin"], idem=idem())
+        job = wait_job(client, zz["admin"], assert_ok(r, 202)["data"]["status_url"])
+        assert job["status"] == "failed" and job["error"] == "2 of 2 sources failed", job["error"]
+        got = {k: s["error"] for k, s in by_key(job).items()}
+        assert got == {"test-ssrf-1": "refused_address: internal_name", "test-ssrf-2": "refused_address: internal_address"}, got
+    finally:
+        db.execute("delete from kb.sources where source_key like 'test-ssrf-%'")
 
 
 def test_retried_request_returns_the_same_job(client, zz, idem):

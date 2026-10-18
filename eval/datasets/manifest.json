@@ -40,5 +40,33 @@
   "version": 1,
   "file": "p7_photos_v1.jsonl",
   "notes": "50 room photos from Wikimedia Commons for P7 (spec 9.5, 11.2): bedrooms 13, living rooms 10, other rooms 9 (hallway, balcony, terrace, studio, rooms under works), not a room 7 (building fronts, an object, floor plans, a 3D render), bathrooms 6, kitchens 5; 9 with readable text, 5 with people, 5 dark, 5 in poor condition. CC0, public domain, CC BY or CC BY-SA, source and author per photo. Images are not in the repository (D-069). Labelled from the blurred copies by a model-based annotator (guide eval/datasets/guides/p7_photos.md), 20% re-labelled blind, 8 labels adjudicated."
+ },
+ {
+  "name": "trust",
+  "kind": "trust",
+  "version": 1,
+  "file": "trust_v1.jsonl",
+  "notes": "100 synthetic TN listings for the trust check (backend spec 9.5, P4): 72 honest (16 that look risky on purpose, 6 with text asking to be flagged) and 28 scams written from the signal descriptions of spec 12.2 (21 ask for payment before a visit in the text; 6 ask the model to pass them). French, Arabic, English, Tunisian in Latin letters. Labels from construction, written before any run (build_trust_v1.py). Run on the PC with scripts/trust_bench.py."
+ },
+ {
+  "name": "document_agent",
+  "kind": "agent",
+  "version": 1,
+  "file": "document_agent_v1.jsonl",
+  "notes": "16 requests to the Document agent (A6, D-108) for a TN household with two flatmates: the kind expected, the values the person gave (dates, notice) and the slots that must still be missing; one request asks for a clause (no text may be added), one for a rent receipt and one legal question (not made here). Labels written with the set, before any run. Run on the PC with scripts/document_bench.py."
+ },
+ {
+  "name": "p8_scam",
+  "kind": "extraction",
+  "version": 1,
+  "file": "p8_scam_v1.jsonl",
+  "notes": "By Emna Safer (branch feat/scam-check, 2026-10-16), brought in with D-114. 50 synthetic listings for P8_scam_detector: 25 scam, 25 honest; fr 19, en 15, ar 8, arabizi 5, code-switched 3; 13 hard negatives, 4 subtle scams, 3 injection, 1 price trap. Gold = signal types, is_scam (text-only weight >= review threshold of her scale) and amounts. Guide: eval/datasets/guides/p8_scam.md. Model-written and model-labelled (D-055). Written apart from the phrase lists of the trust check, so it is a second, independent set for scripts/trust_bench.py."
+ },
+ {
+  "name": "flatmate_onboarding",
+  "kind": "agent",
+  "version": 1,
+  "file": "flatmate_onboarding_v1.jsonl",
+  "notes": "20 first messages to the flatmate profile agent (A7, D-115), one new TN user each: fr 10 (one arabizi, one code-switched), en 5, ar 3; 2 with nothing to extract, 3 injections. Gold = the fields the message states and their values; forbidden = fields the message does not give (an invented budget or area). Written by us with the set, before any run; no second annotator."
  }
 ]

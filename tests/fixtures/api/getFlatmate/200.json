@@ -1,0 +1,60 @@
+{
+  "request_id": "ab511c1f-62c6-4f30-b516-5b26e680acc4",
+  "data": {
+    "bio": null,
+    "user": {
+      "user_id": "95654da6-b3fa-423c-b77f-fbbb45b815f2",
+      "display_name": null
+    },
+    "areas": [],
+    "seeking": "room",
+    "visible": true,
+    "headline": "Calme",
+    "updated_at": "2026-10-17T03:20:35.399987+00:00",
+    "move_in_from": null,
+    "compatibility": {
+      "score": 78,
+      "factors": [
+        {
+          "state": "unknown",
+          "factor": "schedule"
+        },
+        {
+          "state": "unknown",
+          "factor": "cleanliness"
+        },
+        {
+          "state": "match",
+          "factor": "smoking"
+        },
+        {
+          "state": "differs",
+          "factor": "pets"
+        },
+        {
+          "state": "unknown",
+          "factor": "guests"
+        },
+        {
+          "state": "unknown",
+          "factor": "quiet_hours"
+        },
+        {
+          "state": "match",
+          "factor": "languages"
+        },
+        {
+          "state": "match",
+          "factor": "budget"
+        },
+        {
+          "state": "unknown",
+          "factor": "move_in"
+        }
+      ]
+    }
+  },
+  "meta": {
+    "latency_ms": 201
+  }
+}

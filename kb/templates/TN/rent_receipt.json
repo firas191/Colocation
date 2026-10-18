@@ -1,0 +1,88 @@
+{
+  "key": "tn.rent_receipt",
+  "kind": "rent_receipt",
+  "jurisdiction": "TN",
+  "version": 1,
+  "legal": true,
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "slots": [
+    {
+      "name": "landlord",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "tenant",
+      "type": "text",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "period",
+      "type": "period",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "amount",
+      "type": "money",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "paid_on",
+      "type": "date",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "confirmed_on",
+      "type": "date",
+      "from": "payment",
+      "required": true
+    }
+  ],
+  "sources": [
+    {
+      "cite_as": "COC art. 768-770",
+      "title": "Code des obligations et des contrats (COC), version française : obligations du preneur (paiement du loyer)",
+      "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+      "retrieved_at": "2026-10-17",
+      "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+    }
+  ],
+  "text": {
+    "fr": {
+      "title": "Quittance de loyer",
+      "paragraphs": [
+        "Je soussigné(e) {{landlord}}, bailleur du logement situé {{address}}, reconnais avoir reçu de {{tenant}} la somme de {{amount}} au titre du loyer de la période {{period}}, payée le {{paid_on}}.",
+        "Cette quittance est établie à partir du paiement confirmé par le bailleur sur la plateforme le {{confirmed_on}}. Elle concerne un loyer échu ; une quittance de loyers non échus pour plus d'un an n'est opposable aux tiers qu'enregistrée (COC art. 769)."
+      ]
+    },
+    "ar": {
+      "title": "وصل خلاص الكراء",
+      "paragraphs": [
+        "أنا الممضي أسفله {{landlord}}، مكري المسكن الكائن بـ {{address}}، أشهد أنني تسلمت من {{tenant}} مبلغ {{amount}} بعنوان كراء الفترة {{period}}، دُفع بتاريخ {{paid_on}}.",
+        "حُرّر هذا الوصل انطلاقًا من الدفع الذي أكّده المكري على المنصة بتاريخ {{confirmed_on}}. وهو يخص كراءً حلّ أجله؛ الوصل عن كراء لم يحلّ أجله لأكثر من سنة لا يُحتج به على الغير إلا إذا سُجّل (الفصل 769 من مجلة الالتزامات والعقود، النص الفرنسي هو المرجع هنا)."
+      ]
+    },
+    "en": {
+      "title": "Rent receipt",
+      "paragraphs": [
+        "I, the undersigned {{landlord}}, landlord of the home at {{address}}, acknowledge receiving from {{tenant}} the sum of {{amount}} as rent for the period {{period}}, paid on {{paid_on}}.",
+        "This receipt is made from the payment the landlord confirmed on the platform on {{confirmed_on}}. It covers rent that was due; a receipt for rent not yet due for more than one year binds third parties only if it is registered (COC art. 769)."
+      ]
+    }
+  }
+}

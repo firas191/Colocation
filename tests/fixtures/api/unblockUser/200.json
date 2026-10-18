@@ -1,0 +1,10 @@
+{
+  "request_id": "e3b8e9ea-2933-4f9c-80b0-7791bc4fd926",
+  "data": {
+    "blocked": false,
+    "user_id": "9d23d805-39eb-40ac-89f7-487edf9b4c02"
+  },
+  "meta": {
+    "latency_ms": 154
+  }
+}

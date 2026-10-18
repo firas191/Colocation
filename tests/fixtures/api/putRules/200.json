@@ -1,0 +1,23 @@
+{
+  "request_id": "470a5f0e-f92f-4b3b-9a5f-fc3ccfa22f69",
+  "data": {
+    "items": [
+      {
+        "text": "Calme après 22 h",
+        "category": "quiet"
+      },
+      {
+        "text": "Prévenir la veille",
+        "category": "guests"
+      }
+    ],
+    "updated_at": "2026-10-17T03:07:54.325482+00:00",
+    "updated_by": {
+      "user_id": "bdb6278e-68b2-46a9-92f8-8f707e425ab0",
+      "display_name": null
+    }
+  },
+  "meta": {
+    "latency_ms": 207
+  }
+}

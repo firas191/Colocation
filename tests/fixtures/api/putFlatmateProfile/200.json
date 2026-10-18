@@ -1,0 +1,22 @@
+{
+  "request_id": "e3382de4-e9c1-4d67-be6b-79f6349d7827",
+  "data": {
+    "profile": {
+      "bio": null,
+      "user": {
+        "user_id": "95654da6-b3fa-423c-b77f-fbbb45b815f2",
+        "display_name": null
+      },
+      "areas": [],
+      "seeking": "room",
+      "visible": true,
+      "headline": "Calme",
+      "updated_at": "2026-10-17T03:20:35.399987+00:00",
+      "move_in_from": null
+    },
+    "has_lifestyle": true
+  },
+  "meta": {
+    "latency_ms": 247
+  }
+}

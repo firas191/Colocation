@@ -1,0 +1,20 @@
+{
+  "request_id": "361ce78d-b406-40db-a8f1-4de1b6bada13",
+  "data": {
+    "answer": "Merci ! Vérifiez le récapitulatif et appuyez sur Enregistrer.",
+    "proposal": {
+      "lifestyle": {
+        "smoking": "no",
+        "pets": "no"
+      },
+      "budget_max": 450,
+      "areas": [
+        "La Marsa"
+      ]
+    },
+    "dropped": []
+  },
+  "meta": {
+    "latency_ms": 1493
+  }
+}

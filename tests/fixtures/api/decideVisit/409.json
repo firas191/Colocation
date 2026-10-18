@@ -1,0 +1,14 @@
+{
+  "request_id": "80ca6822-962d-4f29-8ee4-a9bf729f13fb",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Not allowed now",
+    "details": [
+      {
+        "field": "action",
+        "issue": "not_allowed",
+        "status": "requested"
+      }
+    ]
+  }
+}

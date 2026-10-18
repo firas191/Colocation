@@ -1,0 +1,14 @@
+{
+  "request_id": "4282d0b5-d192-49bf-9ef9-736c3010a0f8",
+  "error": {
+    "code": "CONFLICT",
+    "message": "The household already has a room listing",
+    "details": [
+      {
+        "field": "listing_id",
+        "issue": "already_posted",
+        "listing_id": "b94778dc-b0fc-4dc4-b4b3-f6b68fba7bbd"
+      }
+    ]
+  }
+}

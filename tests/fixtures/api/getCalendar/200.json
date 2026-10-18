@@ -1,0 +1,23 @@
+{
+  "request_id": "5dde4aa9-982c-46e1-a43b-c7c743d0137c",
+  "data": {
+    "to": "2027-03-10",
+    "from": "2027-03-01",
+    "items": [
+      {
+        "id": "5694a52e-74d2-4d45-9c56-d92755622d54",
+        "date": "2027-03-05",
+        "kind": "event",
+        "title": "Dîner",
+        "all_day": false,
+        "ends_at": null,
+        "starts_at": "2027-03-05T19:00:00+00:00",
+        "can_delete": false
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "meta": {
+    "latency_ms": 204
+  }
+}

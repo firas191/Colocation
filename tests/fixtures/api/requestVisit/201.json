@@ -1,0 +1,32 @@
+{
+  "request_id": "f9dccc8e-239f-4396-a75e-e790551e15df",
+  "data": {
+    "note": "Après 18 h si possible",
+    "role": "seeker",
+    "other": {
+      "user_id": "024797fa-a704-4ef3-9560-7849308e125f",
+      "display_name": "Olfa"
+    },
+    "status": "requested",
+    "actions": {
+      "done": false,
+      "cancel": true,
+      "confirm": false,
+      "decline": false,
+      "no_show": false,
+      "propose": true
+    },
+    "listing": {
+      "title": "Chambre QV",
+      "listing_id": "00000000-0000-4000-8000-0000000004a1"
+    },
+    "visit_id": "e41b7ab2-eb86-4e36-96a9-22324baeac0a",
+    "starts_at": "2026-10-20T01:32:15+00:00",
+    "created_at": "2026-10-17T01:32:17.089495+00:00",
+    "updated_at": "2026-10-17T01:32:17.089495+00:00",
+    "waiting_for": "other"
+  },
+  "meta": {
+    "latency_ms": 196
+  }
+}

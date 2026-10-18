@@ -1,0 +1,16 @@
+{
+  "request_id": "9952427a-fe01-44cb-9272-07f61f4ac7ec",
+  "data": {
+    "email": true,
+    "muted": [
+      "message_received"
+    ],
+    "recent": [],
+    "telegram": true,
+    "email_address": true,
+    "telegram_linked": false
+  },
+  "meta": {
+    "latency_ms": 166
+  }
+}

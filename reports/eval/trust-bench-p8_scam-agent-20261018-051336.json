@@ -1,0 +1,1180 @@
+{
+  "summary": {
+    "run_at": "2026-10-18T05:13:36+00:00",
+    "dataset": "p8_scam_v1.jsonl",
+    "model": "qwen3.5:4b",
+    "prompt": "P4_trust_assessor",
+    "prompt_version": 2,
+    "mode": "agent",
+    "agent": true,
+    "items": 50,
+    "minutes": 40.5,
+    "block_precision": 1.0,
+    "blocks": 3,
+    "false_block_rate_honest": 0.0,
+    "honest_published": 0.92,
+    "scam_recall_review_or_block": 0.56,
+    "scam_block_rate": 0.12,
+    "targets": {
+      "block_precision": ">= 0.90",
+      "false_block_rate_honest": "<= 0.02",
+      "source": "backend spec 2.6 (targets, not measurements)"
+    },
+    "by_kind": {
+      "hard_negative": {
+        "ok": 11,
+        "review": 1,
+        "block": 0,
+        "null": 0
+      },
+      "injection": {
+        "ok": 1,
+        "review": 1,
+        "block": 1,
+        "null": 0
+      },
+      "plain": {
+        "ok": 12,
+        "review": 0,
+        "block": 0,
+        "null": 0
+      },
+      "scam": {
+        "ok": 7,
+        "review": 10,
+        "block": 2,
+        "null": 0
+      },
+      "subtle": {
+        "ok": 3,
+        "review": 1,
+        "block": 0,
+        "null": 0
+      }
+    },
+    "agent_states": {
+      "answered": 33,
+      "failed": 16,
+      "unparsed": 1
+    },
+    "agent_dropped_quotes": 1,
+    "client_ms": {
+      "p50": 33556.3,
+      "p95": 108469.0
+    }
+  },
+  "rows": [
+    {
+      "id": "p8-001",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 147595.4,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "untraceable_payment",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-002",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 11839.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-003",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 41024.1,
+      "verdict": "review",
+      "score": 55,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-004",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 37305.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-005",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 125185.5,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-006",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 10266.8,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-007",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 24386.4,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-008",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 18437.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-009",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 44841.8,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-010",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 18544.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-011",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "arabizi",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 30965.7,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "untraceable_payment",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-012",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7568.0,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-013",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "mixed",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 21462.4,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-014",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7185.9,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-015",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 46548.4,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed",
+        "urgency_pressure"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-016",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 88442.9,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-017",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 92118.4,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "untraceable_payment",
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "text_signals",
+        "text_signals",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-018",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7033.9,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-019",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 108469.0,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-020",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 18261.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-021",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 90038.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-022",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 24996.1,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-023",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 84976.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-024",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 23757.3,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "untraceable_payment",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-025",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 85507.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-026",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "mixed",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 17671.1,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-027",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 70411.0,
+      "verdict": "review",
+      "score": 40,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "untraceable_payment"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "text_signals",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-028",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 33556.3,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields",
+        "price_benchmark",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-029",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 43233.2,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-030",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7084.1,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-031",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 22037.4,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_before_viewing"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-032",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14674.9,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-033",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 31263.4,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "unparsed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-034",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 65287.4,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-035",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 75857.1,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-036",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 77185.1,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-037",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 84433.7,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-038",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15580.7,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-039",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 86131.7,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-040",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 17197.7,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-041",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "mixed",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 90364.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-042",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7358.9,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-043",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 104891.5,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-044",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14944.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-045",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "arabizi",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 38029.4,
+      "verdict": "block",
+      "score": 35,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-046",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 24480.1,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [
+        {
+          "why": "quote_not_in_text",
+          "signal": "inconsistent_details"
+        }
+      ],
+      "tool_calls": [
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-047",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 89966.9,
+      "verdict": "block",
+      "score": 5,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-048",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 56222.9,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "listing_fields",
+        "text_signals",
+        "photo_duplicates",
+        "owner_history",
+        "price_benchmark"
+      ],
+      "error": null
+    },
+    {
+      "id": "p8-049",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 90093.3,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "p8-050",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 32680.0,
+      "verdict": "block",
+      "score": 15,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing",
+        "untraceable_payment"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    }
+  ]
+}

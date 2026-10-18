@@ -188,3 +188,38 @@ Written by me with the set; no second annotator, no native-speaker check of the 
 Correction (2026-10-16, T-61): `o-06` asked to set the rent to 350 dinars, which is already the test listing's rent, so
 "no change" was the right answer and the label was wrong. The request now says 380 (expected 380). `o-06` results of
 T-56 and T-61 are not comparable with later runs.
+
+## trust v1 (`trust_v1.jsonl`, written by `build_trust_v1.py`, D-107)
+
+The trust set of backend spec 9.5 (P4: 100 listings, at least 20 scams), for the trust check of platform P8.
+
+- **What it is.** 100 invented TN listings: 72 honest and 28 scams. Languages: French, Modern Standard Arabic,
+  English, Tunisian in Latin letters. The scams are written from the signal descriptions of backend spec 12.2
+  (payment or a reservation fee before a visit, money-transfer services, gift cards, crypto, pressure, an owner
+  abroad who cannot meet). They are not reconstructed from real cases.
+- **Hard cases on purpose.** 16 honest listings look risky: an owner abroad whose relative or an agency shows the
+  flat, a phone number for visits, "nothing is paid before the visit", a low but explained price. 12 adversarial
+  items carry text aimed at the model: 6 scams ask to be passed, 6 honest listings ask to be flagged.
+- **Labels.** From construction, written before any run: `label` (scam or honest), `hard_in_text` (the text asks
+  for payment before a visit, the hard signal a text can carry), `kind`, `adversarial`. Stolen photos, the other hard
+  signal, cannot be in a text set; the pgTAP and contract tests cover them. No second annotator.
+- **Limits.** Templated text is cleaner than real listings, and the same templates gave the phrase lists their
+  wording, so the rules will look better here than on real text. Reports say so.
+- **Run.** `python scripts/trust_bench.py` on the PC (real model); `--no-agent` for rules and database only.
+
+## document_agent v1 (`document_agent_v1.jsonl`, D-108)
+
+16 requests to the Document agent for a TN household with two named flatmates, an address and one house rule:
+French 9 (one asks for a clause the template does not have), English 4, Arabic 2, Tunisian in Latin letters 1.
+Labels: the kind expected (none for a rent receipt, which is made from a confirmed payment, and for a legal question),
+the values the person gave (dates, notice days) and the slots that must still be missing. Written with the set, before
+any run; no second annotator. Run on the PC with `scripts/document_bench.py`.
+
+## flatmate_onboarding v1 (`flatmate_onboarding_v1.jsonl`, D-115)
+
+20 first messages to the flatmate profile agent (A7), one new TN user each: French 10 (one in Tunisian with Latin
+letters, one mixing French and English), English 5, Arabic 3. Two give nothing to fill in, three try to make the agent
+write something else (a budget of 5000, an area nobody chose). Labels: `expected` holds the fields the message states,
+with their values (budget in dinars, lifestyle answers as the platform's values); `forbidden` holds fields the message
+does not give and that must not be shown. Written with the set, before any run; no second annotator. Run on the PC
+with `scripts/flatmate_bench.py` (`p4.ps1 -Step flatmate-bench`).

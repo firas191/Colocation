@@ -263,3 +263,171 @@ flowchart LR
   (`scripts/windows/map.ps1`); without it the search page shows the list only.
 - The website's assistant page uses the same orchestrator and agents as Telegram, then `GET /v2/search?ids=` to show
   the result cards.
+
+### Owners: posting, publication, my listings (platform P3, D-102)
+
+```mermaid
+flowchart LR
+  B[Browser] -->|/fr/owner/new, /fr/owner/listings/id| W[web]
+  W -->|POST /v1/listings, .../media/presign| A[existing listing workflows]
+  B -->|signed PUT of each photo| P[Caddy :8080] --> G[(Garage)]
+  W -->|POST .../analyze, GET /v1/jobs/id| J[wf.listing.analyze: photos, then A1 extraction]
+  W -->|PATCH /v1/listings/id| X[wf.listing.apply: app.listing_apply_changes]
+  W -->|POST /v1/listings/id/submit| S[wf.api.listings_submit: app.listing_submit, embedding]
+  W -->|GET /v1/me/listings| M[wf.api.me_listings: app.me_listings, signed covers]
+```
+
+| Workflow | Route | Does |
+|---|---|---|
+| `wf.api.listings_submit` | `POST /v1/listings/{id}/submit` | `app.listing_submit`: 404 for another owner's listing, 409 while an analysis runs or for a listing that is not a draft, 422 with what is missing (`app.listing_readiness`: rent, place on the map, a photo), else published with its title and map point, owner notified (`listing_published`), then embedded for the search by meaning |
+| `wf.api.me_listings` | `GET /v1/me/listings` | `app.me_listings`: the owner's listings with their number for the owner assistant, what each draft still needs, the analysis issues that still apply, the last analysis job, the actions that apply; cover photos signed by the Media service |
+
+- The browser uploads photo bytes straight to the storage with the presigned URLs; the website server only asks for
+  the URLs and starts the analysis job, then follows it with `GET /v1/jobs/{id}`.
+- A new analysis keeps what the owner changed: `app.store_listing_extraction` skips the columns named in
+  `extraction.owner_changes` and keeps that history and the publication record (D-077's open point).
+- Archive and publish again stay `PATCH /v1/listings/{id}` with `status`. From P8 the trust job replaces the direct
+  publication in `app.listing_submit`.
+- The owner assistant panel on `/owner/listings` is the assistant page's chat; its numbers ("annonce 2") match the
+  `number` the list shows.
+
+### Messages, visits, applications, reports (platform P4, D-103)
+
+```mermaid
+flowchart LR
+  W[web: listing page, /messages, /visits, /applications] -->|signed calls| G[wf.gateway.auth]
+  G --> E[19 wf.api.* platform workflows]
+  E -->|select api.fn&#40;user, input&#41;, as app_rls| F[api functions]
+  F -->|RLS: members, parties| T[(social.conversations, members, messages, blocks, visit_slots, visits, visit_events, applications)]
+  F --> R[(app.reports)]
+  F -->|api.notify_emit| N[(notify.notifications)]
+```
+
+- Each operation is one `api.*` function; the policies of the `social` tables decide what exists for the caller.
+  Membership checks inside policies go through `social.my_conversations()` and `social.slot_taken()` (superuser-owned
+  helpers that only answer about the caller or a count).
+- The function returns the actions the caller can take on a visit or an application; the pages show those buttons.
+- `tests/contract/test_isolation.py` runs every conversation, visit and application operation as a third user.
+
+### Households (platform P5 and P6, D-104, D-105)
+
+- Schema `home`, behind the row-level layer: households, members, invites, expenses and shares, settlements,
+  recurring items, rent payments, announcements (P5); chores and assignments, shopping, house rules, events, issues
+  (P6). Each operation is one `api.*` function, as in P4.
+- Arithmetic in SQL: `api.split` (the three split modes), `api._balances` and `api.settle_plan` (suggested
+  settlements); pure functions, tested on their own.
+- `wf.household.daily` (05:00 UTC) calls `home.daily_reminders()`: rent and bill reminders in each household's date,
+  once per due date; P6 adds the chore assignments.
+
+## Flatmates and saved searches (platform P7)
+
+- Tables `social.flatmate_profiles`, `social.saved_searches`, `social.saved_search_hits` (migration 0028), behind the
+  row-level layer. A profile is visible to others only when its owner says so and nobody blocked anybody.
+- `social.compatibility(a, b)` computes the score and the factor states from an allowlist of profile fields (D-106);
+  the API returns it with each profile and, on the owner side, with applications to a household's room.
+- `POST /v1/households/{id}/room-posts` -> `home.room_post`: a draft listing linked to the household, finished on the
+  owner pages.
+- `POST /v1/me/saved-searches` checks the query with the `/v2/search` code; `wf.household.daily` (05:00 UTC) runs
+  reminders, then chores, then `social.daily_alerts()`, which sends each new matching listing once per search.
+- Website: `/flatmates`, `/flatmates/[id]`, `/flatmates/me`, `/saved-searches`; "Save this search" on `/search`;
+  "A room is free" on the household page.
+
+## Trust and safety (platform P8)
+
+- Submit: `wf.api.listings_submit` -> `app.listing_submit(user, id)` (P3 checks; 100 when the trust check is on) ->
+  `wf.trust.assess` -> `app.listing_submit(user, id, {report_id})`: published, `pending_review` with a moderation item,
+  or rejected (D-107).
+- `wf.trust.assess`: `app.trust_facts` (database signals), the phrase lists of the packs (Code node), the Trust agent
+  A4 (AI Agent node, `P4_trust_assessor`, tools in `wf.trust.tool`), `trust_rules.checkAgent` (quotes, payment
+  confirmation), `app.trust_store` -> `app.trust_score` (caps, verdict) -> `app.trust_reports`.
+- `wf.ops.benchmarks` (04:30 UTC) -> `app.refresh_price_benchmarks()` -> `app.price_benchmarks`.
+- Moderation: `GET /v1/admin/moderation`, `POST /v1/admin/moderation/{id}/decision` -> `app.moderation_list`,
+  `app.moderation_decide` (staff only, audit log). Reports open or raise queue items (trigger on `app.reports`).
+- Messages: `wf.api.message_send` scans the text with the phrase lists; codes in `social.messages.flags`, shown to the
+  receiver as `warnings`.
+- Badges: `app.user_badges`, in `GET /v1/me`. Website: `/admin/moderation`, badges on `/account`, warnings in a
+  conversation, the trust outcome on the owner's publish step.
+
+## Documents and legal help (platform P9)
+
+- `GET /v1/document-templates` -> templates built from `kb/templates` (Code node). `POST /v1/households/{id}/documents`
+  -> `api.document_facts` (membership, role, confirmed payment) -> `doc_fill` (slots, escaping) -> Media service
+  `POST /v1/pdf/render` (WeasyPrint, `documents/...`) -> `api.document_store` -> `home.documents`.
+  `GET /v1/documents/{id}` signs a download URL; the website's `/[locale]/documents/{id}/download` redirects to it.
+- Document agent A6: `POST /v1/households/{id}/documents/assistant` -> AI Agent node with `wf.documents.tool`
+  (`household_facts`, `template_slots`, `propose_document` -> `home.document_drafts`); confirmed with `{draft_id}`.
+- `POST /v1/legal/ask` -> Text service masking -> `wf.legal.agent` (A5), no router.
+- Website: `/households/[id]/documents` (forms per type, the agent, the list with downloads).
+
+## Moving out and privacy (platform P10)
+
+- Deposits and move-out: `home.deposits`, `home.move_outs` behind the row-level layer; `api.deposits_list`,
+  `api.deposit_put`, `api.moveout_get|start|item`; leave checks the balance (`api.household_leave`).
+- `GET /v1/documents/{id}/comparison` -> `api.document_comparison` (the two inventories' stored rows).
+- `DELETE /v1/me` -> `app.me_erase` -> `app.erase_user` and the erasure triggers of every phase; files as
+  `delete_media` jobs. `wf.ops.retention` (03:30 UTC): `app.retention_run`, then `app.media_deletions_take` -> Media
+  service `POST /v1/storage/delete` -> `app.media_deletions_done`.
+- Website: `/households/[id]/move-out`, `/households/[id]/documents/[doc]` (comparison), "Delete my account" on `/account`.
+
+## Notification channels and admin (platform P11)
+
+- `wf.notify.dispatch` (every minute): `app.deliveries_take` -> Compose (website sentences, `lib/notify_text.js`) ->
+  Send Email (SMTP credential) / Telegram node -> `app.deliveries_done` (`notify.deliveries`, retries).
+- `GET|PUT /v1/me/notification-preferences` (`notify.preferences`); `POST|DELETE /v1/me/telegram-link`
+  (`app.telegram_link_codes`, hash only); `wf.telegram.link` for the bot (`app.telegram_link_redeem`).
+- Admin: `/v1/admin/settings` (allowlist), `/v1/admin/users`, `/v1/admin/users/{id}/role`, `/v1/admin/prompts`,
+  `GET /v1/admin/eval/runs`, `/v1/admin/kb/sources` -> `app.admin_*` (role checked in SQL and by the gateway).
+- Website: notification settings and Telegram code on `/account`; `/admin` and its pages.
+
+## Hardening (platform P12)
+
+- `tests/contract/test_isolation_matrix.py`: every resource path of `docs/openapi.yaml`, called by an outsider.
+- `web/tests/safety.test.ts`: no raw HTML, only `lib/server/api.ts` reaches the API, no extra write routes.
+- `wf.kb.ingest_source`: "Robots URL" -> "Address allowed?" (`lib/url_guard.js`, `kb.fetch_allow_hosts`) -> fetch,
+  or "Refused (address)" with no request.
+- Backup: `scripts/db-backup.sh` / `db-restore.sh` with `db-fingerprint.sql` (run in the db-bootstrap container by
+  `scripts/windows/backup.ps1`, `restore.ps1`, `p12.ps1`); Garage volumes as a tar. Load: `scripts/load_bench.py`.
+  Status: `docs/HARDENING.md`.
+
+## Submit with the trust check as a job (D-112)
+
+- `POST /v2/listings/{id}/submit` (`wf.api.listings_submit_v2`) -> `app.listing_submit_job` -> 202 and a
+  `listing_trust` job, started at once in `wf.listing.trust` (retries: `wf.jobs.dispatch`) -> `wf.trust.assess` ->
+  `app.listing_submit` with the report -> embedding -> `app.job_finish` (outcome) and `app.record_job_steps`.
+- The website's publish panel uses v2 and polls `GET /v1/jobs/{id}`. `POST /v1/listings/{id}/submit` is unchanged.
+
+## Trust check: detector mode and contact reuse (D-114)
+
+- `wf.trust.assess`: Rules -> Agent? (trust.model agent) -> Trust agent | Detector? (trust.model detector) -> one
+  `wf.llm.call` of `P8_scam_detector` -> Check answer (same quote checks; `price_mismatch` from its amounts) -> Store.
+- `app.trust_facts` = `app.trust_facts_base` + `contact_reused` (`app.trust_contact_reuse`). Moderation items carry the
+  check's `note`.
+
+## Flatmate matching from Yosr's branch (D-115)
+
+- Contact: `api.contact_request_create` / `contact_requests_list` / `contact_request_decide` on
+  `social.contact_requests`; accept -> `direct` conversation + `contact_request_accepted` notification.
+- `wf.api.flatmate_explain`: Facts (`api.flatmate_explain_facts`) -> Plan -> Model? -> `wf.llm.call`
+  (`P12_match_explainer`) -> Build result (`checkSentence`, else `codeSentence`).
+- `wf.api.flatmate_assistant`: AI Agent A7 (Ollama, Postgres memory, tools via `wf.flatmate.tool`) -> Session text ->
+  Check answer (`checkProposal`, `supportedByText`) -> `{answer, proposal, dropped}`; saved only by
+  `app.flatmate_onboarding_apply`.
+- Living plan: `api.document_facts` = `document_facts_base` + costs, chores, habits (`home.living_plan_habits`).
+- Website: `/contact-requests`, contact and "why this score" on `/flatmates/[id]`, the chat on `/flatmates/me`, the
+  living plan form on the household documents page.
+
+## Website interface (D-116)
+
+- Design tokens and shared utilities: `web/app/globals.css` (light, dark by system, dark or light by `data-theme`).
+- Theme: `components/theme-toggle.tsx` sets the `theme` cookie and `data-theme`; `app/[locale]/layout.tsx` reads the
+  cookie for the first paint; `components/search/search-map.tsx` restyles the map on the `themechange` event.
+- Shell: `components/site-header.tsx` (one `<nav>`, `nav-link.tsx`, `header-menu.tsx`), `components/site-footer.tsx`.
+- Shared pieces: `components/ui/field.tsx` (`PageHeader`, `Empty`, `Notice`), `components/ui/avatar.tsx`,
+  `components/ui/assistant.tsx` (every assistant: thinking, turns, dashed proposal box).
+- Home page texts: `landing` namespace in `web/messages/*.json` (the `home` namespace belongs to the household pages).
+
+## Country of the site (D-118)
+
+- `web/lib/server/country.ts` (cookie `country`), `components/country-switcher.tsx`; used by the search, flatmates,
+  assistant, new listing and new household pages.
+- GET /v1/places -> `wf.api.places_list` -> `api.places_list` -> `app.places_for` (database owner; the gazetteer).

@@ -23,7 +23,8 @@ export function FavouriteButton({ listingId, initial, title, className }:
     <span className={clsx("inline-flex flex-col items-end", className)}>
       <button type="button" onClick={press} disabled={pending} aria-pressed={on}
         aria-label={`${on ? t("unsave") : t("save")}: ${title}`}
-        className="grid size-11 place-items-center rounded-full border border-line bg-paper/95 text-door shadow-sm hover:border-door disabled:opacity-60">
+        className={clsx("grid size-11 place-items-center rounded-full border bg-paper/95 shadow-sm backdrop-blur transition-transform hover:scale-105 disabled:opacity-60",
+          on ? "border-bougain text-bougain" : "border-line text-ink hover:border-bougain hover:text-bougain")}>
         <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
           <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.3 4.3 0 0 1 12 7.7a4.3 4.3 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z"
             fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />

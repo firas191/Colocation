@@ -1,0 +1,11 @@
+{
+  "request_id": "679d4c59-8de7-4db5-93bf-e5b3e1358bf6",
+  "data": {
+    "title": "Dîner",
+    "event_id": "5694a52e-74d2-4d45-9c56-d92755622d54",
+    "starts_at": "2027-03-05T19:00:00+00:00"
+  },
+  "meta": {
+    "latency_ms": 213
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "request_id": "6731f3b1-45ec-4431-b86d-503a16d1d510",
+  "data": {
+    "to": {
+      "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+      "display_name": "Amel"
+    },
+    "from": {
+      "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+      "display_name": "Bilel"
+    },
+    "settled_on": "2026-10-17",
+    "amount_minor": 32000,
+    "settlement_id": "48b16f35-f494-42d6-a573-7607670ca44e"
+  },
+  "meta": {
+    "latency_ms": 193
+  }
+}

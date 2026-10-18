@@ -1,0 +1,1249 @@
+{
+  "summary": {
+    "run_at": "2026-10-18T05:23:56+00:00",
+    "dataset": "p8_scam_v1.jsonl",
+    "model": "qwen3.5:4b",
+    "prompt": "P8_scam_detector",
+    "prompt_version": 1,
+    "mode": "detector",
+    "agent": false,
+    "items": 50,
+    "minutes": 10.3,
+    "block_precision": 1.0,
+    "blocks": 5,
+    "false_block_rate_honest": 0.0,
+    "honest_published": 0.88,
+    "scam_recall_review_or_block": 0.88,
+    "scam_block_rate": 0.2,
+    "targets": {
+      "block_precision": ">= 0.90",
+      "false_block_rate_honest": "<= 0.02",
+      "source": "backend spec 2.6 (targets, not measurements)"
+    },
+    "by_kind": {
+      "hard_negative": {
+        "ok": 10,
+        "review": 2,
+        "block": 0,
+        "null": 0
+      },
+      "injection": {
+        "ok": 1,
+        "review": 1,
+        "block": 1,
+        "null": 0
+      },
+      "plain": {
+        "ok": 12,
+        "review": 0,
+        "block": 0,
+        "null": 0
+      },
+      "scam": {
+        "ok": 1,
+        "review": 14,
+        "block": 4,
+        "null": 0
+      },
+      "subtle": {
+        "ok": 1,
+        "review": 3,
+        "block": 0,
+        "null": 0
+      }
+    },
+    "agent_states": {
+      "answered": 50
+    },
+    "agent_dropped_quotes": 2,
+    "client_ms": {
+      "p50": 11496.0,
+      "p95": 22072.9
+    }
+  },
+  "rows": [
+    {
+      "id": "p8-001",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 46292.6,
+      "verdict": "review",
+      "score": 20,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "contact_off_platform",
+        "untraceable_payment",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-002",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 12313.2,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [
+        {
+          "why": "amount_not_in_text",
+          "signal": "price_mismatch"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-003",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13028.7,
+      "verdict": "review",
+      "score": 55,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-004",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 8661.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-005",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 20561.4,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-006",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7113.0,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-007",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 12808.1,
+      "verdict": "block",
+      "score": 35,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_dropped": [
+        {
+          "why": "amount_not_in_text",
+          "signal": "price_mismatch"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-008",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7491.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-009",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 15617.6,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-010",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7313.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-011",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "arabizi",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 22339.2,
+      "verdict": "review",
+      "score": 20,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-012",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7211.9,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-013",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "mixed",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 22060.9,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-014",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7102.5,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-015",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 22072.9,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "contact_off_platform",
+        "payment_claim_unconfirmed",
+        "urgency_pressure"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-016",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7164.3,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-017",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 15458.9,
+      "verdict": "review",
+      "score": 30,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-018",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 8644.6,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-019",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 18703.0,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "urgency_pressure",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-020",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7426.2,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-021",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 12308.6,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "payment_claim_unconfirmed"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-022",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7010.4,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-023",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 12157.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [
+        {
+          "why": "quote_not_in_text",
+          "signal": "payment_before_viewing"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-024",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 11496.0,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-025",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13996.3,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-026",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "mixed",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7177.7,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-027",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 21415.2,
+      "verdict": "review",
+      "score": 20,
+      "signals": [
+        "untraceable_payment",
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [
+        {
+          "why": "quote_not_in_text",
+          "signal": "untraceable_payment"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-028",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6707.9,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-029",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 12072.7,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "urgency_pressure",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-030",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6686.6,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-031",
+      "label": "scam",
+      "kind": "subtle",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 11418.0,
+      "verdict": "review",
+      "score": 40,
+      "signals": [
+        "payment_before_viewing",
+        "price_mismatch"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing",
+        "price_mismatch"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-032",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6746.0,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-033",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13165.2,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-034",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 9138.5,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-035",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 12925.0,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "urgency_pressure",
+        "urgency_pressure",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-036",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6879.5,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-037",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13374.4,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "price_far_below",
+        "payment_claim_unconfirmed",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed",
+        "owner_abroad"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-038",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6803.4,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-039",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 15180.9,
+      "verdict": "block",
+      "score": 25,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing",
+        "urgency_pressure",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-040",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "arabizi",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 9944.1,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-041",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "mixed",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 18293.7,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [
+        {
+          "why": "amount_not_in_text",
+          "signal": "price_mismatch"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-042",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 7565.8,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-043",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 12032.8,
+      "verdict": "review",
+      "score": 55,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "contact_off_platform"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-044",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6725.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-045",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "arabizi",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 12670.4,
+      "verdict": "block",
+      "score": 25,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-046",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 9418.4,
+      "verdict": "review",
+      "score": 65,
+      "signals": [
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-047",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 10972.8,
+      "verdict": "block",
+      "score": 5,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment",
+        "payment_before_viewing"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-048",
+      "label": "honest",
+      "kind": "hard_negative",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 6789.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-049",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13245.2,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_claim_unconfirmed",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad",
+        "payment_claim_unconfirmed",
+        "payment_claim_unconfirmed"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": null
+    },
+    {
+      "id": "p8-050",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 13800.7,
+      "verdict": "block",
+      "score": 5,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "price_far_below",
+        "urgency_pressure"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "untraceable_payment",
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_dropped": [
+        {
+          "why": "amount_not_in_text",
+          "signal": "price_mismatch"
+        }
+      ],
+      "tool_calls": [],
+      "error": null
+    }
+  ]
+}

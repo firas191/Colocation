@@ -1,0 +1,33 @@
+{
+  "request_id": "41958b53-0af9-4001-a314-033b95c520dd",
+  "data": {
+    "user": {
+      "user_id": "3e100d21-ad73-46ca-a336-5fad376388e5",
+      "display_name": "Amel"
+    },
+    "amount": {
+      "currency": "TND",
+      "exponent": 3,
+      "amount_minor": 500000
+    },
+    "held_by": "owner",
+    "paid_on": "2026-09-01",
+    "returned": {
+      "currency": "TND",
+      "exponent": 3,
+      "amount_minor": 450000
+    },
+    "deductions": [
+      {
+        "reason": "Vitre",
+        "amount_minor": 50000
+      }
+    ],
+    "kept_minor": 50000,
+    "updated_at": "2026-10-17T09:49:24.245932+00:00",
+    "returned_on": "2027-07-01"
+  },
+  "meta": {
+    "latency_ms": 218
+  }
+}

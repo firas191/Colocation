@@ -1,0 +1,8 @@
+{
+  "request_id": "4bf7c8ba-814e-402f-b775-9457ead65fc7",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Application not found",
+    "details": []
+  }
+}

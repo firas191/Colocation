@@ -1,0 +1,8 @@
+{
+  "request_id": "970fc343-a5db-43dd-ab25-b9c35d8f4da7",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Saved search not found",
+    "details": []
+  }
+}

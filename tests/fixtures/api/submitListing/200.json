@@ -1,0 +1,15 @@
+{
+  "request_id": "f23004b0-ba0d-4e7e-b7ba-b8e8b06fe135",
+  "data": {
+    "place": "Quartier Tilleul",
+    "title": "Chambre meublée près du parc, wifi et bureau, libre en novembre",
+    "status": "published",
+    "checked": false,
+    "listing_id": "fe13a72d-f6ba-42c8-9e13-49aa604a9237",
+    "published_at": "2026-10-16T23:27:38.392427+00:00",
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 270
+  }
+}

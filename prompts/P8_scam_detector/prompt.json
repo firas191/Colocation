@@ -1,0 +1,13 @@
+{
+  "name": "P8_scam_detector",
+  "agent": "A4 trust check (detector mode, D-114)",
+  "role": "Written by Emna Safer for her scam check (branch feat/scam-check, 2026-10-16), brought into the trust check in D-114: read the text of a rental listing and list the scam signals it contains (payment outside the platform, advance payment, owner abroad, urgency, external contact), each with the exact quote, and every amount of money written in the text. The model never computes a score or compares prices: code does (trust_rules.js maps the five types to the trust signals; app.trust_score applies trust.points). Used when trust.model is detector.",
+  "schema": "schemas/P8_scam_detector.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today"
+  ],
+  "golden_set": "p8_scam",
+  "active_version": 1
+}

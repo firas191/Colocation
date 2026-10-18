@@ -1,0 +1,38 @@
+{
+  "request_id": "5e1afc03-3404-4dc8-8dec-685f0796563e",
+  "data": {
+    "balances": [
+      {
+        "me": false,
+        "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+        "display_name": "Amel",
+        "balance_minor": 32000
+      },
+      {
+        "me": true,
+        "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+        "display_name": "Bilel",
+        "balance_minor": -32000
+      }
+    ],
+    "currency": "TND",
+    "exponent": 3,
+    "suggested": [
+      {
+        "to": {
+          "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+          "display_name": "Amel"
+        },
+        "from": {
+          "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+          "display_name": "Bilel"
+        },
+        "amount_minor": 32000
+      }
+    ],
+    "settlements": []
+  },
+  "meta": {
+    "latency_ms": 214
+  }
+}

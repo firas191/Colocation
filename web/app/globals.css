@@ -1,59 +1,203 @@
 @import "tailwindcss";
 
-/* Coloc design tokens (platform P1). Lime-washed walls, ink lines of a floor plan, a cobalt door.
-   Names are what the colour is for, so a page never picks a raw value. */
+/* Coloc design system, "Bleu de porte" (D-116). Sidi Bou Said: whitewashed walls, a cobalt door, bougainvillea on
+   the wall; at night the same street under a deep blue sky. The signature is the floor plan of a shared flat, and
+   one rule of architects' drawings: what is proposed is drawn dashed, what is built is drawn solid (the assistants'
+   proposals use it). Names say what a colour is for, so a page never picks a raw value. */
 @theme {
-  --color-plaster: #eef2ef;     /* page */
-  --color-paper: #fbfcfb;       /* fields, panels */
-  --color-ink: #16233a;         /* text, plan lines */
-  --color-ink-soft: #4a586d;    /* secondary text */
-  --color-line: #c9d2cc;        /* hairlines, borders */
-  --color-door: #1d4fb8;        /* primary action, links, the free room */
+  --color-plaster: #f3f6f5;     /* page: whitewash */
+  --color-paper: #ffffff;       /* surfaces: panels, fields, cards */
+  --color-raised: #e9eeec;      /* a surface inside a surface: chips, wells, the photo placeholder */
+  --color-ink: #0e1b2e;         /* text, plan lines */
+  --color-ink-soft: #4a586c;    /* secondary text */
+  --color-line: #d3dcd8;        /* hairlines, borders */
+  --color-door: #1748c0;        /* primary action, links, the free room */
   --color-door-ink: #ffffff;    /* text on door */
-  --color-olive: #4f6128;       /* success */
-  --color-saffron: #d9952a;     /* attention, unread */
-  --color-brick: #a3392a;       /* errors */
+  --color-door-soft: #e3eafb;   /* tint of door: selected rows, the assistant's bubble */
+  --color-bougain: #b3196e;     /* bougainvillea: favourites, a match, the one highlight of a page */
+  --color-bougain-ink: #ffffff; /* text on bougainvillea */
+  --color-olive: #3c6a28;       /* done, saved */
+  --color-olive-ink: #ffffff;   /* text on olive */
+  --color-saffron: #c48216;     /* attention, unread */
+  --color-brick: #a8322a;       /* errors */
+  --color-night: #0b1a3d;       /* the blueprint panel of the home page (same in both themes) */
+
   --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
   --font-arabic: "IBM Plex Sans Arabic", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --text-display: 2.75rem;
-  --text-display--line-height: 1.08;
-  --radius-field: 0.375rem;
+  --font-display: "Alexandria Variable", "IBM Plex Sans", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+
+  /* type scale, ratio 1.25 from 1rem; display sizes for the home page and page titles */
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+  --text-display--line-height: 1.02;
+  --text-title: clamp(1.875rem, 1.5rem + 1.2vw, 2.5rem);
+  --text-title--line-height: 1.1;
+
+  /* radius by rank: photos are the largest, controls the smallest, chips are pills */
+  --radius-field: 0.625rem;
+  --radius-panel: 1rem;
+  --radius-photo: 1.25rem;
+
+  --shadow-lift: 0 1px 2px rgb(14 27 46 / 0.06), 0 12px 32px -12px rgb(23 72 192 / 0.28);
+  --shadow-pin: 0 1px 3px rgb(0 0 0 / 0.35);
+  --ease-door: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Dark: the same street at night. Chosen when the system asks for it (no data-theme), or by the toggle
+   (data-theme="dark", a cookie read by the server so the first paint already has it). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-plaster: #111821;
-    --color-paper: #18212d;
-    --color-ink: #e6ebf2;
-    --color-ink-soft: #a6b1c2;
-    --color-line: #2c3747;
-    --color-door: #7ea3f2;
-    --color-door-ink: #0d1626;
-    --color-olive: #a9bf6c;
-    --color-saffron: #f0b65a;
-    --color-brick: #f08b78;
+    --color-plaster: #0b1424;
+    --color-paper: #111c30;
+    --color-raised: #1a2740;
+    --color-ink: #e8edf5;
+    --color-ink-soft: #a5b2c6;
+    --color-line: #26354f;
+    --color-door: #8aabff;
+    --color-door-ink: #0a1430;
+    --color-door-soft: #1a2a4f;
+    --color-bougain: #f27fc2;
+    --color-bougain-ink: #2b0a1d;
+    --color-olive: #9cc47c;
+    --color-olive-ink: #10200a;
+    --color-saffron: #f1b657;
+    --color-brick: #f38d7e;
+    --color-night: #060e22;
+    --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -16px rgb(0 0 0 / 0.7);
+    color-scheme: dark;
   }
 }
+:root[data-theme="dark"] {
+  --color-plaster: #0b1424;
+  --color-paper: #111c30;
+  --color-raised: #1a2740;
+  --color-ink: #e8edf5;
+  --color-ink-soft: #a5b2c6;
+  --color-line: #26354f;
+  --color-door: #8aabff;
+  --color-door-ink: #0a1430;
+  --color-door-soft: #1a2a4f;
+  --color-bougain: #f27fc2;
+  --color-bougain-ink: #2b0a1d;
+  --color-olive: #9cc47c;
+  --color-olive-ink: #10200a;
+  --color-saffron: #f1b657;
+  --color-brick: #f38d7e;
+  --color-night: #060e22;
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -16px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
 
 @layer base {
   html { background: var(--color-plaster); color: var(--color-ink); }
   body { font-family: var(--font-sans); background: var(--color-plaster); -webkit-text-size-adjust: 100%; }
   [dir="rtl"] body { font-family: var(--font-arabic); line-height: 1.7; }
-  :focus-visible { outline: 2px solid var(--color-door); outline-offset: 2px; }
-  /* Links in text are underlined (colour alone is not enough, WCAG 1.4.1); navigation links opt out. */
-  a { color: var(--color-door); text-decoration-line: underline; text-underline-offset: 0.2em; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 { letter-spacing: 0; line-height: 1.35; }
+  :focus-visible { outline: 2px solid var(--color-door); outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: var(--color-door); color: var(--color-door-ink); }
+  /* A link inside a sentence keeps a line (colour alone is not enough, WCAG 1.4.1), drawn light and offset; links that
+     stand alone use link-back, link-action, link-title or a button instead (D-116). */
+  a { color: var(--color-door); text-decoration-line: underline; text-underline-offset: 0.28em; text-decoration-thickness: 1.5px;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); transition: text-decoration-color 160ms, color 160ms; }
+  a:hover { text-decoration-color: currentColor; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  input, select, textarea { color-scheme: inherit; }
+  input[type="file"] { font-size: 0.875rem; color: var(--color-ink-soft); max-width: 100%; }
+  input[type="file"]::file-selector-button { margin-inline-end: 0.75rem; min-height: 2.5rem; padding-inline: 1rem; border-radius: 9999px;
+    border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink); font-weight: 600; cursor: pointer;
+    transition: border-color 160ms, color 160ms; }
+  input[type="file"]::file-selector-button:hover { border-color: var(--color-door); color: var(--color-door); }
 }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Shared pieces. Utilities, so a page writes class="panel p-4" and stays in the design. */
+@utility panel { border-radius: var(--radius-panel); border: 1px solid var(--color-line); background: var(--color-paper); }
+@utility page-title {
+  font-family: var(--font-display); font-weight: 700; font-size: var(--text-title); line-height: var(--text-title--line-height);
+  letter-spacing: -0.02em; overflow-wrap: anywhere;
+}
+@utility section-title { font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; line-height: 1.3; }
+@utility chip {
+  display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; border-radius: 9999px; padding-inline: 0.75rem;
+  border: 1px solid var(--color-line); background: var(--color-paper); font-size: 0.875rem; color: var(--color-ink);
+}
+@utility btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem; padding-inline: 1.25rem;
+  border-radius: var(--radius-field); font-weight: 600; font-size: 0.95rem; text-decoration: none;
+  transition: background-color 160ms var(--ease-door), transform 160ms var(--ease-door), box-shadow 160ms var(--ease-door);
+}
+@utility btn-primary {
+  background: var(--color-door); color: var(--color-door-ink);
+  &:hover { box-shadow: var(--shadow-lift); transform: translateY(-1px); }
+}
+@utility btn-secondary {
+  border: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-ink);
+  &:hover { border-color: var(--color-door); color: var(--color-door); }
+}
+/* "Back to ..." above a page title: small, quiet, with a chevron that points back in either reading direction. */
+@utility link-back {
+  display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 500; color: var(--color-ink-soft);
+  text-decoration: none; border-radius: 9999px; padding: 0.25rem 0.75rem 0.25rem 0.5rem; margin-inline-start: -0.5rem;
+  transition: background-color 160ms, color 160ms;
+  &::before { content: ""; width: 0.875rem; height: 0.875rem; background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10 3 5 8l5 5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+  &:hover { color: var(--color-door); background: var(--color-door-soft); }
+  [dir="rtl"] &::before { transform: scaleX(-1); }
+}
+/* An action that is a link (open, see all, compare): door-coloured text in a pill that fills on hover, no underline. */
+@utility link-action {
+  display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.25rem; padding-inline: 0.75rem;
+  border-radius: 9999px; font-weight: 600; color: var(--color-door); text-decoration: none; transition: background-color 160ms;
+  &:hover { background: var(--color-door-soft); }
+}
+/* The name of a thing that opens it (a listing title in a list): ink, door on hover. */
+@utility link-title { color: var(--color-ink); font-weight: 600; text-decoration: none; &:hover { color: var(--color-door); } }
+
+/* The assistants' proposals: dashed like a proposed wall on a plan; solid once saved (class "built"). */
+@utility proposal {
+  border-radius: var(--radius-panel); border: 1.5px dashed var(--color-door); background: var(--color-door-soft);
+}
+@utility skeleton {
+  border-radius: var(--radius-field);
+  background: linear-gradient(90deg, var(--color-raised) 0%, var(--color-line) 50%, var(--color-raised) 100%);
+  background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
 
 /* Numbers, e-mails and amounts inside Arabic sentences keep their own direction. */
 .ltr-island { unicode-bidi: isolate; direction: ltr; }
 
-/* The plan draws itself once when the page opens (the page's single motion). */
-.plan-draw path, .plan-draw rect, .plan-draw circle { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: plan-draw 1.6s ease-out forwards; }
+/* The page's one orchestrated motion: the plan draws itself when the home page opens. */
+.plan-draw path, .plan-draw rect, .plan-draw circle { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: plan-draw 1.8s var(--ease-door) forwards; }
 @keyframes plan-draw { to { stroke-dashoffset: 0; } }
 .plan-draw path[stroke-dasharray] { animation: none; stroke-dashoffset: 0; }
+.plan-fade { opacity: 0; animation: plan-fade 0.6s var(--ease-door) 1.3s forwards; }
+@keyframes plan-fade { to { opacity: 1; } }
+
+/* The assistant is thinking: three dots, nothing else moves. */
+.thinking-dots span { display: inline-block; width: 0.4rem; height: 0.4rem; border-radius: 9999px; background: currentColor; opacity: 0.25;
+  animation: dot 1.2s infinite ease-in-out; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot { 40% { opacity: 1; transform: translateY(-2px); } }
+
+/* Theme toggle icons: the sun shows in dark (to go light), the moon in light. CSS decides, so the server's HTML is
+   the same whatever the theme and nothing flips after loading. */
+.theme-moon { display: inline; } .theme-sun { display: none; }
+:root[data-theme="dark"] .theme-moon { display: none; } :root[data-theme="dark"] .theme-sun { display: inline; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-moon { display: none; } :root:not([data-theme="light"]) .theme-sun { display: inline; }
+}
 
 /* Listing markers on the search map (platform P2): a door-coloured pin, a link to the listing. */
 .map-pin { display: block; width: 22px; height: 30px; background: var(--color-door); border: 2px solid var(--color-paper);
-  border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); }
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: var(--shadow-pin); transition: transform 160ms var(--ease-door); }
+.map-pin:hover, .map-pin[data-active="true"] { background: var(--color-bougain); transform: rotate(-45deg) scale(1.15); }
 .map-pin:focus-visible { outline: 3px solid var(--color-saffron); outline-offset: 2px; }
+.maplibregl-ctrl-group { background: var(--color-paper) !important; border: 1px solid var(--color-line); }
+.maplibregl-ctrl-group button { filter: none; }
+:root[data-theme="dark"] .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(1); }
+.maplibregl-ctrl-attrib { background: color-mix(in srgb, var(--color-paper) 85%, transparent) !important; color: var(--color-ink-soft); }
+.maplibregl-ctrl-attrib a { color: var(--color-ink-soft); }

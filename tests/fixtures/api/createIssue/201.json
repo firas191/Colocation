@@ -1,0 +1,33 @@
+{
+  "request_id": "38c50f09-b58c-4d5e-94eb-4aac1be13894",
+  "data": {
+    "title": "Fuite sous l'évier",
+    "events": [
+      {
+        "at": "2026-10-17T03:07:55.281384+00:00",
+        "by": {
+          "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+          "display_name": null
+        },
+        "status": "open",
+        "comment": null
+      }
+    ],
+    "status": "open",
+    "urgency": "urgent",
+    "category": "plumbing",
+    "issue_id": "81c63c30-172e-4e23-ab9a-ea78e077807e",
+    "created_at": "2026-10-17T03:07:55.281384+00:00",
+    "photo_keys": [],
+    "updated_at": "2026-10-17T03:07:55.281384+00:00",
+    "description": null,
+    "reported_by": {
+      "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+      "display_name": null
+    },
+    "photos_pending": 0
+  },
+  "meta": {
+    "latency_ms": 214
+  }
+}

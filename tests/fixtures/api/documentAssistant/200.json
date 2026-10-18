@@ -1,0 +1,31 @@
+{
+  "request_id": "29753abf-6757-4e18-aeb8-ddc9f0ef9938",
+  "data": {
+    "answer": "Il manque : start_date.",
+    "draft": {
+      "kind": "flatmate_agreement",
+      "values": {
+        "shares": [
+          {
+            "name": "Amel",
+            "share": "225 TND"
+          },
+          {
+            "name": "Bilel",
+            "share": "225 TND"
+          }
+        ],
+        "notice_days": 30
+      },
+      "missing": [
+        "start_date"
+      ],
+      "draft_id": "a2c9f6b6-521d-436f-ac56-572826d38668",
+      "language": "fr"
+    },
+    "language": "en"
+  },
+  "meta": {
+    "latency_ms": 1711
+  }
+}

@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+        <h1 className="page-title">{t("title")}</h1>
         <p className="max-w-prose text-ink-soft">{t("lead")}</p>
       </div>
       {r.ok ? (

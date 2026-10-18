@@ -1,0 +1,3 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.2 s)
+PASS  prompts: store new versions and the active ones (P9_document_agent)  (exit 0, 1.3 s)
+PASS  Document agent: the 16 requests of document_agent_v1, one new household each (real model)  (exit 0, 294.3 s)

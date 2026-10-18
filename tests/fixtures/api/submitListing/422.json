@@ -1,0 +1,13 @@
+{
+  "request_id": "eca40444-5026-48c0-a6ac-bb1dce529aee",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "publish",
+        "issue": "additional_property"
+      }
+    ]
+  }
+}

@@ -149,6 +149,11 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}        # the bot's token from @BotFather (docs/RUNBOOK.md); empty = no bot
       TELEGRAM_API_BASE: https://api.telegram.org
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}   # the Match agent's chat model node (D-084)
+      SMTP_HOST: ${SMTP_HOST:-mailpit}                  # notification e-mails (P11, D-110); Mailpit in development
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     volumes:
       - ./:/flatshare:ro
       - n8n_data:/home/node/.n8n
@@ -319,6 +324,7 @@ services:
       FS_API_BASE: http://proxy:8080
       FS_VIA_PROXY: "1"
       FS_SECRETS_FILE: /flatshare/secrets/api-clients.env
+      FS_MAIL_API: http://mailpit:8025                   # notification e-mails read back by the P11 contract test
       FS_TEST_DB_DSN: host=postgres dbname=${FLATSHARE_DB:-flatshare} user=n8n_worker password=${N8N_WORKER_DB_PASSWORD}
       FS_OUTAGE_DATABASE_STOP: docker stop fs-postgres
       FS_OUTAGE_DATABASE_START: docker start fs-postgres

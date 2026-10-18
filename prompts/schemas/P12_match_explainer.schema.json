@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P12_match_explainer output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sentence"],
+  "properties": {
+    "sentence": {"type": "string", "minLength": 10, "maxLength": 300}
+  }
+}

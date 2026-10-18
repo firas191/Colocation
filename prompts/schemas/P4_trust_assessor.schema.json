@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:flatshare:prompts:P4_trust_assessor",
+  "title": "P4_trust_assessor answer",
+  "description": "Backend spec 9.4. The Trust agent's final answer: risk signals read in the listing text, each with a short quote from it. Points are capped by the setting trust.points and the score and verdict are computed in code (app.trust_score); a quote that is not in the text drops the signal (n8n/src/lib/trust_rules.js, D-107).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["signals", "summary"],
+  "properties": {
+    "signals": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["signal", "points", "evidence_quote"],
+        "properties": {
+          "signal": {"enum": ["urgency_pressure", "payment_before_viewing", "untraceable_payment", "owner_abroad", "contact_off_platform",
+                              "inconsistent_details", "too_good_price_claim", "discriminatory_language", "other"]},
+          "points": {"type": "integer", "minimum": -40, "maximum": 0},
+          "evidence_quote": {"type": "string", "maxLength": 160},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "summary": {"type": "string", "maxLength": 300}
+  }
+}

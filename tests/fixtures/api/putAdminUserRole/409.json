@@ -1,0 +1,13 @@
+{
+  "request_id": "9bfa1ae0-bc56-4047-9b70-f8cc6e8d2e42",
+  "error": {
+    "code": "CONFLICT",
+    "message": "You cannot change your own role",
+    "details": [
+      {
+        "field": "id",
+        "issue": "self"
+      }
+    ]
+  }
+}

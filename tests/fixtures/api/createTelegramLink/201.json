@@ -1,0 +1,11 @@
+{
+  "request_id": "a5d05714-b435-4a60-9c46-5606c5ef8935",
+  "data": {
+    "code": "82B949CF",
+    "command": "/lier 82B949CF",
+    "expires_at": "2026-10-17T14:16:05.18553+00:00"
+  },
+  "meta": {
+    "latency_ms": 309
+  }
+}

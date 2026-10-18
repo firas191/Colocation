@@ -1,0 +1,1001 @@
+{
+  "request_id": "60f3b0b1-cc69-439b-898c-1b336736c281",
+  "data": {
+    "items": [
+      {
+        "config": {
+          "key": "no-such-model:1b|1",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "no-such-model:1b",
+          "prompt": "P1_router",
+          "version": 1
+        },
+        "run_id": "28faa103-5bc2-4d11-af46-f7391b1dd39b",
+        "dataset": {
+          "id": "13d9eba4-0b7b-43fe-b411-07e88805016e",
+          "kind": "routing",
+          "name": "test_p1",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 1,
+        "started_at": "2026-10-16T23:17:43.469768+00:00",
+        "finished_at": "2026-10-16T23:17:43.834055+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P2_profile_extractor",
+          "version": 3
+        },
+        "run_id": "5879bc9a-bd00-4718-954f-fffced9d06ce",
+        "dataset": {
+          "id": "4d681c0b-ff87-4a3f-82db-a63fc580e687",
+          "kind": "extraction",
+          "name": "test_p2",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 1,
+        "started_at": "2026-10-16T23:17:40.645243+00:00",
+        "finished_at": "2026-10-16T23:17:41.170793+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P2_profile_extractor",
+          "version": 2
+        },
+        "run_id": "056ab231-9fc3-42e5-90bd-72531a2a51a9",
+        "dataset": {
+          "id": "4d681c0b-ff87-4a3f-82db-a63fc580e687",
+          "kind": "extraction",
+          "name": "test_p2",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 1,
+        "started_at": "2026-10-16T23:17:40.645243+00:00",
+        "finished_at": "2026-10-16T23:17:41.170793+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 4,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P1_router",
+          "version": 2
+        },
+        "run_id": "7d329b32-2e08-415b-996a-a5b08a860ef6",
+        "dataset": {
+          "id": "13d9eba4-0b7b-43fe-b411-07e88805016e",
+          "kind": "routing",
+          "name": "test_p1",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 4,
+        "started_at": "2026-10-16T23:17:38.7037+00:00",
+        "finished_at": "2026-10-16T23:17:40.187018+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 4,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P1_router",
+          "version": 1
+        },
+        "run_id": "c71e646f-3e5f-40db-848e-d9f677c6235c",
+        "dataset": {
+          "id": "13d9eba4-0b7b-43fe-b411-07e88805016e",
+          "kind": "routing",
+          "name": "test_p1",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 4,
+        "started_at": "2026-10-16T23:17:38.7037+00:00",
+        "finished_at": "2026-10-16T23:17:40.187018+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "7de1697b-9582-41a3-9cdd-fb269ef69527",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 3,
+        "started_at": "2026-10-16T23:16:29.988307+00:00",
+        "finished_at": "2026-10-16T23:16:31.463361+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "27a77c4b-581f-4597-ba3e-e7bff4f1559d",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 3,
+        "started_at": "2026-10-16T23:16:29.988307+00:00",
+        "finished_at": "2026-10-16T23:16:31.463361+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|4",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 4
+        },
+        "run_id": "7d6f6a56-67ad-4512-b9fc-143755f4720f",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 1,
+        "started_at": "2026-10-16T23:14:11.477766+00:00",
+        "finished_at": "2026-10-16T23:14:12.067532+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 3
+        },
+        "run_id": "23db95ee-c3fb-4748-85d6-979a95aa1587",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 1,
+        "started_at": "2026-10-16T23:14:11.477766+00:00",
+        "finished_at": "2026-10-16T23:14:12.067532+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 2
+        },
+        "run_id": "167272a5-b67d-4200-a577-acf2bb24c5f9",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 2,
+        "started_at": "2026-10-16T23:14:09.307548+00:00",
+        "finished_at": "2026-10-16T23:14:10.129457+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 1
+        },
+        "run_id": "46e68da6-1f18-4517-931c-4cc0fe28f5fe",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 2,
+        "started_at": "2026-10-16T23:14:09.307548+00:00",
+        "finished_at": "2026-10-16T23:14:10.129457+00:00"
+      },
+      {
+        "config": {
+          "k": 5,
+          "mode": "dense",
+          "label": null,
+          "model": "multilingual-e5-large",
+          "rrf_k": 60,
+          "rerank": false,
+          "dataset": "test_retrieval",
+          "version": 1,
+          "strategy": "structure_aware_v1",
+          "candidates": 50,
+          "jurisdiction": "QZ",
+          "overlap_fraction": 0.5
+        },
+        "run_id": "42d316b3-bac3-4936-b6fe-7e5de700b8e5",
+        "dataset": {
+          "id": "9e8812d4-5a33-4dc5-bc54-4dba8f2a8072",
+          "kind": "retrieval",
+          "name": "test_retrieval",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "test",
+        "results": 4,
+        "started_at": "2026-10-16T23:13:38.901971+00:00",
+        "finished_at": "2026-10-16T23:13:38.937874+00:00"
+      },
+      {
+        "config": {
+          "k": 5,
+          "mode": "hybrid",
+          "label": null,
+          "model": "bge-m3",
+          "rrf_k": 60,
+          "rerank": false,
+          "dataset": "test_retrieval",
+          "version": 1,
+          "strategy": "structure_aware_v1",
+          "candidates": 50,
+          "jurisdiction": "QZ",
+          "overlap_fraction": 0.5
+        },
+        "run_id": "c1cba9b2-f133-4f0b-b6b4-72b1f1ed559e",
+        "dataset": {
+          "id": "9e8812d4-5a33-4dc5-bc54-4dba8f2a8072",
+          "kind": "retrieval",
+          "name": "test_retrieval",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "test",
+        "results": 4,
+        "started_at": "2026-10-16T23:13:38.853776+00:00",
+        "finished_at": "2026-10-16T23:13:38.894904+00:00"
+      },
+      {
+        "config": {
+          "k": 5,
+          "mode": "lexical",
+          "label": null,
+          "model": "bge-m3",
+          "rrf_k": 60,
+          "rerank": false,
+          "dataset": "test_retrieval",
+          "version": 1,
+          "strategy": "structure_aware_v1",
+          "candidates": 50,
+          "jurisdiction": "QZ",
+          "overlap_fraction": 0.5
+        },
+        "run_id": "691e72a7-8777-466c-85f1-a413f14ab532",
+        "dataset": {
+          "id": "9e8812d4-5a33-4dc5-bc54-4dba8f2a8072",
+          "kind": "retrieval",
+          "name": "test_retrieval",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "test",
+        "results": 4,
+        "started_at": "2026-10-16T23:13:38.781881+00:00",
+        "finished_at": "2026-10-16T23:13:38.83548+00:00"
+      },
+      {
+        "config": {
+          "k": 5,
+          "mode": "hybrid",
+          "label": null,
+          "model": "bge-m3",
+          "rrf_k": 60,
+          "rerank": false,
+          "dataset": "test_retrieval",
+          "version": 1,
+          "strategy": "fixed_500_50",
+          "candidates": 50,
+          "jurisdiction": "QZ",
+          "overlap_fraction": 0.5
+        },
+        "run_id": "10894fe7-be20-448c-952a-0b7cfd5c6561",
+        "dataset": {
+          "id": "9e8812d4-5a33-4dc5-bc54-4dba8f2a8072",
+          "kind": "retrieval",
+          "name": "test_retrieval",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "test",
+        "results": 4,
+        "started_at": "2026-10-16T23:13:38.698995+00:00",
+        "finished_at": "2026-10-16T23:13:38.7742+00:00"
+      },
+      {
+        "config": {
+          "k": 5,
+          "mode": "lexical",
+          "label": null,
+          "model": "bge-m3",
+          "rrf_k": 60,
+          "rerank": false,
+          "dataset": "test_retrieval",
+          "version": 1,
+          "strategy": "fixed_500_50",
+          "candidates": 50,
+          "jurisdiction": "QZ",
+          "overlap_fraction": 0.5
+        },
+        "run_id": "e95127c4-7307-4b47-9c7f-9238e50bd799",
+        "dataset": {
+          "id": "9e8812d4-5a33-4dc5-bc54-4dba8f2a8072",
+          "kind": "retrieval",
+          "name": "test_retrieval",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "test",
+        "results": 4,
+        "started_at": "2026-10-16T23:13:38.525169+00:00",
+        "finished_at": "2026-10-16T23:13:38.675639+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "2d597e0a-27a5-484f-b2cc-b528c91f98b1",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:29:15.339258+00:00",
+        "finished_at": "2026-10-16T17:29:16.33166+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "f386fdf2-3745-4fd1-8b04-dcb481df680c",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:29:15.339258+00:00",
+        "finished_at": "2026-10-16T17:29:16.33166+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|4",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 4
+        },
+        "run_id": "a009e9cd-9db6-4681-ace5-47a190aa3fb0",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:26:52.032607+00:00",
+        "finished_at": "2026-10-16T17:26:52.441905+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 3
+        },
+        "run_id": "f7b7cead-d595-47d8-8524-e1b692032f78",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:26:52.032607+00:00",
+        "finished_at": "2026-10-16T17:26:52.441905+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 2
+        },
+        "run_id": "3c19ea8b-7254-46b8-b9b7-f5fa5a565de8",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:26:50.332256+00:00",
+        "finished_at": "2026-10-16T17:26:50.967875+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 1
+        },
+        "run_id": "13e248bf-c406-4db5-a00a-64119981a291",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:26:50.332256+00:00",
+        "finished_at": "2026-10-16T17:26:50.967875+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "59c85ace-d3bd-48f4-9a41-06e85ccf5be2",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:22:26.691258+00:00",
+        "finished_at": "2026-10-16T17:22:28.002329+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "ab73fa4e-065e-4cdb-9bd1-44cf8da810f5",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:22:26.691258+00:00",
+        "finished_at": "2026-10-16T17:22:28.002329+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "e390c170-2e04-4f0d-b7f4-17890a146888",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:14:20.799681+00:00",
+        "finished_at": "2026-10-16T17:14:22.276279+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "a0564553-a3af-4635-bc56-4f6b05527710",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:14:20.799681+00:00",
+        "finished_at": "2026-10-16T17:14:22.276279+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 3
+        },
+        "run_id": "67b6d548-fdc9-44dc-b2c2-d9a54994eb99",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:12:04.891123+00:00",
+        "finished_at": "2026-10-16T17:12:05.404317+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|4",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 4
+        },
+        "run_id": "5d7c45b2-5c3d-49af-9902-e8ae93921cb9",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:12:04.891123+00:00",
+        "finished_at": "2026-10-16T17:12:05.404317+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 1
+        },
+        "run_id": "03e859a8-c8b4-426a-9c2c-6b2166371dc8",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:12:03.063521+00:00",
+        "finished_at": "2026-10-16T17:12:03.804704+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 2
+        },
+        "run_id": "ec2a934c-885f-45c0-9e7e-67a8191cbba5",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:12:03.063521+00:00",
+        "finished_at": "2026-10-16T17:12:03.804704+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "a2cbe229-57f4-46e6-a493-166c6242bdc1",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:02:24.0083+00:00",
+        "finished_at": "2026-10-16T17:02:25.508573+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "2e948baa-5775-47ef-a5f4-546f2c6aab29",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:02:24.0083+00:00",
+        "finished_at": "2026-10-16T17:02:25.508573+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 3
+        },
+        "run_id": "4c283827-1151-4635-8d06-2daf6f68a9ca",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:00:02.417627+00:00",
+        "finished_at": "2026-10-16T17:00:02.907639+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|4",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 4
+        },
+        "run_id": "6e84a919-4fa8-40d3-a640-1816ef77b7e0",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:00:02.417627+00:00",
+        "finished_at": "2026-10-16T17:00:02.907639+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 2
+        },
+        "run_id": "41b37061-ddb9-4612-a1ed-b34bafad56af",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:00:00.532244+00:00",
+        "finished_at": "2026-10-16T17:00:01.275091+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 1
+        },
+        "run_id": "c545edc0-8b07-4621-8a2a-bec008be2768",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T17:00:00.532244+00:00",
+        "finished_at": "2026-10-16T17:00:01.275091+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 2
+        },
+        "run_id": "79704807-fd67-4c9e-ae6d-1541d542ed0d",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:19:31.881853+00:00",
+        "finished_at": "2026-10-16T16:19:33.170319+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 3,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P7_photo_analyzer",
+          "version": 1
+        },
+        "run_id": "3b4af69d-98f9-4a1b-a729-7c36a41cb59c",
+        "dataset": {
+          "id": "b3be9b75-9128-4dd3-a4fa-bc76d38a7636",
+          "kind": "vision",
+          "name": "test_p7",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:19:31.881853+00:00",
+        "finished_at": "2026-10-16T16:19:33.170319+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|3",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 3
+        },
+        "run_id": "1e42d9f6-192a-4f46-9331-e5a34e730ea3",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:16:58.740271+00:00",
+        "finished_at": "2026-10-16T16:16:59.252143+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|4",
+          "kind": "prompt",
+          "items": 1,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 4
+        },
+        "run_id": "9d356dd9-a6ac-4da0-9161-7825de691dbd",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:16:58.740271+00:00",
+        "finished_at": "2026-10-16T16:16:59.252143+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|2",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 2
+        },
+        "run_id": "a9ed9c04-8983-4819-924b-bdf94f317208",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:16:56.867032+00:00",
+        "finished_at": "2026-10-16T16:16:57.630722+00:00"
+      },
+      {
+        "config": {
+          "key": "qwen3.5:4b|1",
+          "kind": "prompt",
+          "items": 2,
+          "label": null,
+          "model": "qwen3.5:4b",
+          "prompt": "P3_listing_extractor",
+          "version": 1
+        },
+        "run_id": "d6404b34-4b92-4ed5-81c3-1b77a9344849",
+        "dataset": {
+          "id": "d88c9611-7b78-4b84-aa19-ca4c30a7cf01",
+          "kind": "extraction",
+          "name": "test_p3",
+          "notes": null,
+          "version": 1
+        },
+        "git_sha": "",
+        "results": 0,
+        "started_at": "2026-10-16T16:16:56.867032+00:00",
+        "finished_at": "2026-10-16T16:16:57.630722+00:00"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 678
+  }
+}

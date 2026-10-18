@@ -1,0 +1,292 @@
+{
+  "request_id": "a231e452-1726-4f4e-8816-01fe22baeaba",
+  "data": {
+    "jurisdiction": "TN",
+    "items": [
+      {
+        "key": "tn.flatmate_agreement",
+        "kind": "flatmate_agreement",
+        "version": 1,
+        "legal": true,
+        "languages": [
+          "fr",
+          "ar",
+          "en"
+        ],
+        "slots": [
+          {
+            "name": "flatmates",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "address",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "from": "user",
+            "required": true
+          },
+          {
+            "name": "shares",
+            "type": "items",
+            "from": "user",
+            "required": true,
+            "columns": [
+              "name",
+              "share"
+            ],
+            "max": 12
+          },
+          {
+            "name": "notice_days",
+            "type": "integer",
+            "from": "user",
+            "required": true,
+            "max": 365,
+            "min": 0
+          },
+          {
+            "name": "rules",
+            "type": "text",
+            "from": "household",
+            "required": false
+          }
+        ],
+        "sources": [
+          {
+            "cite_as": "COC art. 772-774",
+            "title": "Code des obligations et des contrats (COC), version française : sous-location et cession du bail",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          }
+        ]
+      },
+      {
+        "key": "tn.inventory_entry",
+        "kind": "inventory_entry",
+        "version": 1,
+        "legal": true,
+        "languages": [
+          "fr",
+          "ar",
+          "en"
+        ],
+        "slots": [
+          {
+            "name": "occupants",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "landlord",
+            "type": "text",
+            "from": "household",
+            "required": false
+          },
+          {
+            "name": "address",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "date",
+            "type": "date",
+            "from": "user",
+            "required": true
+          },
+          {
+            "name": "items",
+            "type": "items",
+            "from": "user",
+            "required": true,
+            "max": 80
+          }
+        ],
+        "sources": [
+          {
+            "cite_as": "COC art. 780-783",
+            "title": "Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          },
+          {
+            "cite_as": "COC art. 742-744",
+            "title": "Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          }
+        ]
+      },
+      {
+        "key": "tn.inventory_exit",
+        "kind": "inventory_exit",
+        "version": 1,
+        "legal": true,
+        "languages": [
+          "fr",
+          "ar",
+          "en"
+        ],
+        "slots": [
+          {
+            "name": "occupants",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "landlord",
+            "type": "text",
+            "from": "household",
+            "required": false
+          },
+          {
+            "name": "address",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "date",
+            "type": "date",
+            "from": "user",
+            "required": true
+          },
+          {
+            "name": "items",
+            "type": "items",
+            "from": "user",
+            "required": true,
+            "max": 80
+          }
+        ],
+        "sources": [
+          {
+            "cite_as": "COC art. 780-783",
+            "title": "Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          },
+          {
+            "cite_as": "COC art. 742-744",
+            "title": "Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          }
+        ]
+      },
+      {
+        "key": "tn.rent_receipt",
+        "kind": "rent_receipt",
+        "version": 1,
+        "legal": true,
+        "languages": [
+          "fr",
+          "ar",
+          "en"
+        ],
+        "slots": [
+          {
+            "name": "landlord",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "tenant",
+            "type": "text",
+            "from": "payment",
+            "required": true
+          },
+          {
+            "name": "address",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "period",
+            "from": "payment",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "money",
+            "from": "payment",
+            "required": true
+          },
+          {
+            "name": "paid_on",
+            "type": "date",
+            "from": "payment",
+            "required": true
+          },
+          {
+            "name": "confirmed_on",
+            "type": "date",
+            "from": "payment",
+            "required": true
+          }
+        ],
+        "sources": [
+          {
+            "cite_as": "COC art. 768-770",
+            "title": "Code des obligations et des contrats (COC), version française : obligations du preneur (paiement du loyer)",
+            "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+            "retrieved_at": "2026-10-17",
+            "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+          }
+        ]
+      },
+      {
+        "key": "global.house_rules",
+        "kind": "house_rules",
+        "version": 1,
+        "legal": false,
+        "languages": [
+          "fr",
+          "ar",
+          "en"
+        ],
+        "slots": [
+          {
+            "name": "household",
+            "type": "text",
+            "from": "household",
+            "required": true
+          },
+          {
+            "name": "rules",
+            "type": "items",
+            "from": "household",
+            "required": true,
+            "columns": [
+              "category",
+              "text"
+            ],
+            "max": 30
+          }
+        ],
+        "sources": []
+      }
+    ],
+    "not_available": []
+  },
+  "meta": {
+    "latency_ms": 173
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "key": "tn.inventory_entry",
+  "kind": "inventory_entry",
+  "jurisdiction": "TN",
+  "version": 1,
+  "legal": true,
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "slots": [
+    {
+      "name": "occupants",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "landlord",
+      "type": "text",
+      "from": "household",
+      "required": false
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "date",
+      "type": "date",
+      "from": "user",
+      "required": true
+    },
+    {
+      "name": "items",
+      "type": "items",
+      "from": "user",
+      "required": true,
+      "max": 80
+    }
+  ],
+  "sources": [
+    {
+      "cite_as": "COC art. 780-783",
+      "title": "Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux",
+      "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+      "retrieved_at": "2026-10-17",
+      "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+    },
+    {
+      "cite_as": "COC art. 742-744",
+      "title": "Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée",
+      "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm",
+      "retrieved_at": "2026-10-17",
+      "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)"
+    }
+  ],
+  "text": {
+    "fr": {
+      "title": "État des lieux d'entrée",
+      "paragraphs": [
+        "Le {{date}}, les parties ont constaté ensemble l'état du logement situé {{address}} et de ses équipements, tel que décrit ci-dessous, à l'entrée de {{occupants}}.",
+        "{{items}}",
+        "Pourquoi ce document : quand un état des lieux a été fait, le preneur doit rendre la chose telle qu'il l'a reçue ; sans état des lieux, il est présumé l'avoir reçue en bon état (COC art. 780 et 781). Il ne répond pas des pertes dues à l'usage normal ou à la vétusté (COC art. 783).",
+        "Signatures des parties :"
+      ]
+    },
+    "ar": {
+      "title": "محضر معاينة حالة المسكن عند الدخول",
+      "paragraphs": [
+        "بتاريخ {{date}}، عاين الطرفان معًا حالة المسكن الكائن بـ {{address}} وتجهيزاته كما هي مبيّنة أدناه، عند دخول {{occupants}}.",
+        "{{items}}",
+        "لماذا هذه الوثيقة: إذا حُرّر محضر لحالة المسكن، وجب على المكتري أن يردّ الشيء كما تسلّمه؛ وبدونه يُفترض أنه تسلّمه في حالة حسنة (الفصلان 780 و781 من مجلة الالتزامات والعقود). ولا يُسأل عن النقص الناتج عن الاستعمال العادي أو القِدَم (الفصل 783). النص الفرنسي للمجلة هو المرجع هنا.",
+        "إمضاءات الطرفين:"
+      ]
+    },
+    "en": {
+      "title": "Entry inventory",
+      "paragraphs": [
+        "On {{date}}, the parties recorded together the condition of the home at {{address}} and its equipment, as described below, when {{occupants}} moved in.",
+        "{{items}}",
+        "Why this document: when an inventory was made, the tenant must return the thing as received; without one, the tenant is presumed to have received it in good condition (COC art. 780 and 781). The tenant is not liable for losses from normal use or age (COC art. 783).",
+        "Signatures of the parties:"
+      ]
+    }
+  }
+}

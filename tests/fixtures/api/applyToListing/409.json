@@ -1,0 +1,13 @@
+{
+  "request_id": "96171188-aa6a-4b6e-a287-4dcb4b269469",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Already applied",
+    "details": [
+      {
+        "field": "listing_id",
+        "issue": "already_applied"
+      }
+    ]
+  }
+}

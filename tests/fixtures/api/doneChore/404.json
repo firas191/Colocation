@@ -1,0 +1,8 @@
+{
+  "request_id": "37bffbbc-3e31-44e5-8b34-78ceff4194e6",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Assignment not found",
+    "details": []
+  }
+}

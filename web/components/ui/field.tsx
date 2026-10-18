@@ -2,6 +2,7 @@ import { clsx } from "clsx";
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const control = "block w-full min-h-11 rounded-field border border-line bg-paper px-3 text-base text-ink placeholder:text-ink-soft/70 " +
+  "transition-[border-color,box-shadow] hover:border-ink-soft/60 focus:border-door focus:shadow-[0_0_0_3px_var(--color-door-soft)] focus:outline-none " +
   "aria-[invalid=true]:border-brick";
 
 export function Field({ id, label, hint, error, children, className }:
@@ -37,7 +38,7 @@ export function Check({ name, label, defaultChecked, required, id }:
   return (
     <div className="flex items-start gap-3">
       <input id={id} name={name} type="checkbox" defaultChecked={defaultChecked} required={required}
-        className="mt-0.5 size-5 shrink-0 accent-door" />
+        className="mt-0.5 size-5 shrink-0 cursor-pointer accent-door" />
       <label htmlFor={id} className="leading-snug">{label}</label>
     </div>
   );
@@ -53,8 +54,8 @@ export function Choice({ name, legend, options, value }:
         {options.map((o) => (
           <label key={o.value} className="relative">
             <input type="radio" name={name} value={o.value} defaultChecked={value === o.value} className="peer sr-only" />
-            <span className="inline-flex min-h-10 cursor-pointer items-center rounded-full border border-line bg-paper px-4 text-sm
-              peer-checked:border-door peer-checked:bg-door peer-checked:text-door-ink peer-focus-visible:outline-2 peer-focus-visible:outline-door">
+            <span className="inline-flex min-h-10 cursor-pointer items-center rounded-full border border-line bg-paper px-4 text-sm transition-colors
+              hover:border-door peer-checked:border-door peer-checked:bg-door peer-checked:text-door-ink peer-focus-visible:outline-2 peer-focus-visible:outline-door">
               {o.label}
             </span>
           </label>
@@ -64,7 +65,43 @@ export function Choice({ name, legend, options, value }:
   );
 }
 
+const NOTICE = {
+  info: { box: "border-door/30 bg-door-soft", dot: "bg-door" },
+  ok: { box: "border-olive/40 bg-olive/10", dot: "bg-olive" },
+  error: { box: "border-brick/40 bg-brick/10", dot: "bg-brick" },
+};
 export function Notice({ tone = "info", children }: { tone?: "info" | "ok" | "error"; children: ReactNode }) {
-  const t = { info: "border-door/40 bg-door/5", ok: "border-olive/50 bg-olive/10", error: "border-brick/50 bg-brick/10" }[tone];
-  return <p role={tone === "error" ? "alert" : "status"} className={clsx("rounded-field border-s-4 px-4 py-3 text-[0.95rem]", t)}>{children}</p>;
+  const t = NOTICE[tone];
+  return (
+    <p role={tone === "error" ? "alert" : "status"} className={clsx("flex items-start gap-3 rounded-field border px-4 py-3 text-[0.95rem]", t.box)}>
+      <span aria-hidden="true" className={clsx("mt-2 size-2 shrink-0 rounded-full", t.dot)} />
+      <span className="min-w-0 flex-1">{children}</span>
+    </p>
+  );
+}
+
+/** A page's title block: the title, an optional line under it and actions at the end. */
+export function PageHeader({ title, lead, actions, back }: { title: ReactNode; lead?: ReactNode; actions?: ReactNode; back?: ReactNode }) {
+  return (
+    <header className="flex flex-col gap-3">
+      {back && <div className="text-sm">{back}</div>}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-2">
+          <h1 className="page-title">{title}</h1>
+          {lead && <p className="max-w-[65ch] text-lg text-ink-soft">{lead}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+      </div>
+    </header>
+  );
+}
+
+/** An empty list: what is missing and, when there is one, the action that fills it. */
+export function Empty({ children, action }: { children: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="flex flex-col items-start gap-3 rounded-panel border border-dashed border-line px-5 py-6 text-ink-soft">
+      <p>{children}</p>
+      {action}
+    </div>
+  );
 }

@@ -1,0 +1,17 @@
+{
+  "request_id": "da8be2eb-c215-433f-9832-d72f7efa3c18",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "name",
+        "issue": "minLength"
+      },
+      {
+        "field": "x",
+        "issue": "additional_property"
+      }
+    ]
+  }
+}

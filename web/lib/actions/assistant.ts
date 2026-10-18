@@ -3,8 +3,9 @@
 // D-087, D-088), then, for search results, GET /v2/search with their ids to show the same cards as the search page
 // (cover photo, favourite). Confirm and Cancel of an owner proposal: PATCH /v1/listings/{id} with change_id, and
 // POST /v1/listing-changes/{id}/cancel. The conversation is not stored by the website (D-062).
+import { currentCountry } from "@/lib/server/country";
 import { api } from "@/lib/server/api";
-import { clientIp, getViewer } from "@/lib/server/viewer";
+import { clientIp, getMe, getViewer } from "@/lib/server/viewer";
 import type { ListingCard } from "@/lib/listing";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,6 +21,12 @@ export interface Reply {
   proposal?: { change_id: string; listing_id: string; listing_number?: number | null; diff: Change[]; expires_at?: string } | null;
 }
 
+/** The country chosen in the header (D-118); the assistant searches there unless the message names another one. */
+async function siteCountry(): Promise<string> {
+  const me = await getMe();
+  return currentCountry(me && me.ok ? me.data : null);
+}
+
 export async function sendMessageAction(locale: string, text: string): Promise<Reply> {
   const v = await getViewer();
   if (!v?.userId) return { ok: false, error: "UNAUTHENTICATED" };
@@ -28,7 +35,7 @@ export async function sendMessageAction(locale: string, text: string): Promise<R
   const ip = await clientIp();
   // agents answer in 25 to 82 s on the owner's PC (T-51, T-60, T-61): wait well beyond the API's model timeout
   const r = await api<Reply & { results?: Array<{ id: string }>; applied?: { jurisdiction?: string } | null }>("POST", "/v1/assistant/message",
-    { userId: v.userId, clientIp: ip, lang: locale, body: { text: body }, timeoutMs: 240_000 });
+    { userId: v.userId, clientIp: ip, lang: locale, body: { text: body, jurisdiction: await siteCountry() }, timeoutMs: 240_000 });
   if (!r.ok) return { ok: false, error: r.error.code };
   const d = r.data;
   let results: ListingCard[] | undefined;

@@ -1,0 +1,5 @@
+PASS  machine (for the report)  (exit 0, 4.3 s)
+PASS  load: search and messages at 1,5,10,20 workers, 30 s each  (exit 0, 252.4 s)
+PASS  containers after the load  (exit 0, 1.7 s)
+PASS  backup: flatshare, n8n, auth, flatshare_test into backups\20261017-164447  (exit 0, 15.5 s)
+PASS  restore check: each dump into a scratch database, compared with its fingerprint, database tests on flatshare_test, scratch databases dropped  (exit 0, 21.3 s)

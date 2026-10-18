@@ -1,0 +1,13 @@
+{
+  "request_id": "8b49d881-e347-4506-84c0-41fd7f8da115",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "key",
+        "issue": "not_on_allowlist"
+      }
+    ]
+  }
+}

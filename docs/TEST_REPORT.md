@@ -1825,6 +1825,284 @@ measured (phase 9).
 
 ---
 
+## T-68 Platform P3: posting, submit, my listings, owner assistant panel (2026-10-17) - PASS in the sandbox; not yet run on the PC
+
+Where: cloud sandbox as in T-64 and T-66 (PostgreSQL 16, n8n 2.41.3 native, Caddy, the Media and Text services from
+their code, moto as the S3 stand-in, the Ollama mock), rebuilt from the owner's P2 commit (361ba64), the website's
+standalone build behind Caddy's port 3000. Nothing here measures a model or a latency: the analysis job ran the
+Ollama mock. Logs in `reports/platform-p3/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 21 files, 508 tests, PASS. New `210_platform_owners.sql` (34): what a draft still needs (rent; a place found on the map, or "not found"; a photo, a rejected one does not count); the analysis issues that still apply; submit gives 404 for another owner's listing both ways, 422 with the missing field, 409 for an archived listing and while an analysis runs, then publishes (title from the first line, place, exact and public points, `checked` false, text to embed, one notification, one audit row); a second submit gives the same answer and writes nothing; the owner's list: only their listings, numbered as the owner assistant numbers them, counts, actions, cover key, pages by cursor, status filter; a new analysis keeps the owner's rent and "furnished", takes the other fields, keeps the change history, and the rent scope issue no longer applies |
+| `01b-migration-down-up.log` | 0024 rolled back and applied again |
+| `02-js-unit.log` | `node --test` (n8n, kb, eval): 164 pass, 0 fail, including the workflow checks of the two new workflows and their Caddy rewrite |
+| `03-build-check.log` | workflow JSON, `routes.caddy` and `web/lib/server/operations.json` up to date |
+| `04-pytest-unit-contract.log` | unit and contract tests through the proxy, outage tests included: 322 passed, 2 failed, 2 skipped. The 2 failures are the secret scan's own tests (F-076, a bug in the scan script); fixed, `04b-pytest-unit-after-F076.log`: unit tests 139 passed. New `test_platform_owners.py` (10): one listing through the API as the website does it (text without rent or place, 3 photos to presigned URLs, analysis job), then: unsigned, tampered and no-consent requests; another owner's listing 404 (and not listed, even by its id); validation of both operations; the draft says rent and place are missing and submit answers 422 with them; PATCH rent, place and bedrooms, then a second analysis of the same text keeps them (D-077) and the draft becomes ready; 409 while an analysis runs; submit publishes once (stored answer on the same key, 409 for the same key with another body, the same data with a new key, one audit row); a seeker finds it in `/v2/search` and opens it with its 3 photos and no exact location; the owner's notification; archive (submit then 409, search and public page no longer show it) and publish again; pages and status filter of `GET /v1/me/listings`. Fixtures of the two new operations recorded and validated against `openapi.yaml` |
+| `05-web-unit.log` | `tsc --noEmit` clean; Vitest 13 passed (signing vectors, message keys identical in fr, en and ar) |
+| `06-web-e2e.log` | Playwright, 26 passed (13 desktop, 13 at 360 px): the P1 and P2 tests, and new `owner.spec.ts`: sign-up, `/fr/owner/new` with a text without a rent, three photos chosen in the page, the photo consent asked on the spot, upload from the browser to the presigned URLs, analysis followed to its end, the 3 processed photos shown, "the rent" listed as missing and Publish disabled, rent and place filled in and saved, published, found by the search with its rent, archived from "Mes annonces" and gone from the search. No page wider than the window; no serious axe-core finding on the new pages |
+
+Screens checked by eye at 360 px in Arabic and on desktop in French (the posting page, the photo consent, the
+listing after analysis, the list with the assistant panel); not kept in the repository.
+
+On the PC, `verify.ps1` of 2026-10-17 00:35 (`reports/verify-20261017-003538/`): every step passed except two. Contract:
+252 passed, 81 skipped, 3 failed; website: 24 passed, 2 failed. All five failures are the P3 tests meeting
+`listing.auto_publish` turned on on the PC (F-077): the save that added the rent published the draft at once. pgTAP,
+the JavaScript tests, the build check, the website unit tests, the secret scan with the F-076 fix, and every P1 and P2
+test passed. Tests fixed (the setting is off during them and restored after); in the sandbox with the setting on:
+contract 10 passed, website posting test 2 passed. To run again on the PC.
+
+## T-69 Platform P4: messages, blocks, visits, applications, reports (2026-10-17) - PASS in the sandbox (light run); not yet run on the PC
+
+Where: the sandbox of T-68. Light run by Firas's choice (to save session budget): the new and the changed tests
+only, not the full contract and website suites. Logs in `reports/platform-p4/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 22 files, 540 tests, PASS. New `220_platform_contact.sql` (32): `n8n_worker` refused on the tables; a conversation about a published listing (not a draft, not one's own, the same one again), unread counts, a third user gets 404 on reading and writing and lists nothing; the per-minute message limit; the owner's slots (nobody else can set them); a request takes the slot and a third user finds it full without seeing the first visit; the seeker cannot confirm their own request, a third user gets 404, the owner confirms and the seeker is notified; one open application, the owner sees the shared lifestyle fields, a third user sees none, the applicant cannot accept (403), the owner accepts; a block: not of someone unknown, then neither side can write; a report |
+| `02-contract-p4.log` | 40 passed: new `test_platform_contact.py` (8: signature, consent, validation, the whole journey with replay and key reuse, slots with a bad time, a proposal then confirmation, application with shared profile, wrong roles, report rules, the message limit with `retry_after_s`, the block and its effects, unblocking), new `test_isolation.py` (12: eleven operations by a third user all 404, lists empty, nothing changed, slots show no bookers), and `test_platform_accounts.py` and `test_platform_owners.py` again (the shared result node now passes the page cursor) |
+| `03-js-unit.log` | `node --test n8n/tests`: 140 pass, including the workflow checks and Caddy rewrites of the 19 new workflows |
+| `04-build-check.log` | workflow JSON, `routes.caddy`, `operations.json` up to date |
+| `05-web-unit.log` | `tsc --noEmit` clean; Vitest 13 passed (message keys identical in fr, en, ar) |
+| `06-web-e2e-contact.log` | Playwright `contact.spec.ts`, 2 passed (desktop, 360 px), two browsers side by side: the owner opens a visit time; the seeker writes from the listing page; the owner gets the notification, opens the conversation and answers; the seeker asks for the visit, the owner confirms, the seeker is notified; the seeker applies, the owner accepts, the seeker is notified; the owner blocks, the seeker sees it and cannot write. No page wider than the window; no serious axe-core finding on the listing and applications pages. The first phone run failed on "too many requests": both browsers share one address (D-103); the test now clears the per-address counters like the contract tests |
+
+Not run here: the full contract suite, the other website tests. `verify.ps1` on the PC runs everything.
+
+## T-70 Platform P5: households, money, rent and bills (2026-10-17) - PASS in the sandbox (light run); not yet run on the PC
+
+Light run (Firas's scheduled instruction): the new pgTAP and contract files, the website type-check. Logs in
+`reports/platform-p5/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 23 files, 577 tests, PASS. New `230_platform_household.sql` (37): every split sums to its amount over 90 cases (2 to 6 people, amounts 7, 999, 1000, 1001, 12345, 100003, three modes); the leftover unit goes to the first in join order; shares 2:1; exact amounts that do not sum are refused; suggested settlements of a scenario written by hand; invites (code format, only the hash stored, case-insensitive, once, wrong code 404); an outsider gets 404; balances of a fixed three-expense scenario written by hand (44.999, -10.000, -34.999 TND) and its two suggested settlements; after them every balance is zero; the owner member sees no money and is never in a split; the rent reminder three days before the 5th, once, to the three flatmates and not the owner; rent payment confirmed by the owner member only; a member who left gets 404 |
+| `02-contract-p5.log` | 7 passed, new `test_platform_household.py`: signature, consent, validation; create (replay with the same key), invite and join by code (used, wrong), owner member; the P5 demo script: two flatmates and an owner, three expenses with the three split modes and a preview, balances (32.000 and -32.000 TND, written by hand), the suggested settlement recorded, all at zero; the owner member refused on money (403); delete by its creator only; rent reminder on the right day (fixed date), once, flatmates only; rent payment confirmed by the owner member, not a flatmate, 404 for an outsider; announcements; an accepted application becomes a personal invite and the applicant joins with it; a member who left sees nothing and stays in the balances |
+| unit tests | 222 passed (fixtures of the new operations validated against `openapi.yaml`); `node --test` workflow checks pass; workflow JSON and `operations.json` up to date; website `tsc --noEmit` clean, Vitest 13 passed |
+
+Not run here: the full contract and website suites, a website end-to-end test of the household pages.
+
+## T-71 Platform P6: chores, shopping, rules, calendar, repairs (2026-10-17) - PASS in the sandbox (light run); not yet run on the PC
+
+Light run, as for T-70. Logs in `reports/platform-p6/`.
+
+| Log | Result |
+|---|---|
+| `01-pgtap.log` | `scripts/db-test.sh`: 24 files, 597 tests, PASS. New `240_platform_household_life.sql` (20): a daily chore over three flatmates gives Amel, Bilel, Chiraz, Amel, Bilel, Chiraz over six days, not twice for the same days; after Bilel leaves the next three days go Amel, Chiraz, Amel; each turn is notified; the owner member and an outsider cannot see the chores (403, 404); shopping list for flatmates only; the owner member writes a house rule; the calendar has the event and the four chore turns in range, at most 92 days; an issue notifies the owner member, who moves it on; a flatmate cannot mark it resolved; an outsider gets 404 |
+| `02-contract-p6.log` | 3 passed, new `test_platform_household_life.py`: a week of the demo household (rotation over seven days with a member leaving, a turn marked done, 403 for the owner member, 404 for an outsider); shopping list (owner 403), house rules written by the owner member, an event in the calendar of a flatmate with the chore turns and in the owner's calendar without them, delete by its creator only, range limit; an issue with a photo: upload to the presigned URL, processing, the owner sees a signed URL under `media/issues/`, the image is a JPEG without the EXIF block of the original (which had a GPS position), status changes by role, 404 for an outsider, the owner member refused on expenses |
+| unit tests | 245 passed (fixtures validated against `openapi.yaml`); `node --test` 176 pass; workflow JSON and `operations.json` up to date; website `tsc --noEmit` clean, Vitest 13 passed |
+
+Not run here: the full suites; website end-to-end tests of the household pages.
+
+## T-72 Platform P7: flatmates, compatibility, room posts, saved searches (2026-10-17) - PASS in the sandbox (light run); not yet run on the PC
+
+Light run (new files only), as asked for P5 onward. Not run here: the full pgTAP and contract suites, the website tests.
+
+| Check | Result |
+|---|---|
+| Migration 0028 up, down, up | PASS on the sandbox database and on `flatshare_test` |
+| `db/tests/250_platform_flatmates.sql` with 190 and 020 (ownership and grants) | 85 tests, PASS. The new file (25): factor states (match, differs, unknown), score 60 from the weights, null score when nothing is known, unknown never a mismatch, same both ways; the invariance test (name, e-mail, language, free text, bio change nothing); profile write and read; browsing shows visible profiles only; a block hides both ways and by id; room post: draft, 409 the second time, 404 for a non-member; a saved search sends a new listing once, not again when the run starts over, one notification, another user cannot delete it |
+| `tests/contract/test_platform_flatmates.py` | 3 passed: profile and browsing (hidden profile 404, bio over 600 refused), saved search and alert once, room post on the owner pages and 409/404 |
+| Unit: openapi, routes documented, fixtures | 225 passed |
+| Website type-check (`tsc --noEmit`) | PASS |
+
+## T-73 Platform P8: trust check, moderation, reports, message warnings, badges (2026-10-17) - PASS in the sandbox (light run); trust set not yet run on the PC
+
+Light run, plus the full pgTAP suite (fast) because P8 redefines functions of P1, P3 and P4. The model is the
+sandbox mock, so nothing here measures the Trust agent; `p4.ps1 -Step trust-bench` does that on the PC.
+
+| Check | Result |
+|---|---|
+| Migration 0029 up, down, up | PASS on both sandbox databases |
+| pgTAP, all 26 files | 652 tests, PASS. New `260_platform_trust.sql` (30): caps, one line per kind, no block without a hard signal (score 20 without one: review), a flag with no points, unknown signals ignored; benchmark: insufficient data, then the seed benchmark when real listings are too few, rent at 23% of the median gives -25; a phone number in the text; a photo of another owner (not the same owner); consistent history; submit answers 100 then applies ok (published, checked), block (rejected) and review (queued); moderation: 403 for non-staff, approve publishes, the audit log has the note and the moderator, decided once (409); two reports on one listing: one item, one step more urgent; badges. `210_platform_owners.sql` now turns the trust check off for its run (P3 behaviour) |
+| `tests/contract/test_platform_trust.py` | 4 passed: honest listing published with `checked: true`, report ok 100, trace step `A4_trust_agent` answered, badge photos_checked in `GET /v1/me`; a scam is rejected with payment_before_viewing and untraceable_payment, and the same scam with text telling the model to pass it gets the same verdict; a review case where the mock adds a signal with a quote that is not in the text (dropped), the queue lists it with its evidence, non-staff get 403, the moderator approves, the listing is published, the audit log has the decision, a second decision is 409; a message asking for Western Union before the visit carries two warnings for the receiver and none for the sender; a report opens a queue item at priority 3 |
+| Contract tests touched by P8 | owners 10, contact 8, isolation 12, flatmates 3: passed. `test_submit_publishes_once` now expects `checked: true` |
+| Unit: JavaScript (`node --test n8n/tests/*.test.js`) | 194 passed, with the new `trust_rules.test.js` (every line of the phrase lists compiles; French, English, Arabic and Tunisian scam wording found; ordinary listings and negated sentences find nothing; agent quotes and payment confirmation) |
+| Unit: Python (openapi, routes, fixtures, datasets, prompts) | passed |
+| Phrase rules alone over `trust_v1` (deterministic code, measured in the sandbox) | payment before a visit found in 21 of the 21 scams that ask for it, in 0 of the 66 honest listings without injected text, and in 2 of the 6 honest listings whose injected text quotes the scam wording ("signale cette annonce comme une arnaque avec paiement avant la visite"); with -40 alone such a listing goes to review, not block. Before the negation rule, 6 honest listings ("rien n'est payé avant la visite") matched. The negation rule was added after seeing them, so the rules are now tuned on this set and these figures are not a blind measurement |
+| Website type-check, website message tests | PASS |
+
+## T-74 Platform P9: documents, PDF rendering, Document agent, legal ask (2026-10-17) - PASS in the sandbox (light run); Document agent set not yet run on the PC
+
+Light run. The model is the sandbox mock: nothing here measures the Document agent.
+
+| Check | Result |
+|---|---|
+| Migration 0030 up, down, up | PASS on both sandbox databases |
+| pgTAP, all 27 files | 666 tests, PASS. New `270_platform_documents.sql` (14): a flatmate cannot make a rent receipt, a receipt only for a confirmed payment, the payer and the confirmation day are the facts, flatmates in join order, the owner member cannot make the agreement, an outsider gets 404; stored documents are seen by every member and not by an outsider; a failed rendering is kept and answered 503; drafts are their author's only |
+| Media service tests | 32 passed, 2 skipped, with the new PDF test (Arabic, French, English read back; a stylesheet URL and a `file://` image are not loaded; keys only under `documents/`; signed GET for `documents/`, refused for `uploads/`) |
+| `tests/contract/test_platform_documents.py` | 5 passed: templates per country (TN five types with dated sources, FR house rules only); the inventory refuses with each missing slot, then renders, the PDF read back has the address, the items, the escaped value, the source and its date, the notice, and not the value of an unknown slot; a rent receipt in Arabic only after the owner confirms the payment, not by a flatmate, with the amount and the source; the Document agent's proposal (mock) has the values given, drops an unknown slot, is confirmed into a PDF once, 404 for an outsider; `POST /v1/legal/ask` answers or says the agent is off, 422 on empty text |
+| JavaScript unit tests | 207 passed, with `doc_fill.test.js` (templates complete, offered per country, missing and unknown slots, the diff of the PDF text against the template, right to left) and the F-079 mask test |
+| Python unit tests, website type-check, website message tests | PASS |
+| `document_bench.py --limit 3` against the mock | runs end to end (3 requests answered); the figures mean nothing with a mock, the file was deleted |
+
+## T-75 Platform P10: moving out, deposits, comparison, account deletion, retention (2026-10-17) - PASS in the sandbox (light run); retention workflow not run
+
+| Check | Result |
+|---|---|
+| Migration 0031 up, down, up | PASS on both sandbox databases |
+| pgTAP, all 28 files | 692 tests, PASS. New `280_platform_moveout_privacy.sql` (26): leaving refused with the balance (-150), deposits only by the owner member, the sum check, kept 100, each flatmate sees only their own; move-out start (member leaving), balance and deposit items computed, a manual item ticked, a computed one refused, none for the owner member; comparison (same with another case, changed, only at exit; two differences; only for an exit inventory); erasure table by table (users, flatmate profile, saved searches, drafts, documents, the PDF queued, membership left) and the balances still sum to zero; retention with fixed dates (a 4-day draft kept, deleted after 7) |
+| `tests/contract/test_platform_moveout.py` | 4 passed: leave refused with `balance_minor: -45000`, accepted with `acknowledge_balance`; deposit 403 for a flatmate, 422 sum mismatch, kept 50 000; move-out checklist with a computed deposit item, a ticked item, 422 for a computed one, 403 for the owner member; comparison of two inventories made through the API (`same`, `changed`) and the exit inventory item turning done; `DELETE /v1/me` refuses a wrong confirmation, erases the user, the document is gone for the others, the PDF key is queued, the name is no longer among the members |
+| `test_platform_household.py`, `test_platform_household_life.py` | passed (the P5 leave test sends `acknowledge_balance`) |
+| Unit tests (Python 290, JavaScript 215), website type-check, website message tests | PASS |
+
+## T-76 Platform P11: notification channels and admin (2026-10-17) - PASS in the sandbox (light run)
+
+| Check | Result |
+|---|---|
+| Migration 0032 up, down, up | PASS on both sandbox databases |
+| pgTAP, all 29 files | 712 tests, PASS. New `290_platform_channels_admin.sql` (20): e-mail on by default, a muted type not sent, e-mail only without Telegram, both with it, each delivery handed out once, a failure queued again one minute later, the fifth failure final with its reason; link codes (unknown, linked case-insensitively, used once, unlinked); settings allowlist (moderator 403, key outside 422, out of range 422, allowed change), an admin cannot change their own role. 020: the allowlist function is not executable by PUBLIC |
+| `tests/contract/test_platform_channels.py` | 3 passed: preferences, then a real e-mail through `wf.notify.dispatch` and SMTP to the sandbox's mail sink (Mailpit's API) within 150 s, with the sentence and the link; the muted type not sent; the delivery shown as sent; Telegram code created, redeemed, `/v1/me` linked, used once, unlinked; admin endpoints 403 for a user, settings list, 422 outside the allowlist and for a wrong type, a change logged, a role change, own role 409, user search, prompts, evaluation runs and sources for a moderator |
+| JavaScript unit tests | with `notify_text.test.js` (ICU subset; every notification type of the website has a sentence in each language and formats without leftover braces) |
+| Python unit tests, website type-check, website message tests | PASS |
+| Telegram delivery | not checked end to end: in the sandbox the Telegram node talks to the mock, on the PC to the real bot; the retry and failure path is covered by pgTAP |
+
+## T-77 Platform P12: isolation matrix, website safety checks, backup and restore (2026-10-17) - PASS in the sandbox (light run)
+
+| Check | Result |
+|---|---|
+| `tests/contract/test_isolation_matrix.py` | 66 passed: every path in the spec is classified; 64 operations refused to an outsider (403 or 404); the household, listing, proposal and role unchanged afterwards. With `test_isolation.py`: 78 passed |
+| `web/tests/safety.test.ts` | 10 passed |
+| Backup and restore check of `flatshare`, `n8n`, `auth`, `flatshare_test` | sandbox, n8n running: 88, 142, 4 and 88 tables restored into scratch databases, every fingerprint line equal (row counts, owners, grants, row-level rules, functions, policies, triggers, extensions; 1775 lines for `flatshare`) |
+| Database tests on a restored database (spec 15.1) | restored copy of `flatshare_test`: 29 files, 712 tests, PASS. On a restored copy of the live `flatshare`: 8 of 29 files fail on duplicate fixture rows and row counts, as expected for a suite written for a migrations-only database; recorded, not used as the check |
+| Full drop and restore of a copy | a row added and an `EXECUTE` grant revoked after the backup were both undone by the restore (count 1 then 0, privilege false then true) |
+| The comparison catches a change | a copy with `api.me` no longer granted to `n8n_worker` and row-level security off on `app.listings`: both lines reported by the diff. An earlier comparison of `pg_dump --schema-only` text flagged 164 lines in the n8n database that differ only in how CHECK constraints are printed, hence the catalog fingerprint |
+| Server-side request forgery guard | `n8n/tests/url_guard.test.js` 3 passed (public sources pass; 25 internal forms refused, including decimal, hex, octal and IPv4-mapped IPv6; other schemes and credentials refused). `test_kb.py` 15 passed, including the new job with two internal sources failing with `refused_address: internal_name` and `internal_address` |
+| Migration 0033 up, down, up | PASS on both sandbox databases; pgTAP 29 files, 712 tests, PASS; JavaScript unit tests 234 passed |
+| `scripts/load_bench.py` | ran for a few seconds in the sandbox to check it works and cleans up (users removed, limits back to 60 and 20); numbers not recorded |
+| Garage copy, `backup.ps1`, `restore.ps1`, `p12.ps1` | not run: no Docker in the sandbox |
+| Load test on the PC | not measured |
+
+## T-78 PC run after P12 (2026-10-17): verify.ps1, p12.ps1, benches - FAIL, then fixed in the sandbox
+
+Machine: FIRAS, Intel i7-11800H (8 cores, 16 threads), 23.7 GB RAM, Docker Desktop with the GPU. Commands as given
+to the owner: `verify.ps1`, `p12.ps1 -Step all`, `p4.ps1 -Step trust-bench`, `p4.ps1 -Step document-bench`.
+
+| Check | Result on the PC |
+|---|---|
+| verify.ps1 | every step PASS except two: contract tests 8 failed, 534 passed, 81 skipped; website e2e 2 failed (the owner journey, desktop and phone), 26 passed |
+| Contract failures | 7 were client timeouts after 30 s on calls that wait for the local model: v1 submit with the Trust agent (4 in `test_platform_trust.py`, 1 in `test_platform_owners.py`), the Document agent and the Legal agent (`test_platform_documents.py`). 1 was a count: `home.daily_chores` covers every household, and the chore the new isolation matrix test left behind made 6 turns instead of 4 |
+| E2E failures | "Votre annonce est publiée." not shown within 15 s after Publier: the same synchronous trust check |
+| Load, `p12.ps1 -Step load` (75 published TN listings, not a realistic volume) | search: 1 worker p50 274 ms, p95 352 ms (3.6/s); 5: 565 / 686 ms (8.7/s); 10: 1101 / 1309 ms (8.9/s); 20: 2121 / 2252 ms (9.4/s). Send then read a message: 1 worker 149 / 183 ms send (3.3 pairs/s); 5: 396 / 465 ms (6.6/s); 10: 764 / 880 ms (6.7/s); 20: 1461 / 1725 ms (6.9/s). No errors. Throughput stops growing at about 9 searches or 7 message pairs per second, and latency then grows with the number of workers: the limit is one queue, not measured which (n8n's main process is the first suspect). Backend spec target, search p95 under 1.5 s: met up to 10 workers, missed at 20 |
+| Backup check, `p12.ps1 -Step backup-check` | PASS: flatshare 50.3 MB dump, 88 tables, 54,218 rows; n8n 23.7 MB, 142 tables; auth 4 tables; flatshare_test 88 tables. All four restored into scratch databases with every fingerprint line equal; the 712 database tests PASS on the restored flatshare_test |
+| Trust bench | did not run: `trust_bench.py` passed the user id as a UUID object to the signing client (TypeError). Fixed (`str()`); not rerun yet |
+| Document bench (`document_agent_v1`, 16 requests, qwen3.5:4b, P9 v1) | 16 HTTP 200 in 4.9 min; kind right 0.688, values right 0.857, missing slots right 1.0; client time p50 17.0 s, p95 28.4 s (`reports/eval/document-bench-20261017-155700.json`) |
+
+Fixes (D-112), checked in the sandbox:
+
+| Check | Result |
+|---|---|
+| Migration 0034 up, down, up | PASS on both sandbox databases |
+| pgTAP | 30 files, 719 tests, PASS. New `300_platform_submit_job.sql` (7): a job instead of a synchronous check, the same job when asked again and no second one, another owner 404, the listing stays a draft meanwhile, trust off answers 200 |
+| Contract tests of the changed files (trust, owners, documents, isolation matrix, household life) | 91 passed. New: `test_v2_submit_runs_the_check_as_a_job` (202, same job, outcome matches the listing, A4 step under the job id, another user 404 on the job), `test_v2_submit_without_the_check_answers_like_v1`; the matrix now covers `POST /v2/listings/{id}/submit` |
+| Same files as on the PC (`FS_SANDBOX_MOCKS=0`) | 7 passed, 4 skipped (the three trust tests and the Document agent test that depend on the mock's answers) |
+| Trust bench smoke run, `--limit 3` | runs again after the UUID fix (mock model; numbers not recorded) |
+| JavaScript unit tests, Python unit tests, `build.py --check`, website type-check and unit tests, secret scan | PASS |
+| Owner e2e | not run in the sandbox: the trust agent is off for it, and the wait for "Votre annonce est publiée." is now 120 s; checked on the next PC run |
+
+## T-79 Second PC run after P12 (2026-10-17 to 18): verify.ps1 and the trust bench
+
+Same machine as T-78. `verify.ps1`: every step PASS except the website e2e (2 failed: the owner journey, desktop and
+phone; 26 passed). The contract tests now pass on the PC (667 s).
+
+| Check | Result |
+|---|---|
+| Owner e2e | the trust check job ran and the listing went to review instead of being published: the page showed "Statut : en vérification". The e2e uploads the same three fixture photos at every run, and other tests use them too, so the check rightly found them on another owner's listing (`duplicate_photo_other_owner`, -40, score 60: review). A test-data problem, not a product one |
+| Trust bench, rules and database only (`trust_v1`, 100 listings) | 0.7 min, p50 381 ms. 9 blocks, all scams: block precision 1.0; false block rate on honest listings 0.0; honest published 0.972 (70 of 72; trust-067 and trust-072 went to review on a payment-before-visit phrase match); scams sent to review or block 0.857 (24 of 28), blocked 0.321 (9 of 28) |
+| Trust bench with the Trust agent, P4 v1 | 62 min, p50 15.5 s, p95 85.7 s per listing. Every verdict the same as without the agent. The agent answered on 65 listings and stopped at its 6-iteration limit on 35 ("Max iterations (6) reached"), 60 to 110 s each: every listing where the phrase lists found something (all 28 scams, 7 honest). Its tool calls in those runs are not in the trace (the node returns no steps on that error) |
+| Against backend spec 2.6 (targets): block precision at least 0.90, false block rate at most 2 % | met on this set, by the rules and the database checks alone; the agent added nothing measurable |
+
+Changes after this run, checked in the sandbox (the agent's behaviour needs the PC):
+
+| Change | Check |
+|---|---|
+| Owner e2e: three photos drawn in the browser at each run (`uniquePhotos`, random shapes, JPEG) instead of the shared fixtures | the Media service accepts such images (960 x 720, distinct perceptual hashes); website type-check PASS; the e2e itself runs on the PC |
+| Owner listing page: in review or refused, it says what happens next (the panel's sentences) instead of "cannot be published from here" | type-check and unit tests PASS |
+| P4_trust_assessor v2, active: the phrase-list findings are given in the message, at most two other tool calls, no tool twice | `prompts.py check` PASS; mock-based trust tests PASS; not measured on the model yet: `p4.ps1 -Step trust-bench` |
+
+## T-80 Emna Safer's scam check in the trust check (D-114) (2026-10-18) - PASS in the sandbox (light run)
+
+| Check | Result |
+|---|---|
+| Migration 0035 up, down, up | PASS on both sandbox databases |
+| pgTAP | new `310_platform_trust_scam_check.sql` (8): a phone written another way and an e-mail in another case are found on another owner's published listing; no contact, or the same owner, gives nothing; `trust_facts` carries `contact_reused` at -20 with counts and no contact; the agent stays the default; the moderation item shows the check's note. All files PASS |
+| `test_platform_trust.py` | 8 passed. New: `test_contact_reused_by_another_owner` (runs on the PC too: database only); `test_detector_mode` (sandbox only): a scam rejected with the detector's signals and its trace step `A4_trust_detector`; a listing with "loyer réel 900 DT" against 450 stored goes to review with `price_mismatch`, and the moderator sees the note |
+| `trust_bench.py` on `p8_scam_v1` (6 items, mock model) | runs in the three modes, with FR and GB listings in their currency; numbers not recorded |
+| JavaScript and Python unit tests, website type-check and unit tests, `prompts.py check` | PASS |
+| On the PC | not run: `p4.ps1 -Step trust-compare` |
+
+## T-81 Yosr's roommate matching on the platform (D-115) (2026-10-18) - PASS in the sandbox (light run)
+
+| Check | Result |
+|---|---|
+| Migration 0036 up, down, up | PASS on both sandbox databases |
+| pgTAP | new `320_platform_flatmate_match.sql` (24): row-level rules on `social.contact_requests`, limits and errors of the three contact functions, the conversation and first message on accept, the living plan facts (habits never by name, equal shares), erasure. All files PASS |
+| `test_platform_flatmate_match.py` | 7 passed. Contact flow (409 for a second request, 404 to a hidden profile, 403 for the sender deciding, no conversation before accepting); refuse and cancel; apply; explanation by code; living plan PDF. Sandbox only (mock model): the agent proposes only what was written and code drops the budget and area the mock invents; the model's sentence, and the code's when the sentence has another number |
+| `test_isolation_matrix.py` | 68 passed with the new paths |
+| `flatmate_bench.py` (20 messages, mock model) | runs end to end and cleans up; numbers not recorded (the mock reads keywords) |
+| JavaScript and Python unit tests, website type-check and unit tests, `prompts.py check` | PASS |
+| On the PC | not run: `p4.ps1 -Step flatmate-bench` |
+
+## T-82 PC run of 2026-10-18: verify and trust bench with P4 v2 (D-113)
+
+| Check | Result |
+|---|---|
+| `verify.ps1` (`reports\verify-20261018-011104`) | every step PASS except the website end-to-end tests: `npm` failed with `ECONNRESET` (network) before any test ran. Not a test result; to run again |
+| Trust bench, rules only (`trust-bench-20261018-011020-noagent.json`) | block precision 1.0 (9 blocks), false blocks on honest listings 0.0, honest published 0.972, scams sent to review or blocked 0.857, scams blocked 0.321; p95 596 ms |
+| Trust bench, Trust agent P4 v2 (`trust-bench-20261018-015147.json`) | the same verdicts on all 100 listings as rules only. Agent: answered 85, failed 12, unparsed 3 (v1: 35 failed). 41.4 minutes; p50 16.8 s, p95 70.6 s. Every failure is on a scam listing |
+| Targets (backend spec 2.6) | block precision >= 0.90 and false blocks <= 0.02: met with and without the agent. The agent changed no verdict on this set |
+
+## T-83 New website interface, light and dark (D-116) (2026-10-18) - PASS in the sandbox
+
+| Check | Result |
+|---|---|
+| Website type-check and unit tests (`tsc`, `vitest`, including the safety and right-to-left tests) | PASS (23 tests) |
+| Website end-to-end tests, desktop and 360 px phone, against the sandbox stack | 28 passed. First run: 9 failed (log out had moved into the header's menu; the header was 449 px wide on a 360 px phone). Fixed: the test opens the menu before logging out; the language choice moves to the footer below 640 px. Second run: all passed |
+| axe-core on 22 pages (home in French and Arabic, search list and map, listing, flatmates, a profile, contact requests, households, money, documents, messages, notifications, assistant, profile, account, owner listings, favourites, admin, 404), light and dark | no serious or critical violation in either theme |
+| Side scroll at 360 px on 14 pages | none |
+| `n8n/build.py --check`, `web_operations.py --check`, secret scan | PASS, no new findings |
+| On the PC | not run: `verify.ps1` (it rebuilds the website image with the new font package) |
+| Map in the sandbox | not seen: there is no map file in the sandbox, so the map column shows its "map not installed" panel; dark basemap not checked |
+
+## T-84 PC run of 2026-10-18 morning: verify, trust comparison, flatmate agent (D-117)
+
+| Check | Result |
+|---|---|
+| `verify.ps1` (`reports\verify-20261018-032950`), old interface | every step PASS except the website end-to-end tests: 27 passed, 1 failed (phone, accounts in Arabic). After log out the test went to /login while the log-out redirect was still under way, and the page landed on the home page. Fixed in the test: it waits for the home page first |
+| Trust comparison, trust_v1 (100 listings) | rules only: block precision 1.0, false blocks 0.0, honest published 0.972, scams to review or block 0.857, p95 0.5 s. Agent (P4 v2): same verdicts, agent failed on 14, p95 70 s, 39.9 min. Detector (P8 v1): block precision 1.0, false blocks 0.0, honest published 0.958, scams to review or block 1.0, scams blocked 0.286, answered 100, p95 15 s, 15 min |
+| Trust comparison, p8_scam_v1 (Emna's 50) | rules only: precision 1.0, false blocks 0.0, honest published 0.92, scams to review or block 0.52. Agent: 0.56, honest published 0.92, failed 16, unparsed 1, p95 108 s. Detector: precision 1.0 (5 blocks), false blocks 0.0, honest published 0.88, scams to review or block 0.88, p95 22 s |
+| Flatmate profile agent, flatmate_onboarding_v1 (20 messages) | all answered (HTTP 200); field recall 0.854; 13 of 20 exact; forbidden fields shown 3 (fm-010, fm-018: values the person wrote, see D-117); dropped by code 1; more than two questions 10 of 20; p50 19.8 s, p95 34.9 s |
+| Sandbox after D-117 | migration 0037 up, down, up on both databases; pgTAP PASS (751); JavaScript tests 252 PASS (new `flatmate_profile.test.js`); `test_platform_flatmate_match.py` and `test_platform_trust.py` 15 passed |
+
+## T-85 Link and button styles, country of the site, pickers, favicon (D-116, D-117, D-118) (2026-10-18) - PASS in the sandbox
+
+| Check | Result |
+|---|---|
+| Migration 0038 up, down, up on both sandbox databases | PASS |
+| pgTAP | new `330_platform_places_list.sql` (8): active cities only, by name; the Arabic name when there is one; another kind; unknown country 422; owner `app_rls`; the gazetteer reader not public. All files PASS (759) |
+| `test_platform_places.py` | 2 passed (TN cities in the reader's language; unknown country and unknown kind refused). Isolation matrix 68 passed |
+| Full contract and unit suite | 653 passed, 2 skipped, 1 failed: `test_rent_reminder_on_the_right_day_and_payments` counts reminders of every household for 2 January, and the sandbox's demo household (screenshots) had rent on the 5th with 3 days' notice. Demo rent moved; the file passes (7) |
+| Website type-check, unit tests | PASS (23) |
+| Website end-to-end, desktop and 360 px | 28 passed. The log-out step now opens the menu that holds the log-out button (the header has three menus) |
+| axe-core, 22 pages, light and dark | no serious or critical violation. First dark run: the unread badge (white on light pink) failed contrast on every page; bougainvillea and olive now have their own text colour per theme |
+| JavaScript tests, `build.py --check`, `web_operations.py --check`, `prompts.py check`, secret scan | PASS (253 JS tests), no new findings |
+| Sandbox gazetteer | `p3.py geo-load` from `geo/places_osm.csv`: TN 27 cities, FR 18, GB 14 (as on the PC) |
+| On the PC | not run yet |
+
+## T-86 PC run of 2026-10-18 late morning: verify with the new interface (p13) and the flatmate agent (D-117)
+
+| Check | Result |
+|---|---|
+| `verify.ps1` (`reports\verify-20261018-082130`) | every step PASS except the contract tests: 563 passed, 88 skipped, 1 failed. `test_platform_owners.py::test_my_listings_pages_and_filters` got 429 RATE_LIMITED on its first call: every request of the suite comes from one IP and that module did not clear the per-IP counter. Fixed: `tests/contract/conftest.py` clears it at the start of every module (sandbox: 31 passed in the affected files) |
+| Website end-to-end tests on the PC, new interface | 28 passed (the image build went through with the npm retry settings) |
+| Flatmate profile agent, flatmate_onboarding_v1, after D-117 | 20 of 20 answered; more than two questions: 0 of 20 (10 before the cut); field recall 0.829 (0.854 before); exact 12 of 20 (13); forbidden fields shown 3 (fm-010, fm-018, see D-117); p50 19.8 s, p95 31.8 s. The cut changes the answer only; the recall difference is the model's (same prompt, same set) |
+
+## T-87 PC run of 2026-10-18 midday: verify with everything up to D-118 (p14) - PASS
+
+| Check | Result |
+|---|---|
+| `verify.ps1` (`reports\verify-20261018-113940`) | every step PASS: database tests, JavaScript tests, workflows match `build.py`, Media, Text and Telegram relay tests, unit and contract tests through the proxy (with the per-IP counter cleared per module), website unit tests, website end-to-end tests (desktop and 360 px, fr, en, ar) on the new interface with the country picker, secret scan of the exported workflows |
+| Not run on the PC this time | the benchmarks (last results in T-84 and T-86) |
+
 ## Not run
 
 | Item | Why | How it will be run |

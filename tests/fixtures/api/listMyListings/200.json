@@ -1,0 +1,17 @@
+{
+  "request_id": "49aae3ca-f93c-497f-acb1-43c40ebe6f1d",
+  "data": {
+    "items": [],
+    "counts": {
+      "all": 0,
+      "draft": 0,
+      "archived": 0,
+      "published": 0
+    },
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 195,
+    "next_cursor": null
+  }
+}

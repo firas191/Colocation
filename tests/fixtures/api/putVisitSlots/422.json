@@ -1,0 +1,13 @@
+{
+  "request_id": "17daf704-c95b-4980-ab10-f93d02401164",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "slots[0]",
+        "issue": "invalid_time"
+      }
+    ]
+  }
+}

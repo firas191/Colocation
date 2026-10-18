@@ -63,8 +63,8 @@ export function ProfileForm({ locale, profile, jurisdictions, defaultJurisdictio
 
   return (
     <div className="flex flex-col gap-10">
-      <section aria-labelledby="quick-title" className="flex flex-col gap-3 rounded-field border border-line bg-paper p-5">
-        <h2 id="quick-title" className="text-lg font-semibold">{t("quick.title")}</h2>
+      <section aria-labelledby="quick-title" className="flex flex-col gap-3 panel p-5">
+        <h2 id="quick-title" className="section-title">{t("quick.title")}</h2>
         <p className="max-w-prose text-sm text-ink-soft">{t("quick.hint")}</p>
         <form action={extract} className="flex flex-col gap-3">
           <input type="hidden" name="jurisdiction_code" value={values.jurisdiction_code} />

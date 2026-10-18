@@ -1,0 +1,8 @@
+{
+  "request_id": "e9ee7b09-a8db-4ea7-9565-e80aeeead90f",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Draft not found",
+    "details": []
+  }
+}

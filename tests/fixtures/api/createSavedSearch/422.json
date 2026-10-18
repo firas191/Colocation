@@ -1,0 +1,17 @@
+{
+  "request_id": "7a3697de-63d3-4e44-8c37-38ab2068e906",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "query.cursor",
+        "issue": "not_saved"
+      },
+      {
+        "field": "query.cursor",
+        "issue": "invalid_cursor"
+      }
+    ]
+  }
+}

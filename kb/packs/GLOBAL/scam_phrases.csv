@@ -1,0 +1,16 @@
+signal,lang,pattern,note
+payment_before_viewing,fr,"(pay[a-zé]*|pai[a-z]*|vers[a-zé]*|envo[a-zé]*|vir[a-zé]*|régl[a-zé]*|regl[a-zé]*)\b[^.!?\n]{0,40}\b(avant|sans)\b[^.!?\n]{0,25}\b(visite|visiter|voir|rencontre|clés|cles)",Payment asked before a visit or before meeting
+payment_before_viewing,fr,"frais de (réservation|reservation|dossier)\b[^.!?\n]{0,40}\b(avant|d'avance|à l'avance|a l'avance)",Reservation fee in advance
+payment_before_viewing,fr,"(caution|avance|acompte|dépôt|depot)\b[^.!?\n]{0,30}\b(avant|pour) (la |de )?(visite|réserver|reserver|bloquer)",Deposit to book or before a visit
+payment_before_viewing,en,"\b(pay|send|transfer|wire)\b[^.!?\n]{0,40}\b(before|prior to|without)\b[^.!?\n]{0,25}\b(viewing|visit|seeing|meeting|keys)",Payment asked before a viewing
+payment_before_viewing,en,"\b(reservation|booking|holding) fee\b[^.!?\n]{0,40}\b(before|in advance|upfront|up front)",Reservation fee in advance
+payment_before_viewing,ar,"(ادفع|دفع|إرسال|ارسال|تحويل)[^.!؟\n]{0,40}(قبل|دون|بدون)[^.!؟\n]{0,25}(الزيارة|المعاينة|رؤية|اللقاء|المفاتيح)",Payment asked before a visit (Arabic)
+untraceable_payment,any,"\b(western ?union|moneygram|money ?gram|ria money|wise\.com|paysafe ?card|gift ?cards?|carte[s]? cadeau|cartes? itunes|steam card|bitcoin|btc|usdt|crypto(monnaie|currency)?)\b","Money-transfer services, gift cards, crypto (12.2)"
+urgency_pressure,fr,"(beaucoup|plusieurs) (de personnes|de demandes|de gens)[^.!?\n]{0,30}(intéress|interess)|premier (arrivé|arrive|qui paie|qui paye)|(dépêchez|depechez|faites vite)|(aujourd'hui|ce soir) (seulement|uniquement)",Pressure to decide now
+urgency_pressure,en,"\b(many|lots of|several) (people|others|applicants)\b[^.!?\n]{0,30}\binterested\b|first come,? first served|\b(act|send|pay) (fast|now|today)\b|\btoday only\b",Pressure to decide now
+urgency_pressure,ar,"(كثير|عدة) (من )?(الناس|الطلبات)[^.!؟\n]{0,30}(مهتم|يريد)|بسرعة قبل|اليوم فقط",Pressure to decide now (Arabic)
+owner_abroad,fr,"(je suis|je vis|je travaille|actuellement|propriétaire est|proprietaire est)\b[^.!?\n]{0,25}\b(à l'étranger|a l'etranger|en france|au canada|à l'etranger|hors du pays|en mission)",Owner says they are abroad (never a block alone)
+owner_abroad,en,"\b(i am|i'm|i live|i work|currently|the owner is)\b[^.!?\n]{0,25}\b(abroad|overseas|out of the country|on a mission)",Owner says they are abroad (never a block alone)
+owner_abroad,ar,"(أنا|انا|المالك)[^.!؟\n]{0,25}(بالخارج|في الخارج|خارج البلاد|خارج الوطن)",Owner says they are abroad (Arabic)
+discriminatory_language,fr,"\b(pas de|interdit aux|réservé aux|reserve aux|uniquement (pour )?les?)\s+(étrangers|etrangers|africains|noirs|arabes|juifs|musulmans|chrétiens|chretiens)\b","Wording that excludes people by origin or religion: a moderator flag only (no points); whether it is unlawful depends on the country and is not decided here"
+discriminatory_language,en,"\b(no|not for|only for)\s+(foreigners|africans|blacks|arabs|jews|muslims|christians)\b",Wording that excludes people by origin or religion: a moderator flag only (no points)

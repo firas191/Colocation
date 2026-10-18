@@ -1,0 +1,170 @@
+{
+  "started_at": "2026-10-17T15:44:53+00:00",
+  "base": "http://proxy:8080",
+  "seconds": 30,
+  "machine": "FIRAS",
+  "published_listings_tn": 75,
+  "levels": [
+    {
+      "kind": "search",
+      "workers": 1,
+      "took_s": 30.0,
+      "search": {
+        "requests": 108,
+        "ok": 108,
+        "per_s": 3.6,
+        "errors": {},
+        "p50_ms": 273.6,
+        "p95_ms": 352.3,
+        "p99_ms": 401.6,
+        "max_ms": 2018.8
+      }
+    },
+    {
+      "kind": "search",
+      "workers": 5,
+      "took_s": 30.3,
+      "search": {
+        "requests": 264,
+        "ok": 264,
+        "per_s": 8.7,
+        "errors": {},
+        "p50_ms": 565.1,
+        "p95_ms": 686.2,
+        "p99_ms": 727.9,
+        "max_ms": 754.8
+      }
+    },
+    {
+      "kind": "search",
+      "workers": 10,
+      "took_s": 30.7,
+      "search": {
+        "requests": 275,
+        "ok": 275,
+        "per_s": 8.9,
+        "errors": {},
+        "p50_ms": 1100.9,
+        "p95_ms": 1308.9,
+        "p99_ms": 1394.8,
+        "max_ms": 1522.5
+      }
+    },
+    {
+      "kind": "search",
+      "workers": 20,
+      "took_s": 32.0,
+      "search": {
+        "requests": 300,
+        "ok": 300,
+        "per_s": 9.4,
+        "errors": {},
+        "p50_ms": 2121.4,
+        "p95_ms": 2251.6,
+        "p99_ms": 2316.9,
+        "max_ms": 2373.6
+      }
+    },
+    {
+      "kind": "messages",
+      "workers": 1,
+      "took_s": 30.2,
+      "messages_send": {
+        "requests": 100,
+        "ok": 100,
+        "per_s": 3.3,
+        "errors": {},
+        "p50_ms": 149.4,
+        "p95_ms": 183.3,
+        "p99_ms": 228.2,
+        "max_ms": 269.7
+      },
+      "messages_read": {
+        "requests": 100,
+        "ok": 100,
+        "per_s": 3.3,
+        "errors": {},
+        "p50_ms": 141.0,
+        "p95_ms": 187.6,
+        "p99_ms": 222.7,
+        "max_ms": 231.3
+      }
+    },
+    {
+      "kind": "messages",
+      "workers": 5,
+      "took_s": 30.3,
+      "messages_send": {
+        "requests": 201,
+        "ok": 201,
+        "per_s": 6.6,
+        "errors": {},
+        "p50_ms": 396.0,
+        "p95_ms": 464.5,
+        "p99_ms": 504.6,
+        "max_ms": 513.0
+      },
+      "messages_read": {
+        "requests": 201,
+        "ok": 201,
+        "per_s": 6.6,
+        "errors": {},
+        "p50_ms": 355.3,
+        "p95_ms": 440.0,
+        "p99_ms": 479.2,
+        "max_ms": 480.8
+      }
+    },
+    {
+      "kind": "messages",
+      "workers": 10,
+      "took_s": 31.2,
+      "messages_send": {
+        "requests": 209,
+        "ok": 209,
+        "per_s": 6.7,
+        "errors": {},
+        "p50_ms": 764.3,
+        "p95_ms": 880.4,
+        "p99_ms": 943.0,
+        "max_ms": 980.7
+      },
+      "messages_read": {
+        "requests": 209,
+        "ok": 209,
+        "per_s": 6.7,
+        "errors": {},
+        "p50_ms": 706.2,
+        "p95_ms": 845.3,
+        "p99_ms": 867.5,
+        "max_ms": 967.5
+      }
+    },
+    {
+      "kind": "messages",
+      "workers": 20,
+      "took_s": 31.9,
+      "messages_send": {
+        "requests": 220,
+        "ok": 220,
+        "per_s": 6.9,
+        "errors": {},
+        "p50_ms": 1461.4,
+        "p95_ms": 1725.0,
+        "p99_ms": 1797.9,
+        "max_ms": 1819.9
+      },
+      "messages_read": {
+        "requests": 220,
+        "ok": 220,
+        "per_s": 6.9,
+        "errors": {},
+        "p50_ms": 1394.8,
+        "p95_ms": 1530.9,
+        "p99_ms": 1569.6,
+        "max_ms": 1572.3
+      }
+    }
+  ],
+  "finished_at": "2026-10-17T15:49:04+00:00"
+}

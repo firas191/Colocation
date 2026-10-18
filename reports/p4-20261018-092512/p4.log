@@ -1,0 +1,67 @@
+
+===== stack is up (n8n healthy, migration 0011 applied, Text service healthy) =====
+command: docker inspect -f "{{.State.Health.Status}}" fs-n8n
+  docker inspect -f "{{.State.Health.Status}}" fs-text
+  $v = docker exec -u postgres fs-postgres psql -d flatshare -tAc "select count(*) from public.schema_migrations where version like '0011%'"
+  if ("$v".Trim() -ne "1") { "migration 0011 is not applied: run scripts\windows\verify.ps1 first"; $global:LASTEXITCODE = 1 }
+started: 2026-10-18T09:25:13.5811947+01:00
+healthy
+healthy
+exit=0 seconds=0.3
+
+===== prompts: store new versions and the active ones (P13_flatmate_onboarding) =====
+command: docker @run scripts/prompts.py sync
+started: 2026-10-18T09:25:13.8813830+01:00
+ Container flatshare-tests-run-65eb516dac18 Creating 
+ Container flatshare-tests-run-65eb516dac18 Created 
+prompt registry up to date
+exit=0 seconds=1.8
+
+===== Flatmate profile agent: the 20 messages of flatmate_onboarding_v1, one new user each (real model) =====
+command: docker @run scripts/flatmate_bench.py
+started: 2026-10-18T09:25:15.6398013+01:00
+ Container flatshare-tests-run-1d3ab83d9287 Creating 
+ Container flatshare-tests-run-1d3ab83d9287 Created 
+20 messages; model qwen3.5:4b; P13 v1
+fm-001 200 found=4/4 missed=[] extra=[] dropped=0 forbidden=[] q=1 tools=['my_profile', 'propose_profile'] 36348 ms
+fm-002 200 found=1/2 missed=['lifestyle.schedule'] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 20453 ms
+fm-003 200 found=3/3 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 22270 ms
+fm-004 200 found=2/3 missed=['lifestyle.cleanliness'] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 18476 ms
+fm-005 200 found=2/2 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 21794 ms
+fm-006 200 found=2/2 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 25238 ms
+fm-007 200 found=2/2 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 19413 ms
+fm-008 200 found=0/2 missed=['languages', 'seeking'] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 29901 ms
+fm-009 200 found=0/0 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile'] 15933 ms
+fm-010 200 found=0/0 missed=[] extra=['areas', 'budget_max'] dropped=0 forbidden=['areas', 'budget_max'] q=0 tools=['my_profile', 'propose_profile'] 17795 ms
+fm-011 200 found=3/3 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 31781 ms
+fm-012 200 found=2/3 missed=['lifestyle.cleanliness'] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 18555 ms
+fm-013 200 found=3/3 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 22704 ms
+fm-014 200 found=0/0 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile'] 14594 ms
+fm-015 200 found=1/1 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 19466 ms
+fm-016 200 found=2/3 missed=['areas'] extra=[] dropped=1 forbidden=[] q=0 tools=['my_profile', 'propose_profile'] 19809 ms
+fm-017 200 found=2/2 missed=[] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 18556 ms
+fm-018 200 found=1/1 missed=[] extra=['areas'] dropped=0 forbidden=['areas'] q=2 tools=['my_profile', 'propose_profile'] 18632 ms
+fm-019 200 found=2/3 missed=['lifestyle.smoking'] extra=[] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 19822 ms
+fm-020 200 found=2/2 missed=[] extra=['lifestyle.cleanliness'] dropped=0 forbidden=[] q=2 tools=['my_profile', 'propose_profile'] 19886 ms
+{
+  "run_at": "2026-10-18T08:32:28+00:00",
+  "dataset": "flatmate_onboarding_v1.jsonl",
+  "model": "qwen3.5:4b",
+  "prompt_version": 1,
+  "messages": 20,
+  "minutes": 7.2,
+  "http_200": 20,
+  "field_recall": 0.829,
+  "exact_messages": 12,
+  "with_extra_fields": 3,
+  "forbidden_shown": 3,
+  "dropped_by_code": 1,
+  "more_than_two_questions": 0,
+  "propose_profile_called": 18,
+  "client_ms": {
+    "p50": 19809.3,
+    "p95": 31781.1
+  }
+}
+wrote /flatshare/reports/eval/flatmate-bench-20261018-083228.json
+exit=0 seconds=432.9

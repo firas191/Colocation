@@ -1,0 +1,13 @@
+{
+  "request_id": "405dbd34-13eb-4f5a-93bd-66a74e61548e",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "item",
+        "issue": "computed_or_unknown"
+      }
+    ]
+  }
+}

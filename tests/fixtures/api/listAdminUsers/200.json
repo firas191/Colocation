@@ -1,0 +1,17 @@
+{
+  "request_id": "8aaa4dc0-0697-4eef-a249-22bce6afcc03",
+  "data": {
+    "items": [
+      {
+        "role": "moderator",
+        "email": "p11-a-9fd846a4@example.test",
+        "user_id": "3e4c6304-11f5-4ac6-8699-278bcf55618e",
+        "created_at": "2026-10-17T14:00:49.821366+00:00",
+        "display_name": "A"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 175
+  }
+}

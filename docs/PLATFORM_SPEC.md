@@ -319,7 +319,7 @@ benchmark script with a labelled set, and an entry in `docs/AI_AGENTS_EXPLAINED.
 | 6 Legal | partly done: Legal agent on the TN pack (D-087, D-089, T-60) | **P9**: `POST /v1/legal/ask`, guides, FR and GB packs from primary sources. `P5b_stance_extractor` and the `P8_verifier` prompt are not planned: the Legal agent's checks in code do the verifier's job today (D-087). They come back only if the evaluation shows a need; listed in section 10. |
 | 7 Documents and privacy | not started | Documents: **P9**. Erasure (`DELETE /v1/me`) and retention: **P10**, extended to every new table and to storage. |
 | 8 Evaluation and iteration | per-agent benches exist | Each agent phase includes its benchmark (P8: trust set; P9: document agent set). The full ablation matrix and the single-agent comparison of spec 8.5: **P12**. |
-| 9 Hardening | not started | Front-end readiness items of spec 17.1: **P1**. Load tests, failure injection, security checks, backup and restore: **P12**. |
+| 9 Hardening | partly done (P12, `docs/HARDENING.md`) | Front-end readiness items of spec 17.1: **P1**. Isolation matrix, website safety checks, backup and restore: done in P12. Load test measured on the PC (T-78): search p95 under 1.5 s up to 10 workers. |
 | 10 3D | not started | Out of scope, stays last. |
 
 Spec 2.5 listed in-app messaging and tenancy management as non-goals of the backend phase. Firas's platform goal

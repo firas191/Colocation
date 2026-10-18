@@ -1,0 +1,15 @@
+{
+  "name": "P4_trust_assessor",
+  "agent": "A4 trust",
+  "role": "System message of the Trust agent (n8n AI Agent node): read a listing before publication, look up what the first findings call for (photos used elsewhere, price against the area, the owner's history, the listing's fields, the phrase rules) and return risk signals with a quote from the text. The agent has no write tool; the score and the verdict are computed in code from capped points, and a block needs a hard signal (backend spec 12.2, D-107).",
+  "schema": "schemas/P4_trust_assessor.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "language",
+    "found"
+  ],
+  "golden_set": "trust_v1",
+  "active_version": 2
+}

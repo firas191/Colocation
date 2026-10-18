@@ -1,0 +1,8 @@
+{
+  "request_id": "9b0917d3-7cd9-404d-86b8-b9d394e0b9ce",
+  "error": {
+    "code": "UPSTREAM_UNAVAILABLE",
+    "message": "A backend dependency is unavailable",
+    "details": []
+  }
+}

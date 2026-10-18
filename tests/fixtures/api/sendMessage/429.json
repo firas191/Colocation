@@ -1,0 +1,14 @@
+{
+  "request_id": "2ccfb661-662c-413d-8317-30031c6ded9b",
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many requests",
+    "details": [
+      {
+        "limit": 1,
+        "window_s": 60,
+        "retry_after_s": 60
+      }
+    ]
+  }
+}

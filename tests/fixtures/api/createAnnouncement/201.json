@@ -1,0 +1,10 @@
+{
+  "request_id": "6ea081db-9657-4345-8584-32cc03497863",
+  "data": {
+    "id": 2,
+    "household_id": "715e2044-ef01-4301-9e09-60cb4589b896"
+  },
+  "meta": {
+    "latency_ms": 234
+  }
+}

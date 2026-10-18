@@ -1,0 +1,14 @@
+{
+  "request_id": "7db4c160-24c0-4981-a551-7d8becd1cda1",
+  "error": {
+    "code": "CONFLICT",
+    "message": "The analysis is still running",
+    "details": [
+      {
+        "field": "analysis",
+        "issue": "running",
+        "job_id": "53e6707d-7b39-438b-89e7-cde72675ebf0"
+      }
+    ]
+  }
+}

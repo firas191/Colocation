@@ -29,3 +29,6 @@ web/public/map/maplibre-gl-worker.mjs
 # Map tiles cut on the owner's PC (scripts/windows/map.ps1): large, rebuilt from the Protomaps build, not committed
 geo/tiles/*.pmtiles
 geo/tiles/tools/
+
+# database dumps and the photo store copied by scripts/windows/backup.ps1 (personal data; never committed)
+backups/

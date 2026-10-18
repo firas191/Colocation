@@ -1,0 +1,21 @@
+{
+  "request_id": "e00ae5af-9d94-4309-8ce6-d36089e58710",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "listing_id",
+        "issue": "pattern"
+      },
+      {
+        "field": "text",
+        "issue": "minLength"
+      },
+      {
+        "field": "foo",
+        "issue": "additional_property"
+      }
+    ]
+  }
+}

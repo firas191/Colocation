@@ -7,12 +7,14 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Notice, Textarea } from "@/components/ui/field";
 import { ListingCard } from "@/components/listing/listing-card";
-import { Link } from "@/i18n/navigation";
+import { BotText, ProposalBox, Thinking, Turn } from "@/components/ui/assistant";
+import { Link, useRouter } from "@/i18n/navigation";
 import { decideChangeAction, sendMessageAction, type Change, type Reply } from "@/lib/actions/assistant";
 
 type Turn = { id: string; who: "you"; text: string } | { id: string; who: "bot"; reply: Reply };
 
-export function Chat({ examples }: { examples: string[] }) {
+/** compact: the narrow panel beside the owner's listings (one column of cards). */
+export function Chat({ examples, compact = false, placeholder }: { examples: string[]; compact?: boolean; placeholder?: string }) {
   const t = useTranslations("assistant");
   const locale = useLocale();
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -34,21 +36,22 @@ export function Chat({ examples }: { examples: string[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <ol className="flex flex-col gap-5" aria-live="polite">
+      <ol className="flex flex-col gap-6" aria-live="polite">
         {turns.map((x) => (
-          <li key={x.id} className={x.who === "you" ? "self-end max-w-[85%]" : "w-full"}>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-soft">{x.who === "you" ? t("you") : t("bot")}</p>
+          <li key={x.id}>
             {x.who === "you"
-              ? <p className="rounded-field bg-door px-4 py-2.5 text-door-ink whitespace-pre-line">{x.text}</p>
-              : <BotReply r={x.reply} />}
+              ? <Turn who="you" label={t("you")}>{x.text}</Turn>
+              : <Turn who="bot" label={t("bot")}><BotReply r={x.reply} compact={compact} /></Turn>}
           </li>
         ))}
-        {pending && <li role="status" className="text-ink-soft">{t("sending")}</li>}
+        {pending && <Thinking as="li">{t("sending")}</Thinking>}
       </ol>
       <div ref={end} />
-      <form onSubmit={(ev) => { ev.preventDefault(); send(text); }} className="flex flex-col gap-3">
-        <label htmlFor="msg" className="text-sm font-semibold">{t("label")}</label>
-        <Textarea id="msg" value={text} onChange={(ev) => setText(ev.target.value)} placeholder={t("placeholder")} maxLength={2000} rows={3}
+      <form onSubmit={(ev) => { ev.preventDefault(); send(text); }}
+        className="panel flex flex-col gap-3 p-3 shadow-[var(--shadow-lift)] focus-within:border-door">
+        <label htmlFor="msg" className="px-1 text-sm font-semibold">{t("label")}</label>
+        <Textarea id="msg" value={text} onChange={(ev) => setText(ev.target.value)} placeholder={placeholder || t("placeholder")} maxLength={2000} rows={3}
+          className="border-0 bg-transparent focus:shadow-none"
           onKeyDown={(ev) => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); send(text); } }} />
         <div className="flex flex-wrap items-center gap-4">
           <Button type="submit" disabled={pending || !text.trim()}>{t("send")}</Button>
@@ -60,7 +63,7 @@ export function Chat({ examples }: { examples: string[] }) {
           <h2 id="ex-title" className="text-sm font-semibold">{t("examples")}</h2>
           <ul className="flex flex-wrap gap-2">
             {examples.map((ex) => (
-              <li key={ex}><button type="button" onClick={() => send(ex)} className="min-h-10 rounded-full border border-line bg-paper px-4 text-start text-sm hover:border-door">{ex}</button></li>
+              <li key={ex}><button type="button" onClick={() => send(ex)} className="chip min-h-10 px-4 text-start transition-colors hover:border-door hover:text-door">{ex}</button></li>
             ))}
           </ul>
         </section>
@@ -70,7 +73,7 @@ export function Chat({ examples }: { examples: string[] }) {
   );
 }
 
-function BotReply({ r }: { r: Reply }) {
+function BotReply({ r, compact }: { r: Reply; compact: boolean }) {
   const t = useTranslations("assistant");
   const e = useTranslations("errors");
   if (!r.ok) return <Notice tone="error">{r.error && e.has(r.error) ? e(r.error) : t("error")}</Notice>;
@@ -80,16 +83,16 @@ function BotReply({ r }: { r: Reply }) {
   const text = r.clarifying_question || r.answer || (r.status === "results" ? null : fallback);
   return (
     <div className="flex flex-col gap-4">
-      {text && <p className="rounded-field border border-line bg-paper px-4 py-3 whitespace-pre-line">{text}</p>}
+      {text && <BotText>{text}</BotText>}
       {r.results && (
         <>
           <p className="font-semibold">{t("results", { count: r.results.length })}</p>
           {r.results.length > 0 && (
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className={compact ? "grid gap-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"}>
               {r.results.slice(0, 6).map((c) => <li key={c.id}><ListingCard c={c} /></li>)}
             </ul>
           )}
-          {r.jurisdiction && r.results.length > 6 && <Link href={`/search?country=${r.jurisdiction}`}>{t("seeAll")}</Link>}
+          {r.jurisdiction && r.results.length > 6 && <Link href={`/search?country=${r.jurisdiction}`} className="link-action">{t("seeAll")}</Link>}
         </>
       )}
     </div>
@@ -101,7 +104,7 @@ function LegalReply({ r }: { r: Reply }) {
   const fmt = useFormatter();
   const date = (d?: string | null) => (d ? fmt.dateTime(new Date(d), { dateStyle: "medium" }) : null);
   return (
-    <div className="flex flex-col gap-3 rounded-field border border-line bg-paper px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-panel rounded-ss-sm border border-line bg-paper px-4 py-3">
       {r.abstained || !r.answer ? <p>{t("notFound")}</p> : (
         <>
           {r.conflict && <p className="font-semibold text-saffron">{t("conflict")}</p>}
@@ -137,6 +140,7 @@ function Proposal({ r }: { r: Reply }) {
   const p = r.proposal!;
   const [done, setDone] = useState<null | { tone: "ok" | "info" | "error"; text: string }>(null);
   const [pending, start] = useTransition();
+  const router = useRouter();
   const value = (c: Change, v: unknown): string => {
     if (v === null || v === undefined) return "—";
     if (typeof v === "boolean") return v ? s("yes") : s("no");
@@ -150,30 +154,35 @@ function Proposal({ r }: { r: Reply }) {
   };
   const decide = (d: "confirm" | "cancel") => start(async () => {
     const res = await decideChangeAction(d, p.listing_id, p.change_id, `chg-${d}-${crypto.randomUUID()}`);
-    if (res.ok) setDone({ tone: "ok", text: d === "confirm" ? (res.status === "published" ? `${t("confirmed")} ${t("published")}` : t("confirmed")) : t("cancelled") });
+    if (res.ok) {
+      setDone({ tone: "ok", text: d === "confirm" ? (res.status === "published" ? `${t("confirmed")} ${t("published")}` : t("confirmed")) : t("cancelled") });
+      if (d === "confirm") router.refresh();          // a page showing the listing (the owner's list) shows the change
+    }
     else if (res.error === "CONFLICT" || res.issue === "expired" || (res.issue || "").startsWith("already_")) setDone({ tone: "info", text: t("gone") });
     else setDone({ tone: "error", text: t("refused") });
   });
   return (
-    <div className="flex flex-col gap-3 rounded-field border border-door/40 bg-paper px-4 py-3">
-      {r.answer && <p className="whitespace-pre-line">{r.answer}</p>}
-      <p className="font-semibold">{t("proposed")}</p>
-      <ul className="flex flex-col gap-1 text-[0.95rem]">
-        {p.diff.map((c) => (
-          <li key={c.field}>
-            <span className="font-semibold">{t.has(`fields.${c.field}`) ? t(`fields.${c.field}`) : c.field}</span>{" · "}
-            <span className="text-ink-soft line-through decoration-ink-soft/60">{value(c, c.before)}</span>{" → "}
-            <span className="font-semibold">{value(c, c.after)}</span>
-          </li>
-        ))}
-      </ul>
-      {p.expires_at && !done && <p className="text-sm text-ink-soft">{t("expires", { time: fmt.dateTime(new Date(p.expires_at), { timeStyle: "short" }) })}</p>}
-      {done ? <Notice tone={done.tone}>{done.text}</Notice> : (
-        <div className="flex flex-wrap gap-3">
-          <Button type="button" onClick={() => decide("confirm")} disabled={pending}>{t("confirm")}</Button>
-          <Button type="button" variant="secondary" onClick={() => decide("cancel")} disabled={pending}>{t("cancel")}</Button>
-        </div>
-      )}
+    <div className="flex flex-col gap-3">
+      {r.answer && <BotText>{r.answer}</BotText>}
+      <ProposalBox title={t("proposed")} saved={done?.tone === "ok"} savedLabel={t("confirmed")}>
+        <ul className="flex flex-col gap-2 text-[0.95rem]">
+          {p.diff.map((c) => (
+            <li key={c.field} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="font-semibold">{t.has(`fields.${c.field}`) ? t(`fields.${c.field}`) : c.field}</span>
+              <span className="text-ink-soft line-through decoration-ink-soft/60">{value(c, c.before)}</span>
+              <span aria-hidden="true" className="inline-block text-ink-soft rtl:rotate-180">→</span>
+              <span className="font-semibold">{value(c, c.after)}</span>
+            </li>
+          ))}
+        </ul>
+        {p.expires_at && !done && <p className="text-sm text-ink-soft">{t("expires", { time: fmt.dateTime(new Date(p.expires_at), { timeStyle: "short" }) })}</p>}
+        {done ? <Notice tone={done.tone}>{done.text}</Notice> : (
+          <div className="flex flex-wrap gap-3">
+            <Button type="button" onClick={() => decide("confirm")} disabled={pending}>{t("confirm")}</Button>
+            <Button type="button" variant="secondary" onClick={() => decide("cancel")} disabled={pending}>{t("cancel")}</Button>
+          </div>
+        )}
+      </ProposalBox>
     </div>
   );
 }

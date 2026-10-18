@@ -1,0 +1,55 @@
+{
+  "key": "global.house_rules",
+  "kind": "house_rules",
+  "jurisdiction": "GLOBAL",
+  "version": 1,
+  "legal": false,
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "slots": [
+    {
+      "name": "household",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "rules",
+      "type": "items",
+      "from": "household",
+      "required": true,
+      "max": 30,
+      "columns": [
+        "category",
+        "text"
+      ]
+    }
+  ],
+  "sources": [],
+  "text": {
+    "fr": {
+      "title": "Règles de la maison",
+      "paragraphs": [
+        "Règles convenues entre les membres du foyer {{household}} :",
+        "{{rules}}"
+      ]
+    },
+    "ar": {
+      "title": "قواعد المنزل",
+      "paragraphs": [
+        "القواعد المتفق عليها بين أفراد المسكن {{household}}:",
+        "{{rules}}"
+      ]
+    },
+    "en": {
+      "title": "House rules",
+      "paragraphs": [
+        "Rules agreed between the members of the household {{household}}:",
+        "{{rules}}"
+      ]
+    }
+  }
+}

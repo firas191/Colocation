@@ -1,0 +1,75 @@
+{
+  "request_id": "b47b774c-3bd9-498b-9bf4-441f4e90e992",
+  "data": {
+    "kind": "inventory_entry",
+    "bytes": 12178,
+    "inputs": {
+      "date": "2026-11-01",
+      "items": {
+        "cols": [
+          "room",
+          "item",
+          "condition",
+          "notes"
+        ],
+        "rows": [
+          {
+            "item": "Lit",
+            "room": "Chambre",
+            "notes": "<b>tache</b>",
+            "condition": "bon"
+          },
+          {
+            "item": "Frigo",
+            "room": "Cuisine",
+            "notes": "",
+            "condition": "neuf"
+          }
+        ]
+      },
+      "address": "12 rue des Oliviers, Ariana",
+      "landlord": "Omar",
+      "occupants": "Amel, Bilel"
+    },
+    "status": "ready",
+    "sources": [
+      {
+        "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm",
+        "title": "Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux",
+        "cite_as": "COC art. 780-783",
+        "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)",
+        "retrieved_at": "2026-10-17"
+      },
+      {
+        "url": "https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm",
+        "title": "Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée",
+        "cite_as": "COC art. 742-744",
+        "publisher": "Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)",
+        "retrieved_at": "2026-10-17"
+      }
+    ],
+    "language": "fr",
+    "template": {
+      "key": "tn.inventory_entry",
+      "version": 1
+    },
+    "created_at": "2026-10-17T09:34:06.228631+00:00",
+    "created_by": {
+      "user_id": "63ca49fc-5521-4fb9-9ad3-336d91cfee01",
+      "display_name": "Amel"
+    },
+    "error_code": null,
+    "document_id": "01cc92a8-682a-4263-90b3-9138c3b880c2",
+    "household_id": "3fcc7a99-fb0a-4ef8-b0f0-d9bef2669a71",
+    "notice_version": "documents-notice-v1",
+    "jurisdiction_code": "TN",
+    "download": {
+      "url": "http://localhost:8080/flatshare-media/documents/3fcc7a99-fb0a-4ef8-b0f0-d9bef2669a71/a45c5ead-9ae9-4be0-9f6f-82803d220719.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=redacted&X-Amz-Date=20261017T093406Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=redacted",
+      "expires_at": "2026-10-17T09:49:06+00:00"
+    },
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 255
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "request_id": "77c75ead-87f1-420e-9c0b-0cf89ace1f87",
+  "data": {
+    "amount": {
+      "currency": "TND",
+      "exponent": 3,
+      "amount_minor": 90001
+    },
+    "shares": [
+      {
+        "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+        "share_minor": 45001,
+        "display_name": "Amel"
+      },
+      {
+        "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+        "share_minor": 45000,
+        "display_name": "Bilel"
+      }
+    ],
+    "preview": true
+  },
+  "meta": {
+    "latency_ms": 185
+  }
+}

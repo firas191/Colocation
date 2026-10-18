@@ -1,0 +1,72 @@
+{
+  "key": "gb.rent_receipt",
+  "kind": "rent_receipt",
+  "jurisdiction": "GB",
+  "version": 1,
+  "legal": true,
+  "languages": [
+    "en"
+  ],
+  "slots": [
+    {
+      "name": "landlord",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "tenant",
+      "type": "text",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "period",
+      "type": "period",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "amount",
+      "type": "money",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "paid_on",
+      "type": "date",
+      "from": "payment",
+      "required": true
+    },
+    {
+      "name": "confirmed_on",
+      "type": "date",
+      "from": "payment",
+      "required": true
+    }
+  ],
+  "sources": [
+    {
+      "cite_as": "Landlord and Tenant Act 1985, s.4",
+      "title": "Landlord and Tenant Act 1985, section 4: Provision of rent books",
+      "url": "https://www.legislation.gov.uk/ukpga/1985/70/section/4",
+      "retrieved_at": "2026-10-17",
+      "publisher": "legislation.gov.uk (The National Archives); revised version up to date with changes known to be in force on or before 12 October 2026"
+    }
+  ],
+  "text": {
+    "en": {
+      "title": "Rent receipt",
+      "paragraphs": [
+        "I, the undersigned {{landlord}}, landlord of the home at {{address}}, acknowledge receiving from {{tenant}} the sum of {{amount}} as rent for the period {{period}}, paid on {{paid_on}}.",
+        "This receipt is made from the payment the landlord confirmed on the platform on {{confirmed_on}}. Where rent is payable weekly, the landlord must provide a rent book or other similar document (Landlord and Tenant Act 1985, s.4)."
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "request_id": "9ce36fca-c9bc-409e-ad3f-563622ece515",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Visit not found",
+    "details": []
+  }
+}

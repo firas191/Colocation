@@ -1,0 +1,17 @@
+{
+  "request_id": "6796761d-5e18-4e6c-a817-ad05592edcba",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "role",
+        "issue": "not_allowed",
+        "allowed": [
+          "owner",
+          "seeker"
+        ]
+      }
+    ]
+  }
+}

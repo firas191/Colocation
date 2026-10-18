@@ -1,0 +1,15 @@
+{
+  "request_id": "e57b5804-f656-4e68-b746-eb8af39a0d85",
+  "data": {
+    "items": [
+      {
+        "user_id": "9d23d805-39eb-40ac-89f7-487edf9b4c02",
+        "blocked_at": "2026-10-17T01:32:24.227861+00:00",
+        "display_name": null
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 168
+  }
+}

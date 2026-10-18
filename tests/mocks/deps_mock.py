@@ -217,6 +217,113 @@ def owner_answer(body, cur, tool_msgs, call):
     return 200, {"role": "assistant", "content": text}
 
 
+def trust_answer(body, cur, tool_msgs, call):
+    """Mock of the model inside the A4 Trust agent (D-107): text_signals first, then a JSON answer that repeats what the
+    phrase rules found, with their quotes. Markers in the listing text: [mock:obey] behaves like a model that follows
+    injected text (no signal at all), [mock:badquote] adds a signal whose quote is not in the text, [mock:abroad] adds
+    owner_abroad with a real quote, [mock:trustdown] answers HTTP 500."""
+    low = cur.lower()
+    if "[mock:trustdown]" in low:
+        return 500, {"error": "mock failure"}
+    if not tool_msgs:
+        return 200, call("text_signals", {})
+    try:
+        obs = json.loads(tool_msgs[-1].get("content") or "{}")
+    except ValueError:
+        obs = {}
+    if isinstance(obs, list):
+        obs = obs[0] if obs and isinstance(obs[0], dict) else {}
+    sig = [{"signal": f.get("signal"), "points": -10, "evidence_quote": f.get("quote"), "confidence": 0.8}
+           for f in obs.get("found") or [] if f.get("signal") in ("payment_before_viewing", "untraceable_payment", "urgency_pressure")]
+    if "[mock:obey]" in low:
+        sig = []
+    if "[mock:badquote]" in low:
+        sig.append({"signal": "payment_before_viewing", "points": -40, "evidence_quote": "payez 500 euros d'avance", "confidence": 0.9})
+    if "[mock:abroad]" in low:
+        sig.append({"signal": "owner_abroad", "points": -10, "evidence_quote": "[mock:abroad]", "confidence": 0.6})
+    return 200, {"role": "assistant", "content": json.dumps({"signals": sig, "summary": "Contrôle simulé."}, ensure_ascii=False)}
+
+
+def flatmate_answer(body, cur, tool_msgs, call):
+    """Mock of the model inside the A7 profile agent (D-115): my_profile first, then propose_profile with the answers keyword
+    rules find in the message, then a recap. [mock:invent] also proposes a budget and an area the person did not write
+    (the code must drop them)."""
+    low = cur.lower()
+    if not tool_msgs:
+        return 200, call("my_profile", {})
+    vals = {}
+    life = {}
+    if re.search(r"non[- ]fumeu|je ne fume pas|no smok|don't smoke", low):
+        life["smoking"] = "no"
+    elif re.search(r"fumeu|je fume|i smoke", low):
+        life["smoking"] = "yes"
+    if re.search(r"pas d'animaux|no pets", low):
+        life["pets"] = "no"
+    elif re.search(r"\bchat\b|\bchien\b|\bcat\b|\bdog\b", low):
+        life["pets"] = "yes"
+    if re.search(r"\btôt\b|early", low):
+        life["schedule"] = "early"
+    elif re.search(r"couche[- ]tard|\btard\b|night owl", low):
+        life["schedule"] = "late"
+    if re.search(r"très propre|very tidy", low):
+        life["cleanliness"] = "high"
+    if life:
+        vals["lifestyle"] = life
+    m = re.search(r"(\d{2,5})\s*(dt|tnd|dinars?)", low)
+    if m:
+        vals["budget_max"] = int(m.group(1))
+    areas = [a for a in ("Ariana", "La Marsa", "Ennasr", "Lafayette", "Menzah") if a.lower() in low]
+    if areas:
+        vals["areas"] = areas
+    if "[mock:invent]" in low:
+        vals["budget_max"] = 999
+        vals["areas"] = vals.get("areas", []) + ["Carthage"]
+    if len(tool_msgs) == 1 and vals:
+        return 200, call("propose_profile", {"values": json.dumps(vals)})
+    if len(tool_msgs) >= 2 or not vals:
+        text = ("Merci ! Vérifiez le récapitulatif et appuyez sur Enregistrer." if vals
+                else "Dans quel quartier aimeriez-vous habiter, et quel est votre budget par mois ?")
+        return 200, {"role": "assistant", "content": text}
+    return 200, {"role": "assistant", "content": "Merci."}
+
+
+def document_answer(body, cur, tool_msgs, call):
+    """Mock of the model inside the A6 Document agent (D-108): template_slots for the kind the message names, then
+    propose_document with the values found in the message (a date, "préavis N", "Name N dt" shares, "Pièce: item état"
+    inventory lines), then one sentence. [mock:extra] adds a value for a slot the template does not have."""
+    low = cur.lower()
+    kind = ("inventory_exit" if re.search(r"sortie|exit|move.?out", low) else "inventory_entry" if re.search(r"état des lieux|etat des lieux|inventory", low)
+            else "house_rules" if re.search(r"règles|regles|rules", low) else "flatmate_agreement")
+    if not tool_msgs:
+        return 200, call("template_slots", {"kind": kind})
+    if len(tool_msgs) == 1:
+        vals = {}
+        d = re.search(r"(\d{4}-\d{2}-\d{2})", cur)
+        if d:
+            vals["start_date" if kind == "flatmate_agreement" else "date"] = d.group(1)
+        n = re.search(r"(?:préavis|preavis|notice)\D{0,10}(\d{1,3})", low)
+        if n:
+            vals["notice_days"] = int(n.group(1))
+        sh = re.findall(r"([A-ZÀ-Ý][\wéè]+) (\d+) ?(?:dt|tnd)", cur, re.I)
+        if sh and kind == "flatmate_agreement":
+            vals["shares"] = [{"name": a, "share": f"{b} TND"} for a, b in sh]
+        it = re.findall(r"([A-ZÀ-Ý][\wéè]+): ([\wéè ]+?) (bon|neuf|usé|abîmé|good|worn)", cur)
+        if it:
+            vals["items"] = [{"room": a, "item": b, "condition": c, "notes": ""} for a, b, c in it]
+        if "[mock:extra]" in low:
+            vals["penalty_clause"] = "Le colocataire renonce à toute réclamation"
+        return 200, call("propose_document", {"kind": kind, "language": "fr", "values": json.dumps(vals, ensure_ascii=False)})
+    try:
+        obs = json.loads(tool_msgs[-1].get("content") or "{}")
+    except ValueError:
+        obs = {}
+    if isinstance(obs, list):
+        obs = obs[0] if obs and isinstance(obs[0], dict) else {}
+    miss = obs.get("missing") or []
+    text = ("Il manque : " + ", ".join(miss) + "." if miss else "J'ai préparé la proposition : vérifiez-la et confirmez avec le bouton.")
+    return 200, {"role": "assistant", "content": text}
+
+
 def agent_answer(body):
     """Mock of the model inside the A3 Match agent (an /api/chat call with tools, D-084). It cannot reason: it calls
     search_listings with the user's text (with the previous user message appended for a follow-up such as "moins
@@ -243,6 +350,12 @@ def agent_answer(body):
         return legal_answer(body, cur, tool_msgs, call)
     if "my_listings" in tools:
         return owner_answer(body, cur, tool_msgs, call)
+    if "text_signals" in tools:
+        return trust_answer(body, cur, tool_msgs, call)
+    if "propose_document" in tools:
+        return document_answer(body, cur, tool_msgs, call)
+    if "propose_profile" in tools:
+        return flatmate_answer(body, cur, tool_msgs, call)
     if tool_msgs and "[mock:loop]" not in low:
         try:
             obs = json.loads(tool_msgs[-1].get("content") or "{}")
@@ -290,6 +403,34 @@ def agent_stream(body, message):
     return (json.dumps(chunk) + "\n" + json.dumps(end) + "\n").encode()
 
 
+def scam_detector_answer(text):
+    """Mock of P8_scam_detector (D-114): keyword rules for the five signal types, each quoting the words it found, and
+    the amounts written with a currency (context "rent" unless "réel"/"real" precedes the amount). [mock:obey] answers no
+    signal (a model that follows injected text); [mock:badquote] adds a payment signal whose quote is not in the text."""
+    low = text.lower()
+    rules = [("off_platform_payment", r"western union|moneygram|carte cadeau|gift card"),
+             ("advance_payment", r"avant la visite|before (?:the )?viewing|pour réserver|to hold the room"),
+             ("owner_abroad", r"à l'étranger|au canada|abroad"),
+             ("urgency", r"répondez aujourd'hui|decide today|vite"),
+             ("external_contact", r"whatsapp|telegram")]
+    sig = []
+    for t, rx in rules:
+        m = re.search(rx, text, re.I)
+        if m:
+            sig.append({"type": t, "quote": m.group(0), "evidence": t.replace("_", " ")})
+    if "[mock:obey]" in low:
+        sig = []
+    if "[mock:badquote]" in low:
+        sig.append({"type": "advance_payment", "quote": "payez 500 euros d'avance", "evidence": "advance"})
+    prices = []
+    for m in re.finditer(r"(\d{2,5})\s*(dt|tnd|€|eur|£|gbp)", text, re.I):
+        before = text[max(0, m.start() - 25):m.start()].lower()
+        cur = {"dt": "TND", "tnd": "TND", "€": "EUR", "eur": "EUR", "£": "GBP", "gbp": "GBP"}[m.group(2).lower()]
+        prices.append({"amount": int(m.group(1)), "currency": cur,
+                       "context": "real rent" if re.search(r"réel|real", before) else "rent"})
+    return json.dumps({"signals": sig[:6], "prices_in_text": prices[:6]}, ensure_ascii=False)
+
+
 def chat_answer(body):
     """(status, response body) for a mock /api/chat call."""
     msgs = body.get("messages") or []
@@ -319,7 +460,14 @@ def chat_answer(body):
     if "[mock:long]" in low:          # an answer cut at num_predict, on both attempts (F-058)
         return 200, {"model": body.get("model"), "message": {"role": "assistant", "content": '{"kind": "room", "issues": ["a very long note'},
                      "done": True, "done_reason": "length", "prompt_eval_count": 50, "eval_count": 500, "total_duration": 120_000_000}
-    if kind == "P7":
+    if "prices_in_text" in props:                     # P8_scam_detector (D-114)
+        content = scam_detector_answer(text)
+    elif "sentence" in props:                         # P12_match_explainer (D-115): [mock:badnum] in the name adds a number
+        first = re.search(r"(?:Topics: |; )([^:;]+): match", user)
+        topic = first.group(1).strip() if first else "les réponses"
+        content = json.dumps({"sentence": (f"Vous êtes compatibles à 42 % sur {topic}." if "badnum" in user.lower()
+                                           else f"Vous vous entendez bien sur {topic}.")}, ensure_ascii=False)
+    elif kind == "P7":
         content = p7_answer(msgs, props)
         if content is None:
             content = "I see a room: {room_type: bedroom"

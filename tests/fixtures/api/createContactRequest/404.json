@@ -1,0 +1,8 @@
+{
+  "request_id": "4b5b5141-d430-4d3a-ae8f-f414f66146c4",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Profile not found",
+    "details": []
+  }
+}

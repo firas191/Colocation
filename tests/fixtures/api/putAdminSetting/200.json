@@ -1,0 +1,12 @@
+{
+  "request_id": "86ce4138-27ba-4bad-a6c4-48e9dea4845f",
+  "data": {
+    "key": "reports.per_hour",
+    "type": "int:1:1000",
+    "value": 12,
+    "previous": 10
+  },
+  "meta": {
+    "latency_ms": 215
+  }
+}

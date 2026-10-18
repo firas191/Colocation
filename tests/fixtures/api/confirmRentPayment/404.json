@@ -1,0 +1,8 @@
+{
+  "request_id": "5ec0a3d4-a409-4250-8b18-7e8549e9e123",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Payment not found",
+    "details": []
+  }
+}

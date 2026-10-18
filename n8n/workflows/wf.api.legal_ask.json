@@ -1,0 +1,689 @@
+{
+  "id": "fsPf82b660c62e2d",
+  "name": "wf.api.legal_ask",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "af05194a-72b3-5e24-b587-3fa6d825ea8b",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/legal/ask",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "webhookId": "e859774a-1058-57a4-9ee0-fd80dc2cd028"
+    },
+    {
+      "id": "51871523-eb4e-598b-bee7-d748e2ab7ae4",
+      "name": "Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Route contract for this endpoint (read by wf.gateway.auth).\nconst route = {\"method\": \"POST\", \"template\": \"/v1/legal/ask\", \"require_user\": true, \"idempotent\": true, \"required_consents\": [\"terms\", \"privacy\"], \"roles\": []};\nconst item = $input.first();\nreturn [{ json: { ...item.json, t0: Date.now(), route }, binary: item.binary }];\n"
+      }
+    },
+    {
+      "id": "509494b5-d552-5c8e-b6f3-ce49975be772",
+      "name": "Gateway",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsGatewayAuth001",
+          "mode": "id",
+          "cachedResultName": "wf.gateway.auth"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "4cb453e8-fac5-5d78-842d-0889ec4c46b0",
+      "name": "Gateway ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "030b7acc-1482-56ea-9d07-90242879cb5c",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "b793bd40-02fe-57ae-accb-323c4b6205a8",
+      "name": "Validate body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.orchestrator > \"Validate body\"\n// POST /v1/assistant/message {text (required, up to 2000 characters), jurisdiction (default: the\n// account's)}. Media ids come with phase 4.\nconst gw = $input.first().json;\nconst b = gw.ctx.body || {};\nconst user = gw.ctx.user || {};\nconst details = [];\nfor (const k of Object.keys(b)) if (!['text', 'jurisdiction'].includes(k)) details.push({ field: k, issue: 'unknown_field' });\nconst text = typeof b.text === 'string' ? b.text.trim() : '';\nif (!text) details.push({ field: 'text', issue: 'required' });\nelse if (Array.from(text).length > 2000) details.push({ field: 'text', issue: 'too_long', max: 2000 });\nconst jurisdiction = b.jurisdiction === undefined ? (user.jurisdiction_code || null) : b.jurisdiction;\nif (jurisdiction !== null && (typeof jurisdiction !== 'string' || !/^[A-Z]{2}(-[A-Z0-9]{1,3})?$/.test(jurisdiction))) details.push({ field: 'jurisdiction', issue: 'invalid_format' });\nif (details.length) {\n  return [{ json: { ok: false, status: 422, gw, error: { code: 'VALIDATION_FAILED', message: 'Request body is invalid', details } } }];\n}\nreturn [{ json: { ok: true, gw, text, jurisdiction, today: new Date().toISOString().slice(0, 10) } }];\n"
+      }
+    },
+    {
+      "id": "53853557-7e1f-5fa8-9471-c21487d4b1dd",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ac01acb-501e-5330-9715-2157c37fec08",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "ced0d9cf-c070-55a5-996d-d834ff12a818",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1320,
+        -200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select (select value #>> '{}' from app.settings where key = 'services.text_url') as text_url, coalesce((select value #>> '{}' from app.settings where key = 'legal.agent_enabled'), 'false') = 'true' as legal_enabled",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "da3b3a0e-d132-5ecd-8384-632d3db85e0a",
+      "name": "Agent on?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1430,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "23b9809f-e980-5c5a-b533-d409cb0d0df0",
+              "leftValue": "={{ $json.legal_enabled }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "0b572939-3081-5c21-aca6-b9f96a2d3d46",
+      "name": "Text analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        -300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Context').first().json.text_url.replace(/\\/+$/, '') + '/v1/analyze' }}",
+        "options": {
+          "timeout": "={{ 10000 }}",
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $('Validate body').first().json.text, mask: true, use_ner: true }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fsCredSvcToken01",
+          "name": "Compute services token"
+        }
+      }
+    },
+    {
+      "id": "e2df2c9f-6437-52e2-855d-f9eb4a3b9d89",
+      "name": "Legal request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.legal_ask > \"Legal request\" (platform P9, PLATFORM_SPEC 3.8): POST /v1/legal/ask goes straight to the Legal\n// agent (A5), without the P1 router. Same input as the assistant path: the masked text (Text service, or the fallback\n// mask), the language the Text service found, the jurisdiction asked or the account's.\n// A3 Match agent checks (D-084), shared by the agent workflow and the unit tests.\n//  - toolCalls(steps): the AI Agent node's intermediate steps as [{tool, input, output}] (output parsed when JSON).\n//  - numbersIn(text): every reading of every number written in a text (see readings).\n//  - checkAnswer(answer, sources): every number of two digits or more in the answer must appear in one of the\n//    sources (the user's message, the tool results). Small numbers (result positions, counts up to 10) pass.\n//  - fallbackMask(text): e-mails and long digit runs masked, used only when the Text service did not answer.\n//  - plainText(answer): Markdown removed (bold, italics, headings, list markers, links), lines joined (D-085).\n//  - shorten(text, max): cut at the last sentence end that fits, else at a word, with an ellipsis (D-085).\n\nfunction toolCalls(steps) {\n  return (Array.isArray(steps) ? steps : []).map((s) => {\n    const a = s.action || {};\n    let out = s.observation;\n    if (typeof out === 'string') { try { out = JSON.parse(out); } catch (e) { /* keep the text */ } }\n    if (Array.isArray(out) && out.length === 1) out = out[0];          // a workflow tool answers with its items\n    let input = a.toolInput;\n    if (typeof input === 'string') { try { input = JSON.parse(input); } catch (e) { /* keep the text */ } }\n    return { tool: a.tool || null, input: input ?? null, output: out ?? null };\n  });\n}\n\n// Each number written in a text, with its possible readings: \"450.000\" is 450 (Tunisian dinars, three decimals) or\n// 450000 (dot as thousands separator); \"1.225.000\" is 1225000; \"450,5\" is 450.5.\nfunction readings(text) {\n  const out = [];\n  for (const m of String(text || '').matchAll(/\\d{1,3}(?:\\.\\d{3})+(?!\\d|,\\d)|\\d+(?:[.,]\\d+)?/g)) {\n    const raw = m[0];\n    const alts = new Set();\n    if (/^\\d{1,3}(?:\\.\\d{3})+$/.test(raw)) alts.add(Number(raw.replace(/\\./g, '')));\n    const v = Number(raw.replace(',', '.'));\n    if (Number.isFinite(v)) alts.add(v);\n    out.push([...alts]);\n  }\n  return out;\n}\n\nfunction numbersIn(text) {\n  return readings(text).flat();\n}\n\nfunction checkAnswer(answer, sources) {\n  const allowed = new Set();\n  for (const src of sources || []) {\n    const text = typeof src === 'string' ? src : JSON.stringify(src ?? '');\n    for (const n of numbersIn(text)) {\n      allowed.add(n);\n      allowed.add(Math.round(n));\n    }\n  }\n  const unsupported = [];\n  for (const alts of readings(answer)) {\n    if (alts.some((n) => Number.isInteger(n) && n <= 10)) continue;\n    if (alts.some((n) => allowed.has(n) || allowed.has(Math.round(n)))) continue;\n    unsupported.push(alts[alts.length - 1]);\n  }\n  return { ok: unsupported.length === 0, unsupported };\n}\n\nfunction fallbackMask(text) {\n  return String(text || '')\n    .replace(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g, '<EMAIL>')\n    // a date written 2026-12-01 is not a phone number (F-079)\n    .replace(/\\+?\\d[\\d .-]{6,}\\d/g, (m) => (/^\\d{4}-\\d{2}-\\d{2}$/.test(m) || m.replace(/\\D/g, '').length < 8 ? m : '<PHONE>'));\n}\n\nfunction plainText(answer) {\n  const lines = String(answer || '').replace(/\\r/g, '').split('\\n').map((l) => l\n    .replace(/^\\s{0,3}#{1,6}\\s+/, '')                      // headings\n    .replace(/^\\s*(?:[-*+\\u2022]|\\d+[.)])\\s+/, '')            // list markers (\"1.\" too: positions are said in words)\n    .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')                // links: keep the text\n    .replace(/(\\*\\*|__)(.+?)\\1/g, '$2')                       // bold\n    .replace(/(^|[^\\w*])[*_]([^*_\\n]+)[*_](?=[^\\w*]|$)/g, '$1$2') // italics\n    .replace(/`([^`]*)`/g, '$1')\n    .replace(/[*_]{2,}/g, '')\n    .trim()).filter(Boolean);\n  return lines.join(' ').replace(/\\s{2,}/g, ' ').trim();\n}\n\nfunction shorten(text, max) {\n  const t = String(text || '');\n  if (!max || Array.from(t).length <= max) return { text: t, cut: false };\n  const head = Array.from(t).slice(0, max).join('');\n  const ends = [...head.matchAll(/[.!?\\u061F\\u06D4](?=\\s|$)/g)].map((m) => m.index + 1);\n  if (ends.length && ends[ends.length - 1] >= max * 0.4) return { text: head.slice(0, ends[ends.length - 1]).trim(), cut: true };\n  const sp = head.lastIndexOf(' ');\n  return { text: (sp > max * 0.4 ? head.slice(0, sp) : head).trim() + '\\u2026', cut: true };\n}\n\nif (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask, plainText, shorten };\n\nconst v = $('Validate body').first().json;\nconst tr = $('Text analysis').first().json || {};\nconst tb = tr.body && typeof tr.body === 'object' ? tr.body : null;\nconst masked = tb && tb.pii && typeof tb.pii.masked_text === 'string' ? tb.pii.masked_text : fallbackMask(v.text);\nconst lang = tb && tb.language ? tb.language : {};\nreturn [{ json: { text: masked, language: lang.language || null, script: lang.script || null, jurisdiction: v.jurisdiction,\n  today: v.today, user_id: v.gw.ctx.user_id, request_id: v.gw.request_id || v.gw.ctx.request_id } }];\n"
+      }
+    },
+    {
+      "id": "60172a1c-5714-53c5-8c5b-a1cd0a405266",
+      "name": "Legal agent",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        -300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsLegalAgent0001",
+          "mode": "id",
+          "cachedResultName": "wf.legal.agent"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "70cfb450-cea9-5133-b20f-f1a57ca311b2",
+      "name": "Legal answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.legal_ask > \"Legal answer\": the Legal agent's checked answer, the same fields and checks as the assistant's\n// legal_question answer (D-087), without the router's fields.\nconst v = $('Validate body').first().json;\nconst r = $('Legal request').first().json;\nconst a = $input.first().json || {};\nconst steps = Array.isArray(a.steps) ? a.steps : [];\nif (a.ok !== true) {\n  return [{ json: { ok: false, gw: v.gw, status: 503, steps, error: { code: 'UPSTREAM_UNAVAILABLE',\n    message: 'The legal assistant is unavailable', details: [{ issue: a.error_code || 'agent_failed' }] } } }];\n}\nreturn [{ json: { ok: true, gw: v.gw, status: 200, steps, data: { language: r.language, jurisdiction: v.jurisdiction, status: a.status,\n  answer: a.answer, abstained: a.abstained, abstain_reason: a.abstain_reason, conflict: a.conflict, citations: a.citations,\n  missing_information: a.missing_information, notice_version: a.notice_version, warnings: a.warnings || [] } } }];\n"
+      }
+    },
+    {
+      "id": "d07e68b9-458b-58e3-acda-8a8bd2c1882c",
+      "name": "Agent off",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.legal_ask > \"Agent off\": legal.agent_enabled is false; there is no fixed path behind the Legal agent.\nconst v = $('Validate body').first().json;\nreturn [{ json: { ok: false, gw: v.gw, status: 503, error: { code: 'UPSTREAM_UNAVAILABLE', message: 'The legal assistant is off',\n  details: [{ issue: 'agent_off' }] } } }];\n"
+      }
+    },
+    {
+      "id": "1fe6744e-c376-58a0-91c7-fc7149787505",
+      "name": "Envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Shared by every API workflow > \"Envelope\"\n// Input: either a handler result {ok:true, status, data, gw} or a rejection\n// from the gateway or a handler {ok:false, status, error | replay+response}.\n// Output: {status, response, finish} where finish is the app.api_finish payload.\nconst x = $input.first().json;\nconst gw = x.gw || x;                       // handlers carry the gateway item in x.gw\nconst t0 = gw.t0 || Date.now();\nconst latency = Date.now() - t0;\nconst requestId = gw.request_id || (gw.ctx && gw.ctx.request_id) || null;\nlet status, response;\nif (x.replay) {\n  status = x.status;\n  response = x.response;                    // stored response, returned unchanged\n} else if (x.ok) {\n  status = x.status || 200;\n  response = { request_id: requestId, data: x.data ?? {}, meta: { latency_ms: latency, ...(x.meta || {}) } };\n} else {\n  status = x.status || 500;\n  const e = x.error || { code: 'INTERNAL', message: 'Internal error', details: [] };\n  response = { request_id: requestId, error: { code: e.code, message: e.message, details: e.details || [] } };\n}\nconst finish = {\n  request_id: requestId,\n  workflow: $workflow.name,\n  n8n_execution_id: String($execution.id),\n  user_id: (gw.ctx && gw.ctx.user_id) || '',\n  channel: 'api',\n  status_code: status,\n  latency_ms: latency,\n  error_code: response && response.error ? response.error.code : null,\n  idempotency: gw.idempotency || null,\n  idempotency_replay: !!x.replay,\n  response_body: response,\n  result_user_id: x.result_user_id || null,\n  // agent steps of the request (spec 8.3), written to ai.agent_steps with the execution\n  steps: Array.isArray(x.steps) ? x.steps : [],\n  // reason and detail go to ai.executions.error only, never to the client\n  error_detail: x.log ? [x.log.reason, x.log.detail].filter(Boolean).join(': ').slice(0, 500) : null,\n};\nconst headers = { 'X-Request-Id': requestId || '', 'Cache-Control': 'no-store' };\nif (status === 429) {\n  const d = (response.error && response.error.details || []).find((y) => y.retry_after_s);\n  if (d) headers['Retry-After'] = String(d.retry_after_s);\n}\nreturn [{ json: { status, response, finish, headers } }];\n"
+      }
+    },
+    {
+      "id": "2caa56c9-edc0-54a9-81ed-d64ff4a4a24c",
+      "name": "Finish",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2640,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.api_finish($1::jsonb) as finished",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json.finish) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "ce12e412-2aa1-530e-a56c-54cc7cd46a2e",
+      "name": "Rate limited?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2860,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "30fd395f-fe62-5ba9-90b2-12a0d7ecc6d3",
+              "leftValue": "={{ $('Envelope').first().json.status === 429 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "f82fb784-c9b1-5c5e-a689-81a5e4388933",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3080,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Envelope').first().json.response }}",
+        "options": {
+          "responseCode": "={{ $('Envelope').first().json.status }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "X-Request-Id",
+                "value": "={{ $('Envelope').first().json.headers['X-Request-Id'] }}"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a81f94b4-8c29-5df0-9483-630e57487864",
+      "name": "Respond 429",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3080,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Envelope').first().json.response }}",
+        "options": {
+          "responseCode": "={{ $('Envelope').first().json.status }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "X-Request-Id",
+                "value": "={{ $('Envelope').first().json.headers['X-Request-Id'] }}"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              },
+              {
+                "name": "Retry-After",
+                "value": "={{ $('Envelope').first().json.headers['Retry-After'] || '60' }}"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gateway": {
+      "main": [
+        [
+          {
+            "node": "Gateway ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gateway ok?": {
+      "main": [
+        [
+          {
+            "node": "Validate body",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envelope": {
+      "main": [
+        [
+          {
+            "node": "Finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finish": {
+      "main": [
+        [
+          {
+            "node": "Rate limited?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rate limited?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate limited?": {
+      "main": [
+        [
+          {
+            "node": "Respond 429",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate body": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Agent on?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent on?": {
+      "main": [
+        [
+          {
+            "node": "Text analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text analysis": {
+      "main": [
+        [
+          {
+            "node": "Legal request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal request": {
+      "main": [
+        [
+          {
+            "node": "Legal agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal agent": {
+      "main": [
+        [
+          {
+            "node": "Legal answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal answer": {
+      "main": [
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent off": {
+      "main": [
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "api"
+    },
+    {
+      "name": "v1"
+    },
+    {
+      "name": "platform"
+    }
+  ]
+}

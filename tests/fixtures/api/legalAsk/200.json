@@ -1,0 +1,19 @@
+{
+  "request_id": "0ab0be29-f10a-4836-9183-cdf7ff537331",
+  "data": {
+    "language": "fr",
+    "jurisdiction": "TN",
+    "status": "abstained",
+    "answer": null,
+    "abstained": true,
+    "abstain_reason": "not_found",
+    "conflict": false,
+    "citations": [],
+    "missing_information": "Les extraits ne parlent pas de cette question.",
+    "notice_version": "legal-notice-v1",
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 656
+  }
+}

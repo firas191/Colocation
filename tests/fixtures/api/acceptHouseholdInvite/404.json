@@ -1,0 +1,8 @@
+{
+  "request_id": "61d9d192-408f-47fe-858e-e2f84091fa4a",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Invite not found",
+    "details": []
+  }
+}

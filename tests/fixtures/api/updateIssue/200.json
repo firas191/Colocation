@@ -1,0 +1,44 @@
+{
+  "request_id": "3590392a-75e4-4c0c-b11d-747b64fcc523",
+  "data": {
+    "title": "Fuite sous l'évier",
+    "events": [
+      {
+        "at": "2026-10-17T03:07:55.281384+00:00",
+        "by": {
+          "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+          "display_name": null
+        },
+        "status": "open",
+        "comment": null
+      },
+      {
+        "at": "2026-10-17T03:07:58.826497+00:00",
+        "by": {
+          "user_id": "bdb6278e-68b2-46a9-92f8-8f707e425ab0",
+          "display_name": null
+        },
+        "status": "in_progress",
+        "comment": "Plombier mardi"
+      }
+    ],
+    "status": "in_progress",
+    "urgency": "urgent",
+    "category": "plumbing",
+    "issue_id": "81c63c30-172e-4e23-ab9a-ea78e077807e",
+    "created_at": "2026-10-17T03:07:55.281384+00:00",
+    "photo_keys": [
+      "media/issues/81c63c30-172e-4e23-ab9a-ea78e077807e/56208f95-02b6-4856-96b7-6f945583532e.jpg"
+    ],
+    "updated_at": "2026-10-17T03:07:58.826497+00:00",
+    "description": null,
+    "reported_by": {
+      "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+      "display_name": null
+    },
+    "photos_pending": 0
+  },
+  "meta": {
+    "latency_ms": 209
+  }
+}

@@ -1,0 +1,8 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.3 s)
+PASS  prompts: store new versions and the active ones (P4_trust_assessor, P8_scam_detector)  (exit 0, 1.7 s)
+PASS  Trust check, rules and database only: eval/datasets/trust_v1.jsonl  (exit 0, 42.6 s)
+PASS  Trust check with the Trust agent (P4_trust_assessor): eval/datasets/trust_v1.jsonl  (exit 0, 2396.5 s)
+PASS  Trust check with the detector (P8_scam_detector, one call): eval/datasets/trust_v1.jsonl  (exit 0, 902.6 s)
+PASS  Trust check, rules and database only: eval/datasets/p8_scam_v1.jsonl  (exit 0, 27.5 s)
+PASS  Trust check with the Trust agent (P4_trust_assessor): eval/datasets/p8_scam_v1.jsonl  (exit 0, 2429.6 s)
+PASS  Trust check with the detector (P8_scam_detector, one call): eval/datasets/p8_scam_v1.jsonl  (exit 0, 619.7 s)

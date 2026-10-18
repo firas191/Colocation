@@ -1,0 +1,37 @@
+{
+  "request_id": "77aa2ef9-cd83-41aa-8b59-b2c164373f58",
+  "data": {
+    "label": "Gaz",
+    "amount": {
+      "currency": "TND",
+      "exponent": 3,
+      "amount_minor": 12000
+    },
+    "shares": [
+      {
+        "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+        "share_minor": 7000,
+        "display_name": "Bilel"
+      },
+      {
+        "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+        "share_minor": 5000,
+        "display_name": "Amel"
+      }
+    ],
+    "deleted": true,
+    "paid_by": {
+      "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+      "display_name": "Amel"
+    },
+    "category": "utilities",
+    "spent_on": "2026-10-17",
+    "can_delete": false,
+    "created_at": "2026-10-17T02:55:23.251194+00:00",
+    "expense_id": "cdd4045f-8d88-455b-9847-7e46c91be02a",
+    "split_mode": "exact"
+  },
+  "meta": {
+    "latency_ms": 164
+  }
+}

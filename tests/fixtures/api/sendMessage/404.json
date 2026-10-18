@@ -1,0 +1,8 @@
+{
+  "request_id": "7fea4964-f237-41a6-936a-72841f237887",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Conversation not found",
+    "details": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "request_id": "3a386285-d61d-475c-8b21-0e04bb9c04e0",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Already decided",
+    "details": [
+      {
+        "field": "status",
+        "issue": "already_decided",
+        "current": "approved"
+      }
+    ]
+  }
+}

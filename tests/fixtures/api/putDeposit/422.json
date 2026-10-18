@@ -1,0 +1,15 @@
+{
+  "request_id": "01f6b542-aa61-4233-8025-3ff721859687",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "deductions",
+        "issue": "sum_mismatch",
+        "given_minor": 10000,
+        "expected_minor": 50000
+      }
+    ]
+  }
+}

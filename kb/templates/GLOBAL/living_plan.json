@@ -1,0 +1,131 @@
+{
+  "key": "global.living_plan",
+  "kind": "living_plan",
+  "jurisdiction": "GLOBAL",
+  "version": 1,
+  "legal": false,
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "origin": "Yosr's living plan (branch roommate-matching, 2026-10-16), rebuilt from the household's own data (D-115)",
+  "slots": [
+    {
+      "name": "household",
+      "type": "text",
+      "from": "household",
+      "required": true
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "from": "user",
+      "required": false
+    },
+    {
+      "name": "habits",
+      "type": "items",
+      "from": "household",
+      "required": true,
+      "max": 6,
+      "columns": [
+        "topic",
+        "agreement"
+      ]
+    },
+    {
+      "name": "costs",
+      "type": "items",
+      "from": "household",
+      "required": false,
+      "max": 20,
+      "columns": [
+        "label",
+        "amount",
+        "due_day",
+        "share"
+      ]
+    },
+    {
+      "name": "chores",
+      "type": "items",
+      "from": "household",
+      "required": false,
+      "max": 30,
+      "columns": [
+        "title",
+        "frequency",
+        "next"
+      ]
+    },
+    {
+      "name": "rules",
+      "type": "items",
+      "from": "household",
+      "required": false,
+      "max": 30,
+      "columns": [
+        "category",
+        "text"
+      ]
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "from": "user",
+      "required": false
+    }
+  ],
+  "sources": [],
+  "text": {
+    "fr": {
+      "title": "Plan de vie commune",
+      "paragraphs": [
+        "Plan de vie commune du foyer {{household}}.",
+        "Ce plan s'applique à partir du {{start_date}}.",
+        "Habitudes de chacun : ce qui est déjà d'accord et ce qui reste à discuter (sans dire qui a répondu quoi).",
+        "{{habits}}",
+        "Loyer et factures, avec la part de chacun à parts égales sauf accord différent :",
+        "{{costs}}",
+        "Tâches et tours :",
+        "{{chores}}",
+        "Règles de la maison :",
+        "{{rules}}",
+        "Remarques : {{notes}}"
+      ]
+    },
+    "ar": {
+      "title": "خطة العيش المشترك",
+      "paragraphs": [
+        "خطة العيش المشترك لمسكن {{household}}.",
+        "تُطبّق هذه الخطة ابتداء من {{start_date}}.",
+        "عادات كل واحد: ما تم الاتفاق عليه وما يبقى للنقاش (دون ذكر من أجاب بماذا).",
+        "{{habits}}",
+        "الإيجار والفواتير، مع حصة كل واحد بالتساوي ما لم يُتفق على غير ذلك:",
+        "{{costs}}",
+        "المهام والأدوار:",
+        "{{chores}}",
+        "قواعد المنزل:",
+        "{{rules}}",
+        "ملاحظات: {{notes}}"
+      ]
+    },
+    "en": {
+      "title": "Living plan",
+      "paragraphs": [
+        "Living plan of the household {{household}}.",
+        "This plan applies from {{start_date}}.",
+        "How each person lives: what is already agreed and what is left to discuss (without saying who answered what).",
+        "{{habits}}",
+        "Rent and bills, with each person's share in equal parts unless agreed otherwise:",
+        "{{costs}}",
+        "Chores and turns:",
+        "{{chores}}",
+        "House rules:",
+        "{{rules}}",
+        "Notes: {{notes}}"
+      ]
+    }
+  }
+}

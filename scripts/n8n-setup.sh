@@ -50,6 +50,13 @@ cat > "$TMP/credentials.json" <<EOF
   "name": "Telegram bot",
   "type": "telegramApi",
   "data": { "accessToken": "${TELEGRAM_BOT_TOKEN:-not-configured}", "baseUrl": "${TELEGRAM_API_BASE:-https://api.telegram.org}" }
+},
+{
+  "id": "fsCredSmtp000001",
+  "name": "Mail (SMTP)",
+  "type": "smtp",
+  "data": { "host": "${SMTP_HOST:-mailpit}", "port": ${SMTP_PORT:-1025}, "secure": ${SMTP_SECURE:-false},
+            "user": "${SMTP_USER:-}", "password": "${SMTP_PASSWORD:-}", "disableStartTls": ${SMTP_DISABLE_STARTTLS:-true} }
 }]
 EOF
 

@@ -1,0 +1,49 @@
+{
+  "request_id": "234c0afe-47d4-4de8-a1eb-c461cf31aa99",
+  "data": {
+    "score": 60,
+    "factors": [
+      {
+        "state": "unknown",
+        "factor": "schedule"
+      },
+      {
+        "state": "unknown",
+        "factor": "cleanliness"
+      },
+      {
+        "state": "match",
+        "factor": "smoking"
+      },
+      {
+        "state": "differs",
+        "factor": "pets"
+      },
+      {
+        "state": "unknown",
+        "factor": "guests"
+      },
+      {
+        "state": "unknown",
+        "factor": "quiet_hours"
+      },
+      {
+        "state": "unknown",
+        "factor": "languages"
+      },
+      {
+        "state": "unknown",
+        "factor": "budget"
+      },
+      {
+        "state": "unknown",
+        "factor": "move_in"
+      }
+    ],
+    "sentence": "Vous vous accordez sur : le tabac. À discuter : les animaux.",
+    "source": "code"
+  },
+  "meta": {
+    "latency_ms": 178
+  }
+}

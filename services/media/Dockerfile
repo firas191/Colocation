@@ -2,6 +2,7 @@
 FROM python:3.12.14-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg \
       tesseract-ocr tesseract-ocr-eng tesseract-ocr-fra tesseract-ocr-ara \
+      libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY media/requirements.txt /tmp/requirements.txt

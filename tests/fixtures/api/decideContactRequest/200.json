@@ -1,0 +1,24 @@
+{
+  "request_id": "9f0c2920-a57f-40cf-9f67-9cfd53f8386c",
+  "data": {
+    "note": null,
+    "other": {
+      "user_id": "5be2aa3f-6998-4cde-a928-2b6602b07560",
+      "display_name": "Yassine"
+    },
+    "status": "refused",
+    "actions": {
+      "accept": false,
+      "cancel": false,
+      "refuse": false
+    },
+    "direction": "received",
+    "created_at": "2026-10-18T01:22:50.742919+00:00",
+    "decided_at": "2026-10-18T01:22:50.971592+00:00",
+    "request_id": "81c14e56-0cc5-4ff0-9b01-4e9573c07c81",
+    "conversation_id": null
+  },
+  "meta": {
+    "latency_ms": 172
+  }
+}

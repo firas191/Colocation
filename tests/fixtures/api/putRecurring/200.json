@@ -1,0 +1,32 @@
+{
+  "request_id": "070fc190-e3a1-459a-87f9-4627bb21ae19",
+  "data": {
+    "items": [
+      {
+        "kind": "rent",
+        "label": "Loyer",
+        "active": true,
+        "due_day": 5,
+        "item_id": "2ec78c42-9888-4645-9ddf-676c512e2b45",
+        "next_due_on": "2026-11-05",
+        "amount_minor": 800000,
+        "remind_days_before": 3
+      },
+      {
+        "kind": "bill",
+        "label": "STEG",
+        "active": true,
+        "due_day": 20,
+        "item_id": "3380cf9c-73c5-46a8-a1eb-00b21cb6a8a1",
+        "next_due_on": "2026-10-20",
+        "amount_minor": null,
+        "remind_days_before": 2
+      }
+    ],
+    "currency": "TND",
+    "exponent": 3
+  },
+  "meta": {
+    "latency_ms": 193
+  }
+}

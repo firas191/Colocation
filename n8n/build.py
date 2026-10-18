@@ -551,6 +551,9 @@ def kb_ingest_source():
     wf = WF(KB_SOURCE_WF, "wf.kb.ingest_source", tags=["kb", "worker"], settings={"saveDataSuccessExecution": "none"})
     wf.node("Start", "n8n-nodes-base.executeWorkflowTrigger", 1.1, {"inputSource": "passthrough"}, [0, 0])
     code_node(wf, "Robots URL", "kb_src_robots_url.js", [220, 0])
+    # D-111: a source inside the stack or the local network is never fetched
+    if_node(wf, "Address allowed?", "={{ !$json.refused }}", [330, 0])
+    code_node(wf, "Refused (address)", "kb_src_refused.js", [440, 200])
     http_node(wf, "Fetch robots.txt", "GET", "={{ $json.robots_url }}", [440, 0], fmt="text", full=True,
               never_error=True, timeout="={{ 15000 }}", headers=UA, on_error="continueRegularOutput")
     code_node(wf, "Robots decision", "kb_src_robots_decide.js", [660, 0])
@@ -595,7 +598,9 @@ def kb_ingest_source():
     code_node(wf, "Result", "kb_src_result.js", [4620, -100], subst={"__MODE__": "done"})
 
     wf.link("Start", "Robots URL")
-    wf.link("Robots URL", "Fetch robots.txt")
+    wf.link("Robots URL", "Address allowed?")
+    wf.link("Address allowed?", "Fetch robots.txt", 0)
+    wf.link("Address allowed?", "Refused (address)", 1)
     wf.link("Fetch robots.txt", "Robots decision")
     wf.link("Robots decision", "Allowed?")
     wf.link("Allowed?", "Fetch source", 0)
@@ -1859,11 +1864,17 @@ def jobs_dispatch():
     pg_node(wf, "Reap", "select count(*) as reaped from app.jobs_reap()", None, [220, 0], on_error=None)
     pg_node(wf, "Due", "select id, type from app.jobs_due(5)", None, [440, 0], on_error=None)
     code_node(wf, "Dispatch", "jobs_dispatch.js", [660, 0])
-    exec_wf(wf, "Start analyze", ANALYZE_WF, "wf.listing.analyze", wait=False, pos=[880, 0], each=True)
+    # platform P12 (D-112): listing_trust jobs (POST /v2/listings/{id}/submit) have their own worker
+    if_node(wf, "Trust check?", "={{ $json.type === 'listing_trust' }}", [880, 0])
+    from build_platform import LISTING_TRUST_WF
+    exec_wf(wf, "Start trust check", LISTING_TRUST_WF, "wf.listing.trust", wait=False, pos=[1100, -100], each=True)
+    exec_wf(wf, "Start analyze", ANALYZE_WF, "wf.listing.analyze", wait=False, pos=[1100, 100], each=True)
     wf.link("Every minute", "Reap")
     wf.link("Reap", "Due")
     wf.link("Due", "Dispatch")
-    wf.link("Dispatch", "Start analyze")
+    wf.link("Dispatch", "Trust check?")
+    wf.link("Trust check?", "Start trust check", 0)
+    wf.link("Trust check?", "Start analyze", 1)
     return wf
 
 # ---------- Telegram channel (D-079) -------------------------------------------------

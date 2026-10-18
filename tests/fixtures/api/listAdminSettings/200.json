@@ -1,0 +1,130 @@
+{
+  "request_id": "a9170aa1-1d5e-4552-b5ae-6b92efb1b14a",
+  "data": {
+    "items": [
+      {
+        "key": "documents.agent_enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Use the Document agent (A6) on the documents page. Off: the forms only"
+      },
+      {
+        "key": "documents.per_day",
+        "type": "int:1:1000",
+        "value": 30,
+        "description": "Most documents one user may make in a day"
+      },
+      {
+        "key": "gateway.rate_limit_user_per_min",
+        "type": "int:10:10000",
+        "value": 60,
+        "description": "Requests per user per minute"
+      },
+      {
+        "key": "legal.agent_enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Answer legal questions in the assistant with the A5 Legal agent; false = \"not available yet\""
+      },
+      {
+        "key": "listing.auto_publish",
+        "type": "bool",
+        "value": false,
+        "description": "Publish a listing as soon as its analysis has a rent and a place found on the map (testing only: skips owner confirmation and the trust check)"
+      },
+      {
+        "key": "match.agent_enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Answer searches in the assistant with the A3 Match agent (AI Agent node); false = the fixed path P2 then search"
+      },
+      {
+        "key": "messages.per_minute",
+        "type": "int:1:1000",
+        "value": 20,
+        "description": "Most messages one user may send in a minute (stricter than the API limit, against spam; PLATFORM_SPEC 8)"
+      },
+      {
+        "key": "notify.max_age_hours",
+        "type": "int:1:720",
+        "value": 24,
+        "description": "Notifications older than this are not sent by e-mail or Telegram any more (in-app only)"
+      },
+      {
+        "key": "notify.max_attempts",
+        "type": "int:1:20",
+        "value": 5,
+        "description": "Delivery attempts per notification and channel before it is marked failed"
+      },
+      {
+        "key": "notify.web_origin",
+        "type": "url",
+        "value": "http://localhost:3000",
+        "description": "Address of the website, for the links in e-mails and Telegram messages"
+      },
+      {
+        "key": "owner.agent_enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Changes to an owner's listings by conversation with the owner assistant (post_listing messages of users who have listings)"
+      },
+      {
+        "key": "reports.per_hour",
+        "type": "int:1:1000",
+        "value": 10,
+        "description": "Most reports one user may send in an hour"
+      },
+      {
+        "key": "retention.drafts_days",
+        "type": "int:1:365",
+        "value": 7,
+        "description": "Document drafts not used are deleted after this many days (D-109, a choice)"
+      },
+      {
+        "key": "retention.notifications_days",
+        "type": "int:7:3650",
+        "value": 180,
+        "description": "Read notifications are deleted after this many days (D-109, a choice)"
+      },
+      {
+        "key": "retention.search_hits_days",
+        "type": "int:7:3650",
+        "value": 180,
+        "description": "Saved-search alert records are deleted after this many days (D-109, a choice)"
+      },
+      {
+        "key": "saved_searches.max",
+        "type": "int:1:100",
+        "value": 10,
+        "description": "Most saved searches per user"
+      },
+      {
+        "key": "trust.agent_enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Use the Trust agent (A4) inside the trust check. Off: rules and database checks only"
+      },
+      {
+        "key": "trust.benchmark_min",
+        "type": "int:1:1000",
+        "value": 5,
+        "description": "Fewest comparable listings for a price benchmark; fewer: insufficient_data, never a guess (12.3)"
+      },
+      {
+        "key": "trust.enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Run the trust check when an owner submits a listing (D-107). Off: submit publishes directly, as in P3"
+      },
+      {
+        "key": "vision.enabled",
+        "type": "bool",
+        "value": true,
+        "description": "Run the P7 photo analysis on listing photos (off on machines without a usable vision model)"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 265
+  }
+}

@@ -1,0 +1,4 @@
+Rolling back: 0024_platform_owners.sql
+Rolled back: 0024_platform_owners.sql in 10.527684ms
+Applying: 0024_platform_owners.sql
+Applied: 0024_platform_owners.sql in 12.156442ms

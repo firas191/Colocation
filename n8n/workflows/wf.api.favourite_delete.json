@@ -183,7 +183,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// Platform endpoints (n8n/build_platform.py) > \"Build result\"\n// The api.* function answers {status, data} or {status, error}; this turns it into the item the Envelope expects.\nconst gw = $('Gateway').first().json;\nconst r = ($input.first().json || {}).r || null;\nif (!r || typeof r !== 'object' || !r.status) {\n  return [{ json: { ok: false, gw, status: 500, error: { code: 'INTERNAL', message: 'Internal error', details: [] },\n    log: { reason: 'no_result' } } }];\n}\nif (r.error) return [{ json: { ok: false, gw, status: r.status, error: { code: r.error.code, message: r.error.message, details: r.error.details || [] } } }];\nreturn [{ json: { ok: true, gw, status: r.status, data: r.data || {} } }];\n"
+        "jsCode": "// Platform endpoints (n8n/build_platform.py) > \"Build result\"\n// The api.* function answers {status, data, meta?} or {status, error}; this turns it into the item the Envelope expects\n// (meta: the next page's cursor, when there is one).\nconst gw = $('Gateway').first().json;\nconst r = ($input.first().json || {}).r || null;\nif (!r || typeof r !== 'object' || !r.status) {\n  return [{ json: { ok: false, gw, status: 500, error: { code: 'INTERNAL', message: 'Internal error', details: [] },\n    log: { reason: 'no_result' } } }];\n}\nif (r.error) return [{ json: { ok: false, gw, status: r.status, error: { code: r.error.code, message: r.error.message, details: r.error.details || [] } } }];\nreturn [{ json: { ok: true, gw, status: r.status, data: r.data || {}, meta: r.meta || {} } }];\n"
       }
     },
     {

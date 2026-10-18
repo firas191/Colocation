@@ -1,0 +1,12 @@
+{
+  "request_id": "a51f51ec-83d5-4c92-98d0-91d53c686464",
+  "error": {
+    "code": "CONFLICT",
+    "message": "A request is already open",
+    "details": [
+      {
+        "issue": "already_requested"
+      }
+    ]
+  }
+}

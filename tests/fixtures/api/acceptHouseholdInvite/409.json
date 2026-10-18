@@ -1,0 +1,13 @@
+{
+  "request_id": "7277293e-c6f3-4717-abf3-f8297c71c340",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Invite not usable",
+    "details": [
+      {
+        "field": "code",
+        "issue": "used"
+      }
+    ]
+  }
+}

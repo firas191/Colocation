@@ -1,0 +1,11 @@
+{
+  "request_id": "39c8a374-a528-4e3d-ab4c-0f2a70086d8a",
+  "data": {
+    "code": "F36E-573D-1CF8",
+    "role": "flatmate",
+    "expires_at": "2026-10-24T02:55:20.162675+00:00"
+  },
+  "meta": {
+    "latency_ms": 175
+  }
+}

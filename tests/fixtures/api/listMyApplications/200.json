@@ -1,0 +1,48 @@
+{
+  "request_id": "243e21dc-82a3-4159-8ad0-9713438bacd8",
+  "data": {
+    "items": [
+      {
+        "role": "applicant",
+        "other": {
+          "user_id": "024797fa-a704-4ef3-9560-7849308e125f",
+          "display_name": "Olfa"
+        },
+        "status": "accepted",
+        "actions": {
+          "accept": false,
+          "decline": false,
+          "withdraw": false
+        },
+        "listing": {
+          "title": "Chambre QV",
+          "listing_id": "00000000-0000-4000-8000-0000000004a1"
+        },
+        "message": "Étudiant en master, calme.",
+        "created_at": "2026-10-17T01:32:19.27434+00:00",
+        "decided_at": "2026-10-17T01:32:20.675056+00:00",
+        "move_in_from": "2026-12-01",
+        "decision_code": null,
+        "application_id": "8d91128c-f439-4e46-b312-7782e1accfc2",
+        "shared_profile": {
+          "budget": {
+            "period": "month",
+            "currency": "TND",
+            "max_minor": 450000
+          },
+          "languages": [
+            "fr",
+            "ar"
+          ],
+          "declared_preferences": {
+            "pets": "yes",
+            "smoking": "no"
+          }
+        }
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 166
+  }
+}

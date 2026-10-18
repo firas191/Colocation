@@ -1,0 +1,6 @@
+signal,lang,pattern,note
+payment_before_viewing,fr,"(envoyer|verser|virer)\b[^.!?\n]{0,40}\b(d17|e-?dinar|mandat( postal| minute)?)\b",A transfer by a Tunisian payment service before anything else
+payment_before_viewing,tn-latn,"(5alles|khalles|ab3ath|ib3ath|7ott|hott)\b[^.!?\n]{0,30}\b(9bal|qbal|kbal)\b[^.!?\n]{0,25}\b(ma tchouf|matchouf|tchouf|zyara|ziyara|visite)",Tunisian in Latin letters: pay before seeing
+payment_before_viewing,ar,"(خلص|خلّص|ابعث|حط)[^.!؟\n]{0,30}(قبل ما تشوف|قبل الزيارة)",Tunisian in Arabic letters: pay before seeing
+untraceable_payment,fr,"\bmandat minute\b",A cash transfer collected at a counter (hand-written for TN; not taken from a source)
+owner_abroad,tn-latn,"(ena|ana)\b[^.!?\n]{0,15}\b(fel 5arej|fil kharij|fel kharej|barra|fransa|f fransa)\b",Tunisian in Latin letters: I am abroad

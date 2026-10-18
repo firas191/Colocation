@@ -1,0 +1,92 @@
+
+===== machine (for the report) =====
+command: Get-CimInstance Win32_Processor | Select-Object -First 1 Name, NumberOfCores, NumberOfLogicalProcessors | Format-List | Out-String
+    "RAM GB: " + [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+    docker stats --no-stream --format "{{.Name}} {{.CPUPerc}} {{.MemUsage}}"
+started: 2026-10-17T16:44:47.8296787+01:00
+
+
+Name                      : 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+NumberOfCores             : 8
+NumberOfLogicalProcessors : 16
+
+
+
+
+RAM GB: 23.7
+fs-proxy 0.00% 47.16MiB / 15.62GiB
+fs-n8n 2.40% 502.6MiB / 15.62GiB
+fs-web 0.00% 231.9MiB / 15.62GiB
+fs-media 0.19% 562MiB / 15.62GiB
+fs-mailpit 0.00% 31.68MiB / 15.62GiB
+fs-telegram 0.01% 20.55MiB / 15.62GiB
+fs-postgres 0.14% 128.2MiB / 15.62GiB
+fs-text 0.15% 559.1MiB / 15.62GiB
+fs-fixtures 0.00% 13.65MiB / 15.62GiB
+fs-ollama 0.07% 3.622GiB / 15.62GiB
+fs-tei 1.11% 1.542GiB / 15.62GiB
+flatshare-n8n-runners-1 0.00% 116.6MiB / 15.62GiB
+fs-garage 0.01% 20.98MiB / 15.62GiB
+exit=0 seconds=4.3
+
+===== load: search and messages at 1,5,10,20 workers, 30 s each =====
+command: docker @run scripts/load_bench.py --levels $Levels --seconds $Seconds
+started: 2026-10-17T16:44:52.1883100+01:00
+ Container flatshare-tests-run-5a1a18f152fc Creating 
+ Container flatshare-tests-run-5a1a18f152fc Created 
+search         workers   1     108 req      3.6 /s  p50 273.6 ms  p95 352.3 ms  p99 401.6 ms  errors 0
+search         workers   5     264 req      8.7 /s  p50 565.1 ms  p95 686.2 ms  p99 727.9 ms  errors 0
+search         workers  10     275 req      8.9 /s  p50 1100.9 ms  p95 1308.9 ms  p99 1394.8 ms  errors 0
+search         workers  20     300 req      9.4 /s  p50 2121.4 ms  p95 2251.6 ms  p99 2316.9 ms  errors 0
+messages_send  workers   1     100 req      3.3 /s  p50 149.4 ms  p95 183.3 ms  p99 228.2 ms  errors 0
+messages_read  workers   1     100 req      3.3 /s  p50 141.0 ms  p95 187.6 ms  p99 222.7 ms  errors 0
+messages_send  workers   5     201 req      6.6 /s  p50 396.0 ms  p95 464.5 ms  p99 504.6 ms  errors 0
+messages_read  workers   5     201 req      6.6 /s  p50 355.3 ms  p95 440.0 ms  p99 479.2 ms  errors 0
+messages_send  workers  10     209 req      6.7 /s  p50 764.3 ms  p95 880.4 ms  p99 943.0 ms  errors 0
+messages_read  workers  10     209 req      6.7 /s  p50 706.2 ms  p95 845.3 ms  p99 867.5 ms  errors 0
+messages_send  workers  20     220 req      6.9 /s  p50 1461.4 ms  p95 1725.0 ms  p99 1797.9 ms  errors 0
+messages_read  workers  20     220 req      6.9 /s  p50 1394.8 ms  p95 1530.9 ms  p99 1569.6 ms  errors 0
+written reports/load/load-20261017-154904.json
+exit=0 seconds=252.4
+
+===== containers after the load =====
+command: docker stats --no-stream --format "{{.Name}} {{.CPUPerc}} {{.MemUsage}}"
+started: 2026-10-17T16:49:04.5458902+01:00
+fs-proxy 0.00% 53.84MiB / 15.62GiB
+fs-n8n 0.59% 878.8MiB / 15.62GiB
+fs-web 0.00% 161.5MiB / 15.62GiB
+fs-media 0.13% 557.1MiB / 15.62GiB
+fs-mailpit 0.00% 34.56MiB / 15.62GiB
+fs-telegram 0.01% 20.55MiB / 15.62GiB
+fs-postgres 0.10% 212.5MiB / 15.62GiB
+fs-text 0.15% 541.3MiB / 15.62GiB
+fs-fixtures 0.38% 14.58MiB / 15.62GiB
+fs-ollama 0.13% 4.042GiB / 15.62GiB
+fs-tei 1.16% 1.538GiB / 15.62GiB
+flatshare-n8n-runners-1 0.23% 374.7MiB / 15.62GiB
+fs-garage 0.01% 24.92MiB / 15.62GiB
+exit=0 seconds=1.7
+
+===== backup: flatshare, n8n, auth, flatshare_test into backups\20261017-164447 =====
+command: docker compose run --rm --no-deps -e "BACKUP_DBS=flatshare n8n auth flatshare_test" -v "${bdir}:/backup" --entrypoint bash db-bootstrap /flatshare/scripts/db-backup.sh /backup
+started: 2026-10-17T16:49:06.2524205+01:00
+ Container flatshare-db-bootstrap-run-76837ccda9be Creating 
+ Container flatshare-db-bootstrap-run-76837ccda9be Created 
+flatshare: 50288358 bytes, 88 tables, 54218 rows
+n8n: 23732986 bytes, 142 tables, 49983 rows
+auth: 26627 bytes, 4 tables, 159 rows
+flatshare_test: 787356 bytes, 88 tables, 168 rows
+backup written to /backup
+exit=0 seconds=15.5
+
+===== restore check: each dump into a scratch database, compared with its fingerprint, database tests on flatshare_test, scratch databases dropped =====
+command: docker compose run --rm --no-deps -e RESTORE_CHECK=1 -v "${bdir}:/backup" --entrypoint bash db-bootstrap /flatshare/scripts/db-restore.sh /backup
+started: 2026-10-17T16:49:21.8028599+01:00
+ Container flatshare-db-bootstrap-run-5054a7029039 Creating 
+ Container flatshare-db-bootstrap-run-5054a7029039 Created 
+auth: restored, 4 tables; row counts, owners, grants, row-level rules and functions match the backup
+flatshare: restored, 88 tables; row counts, owners, grants, row-level rules and functions match the backup
+flatshare_test: restored, 88 tables; row counts, owners, grants, row-level rules and functions match the backup
+flatshare_test: database tests PASS on the restored copy (Tests=712)
+n8n: restored, 142 tables; row counts, owners, grants, row-level rules and functions match the backup
+exit=0 seconds=21.3

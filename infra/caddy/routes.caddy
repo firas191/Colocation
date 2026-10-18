@@ -55,3 +55,318 @@ rewrite @favourite_delete /webhook/8a7a4f81-b1c5-59ef-94e6-2713b3e3b0b9{uri}
 	path_regexp ^/v1/listing-changes/[^/]+/cancel$
 }
 rewrite @listing_change_cancel /webhook/bccee01e-dddf-5611-91ab-1a679a76fbb9{uri}
+@listings_submit {
+	method POST
+	path_regexp ^/v1/listings/[^/]+/submit$
+}
+rewrite @listings_submit /webhook/eccc8380-9d78-5af1-a441-a9f47bccb34c{uri}
+@listings_submit_v2 {
+	method POST
+	path_regexp ^/v2/listings/[^/]+/submit$
+}
+rewrite @listings_submit_v2 /webhook/166c31a6-96cb-5deb-8cac-03b354f95e74{uri}
+@messages_list {
+	method GET
+	path_regexp ^/v1/conversations/[^/]+/messages$
+}
+rewrite @messages_list /webhook/504c395c-3ed3-54b9-8ea0-72391d8a12d6{uri}
+@conversation_read {
+	method POST
+	path_regexp ^/v1/conversations/[^/]+/read$
+}
+rewrite @conversation_read /webhook/d94684dd-62fd-5bb5-8342-a84fcc9d8fb3{uri}
+@block_delete {
+	method DELETE
+	path_regexp ^/v1/me/blocks/[^/]+$
+}
+rewrite @block_delete /webhook/5e60fe36-91c2-5f12-8639-aecbd61abd27{uri}
+@visit_slots_get {
+	method GET
+	path_regexp ^/v1/listings/[^/]+/visit-slots$
+}
+rewrite @visit_slots_get /webhook/3f942a14-4f2c-5ed6-9ef8-beb8f6245bab{uri}
+@visit_slots_put {
+	method PUT
+	path_regexp ^/v1/listings/[^/]+/visit-slots$
+}
+rewrite @visit_slots_put /webhook/1bff2a7e-83dc-5912-ba03-a9a9855f047e{uri}
+@visit_decide {
+	method POST
+	path_regexp ^/v1/visits/[^/]+/decision$
+}
+rewrite @visit_decide /webhook/d5eb1530-f406-5ef9-8876-dadae0dd7f09{uri}
+@application_create {
+	method POST
+	path_regexp ^/v1/listings/[^/]+/applications$
+}
+rewrite @application_create /webhook/b11d32c3-4c13-5231-8e66-6164feae7730{uri}
+@application_decide {
+	method POST
+	path_regexp ^/v1/applications/[^/]+/decision$
+}
+rewrite @application_decide /webhook/c31d517e-47fd-5e83-881a-5ea8c28f39da{uri}
+@application_withdraw {
+	method POST
+	path_regexp ^/v1/applications/[^/]+/withdraw$
+}
+rewrite @application_withdraw /webhook/520f863b-0162-56c2-a44c-be02a4835c5d{uri}
+@message_send {
+	method POST
+	path_regexp ^/v1/conversations/[^/]+/messages$
+}
+rewrite @message_send /webhook/12c64263-e210-51cf-8026-b309eada1f2b{uri}
+@household_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+$
+}
+rewrite @household_get /webhook/b031c436-cd18-5bed-84f2-d9427f9452d0{uri}
+@household_invite {
+	method POST
+	path_regexp ^/v1/households/[^/]+/invites$
+}
+rewrite @household_invite /webhook/2e2ca614-41f2-5ee0-94f5-e2d3cfca61da{uri}
+@household_leave {
+	method POST
+	path_regexp ^/v1/households/[^/]+/leave$
+}
+rewrite @household_leave /webhook/caddc4bf-674c-5f02-9ea0-cddf04b77666{uri}
+@expenses_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/expenses$
+}
+rewrite @expenses_list /webhook/83a33287-b1e7-5826-bf1b-e547060ab087{uri}
+@expense_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/expenses$
+}
+rewrite @expense_create /webhook/ecacf113-870c-5a92-8846-71f5ca40922c{uri}
+@expense_delete {
+	method DELETE
+	path_regexp ^/v1/households/[^/]+/expenses/[^/]+$
+}
+rewrite @expense_delete /webhook/f422bfd9-f472-5102-8df2-82ee5284d4e3{uri}
+@balances_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+/balances$
+}
+rewrite @balances_get /webhook/6b87ba90-27a0-5294-b853-20a8b6eedfb4{uri}
+@settlement_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/settlements$
+}
+rewrite @settlement_create /webhook/c292a90a-20ab-52bd-a6e7-df730a580a42{uri}
+@recurring_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+/recurring$
+}
+rewrite @recurring_get /webhook/cec739c5-86e9-579f-b70b-c91296d355a3{uri}
+@recurring_put {
+	method PUT
+	path_regexp ^/v1/households/[^/]+/recurring$
+}
+rewrite @recurring_put /webhook/b0e7e5c0-a8c6-5dcc-9597-b0d6b4b0e81e{uri}
+@rent_payment_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/rent-payments$
+}
+rewrite @rent_payment_create /webhook/d2a54405-8a3f-50a3-984b-e6a505ef54d5{uri}
+@rent_payments_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/rent-payments$
+}
+rewrite @rent_payments_list /webhook/6fe6e023-9f90-5eb6-9700-a21cd2ee18ea{uri}
+@rent_payment_confirm {
+	method POST
+	path_regexp ^/v1/rent-payments/[^/]+/confirm$
+}
+rewrite @rent_payment_confirm /webhook/64cf25d5-c001-5843-adee-f1e97ee7eefa{uri}
+@announcements_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/announcements$
+}
+rewrite @announcements_list /webhook/e47573e8-9da5-5aae-a8cd-2720da423094{uri}
+@announcement_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/announcements$
+}
+rewrite @announcement_create /webhook/ac12ebe1-aba6-5f1f-99d8-0683756d82fe{uri}
+@chores_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/chores$
+}
+rewrite @chores_list /webhook/4c37b88f-e0ec-5e89-8a8a-2381a05cf77d{uri}
+@chore_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/chores$
+}
+rewrite @chore_create /webhook/7e13f17c-b2fb-52bb-884a-d5bcfa9788b6{uri}
+@chore_update {
+	method PATCH
+	path_regexp ^/v1/households/[^/]+/chores/[^/]+$
+}
+rewrite @chore_update /webhook/288e9d94-c235-5413-ad93-9a3e275f07cd{uri}
+@chore_done {
+	method POST
+	path_regexp ^/v1/chore-assignments/[^/]+/done$
+}
+rewrite @chore_done /webhook/ed77c542-7e24-538f-b2c4-647590831534{uri}
+@shopping_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/shopping$
+}
+rewrite @shopping_list /webhook/48414ba3-1767-5399-a9f2-bc7c1d6e79f4{uri}
+@shopping_add {
+	method POST
+	path_regexp ^/v1/households/[^/]+/shopping$
+}
+rewrite @shopping_add /webhook/a8eed521-63a1-5b68-9708-4b087a42c513{uri}
+@shopping_update {
+	method PATCH
+	path_regexp ^/v1/households/[^/]+/shopping/[^/]+$
+}
+rewrite @shopping_update /webhook/d66d61f2-312a-507d-943f-1ecec8dc98de{uri}
+@rules_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+/rules$
+}
+rewrite @rules_get /webhook/12c87485-8c7c-5177-9324-fa8a01f87e7f{uri}
+@rules_put {
+	method PUT
+	path_regexp ^/v1/households/[^/]+/rules$
+}
+rewrite @rules_put /webhook/0831616d-e6ae-54be-8213-a06d4b2c074a{uri}
+@calendar_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+/calendar$
+}
+rewrite @calendar_get /webhook/a9cd8ca9-485c-5388-b5dd-5d9e96a22788{uri}
+@event_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/events$
+}
+rewrite @event_create /webhook/0b69e0b1-f2a4-5871-8e6f-1de4ca5a9ffe{uri}
+@event_delete {
+	method DELETE
+	path_regexp ^/v1/households/[^/]+/events/[^/]+$
+}
+rewrite @event_delete /webhook/9312fde3-b24f-55e6-b7c6-1e15ee700522{uri}
+@issue_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/issues$
+}
+rewrite @issue_create /webhook/933500ff-7418-5b0e-8c08-0e8cd1a33516{uri}
+@issue_update {
+	method POST
+	path_regexp ^/v1/issues/[^/]+/updates$
+}
+rewrite @issue_update /webhook/73ab6061-d794-5935-a009-a55e30c54a92{uri}
+@issues_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/issues$
+}
+rewrite @issues_list /webhook/3a574390-0da9-5dae-a08d-cb8827f0d867{uri}
+@issue_photos_presign {
+	method POST
+	path_regexp ^/v1/issues/[^/]+/photos/presign$
+}
+rewrite @issue_photos_presign /webhook/4b283acd-69b4-5099-be68-3c09e870a319{uri}
+@issue_photos_process {
+	method POST
+	path_regexp ^/v1/issues/[^/]+/photos/process$
+}
+rewrite @issue_photos_process /webhook/25bac554-5045-5550-9663-8e1a9a57ed80{uri}
+@flatmate_get {
+	method GET
+	path_regexp ^/v1/flatmates/[^/]+$
+}
+rewrite @flatmate_get /webhook/8b6d6d9a-6d35-52a3-ac7a-bc5874b9a970{uri}
+@saved_search_delete {
+	method DELETE
+	path_regexp ^/v1/me/saved-searches/[^/]+$
+}
+rewrite @saved_search_delete /webhook/84668967-69a0-5b26-8795-69bb440102bc{uri}
+@room_post {
+	method POST
+	path_regexp ^/v1/households/[^/]+/room-posts$
+}
+rewrite @room_post /webhook/2bf30d65-8ec7-5e53-a537-ee6be23d7cf6{uri}
+@moderation_decide {
+	method POST
+	path_regexp ^/v1/admin/moderation/[^/]+/decision$
+}
+rewrite @moderation_decide /webhook/1f8f8d8d-6514-5189-aaed-b90d27700152{uri}
+@documents_create {
+	method POST
+	path_regexp ^/v1/households/[^/]+/documents$
+}
+rewrite @documents_create /webhook/bc47f4b2-2046-5b45-aa2b-96e92b8c7c47{uri}
+@document_get {
+	method GET
+	path_regexp ^/v1/documents/[^/]+$
+}
+rewrite @document_get /webhook/215e5302-742f-5a33-bf7c-e6b32cafa115{uri}
+@documents_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/documents$
+}
+rewrite @documents_list /webhook/cb65c72a-412a-5d29-9856-4fe5bbd3353b{uri}
+@documents_assistant {
+	method POST
+	path_regexp ^/v1/households/[^/]+/documents/assistant$
+}
+rewrite @documents_assistant /webhook/8a774239-0ba5-5719-92ad-8fe97923b1e0{uri}
+@deposits_list {
+	method GET
+	path_regexp ^/v1/households/[^/]+/deposits$
+}
+rewrite @deposits_list /webhook/93392cb7-52dd-551d-ad15-d8dffbda8ef0{uri}
+@deposit_put {
+	method PUT
+	path_regexp ^/v1/households/[^/]+/deposits/[^/]+$
+}
+rewrite @deposit_put /webhook/9975d1d2-15f4-5c71-b28f-06ba89f0f156{uri}
+@moveout_get {
+	method GET
+	path_regexp ^/v1/households/[^/]+/move-out$
+}
+rewrite @moveout_get /webhook/544f4868-3af3-5833-8c80-5043836b70eb{uri}
+@moveout_start {
+	method POST
+	path_regexp ^/v1/households/[^/]+/move-out$
+}
+rewrite @moveout_start /webhook/8502440b-8cde-5236-b862-78830804c9f1{uri}
+@moveout_item {
+	method PATCH
+	path_regexp ^/v1/households/[^/]+/move-out/[^/]+$
+}
+rewrite @moveout_item /webhook/4532c225-8779-50be-bfa3-dc922fd2ea8b{uri}
+@document_comparison {
+	method GET
+	path_regexp ^/v1/documents/[^/]+/comparison$
+}
+rewrite @document_comparison /webhook/5710f9e4-216c-5798-8f9b-4fcf6e58ea2e{uri}
+@admin_setting_put {
+	method PUT
+	path_regexp ^/v1/admin/settings/[^/]+$
+}
+rewrite @admin_setting_put /webhook/9d19f42d-3482-5a6b-aa25-3f73b986279d{uri}
+@admin_user_role {
+	method PUT
+	path_regexp ^/v1/admin/users/[^/]+/role$
+}
+rewrite @admin_user_role /webhook/fe224ee9-6235-5563-88e0-5d9fedda02cd{uri}
+@contact_request_create {
+	method POST
+	path_regexp ^/v1/flatmates/[^/]+/contact-requests$
+}
+rewrite @contact_request_create /webhook/7d05cfe8-cf5a-5f93-aa1d-d778d3053324{uri}
+@contact_request_decide {
+	method POST
+	path_regexp ^/v1/contact-requests/[^/]+/decision$
+}
+rewrite @contact_request_decide /webhook/156b89dc-e4ed-51fb-8261-bbb298c130d3{uri}
+@flatmate_explain {
+	method POST
+	path_regexp ^/v1/flatmates/[^/]+/explanation$
+}
+rewrite @flatmate_explain /webhook/1e2a8cb5-0bf9-5dbc-a7cb-528bd8e838c9{uri}

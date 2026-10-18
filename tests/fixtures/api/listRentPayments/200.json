@@ -1,0 +1,26 @@
+{
+  "request_id": "b5d5025e-fa34-46e7-a936-43031df80f7c",
+  "data": {
+    "items": [
+      {
+        "mine": false,
+        "user": {
+          "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+          "display_name": "Bilel"
+        },
+        "period": "2027-01",
+        "paid_on": "2026-10-17",
+        "confirmed": true,
+        "payment_id": "26faf1e1-4a96-4e9f-9a22-806b572f8f3b",
+        "can_confirm": false,
+        "amount_minor": 400000,
+        "confirmed_at": "2026-10-17T02:55:27.732866+00:00"
+      }
+    ],
+    "currency": "TND",
+    "exponent": 3
+  },
+  "meta": {
+    "latency_ms": 157
+  }
+}

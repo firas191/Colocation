@@ -1,0 +1,21 @@
+{
+  "request_id": "9d8d8205-fcee-4cbd-a6fe-95eae977d726",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "occupants",
+        "issue": "required"
+      },
+      {
+        "field": "date",
+        "issue": "required"
+      },
+      {
+        "field": "items",
+        "issue": "required"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "request_id": "d89e6271-7f1a-4f4f-b066-49c274ad509f",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Your role does not allow this action",
+    "details": []
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "request_id": "18092ed6-f41b-4bfb-843b-07e4033e6bf3",
+  "data": {
+    "user": {
+      "currency": "TND",
+      "exponent": 3,
+      "display_name": "Amira",
+      "jurisdiction_code": "TN"
+    },
+    "budget": {
+      "currency": "TND",
+      "max_minor": 400000,
+      "min_minor": null
+    },
+    "missing": [
+      "cleanliness",
+      "guests",
+      "quiet_hours"
+    ],
+    "profile": {
+      "areas": [
+        "Ariana"
+      ],
+      "seeking": "both",
+      "visible": true,
+      "headline": "Profil de amira",
+      "move_in_from": "2026-12-01"
+    },
+    "languages": [],
+    "lifestyle": {
+      "pets": "no",
+      "smoking": "no",
+      "schedule": "early"
+    }
+  },
+  "meta": {
+    "latency_ms": 162
+  }
+}

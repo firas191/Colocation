@@ -1,0 +1,24 @@
+{
+  "request_id": "8cf9818d-6792-47fd-9525-3fab529a6589",
+  "data": {
+    "note": "Bonjour Sarra, on cherche à Ariana toutes les deux ?",
+    "other": {
+      "user_id": "33abdbe3-d2ee-46d3-af42-ed0574ac8a4e",
+      "display_name": "Sarra"
+    },
+    "status": "pending",
+    "actions": {
+      "accept": false,
+      "cancel": true,
+      "refuse": false
+    },
+    "direction": "sent",
+    "created_at": "2026-10-18T01:22:49.7085+00:00",
+    "decided_at": null,
+    "request_id": "586f2187-f2e2-4011-9bfb-ea6e79c2e36d",
+    "conversation_id": null
+  },
+  "meta": {
+    "latency_ms": 155
+  }
+}

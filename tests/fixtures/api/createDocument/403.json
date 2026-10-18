@@ -1,0 +1,8 @@
+{
+  "request_id": "4a311e23-059c-4318-b455-49f80e7ee776",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Rent receipts are made by the owner member",
+    "details": []
+  }
+}

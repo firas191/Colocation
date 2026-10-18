@@ -1,0 +1,10 @@
+{
+  "request_id": "27de46de-f722-4920-aa66-2f970b3bdbb5",
+  "data": {
+    "deleted": true,
+    "event_id": "7383cac1-67a5-4da8-b3ae-55a6804fa222"
+  },
+  "meta": {
+    "latency_ms": 191
+  }
+}

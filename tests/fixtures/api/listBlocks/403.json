@@ -1,0 +1,12 @@
+{
+  "request_id": "c31abb48-6c1e-48d7-9947-dc1e1cb6cbc3",
+  "error": {
+    "code": "CONSENT_REQUIRED",
+    "message": "Consent is required for this action",
+    "details": [
+      {
+        "purpose": "terms"
+      }
+    ]
+  }
+}

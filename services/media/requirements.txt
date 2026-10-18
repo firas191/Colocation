@@ -12,6 +12,8 @@ boto3==1.43.108
 pdfplumber==0.11.10
 pypdfium2==5.13.0
 pytesseract==0.3.13
+# PDF rendering (P9, D-108): installed and tested in the sandbox 2026-10-17
+weasyprint==66.0
 # tests run inside the image (verify.ps1)
 pytest==9.1.1
 httpx==0.28.1

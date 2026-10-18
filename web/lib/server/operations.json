@@ -25,6 +25,12 @@
  },
  {
   "method": "GET",
+  "regex": "^/v1/admin/eval/runs$",
+  "id": "listAdminEvalRuns",
+  "success": 200
+ },
+ {
+  "method": "GET",
   "regex": "^/v1/admin/eval/runs/[^/]+$",
   "id": "getEvalRun",
   "success": 200
@@ -132,6 +138,12 @@
   "success": 200
  },
  {
+  "method": "DELETE",
+  "regex": "^/v1/me$",
+  "id": "deleteMe",
+  "success": 200
+ },
+ {
   "method": "GET",
   "regex": "^/v1/me/notifications$",
   "id": "listNotifications",
@@ -141,6 +153,12 @@
   "method": "POST",
   "regex": "^/v1/me/notifications/read$",
   "id": "readNotifications",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v2/listings/[^/]+/submit$",
+  "id": "submitListingV2",
   "success": 200
  },
  {
@@ -177,6 +195,576 @@
   "method": "POST",
   "regex": "^/v1/listing-changes/[^/]+/cancel$",
   "id": "cancelListingChange",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listings/[^/]+/submit$",
+  "id": "submitListing",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/listings$",
+  "id": "listMyListings",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/conversations$",
+  "id": "startConversation",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/conversations$",
+  "id": "listConversations",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/conversations/[^/]+/messages$",
+  "id": "listMessages",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/conversations/[^/]+/messages$",
+  "id": "sendMessage",
+  "success": 201
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/conversations/[^/]+/read$",
+  "id": "readConversation",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/blocks$",
+  "id": "blockUser",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/blocks$",
+  "id": "listBlocks",
+  "success": 200
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/me/blocks/[^/]+$",
+  "id": "unblockUser",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/listings/[^/]+/visit-slots$",
+  "id": "listVisitSlots",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/listings/[^/]+/visit-slots$",
+  "id": "putVisitSlots",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/visits$",
+  "id": "requestVisit",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/visits$",
+  "id": "listVisits",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/visits/[^/]+/decision$",
+  "id": "decideVisit",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/listings/[^/]+/applications$",
+  "id": "applyToListing",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/applications$",
+  "id": "listMyApplications",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/owner/applications$",
+  "id": "listOwnerApplications",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/applications/[^/]+/decision$",
+  "id": "decideApplication",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/applications/[^/]+/withdraw$",
+  "id": "withdrawApplication",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/reports$",
+  "id": "createReport",
+  "success": 201
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households$",
+  "id": "createHousehold",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/households$",
+  "id": "listMyHouseholds",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+$",
+  "id": "getHousehold",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/invites$",
+  "id": "createHouseholdInvite",
+  "success": 201
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/household-invites/accept$",
+  "id": "acceptHouseholdInvite",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/leave$",
+  "id": "leaveHousehold",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/expenses$",
+  "id": "listExpenses",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/expenses$",
+  "id": "createExpense",
+  "success": 200
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/households/[^/]+/expenses/[^/]+$",
+  "id": "deleteExpense",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/balances$",
+  "id": "getBalances",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/settlements$",
+  "id": "createSettlement",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/recurring$",
+  "id": "getRecurring",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/households/[^/]+/recurring$",
+  "id": "putRecurring",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/rent-payments$",
+  "id": "createRentPayment",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/rent-payments$",
+  "id": "listRentPayments",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/rent-payments/[^/]+/confirm$",
+  "id": "confirmRentPayment",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/announcements$",
+  "id": "listAnnouncements",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/announcements$",
+  "id": "createAnnouncement",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/chores$",
+  "id": "listChores",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/chores$",
+  "id": "createChore",
+  "success": 201
+ },
+ {
+  "method": "PATCH",
+  "regex": "^/v1/households/[^/]+/chores/[^/]+$",
+  "id": "updateChore",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/chore-assignments/[^/]+/done$",
+  "id": "doneChore",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/shopping$",
+  "id": "listShopping",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/shopping$",
+  "id": "addShopping",
+  "success": 201
+ },
+ {
+  "method": "PATCH",
+  "regex": "^/v1/households/[^/]+/shopping/[^/]+$",
+  "id": "updateShopping",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/rules$",
+  "id": "getRules",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/households/[^/]+/rules$",
+  "id": "putRules",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/calendar$",
+  "id": "getCalendar",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/events$",
+  "id": "createEvent",
+  "success": 201
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/households/[^/]+/events/[^/]+$",
+  "id": "deleteEvent",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/issues$",
+  "id": "listIssues",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/issues$",
+  "id": "createIssue",
+  "success": 201
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/issues/[^/]+/updates$",
+  "id": "updateIssue",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/issues/[^/]+/photos/presign$",
+  "id": "presignIssuePhotos",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/issues/[^/]+/photos/process$",
+  "id": "processIssuePhotos",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/flatmate-profile$",
+  "id": "getFlatmateProfile",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/me/flatmate-profile$",
+  "id": "putFlatmateProfile",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/flatmates$",
+  "id": "listFlatmates",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/flatmates/[^/]+$",
+  "id": "getFlatmate",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/saved-searches$",
+  "id": "listSavedSearches",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/saved-searches$",
+  "id": "createSavedSearch",
+  "success": 201
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/me/saved-searches/[^/]+$",
+  "id": "deleteSavedSearch",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/room-posts$",
+  "id": "createRoomPost",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/moderation$",
+  "id": "listModeration",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/admin/moderation/[^/]+/decision$",
+  "id": "decideModeration",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/document-templates$",
+  "id": "listDocumentTemplates",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/documents$",
+  "id": "createDocument",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/documents$",
+  "id": "listDocuments",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/documents/[^/]+$",
+  "id": "getDocument",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/documents/assistant$",
+  "id": "documentAssistant",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/legal/ask$",
+  "id": "legalAsk",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/deposits$",
+  "id": "listDeposits",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/households/[^/]+/deposits/[^/]+$",
+  "id": "putDeposit",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/households/[^/]+/move-out$",
+  "id": "getMoveOut",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/households/[^/]+/move-out$",
+  "id": "startMoveOut",
+  "success": 201
+ },
+ {
+  "method": "PATCH",
+  "regex": "^/v1/households/[^/]+/move-out/[^/]+$",
+  "id": "tickMoveOut",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/documents/[^/]+/comparison$",
+  "id": "compareInventories",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/notification-preferences$",
+  "id": "getNotificationPreferences",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/me/notification-preferences$",
+  "id": "putNotificationPreferences",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/telegram-link$",
+  "id": "createTelegramLink",
+  "success": 201
+ },
+ {
+  "method": "DELETE",
+  "regex": "^/v1/me/telegram-link$",
+  "id": "deleteTelegramLink",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/settings$",
+  "id": "listAdminSettings",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/admin/settings/[^/]+$",
+  "id": "putAdminSetting",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/users$",
+  "id": "listAdminUsers",
+  "success": 200
+ },
+ {
+  "method": "PUT",
+  "regex": "^/v1/admin/users/[^/]+/role$",
+  "id": "putAdminUserRole",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/prompts$",
+  "id": "listAdminPrompts",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/admin/kb/sources$",
+  "id": "listAdminKbSources",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/flatmates/[^/]+/contact-requests$",
+  "id": "createContactRequest",
+  "success": 201
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/me/contact-requests$",
+  "id": "listContactRequests",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/contact-requests/[^/]+/decision$",
+  "id": "decideContactRequest",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/flatmates/[^/]+/explanation$",
+  "id": "explainFlatmateMatch",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/flatmate-profile/assistant$",
+  "id": "flatmateProfileAssistant",
+  "success": 200
+ },
+ {
+  "method": "POST",
+  "regex": "^/v1/me/flatmate-profile/apply$",
+  "id": "applyFlatmateProfile",
+  "success": 200
+ },
+ {
+  "method": "GET",
+  "regex": "^/v1/places$",
+  "id": "listPlaces",
   "success": 200
  }
 ]

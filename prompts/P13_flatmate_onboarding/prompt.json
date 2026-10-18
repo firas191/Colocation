@@ -1,0 +1,9 @@
+{
+  "name": "P13_flatmate_onboarding",
+  "agent": "A7 flatmate profile",
+  "role": "System message of the profile agent (n8n AI Agent node): build a person's flatmate profile by chatting, two questions at a time, then propose the answers with the propose_profile tool; the person confirms on the page before anything is saved (D-115). Adapted from the onboarding agent of Yosr's roommate matching (branch roommate-matching, 2026-10-16): her question order and her rule of at most two questions per message, with this platform's fields instead of her data table (no e-mail, no gender, no dealbreakers list).",
+  "schema": "schemas/P13_flatmate_onboarding.schema.json",
+  "variables": ["message", "today", "language", "currency"],
+  "golden_set": "flatmate_onboarding",
+  "active_version": 1
+}

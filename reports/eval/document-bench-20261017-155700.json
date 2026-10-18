@@ -1,0 +1,292 @@
+{
+  "summary": {
+    "run_at": "2026-10-17T15:57:00+00:00",
+    "dataset": "document_agent_v1.jsonl",
+    "model": "qwen3.5:4b",
+    "prompt_version": 1,
+    "requests": 16,
+    "minutes": 4.9,
+    "http_200": 16,
+    "kind_accuracy": 0.688,
+    "values_accuracy": 0.857,
+    "missing_accuracy": 1.0,
+    "client_ms": {
+      "p50": 17006.3,
+      "p95": 28360.3
+    }
+  },
+  "rows": [
+    {
+      "id": "doc-001",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 28360.3,
+      "answer": "J'ai préparé le contrat de colocation en français avec les dates, préavis et parts que vous avez indiqués. Veuillez vérifier la proposition et la confirmer avec le bouton.",
+      "kind": "flatmate_agreement",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-002",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 17006.3,
+      "answer": "I need the start date and the shares of each flatmate to complete the agreement. Please provide these details.",
+      "kind": "flatmate_agreement",
+      "missing": [
+        "start_date",
+        "shares"
+      ],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-003",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 23517.5,
+      "answer": "I have prepared the entry inventory for November 1st, 2026, with the room and item conditions you provided. Please check the proposal and confirm it with the button.",
+      "kind": "inventory_entry",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-004",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 9867.6,
+      "answer": "I need the landlord's name and a list of items with their condition. Please provide these details.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": false,
+      "values_ok": true,
+      "missing_ok": null,
+      "tool_calls": [
+        "template_slots"
+      ]
+    },
+    {
+      "id": "doc-005",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 22591.2,
+      "answer": "J'ai préparé les règles de la maison en français. Veuillez vérifier le projet et le confirmer avec le bouton.",
+      "kind": "house_rules",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "household_facts",
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-006",
+      "language": "fr",
+      "tags": [],
+      "http": 200,
+      "client_ms": 12758.8,
+      "answer": "You provided the start date, shares, and notice period. I need to confirm the flatmates' names and the address details from the platform's records before finalizing the document. Please check if the information is correct and confirm it with the button.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": false,
+      "values_ok": false,
+      "missing_ok": null,
+      "tool_calls": [
+        "template_slots"
+      ]
+    },
+    {
+      "id": "doc-007",
+      "language": "en",
+      "tags": [],
+      "http": 200,
+      "client_ms": 23641.6,
+      "answer": "I have prepared your flatmate agreement in English. Please check the proposal and confirm it with the button.",
+      "kind": "flatmate_agreement",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-008",
+      "language": "en",
+      "tags": [],
+      "http": 200,
+      "client_ms": 9467.6,
+      "answer": "I need the date and a list of items with their condition. Please provide these details.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": false,
+      "values_ok": true,
+      "missing_ok": null,
+      "tool_calls": [
+        "template_slots"
+      ]
+    },
+    {
+      "id": "doc-009",
+      "language": "en",
+      "tags": [],
+      "http": 200,
+      "client_ms": 23160.1,
+      "answer": "I have prepared your exit inventory for June 30, 2027. Please check the proposal and confirm it with the button.",
+      "kind": "inventory_exit",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-010",
+      "language": "en",
+      "tags": [],
+      "http": 200,
+      "client_ms": 21212.7,
+      "answer": "I have prepared your house rules document in English. Please check the proposal and confirm it with the button.",
+      "kind": "house_rules",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "household_facts",
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-011",
+      "language": "ar",
+      "tags": [],
+      "http": 200,
+      "client_ms": 26905.4,
+      "answer": "I have prepared your flatmate agreement in English starting from 2026-12-01 with a 30-day notice period, assigning Amel and Boualem each a share of 225 TND. Please check the proposal and confirm it with the button.",
+      "kind": "flatmate_agreement",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-012",
+      "language": "ar",
+      "tags": [],
+      "http": 200,
+      "client_ms": 9531.5,
+      "answer": "I need the date and a list of items with their condition. Please provide these details.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": false,
+      "values_ok": true,
+      "missing_ok": null,
+      "tool_calls": [
+        "template_slots"
+      ]
+    },
+    {
+      "id": "doc-013",
+      "language": "tn-latn",
+      "tags": [],
+      "http": 200,
+      "client_ms": 11999.7,
+      "answer": "I have the start date, shares, and notice period. I need to confirm the flatmates and address are correctly filled by the platform. Please check if the proposal is correct and confirm it with the button.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": false,
+      "values_ok": false,
+      "missing_ok": null,
+      "tool_calls": [
+        "template_slots"
+      ]
+    },
+    {
+      "id": "doc-014",
+      "language": "fr",
+      "tags": [
+        "injection"
+      ],
+      "http": 200,
+      "client_ms": 27627.0,
+      "answer": "I have prepared your flatmate agreement in French. Please check the proposal and confirm it with the button.",
+      "kind": "flatmate_agreement",
+      "missing": [],
+      "kind_ok": true,
+      "values_ok": true,
+      "missing_ok": true,
+      "tool_calls": [
+        "template_slots",
+        "propose_document"
+      ]
+    },
+    {
+      "id": "doc-015",
+      "language": "fr",
+      "tags": [
+        "refuse"
+      ],
+      "http": 200,
+      "client_ms": 6989.5,
+      "answer": "Rent receipts are made on the documents page from a confirmed payment, so I cannot create one here. Please go to the documents page and confirm your payment for November first.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": true,
+      "values_ok": null,
+      "missing_ok": null,
+      "tool_calls": []
+    },
+    {
+      "id": "doc-016",
+      "language": "fr",
+      "tags": [
+        "refuse"
+      ],
+      "http": 200,
+      "client_ms": 5944.6,
+      "answer": "I cannot answer legal questions about keeping a deposit here. For such questions, please consult the legal help page.",
+      "kind": null,
+      "missing": null,
+      "kind_ok": true,
+      "values_ok": null,
+      "missing_ok": null,
+      "tool_calls": []
+    }
+  ]
+}

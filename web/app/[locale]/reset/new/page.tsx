@@ -18,7 +18,7 @@ export default async function ResetNew({ params, searchParams }:
   const valid = !error && /^[A-Za-z0-9_-]{8,256}$/.test(token);
   return (
     <AuthFrame title={t("newTitle")}>
-      {valid ? <ResetForm locale={locale} token={token} /> : <Notice tone="error">{t("invalidToken")} <Link href="/reset">{t("submit")}</Link></Notice>}
+      {valid ? <ResetForm locale={locale} token={token} /> : <Notice tone="error">{t("invalidToken")} <Link href="/reset" className="btn btn-primary self-start">{t("submit")}</Link></Notice>}
     </AuthFrame>
   );
 }

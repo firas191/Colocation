@@ -1,0 +1,8 @@
+{
+  "request_id": "a53084fe-4f39-45bf-9cea-301d6ca8872e",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Listing not found",
+    "details": []
+  }
+}

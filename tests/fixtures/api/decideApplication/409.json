@@ -1,0 +1,14 @@
+{
+  "request_id": "d7640f2c-af50-42cc-b898-4d882cdec543",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Already decided",
+    "details": [
+      {
+        "field": "status",
+        "issue": "not_allowed",
+        "status": "accepted"
+      }
+    ]
+  }
+}

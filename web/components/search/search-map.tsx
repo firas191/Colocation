@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/field";
+import { currentTheme } from "@/components/theme-toggle";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 export interface MapPoint { id: string; title: string; lat: number; lng: number }
@@ -30,8 +31,9 @@ async function load() {
   return setup;
 }
 
-export function SearchMap({ locale, country, points, bbox, center, baseHref }:
-  { locale: string; country: string; points: MapPoint[]; bbox: string; center: { lat: number; lng: number } | null; baseHref: string }) {
+export function SearchMap({ locale, country, points, bbox, center, baseHref, className }:
+  { locale: string; country: string; points: MapPoint[]; bbox: string; center: { lat: number; lng: number } | null; baseHref: string;
+    className?: string }) {
   const t = useTranslations("search");
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
@@ -41,6 +43,7 @@ export function SearchMap({ locale, country, points, bbox, center, baseHref }:
 
   useEffect(() => {
     let gone = false;
+    let onTheme: ((e: Event) => void) | null = null;
     (async () => {
       const head = await fetch(tiles, { method: "HEAD" }).catch(() => null);
       if (gone) return;
@@ -49,16 +52,18 @@ export function SearchMap({ locale, country, points, bbox, center, baseHref }:
       const { layers, namedFlavor } = await import("@protomaps/basemaps");
       if (gone || !box.current) return;
       const origin = window.location.origin;
+      // the basemap follows the page's theme (D-116); the icons are the light set in both
+      const style = (theme: "light" | "dark") => ({
+        version: 8 as const,
+        glyphs: `${origin}/map/fonts/{fontstack}/{range}.pbf`,
+        sprite: `${origin}/map/sprites/v4/light`,
+        sources: { protomaps: { type: "vector" as const, url: `pmtiles://${origin}${tiles}`,
+          attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap</a> · <a href="https://protomaps.com">Protomaps</a>' } },
+        layers: layers("protomaps", namedFlavor(theme), { lang: locale }),
+      });
       const m = new maplibre.Map({
         container: box.current,
-        style: {
-          version: 8,
-          glyphs: `${origin}/map/fonts/{fontstack}/{range}.pbf`,
-          sprite: `${origin}/map/sprites/v4/light`,
-          sources: { protomaps: { type: "vector", url: `pmtiles://${origin}${tiles}`,
-            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap</a> · <a href="https://protomaps.com">Protomaps</a>' } },
-          layers: layers("protomaps", namedFlavor("light"), { lang: locale }),
-        },
+        style: style(currentTheme()),
         center: COUNTRY_VIEW[country] ? [COUNTRY_VIEW[country][0], COUNTRY_VIEW[country][1]] : [center?.lng ?? 10, center?.lat ?? 36],
         zoom: COUNTRY_VIEW[country]?.[2] ?? 6,
         attributionControl: { compact: false },
@@ -91,11 +96,29 @@ export function SearchMap({ locale, country, points, bbox, center, baseHref }:
         new maplibre.Marker({ element: a, anchor: "bottom" }).setLngLat([p.lng, p.lat]).addTo(m);
       }
       m.once("load", () => { if (gone) return; place(); setState("ready"); });
+      onTheme = (e: Event) => m.setStyle(style((e as CustomEvent).detail === "dark" ? "dark" : "light"));
+      window.addEventListener("themechange", onTheme);
     })();
-    return () => { gone = true; map.current?.remove(); map.current = null; };
+    // a listing card under the pointer or the keyboard lights up its pin
+    const light = (e: Event) => {
+      const id = (e.target as Element | null)?.closest?.("article[data-listing]")?.getAttribute("data-listing");
+      document.querySelectorAll<HTMLElement>(".map-pin").forEach((pin) => { pin.dataset.active = String(!!id && pin.dataset.listing === id); });
+    };
+    document.addEventListener("pointerover", light);
+    document.addEventListener("focusin", light);
+    return () => {
+      gone = true; map.current?.remove(); map.current = null;
+      document.removeEventListener("pointerover", light); document.removeEventListener("focusin", light);
+      if (onTheme) window.removeEventListener("themechange", onTheme);
+    };
   }, [tiles, locale, country, bbox, center, points]);
 
-  if (state === "missing") return <Notice>{t("mapMissing")}</Notice>;
+  if (state === "missing") return (
+    <div className={`flex flex-col justify-end gap-3 overflow-hidden rounded-[var(--radius-photo)] border border-line bg-raised p-4 ${className ? "min-h-80" : ""} ${className || ""}`}
+      style={{ backgroundImage: "linear-gradient(var(--color-line) 1px, transparent 1px), linear-gradient(90deg, var(--color-line) 1px, transparent 1px)", backgroundSize: "28px 28px" }}>
+      <Notice>{t("mapMissing")}</Notice>
+    </div>
+  );
   const searchArea = () => {
     const m = map.current;
     if (!m) return;
@@ -104,13 +127,16 @@ export function SearchMap({ locale, country, points, bbox, center, baseHref }:
     router.push(`${baseHref}&bbox=${[r(b.getWest()), r(b.getSouth()), r(b.getEast()), r(b.getNorth())].join(",")}`);
   };
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`relative flex flex-col gap-3 ${className || ""}`}>
       <div ref={box} role="region" aria-label={t("mapLabel")} data-state={state}
-        className="h-[min(60vh,32rem)] w-full overflow-hidden rounded-field border border-line bg-plaster" />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink-soft">{t("mapHint")}</p>
-        <Button type="button" variant="secondary" onClick={searchArea} disabled={state !== "ready"}>{t("searchArea")}</Button>
+        className={`w-full flex-1 overflow-hidden rounded-[var(--radius-photo)] border border-line bg-raised ${className ? "min-h-80" : "h-[min(60vh,32rem)]"}`} />
+      {state === "loading" && <div aria-hidden="true" className="skeleton absolute inset-0 rounded-[var(--radius-photo)]" />}
+      <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
+        <Button type="button" variant="secondary" onClick={searchArea} disabled={state !== "ready"} className="pointer-events-auto rounded-full shadow-[var(--shadow-lift)]">
+          {t("searchArea")}
+        </Button>
       </div>
+      <p className="text-sm text-ink-soft">{t("mapHint")}</p>
     </div>
   );
 }

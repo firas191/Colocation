@@ -1,0 +1,4 @@
+PASS  stack is up (n8n healthy, migration 0011 applied, Text service healthy)  (exit 0, 0.2 s)
+PASS  prompts: store new versions and the active ones (P4_trust_assessor)  (exit 0, 1.5 s)
+FAIL  Trust check without the agent: the 100 listings of trust_v1 (rules and database only)  (exit 1, 1.3 s)
+FAIL  Trust check with the Trust agent: the 100 listings of trust_v1 (real model; the time per listing is not measured yet)  (exit 1, 1.1 s)

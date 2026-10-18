@@ -1,0 +1,14 @@
+{
+  "request_id": "93d524e7-968c-404b-9755-dbcaf8340560",
+  "data": {
+    "email": true,
+    "muted": [],
+    "recent": [],
+    "telegram": true,
+    "email_address": true,
+    "telegram_linked": false
+  },
+  "meta": {
+    "latency_ms": 396
+  }
+}

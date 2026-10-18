@@ -1,0 +1,12 @@
+{
+  "request_id": "cdaa07c0-2676-4312-929a-2494da2bc1b6",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Blocked",
+    "details": [
+      {
+        "issue": "blocked"
+      }
+    ]
+  }
+}

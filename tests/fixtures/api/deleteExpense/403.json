@@ -1,0 +1,8 @@
+{
+  "request_id": "9cac542e-025c-4523-9bce-7fca6b16345d",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only who added it can delete it",
+    "details": []
+  }
+}

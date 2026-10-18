@@ -59,7 +59,8 @@ function checkAnswer(answer, sources) {
 function fallbackMask(text) {
   return String(text || '')
     .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '<EMAIL>')
-    .replace(/\+?\d[\d .-]{6,}\d/g, (m) => (m.replace(/\D/g, '').length >= 8 ? '<PHONE>' : m));
+    // a date written 2026-12-01 is not a phone number (F-079)
+    .replace(/\+?\d[\d .-]{6,}\d/g, (m) => (/^\d{4}-\d{2}-\d{2}$/.test(m) || m.replace(/\D/g, '').length < 8 ? m : '<PHONE>'));
 }
 
 function plainText(answer) {

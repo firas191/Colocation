@@ -1,0 +1,10 @@
+{
+  "request_id": "aeebdee4-d2b8-44e0-a3bf-f08fd0aa6789",
+  "data": {
+    "status": "left",
+    "household_id": "715e2044-ef01-4301-9e09-60cb4589b896"
+  },
+  "meta": {
+    "latency_ms": 299
+  }
+}

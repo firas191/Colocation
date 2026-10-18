@@ -95,3 +95,21 @@ export async function signOutAction(locale: string) {
   revalidatePath("/", "layout");
   redirect({ href: "/", locale: loc(locale) });
 }
+
+/** Delete my account (platform P10, D-109): the platform erases the person's data (DELETE /v1/me), then the website's
+ *  own sign-in record and sessions are removed, so the same e-mail can no longer sign in to the erased account. */
+export async function deleteAccountAction(locale: string, _prev: FormState, form: FormData): Promise<FormState> {
+  if (str(form, "confirm") !== "DELETE") return { error: "CONFIRM" };
+  const session = await auth.api.getSession({ headers: await headers() });
+  const platformId = (session?.user as { platformUserId?: string } | undefined)?.platformUserId;
+  if (!session || !platformId) return { error: "UNAUTHENTICATED" };
+  const r = await api("DELETE", "/v1/me", { userId: platformId, clientIp: await clientIp(), idempotencyKey: `erase-${crypto.randomUUID()}`,
+    query: { confirm: "DELETE" } });
+  if (!r.ok) return { error: r.error.code };
+  const ctx = await auth.$context;
+  await ctx.internalAdapter.deleteUserSessions(session.user.id);
+  await ctx.internalAdapter.deleteUser(session.user.id);
+  revalidatePath("/", "layout");
+  redirect({ href: "/", locale: loc(locale) });
+  return { done: true };
+}

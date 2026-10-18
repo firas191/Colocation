@@ -1,0 +1,17 @@
+{
+  "request_id": "408bb40e-d53d-4d85-8b92-6a0ed2ea2dc2",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "target_type",
+        "issue": "enum"
+      },
+      {
+        "field": "reason",
+        "issue": "enum"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "request_id": "01ef871e-6dea-49ef-99f2-060c796df6f3",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "User not found",
+    "details": []
+  }
+}

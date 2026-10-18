@@ -1,0 +1,8 @@
+{
+  "request_id": "9c8f926a-f5c9-4b1e-919b-4f40fdd11bbc",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Issue not found",
+    "details": []
+  }
+}

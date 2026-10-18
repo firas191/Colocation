@@ -1,0 +1,8 @@
+{
+  "request_id": "c550e949-6b24-4c82-9d5a-4bbb3b4de08c",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Household not found",
+    "details": []
+  }
+}

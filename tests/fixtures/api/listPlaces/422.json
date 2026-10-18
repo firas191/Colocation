@@ -1,0 +1,13 @@
+{
+  "request_id": "06fa0035-049f-4d0c-b319-852cc0825fa5",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Unknown country",
+    "details": [
+      {
+        "field": "jurisdiction",
+        "issue": "unknown_jurisdiction"
+      }
+    ]
+  }
+}

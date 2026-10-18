@@ -1,0 +1,20 @@
+{
+  "request_id": "d199dc90-faa6-46da-87a1-223253a2a6e1",
+  "data": {
+    "mine": true,
+    "user": {
+      "user_id": "023704f8-dcd0-4bc2-9cc3-85d7e9c5502c",
+      "display_name": "Bilel"
+    },
+    "period": "2027-01",
+    "paid_on": "2026-10-17",
+    "confirmed": false,
+    "payment_id": "26faf1e1-4a96-4e9f-9a22-806b572f8f3b",
+    "can_confirm": false,
+    "amount_minor": 400000,
+    "confirmed_at": null
+  },
+  "meta": {
+    "latency_ms": 198
+  }
+}

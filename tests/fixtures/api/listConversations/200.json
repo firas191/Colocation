@@ -1,0 +1,35 @@
+{
+  "request_id": "b271cd24-0da8-4e49-aed7-7c3900eca9c5",
+  "data": {
+    "items": [
+      {
+        "kind": "listing",
+        "other": {
+          "user_id": "9d23d805-39eb-40ac-89f7-487edf9b4c02",
+          "display_name": null
+        },
+        "unread": 1,
+        "blocked": false,
+        "listing": {
+          "title": "Chambre QV",
+          "status": "published",
+          "listing_id": "00000000-0000-4000-8000-0000000004a1"
+        },
+        "created_at": "2026-10-17T01:32:13.682406+00:00",
+        "last_message": {
+          "id": 6,
+          "mine": false,
+          "excerpt": "Bonjour, la chambre est libre ?",
+          "created_at": "2026-10-17T01:32:13.682406+00:00"
+        },
+        "conversation_id": "25cbfcb1-76d7-4888-bd2a-925699ac172c",
+        "last_message_at": "2026-10-17T01:32:13.682406+00:00"
+      }
+    ],
+    "unread": 1
+  },
+  "meta": {
+    "latency_ms": 172,
+    "next_cursor": null
+  }
+}

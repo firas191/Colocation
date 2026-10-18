@@ -1,0 +1,13 @@
+{
+  "request_id": "9e4cbfd6-ecc7-4ddf-ae1e-58981e873b1e",
+  "data": {
+    "id": 7,
+    "body": "Oui, venez la voir.",
+    "mine": true,
+    "created_at": "2026-10-17T01:32:14.663844+00:00",
+    "conversation_id": "25cbfcb1-76d7-4888-bd2a-925699ac172c"
+  },
+  "meta": {
+    "latency_ms": 226
+  }
+}

@@ -47,3 +47,8 @@ test('a long answer is cut at the last sentence that fits (D-085)', () => {
     { text: 'Une seule phrase très longue\u2026', cut: true });
   assert.equal(shorten('وجدت 3 إعلانات. الأول في النصر بـ 400 دينار. الثاني أبعد.', 45).text, 'وجدت 3 إعلانات. الأول في النصر بـ 400 دينار.');
 });
+
+test('the fallback mask keeps ISO dates and masks phone numbers (F-079)', () => {
+  const { fallbackMask } = require('../src/lib/agent_check.js');
+  assert.equal(fallbackMask('à partir du 2026-12-01, appelle le 22 333 444'), 'à partir du 2026-12-01, appelle le <PHONE>');
+});

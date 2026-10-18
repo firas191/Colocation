@@ -1,0 +1,77 @@
+{
+  "request_id": "6b064231-a199-4775-bcb2-31ede91e45a1",
+  "data": {
+    "user": null,
+    "effect": "published",
+    "reason": "trust_review",
+    "status": "approved",
+    "actions": [],
+    "item_id": 1,
+    "listing": {
+      "city": "Ville QT",
+      "owner": {
+        "user_id": "5c027a5b-cb0b-4d9f-ba83-76c3f110328c",
+        "display_name": null
+      },
+      "title": "Chambre QT",
+      "status": "published",
+      "currency": "TND",
+      "listing_id": "c04e1656-57b7-4367-8cbc-2649f52710b5",
+      "rent_minor": 450000,
+      "description": "Belle chambre. Paiement par Western Union. Appelez le 22 333 444. [mock:badquote]",
+      "trust_score": 50,
+      "trust_verdict": "ok"
+    },
+    "message": null,
+    "reports": 0,
+    "decision": "approve",
+    "evidence": {
+      "score": 50,
+      "signals": [
+        {
+          "hard": false,
+          "lang": "any",
+          "pack": "GLOBAL",
+          "quote": "Western Union",
+          "points": -30,
+          "signal": "untraceable_payment",
+          "source": "rules"
+        },
+        {
+          "hard": false,
+          "points": -10,
+          "signal": "contact_off_platform",
+          "source": "rules",
+          "evidence": {
+            "quote": "22 333 444"
+          }
+        },
+        {
+          "hard": false,
+          "points": -10,
+          "signal": "new_account_many_listings",
+          "source": "database",
+          "evidence": {
+            "reports": 0,
+            "rejected": 2,
+            "account_days": 0,
+            "listings_total": 4,
+            "listings_recent": 4,
+            "published_before": 0
+          }
+        }
+      ],
+      "trust_report_id": "e4520b7f-f021-4522-b26c-42b8e11178c3"
+    },
+    "priority": 3,
+    "entity_id": "c04e1656-57b7-4367-8cbc-2649f52710b5",
+    "created_at": "2026-10-17T09:16:31.361592+00:00",
+    "decided_at": "2026-10-17T09:16:32.239225+00:00",
+    "message_id": null,
+    "entity_type": "listing",
+    "report_reasons": []
+  },
+  "meta": {
+    "latency_ms": 205
+  }
+}

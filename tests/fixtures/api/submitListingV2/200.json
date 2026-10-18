@@ -1,0 +1,15 @@
+{
+  "request_id": "67b20225-244b-47c3-8caf-d1df690ed2c4",
+  "data": {
+    "place": "Ville QT",
+    "title": "Chambre QT",
+    "status": "published",
+    "checked": false,
+    "listing_id": "611a81c8-4c43-40b9-8ee3-d0149c2cde60",
+    "published_at": "2026-10-17T16:17:47.146184+00:00",
+    "warnings": []
+  },
+  "meta": {
+    "latency_ms": 391
+  }
+}

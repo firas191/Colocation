@@ -1,0 +1,34 @@
+{
+  "request_id": "88e0233e-45f7-4aca-a949-0211a84366f5",
+  "data": {
+    "name": "Rue de Marseille",
+    "status": "active",
+    "members": [
+      {
+        "me": true,
+        "role": "flatmate",
+        "status": "active",
+        "user_id": "8b02240d-cc68-4bbf-9075-f3740c899332",
+        "joined_at": "2026-10-17T02:55:19.671643+00:00",
+        "move_in_on": null,
+        "move_out_on": null,
+        "display_name": "Amel"
+      }
+    ],
+    "my_role": "flatmate",
+    "currency": "TND",
+    "exponent": 3,
+    "timezone": "Africa/Tunis",
+    "upcoming": [],
+    "created_at": "2026-10-17T02:55:19.671643+00:00",
+    "listing_id": null,
+    "address_text": null,
+    "household_id": "715e2044-ef01-4301-9e09-60cb4589b896",
+    "announcements": [],
+    "my_balance_minor": 0,
+    "jurisdiction_code": "QT"
+  },
+  "meta": {
+    "latency_ms": 226
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "request_id": "7d9630e5-be50-4d34-9b10-0f02378d3c20",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "code|invite_id",
+        "issue": "one_required"
+      }
+    ]
+  }
+}

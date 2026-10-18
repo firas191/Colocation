@@ -1,0 +1,13 @@
+{
+  "request_id": "ef098898-d8bc-47bd-a72e-7c93922484ac",
+  "error": {
+    "code": "CONFLICT",
+    "message": "Slot full",
+    "details": [
+      {
+        "field": "slot_id",
+        "issue": "slot_full"
+      }
+    ]
+  }
+}

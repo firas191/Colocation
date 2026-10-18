@@ -52,9 +52,13 @@ done
 count=$(wc -l < "$patterns")
 if [ "$count" -eq 0 ]; then echo "no secret values found in the env files given: skipped"; exit 0; fi
 echo "secret variables checked:$names"
+# One file per line. xargs may split a long list into several grep runs and then exits 123 as soon as one run finds
+# nothing, so the decision is made on grep's output, not on the exit status (F-076).
 targets=$(list_files)
-[ -n "$EXPORT_DIR" ] && targets="$targets $(find "$EXPORT_DIR" -type f)"
-if echo "$targets" | xargs grep -l -F -f "$patterns" 2>/dev/null; then
+[ -n "$EXPORT_DIR" ] && targets="$targets"$'\n'"$(find "$EXPORT_DIR" -type f)"
+found=$(printf '%s\n' "$targets" | grep -v '^$' | xargs -d '\n' grep -l -F -f "$patterns" -- 2>/dev/null || true)
+if [ -n "$found" ]; then
+  printf '%s\n' "$found"
   echo "FAIL: a deployment secret appears in the files above"; exit 1
 fi
-echo "checked $count secret values against $(echo "$targets" | wc -w) files: none found"
+echo "checked $count secret values against $(printf '%s\n' "$targets" | grep -c .) files: none found"

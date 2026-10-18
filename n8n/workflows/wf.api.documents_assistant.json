@@ -1,0 +1,1060 @@
+{
+  "id": "fsPfdfa7c6100209",
+  "name": "wf.api.documents_assistant",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c2f084ba-7f19-5498-9fec-c5729dc052ff",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/households/:id/documents/assistant",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "webhookId": "8a774239-0ba5-5719-92ad-8fe97923b1e0"
+    },
+    {
+      "id": "d22a787b-2916-5044-9ba0-9ec26ac46569",
+      "name": "Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Route contract for this endpoint (read by wf.gateway.auth).\nconst route = {\"method\": \"POST\", \"template\": \"/v1/households/:id/documents/assistant\", \"require_user\": true, \"idempotent\": true, \"required_consents\": [\"terms\", \"privacy\"], \"roles\": []};\nconst item = $input.first();\nreturn [{ json: { ...item.json, t0: Date.now(), route }, binary: item.binary }];\n"
+      }
+    },
+    {
+      "id": "4d44aec0-61f5-5d50-b59a-16cbef8654d6",
+      "name": "Gateway",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsGatewayAuth001",
+          "mode": "id",
+          "cachedResultName": "wf.gateway.auth"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "4c423d65-fe64-525c-943d-3d1bb85b4d1e",
+      "name": "Gateway ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e62f52da-7e6e-5fd8-bccf-bec081d581d4",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "f0f3765d-baeb-5c82-8430-3253812c3819",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Platform endpoints (n8n/build_platform.py) > \"Validate\"\n// One shared validator: build_platform.py writes the endpoint's spec into SPEC below at build time.\n// spec = {params: {name: 'uuid' | 'int'}, query: {name: rule}, body: JSON schema | null, rules: [...]}\n// rule = {type: 'int', min, max} | {type: 'bool'} | {type: 'enum', values} | {type: 'string', max, pattern} | {type: 'uuid'} | {type: 'date'}\n// Output: {ok, gw, input: {params, query, body}} for the database call, or a 404/422 rejection.\n// Small JSON Schema validator for LLM outputs and request bodies (spec 9.2: validate every\n// output against its schema). n8n Code nodes cannot load packages (no require), so this\n// covers the subset the schemas in prompts/schemas/ use: type (one or a list, including\n// \"null\" and \"integer\"), enum, const, required, properties, additionalProperties (boolean\n// or schema), items, minItems, maxItems, minimum, maximum, minLength, maxLength, pattern.\n// Anything else in a schema is ignored. Cross-checked against the Python jsonschema package\n// in tests/unit/test_prompts.py.\n// Returns a list of errors [{path, issue, ...}]; empty when the value is valid.\n\nfunction typeOf(v) {\n  if (v === null) return 'null';\n  if (Array.isArray(v)) return 'array';\n  if (typeof v === 'number') return Number.isInteger(v) ? 'integer' : 'number';\n  return typeof v;            // string, boolean, object\n}\n\nfunction typeMatches(t, v) {\n  const actual = typeOf(v);\n  if (t === actual) return true;\n  if (t === 'number' && actual === 'integer') return true;\n  return false;\n}\n\nfunction validate(schema, value, path = '$', errors = []) {\n  if (!schema || typeof schema !== 'object') return errors;\n  if (schema.type !== undefined) {\n    const types = Array.isArray(schema.type) ? schema.type : [schema.type];\n    if (!types.some((t) => typeMatches(t, value))) {\n      errors.push({ path, issue: 'type', expected: types.join('|'), got: typeOf(value) });\n      return errors;\n    }\n  }\n  if (schema.enum !== undefined && !schema.enum.some((e) => e === value)) {\n    errors.push({ path, issue: 'enum', allowed: schema.enum });\n  }\n  if (schema.const !== undefined && schema.const !== value) errors.push({ path, issue: 'const' });\n  const t = typeOf(value);\n  if (t === 'string') {\n    // length in code points, as JSON Schema counts it\n    const len = Array.from(value).length;\n    if (schema.minLength !== undefined && len < schema.minLength) errors.push({ path, issue: 'minLength', min: schema.minLength });\n    if (schema.maxLength !== undefined && len > schema.maxLength) errors.push({ path, issue: 'maxLength', max: schema.maxLength });\n    if (schema.pattern !== undefined && !new RegExp(schema.pattern, 'u').test(value)) errors.push({ path, issue: 'pattern' });\n  }\n  if (t === 'integer' || t === 'number') {\n    if (schema.minimum !== undefined && value < schema.minimum) errors.push({ path, issue: 'minimum', min: schema.minimum });\n    if (schema.maximum !== undefined && value > schema.maximum) errors.push({ path, issue: 'maximum', max: schema.maximum });\n  }\n  if (t === 'array') {\n    if (schema.minItems !== undefined && value.length < schema.minItems) errors.push({ path, issue: 'minItems', min: schema.minItems });\n    if (schema.maxItems !== undefined && value.length > schema.maxItems) errors.push({ path, issue: 'maxItems', max: schema.maxItems });\n    if (schema.items) value.forEach((v, i) => validate(schema.items, v, `${path}[${i}]`, errors));\n  }\n  if (t === 'object') {\n    for (const k of schema.required || []) {\n      if (!Object.prototype.hasOwnProperty.call(value, k)) errors.push({ path: `${path}.${k}`, issue: 'required' });\n    }\n    const props = schema.properties || {};\n    for (const [k, v] of Object.entries(value)) {\n      if (Object.prototype.hasOwnProperty.call(props, k)) validate(props[k], v, `${path}.${k}`, errors);\n      else if (schema.additionalProperties === false) errors.push({ path: `${path}.${k}`, issue: 'additional_property' });\n      else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {\n        validate(schema.additionalProperties, v, `${path}.${k}`, errors);\n      }\n    }\n  }\n  return errors;\n}\n\n// One line per error, for retry prompts and logs.\nfunction describe(errors, max = 8) {\n  return errors.slice(0, max).map((e) => {\n    switch (e.issue) {\n      case 'type': return `${e.path}: expected ${e.expected}, got ${e.got}`;\n      case 'enum': return `${e.path}: must be one of ${JSON.stringify(e.allowed)}`;\n      case 'required': return `${e.path}: missing`;\n      case 'additional_property': return `${e.path}: not allowed`;\n      default: return `${e.path}: ${e.issue}`;\n    }\n  }).join('; ');\n}\n\nif (typeof module !== 'undefined') module.exports = { validate, describe, typeOf };\n\nconst SPEC = {\"params\": {\"id\": \"uuid\"}, \"body\": {\"type\": \"object\", \"additionalProperties\": false, \"properties\": {\"text\": {\"type\": \"string\", \"minLength\": 1, \"maxLength\": 2000}}, \"required\": [\"text\"]}};\nconst gw = $input.first().json;\nconst ctx = gw.ctx || {};\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst reject = (status, code, message, details = []) => [{ json: { ok: false, gw, status, error: { code, message, details } } }];\n\n// Path parameters: a malformed id is a resource that does not exist (404), as in the /v1 GET-by-id endpoints.\nconst params = {};\nfor (const [k, t] of Object.entries(SPEC.params || {})) {\n  const v = String((ctx.params || {})[k] ?? '');\n  if (t === 'uuid' && !UUID.test(v)) return reject(404, 'NOT_FOUND', 'Not found');\n  if (t === 'int' && !/^\\d{1,18}$/.test(v)) return reject(404, 'NOT_FOUND', 'Not found');\n  params[k] = t === 'uuid' ? v.toLowerCase() : v;\n}\n\nconst details = [];\nconst query = {};\nconst q = ctx.query || {};\nconst rules = SPEC.query || {};\nfor (const k of Object.keys(q)) if (!(k in rules)) details.push({ field: k, issue: 'unknown_parameter' });\nfor (const [k, r] of Object.entries(rules)) {\n  if (q[k] === undefined || q[k] === null || String(q[k]) === '') continue;\n  if (Array.isArray(q[k])) { details.push({ field: k, issue: 'repeated_parameter' }); continue; }\n  const v = String(q[k]).trim();\n  if (r.type === 'int') {\n    if (!/^-?\\d{1,18}$/.test(v) || (r.min !== undefined && Number(v) < r.min) || (r.max !== undefined && Number(v) > r.max)) {\n      details.push({ field: k, issue: 'out_of_range', min: r.min, max: r.max });\n    } else query[k] = Number(v);\n  } else if (r.type === 'bool') {\n    if (!['true', 'false'].includes(v)) details.push({ field: k, issue: 'must_be_true_or_false' }); else query[k] = v === 'true';\n  } else if (r.type === 'enum') {\n    if (!r.values.includes(v)) details.push({ field: k, issue: 'not_allowed', allowed: r.values }); else query[k] = v;\n  } else if (r.type === 'uuid') {\n    if (!UUID.test(v)) details.push({ field: k, issue: 'invalid_format' }); else query[k] = v.toLowerCase();\n  } else if (r.type === 'date') {\n    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(v) || isNaN(Date.parse(v + 'T00:00:00Z'))) details.push({ field: k, issue: 'invalid_date' }); else query[k] = v;\n  } else {\n    if (Array.from(v).length > (r.max || 200)) details.push({ field: k, issue: 'too_long', max: r.max || 200 });\n    else if (r.pattern && !new RegExp(r.pattern).test(v)) details.push({ field: k, issue: 'invalid_format' });\n    else query[k] = v;\n  }\n}\n\nlet body = null;\nif (SPEC.body) {\n  body = ctx.body || {};\n  for (const e of validate(SPEC.body, body)) details.push({ field: e.path.replace(/^\\$\\.?/, '') || 'body', issue: e.issue });\n  // one of these fields must be given (JSON Schema's anyOf/required, which schema_lite does not cover)\n  if (SPEC.require_any && !SPEC.require_any.some((f) => body[f] !== undefined && body[f] !== null)) {\n    details.push({ field: SPEC.require_any.join('|'), issue: 'one_required' });\n  }\n}\nif (details.length) return reject(422, 'VALIDATION_FAILED', 'Request is invalid', details);\nreturn [{ json: { ok: true, gw, input: { params, query, body: body || {}, lang: ctx.lang || null } } }];\n"
+      }
+    },
+    {
+      "id": "506df7ea-0e6b-56f4-a586-7ac784841b7b",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "23d1398a-8272-5db5-9045-d9b66cfb16c7",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "93c2c80e-46a7-5849-9807-3cf2f15cd994",
+      "name": "Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1320,
+        -200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select api.document_facts($1::uuid, jsonb_build_object('params', $2::jsonb, 'body', jsonb_build_object('kind', 'house_rules'))) as r, ai.prompt_for('P9_document_agent') as p, (select jsonb_object_agg(key, value #>> '{}') from app.settings where key in ('documents.agent_enabled', 'documents.agent_max_iterations', 'documents.agent_memory_turns', 'documents.num_ctx', 'llm.default_model', 'llm.keep_alive')) as cfg",
+        "options": {
+          "queryReplacement": "={{ [ $json.gw.ctx.user_id, JSON.stringify($json.input.params) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "267fa8b7-a1fb-5b41-94ee-a6c9a5a72201",
+      "name": "Agent input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.documents_assistant > \"Agent input\" (platform P9, D-108): the Document agent (A6) for one household. The\n// person's message with e-mails and phone numbers masked (agent_check.fallbackMask; names stay, the templates need\n// the household's names, which come from the database anyway), the active P9_document_agent version, and the kinds the\n// household's country offers (the rent receipt is made from a confirmed payment on the page, not here).\n// A3 Match agent checks (D-084), shared by the agent workflow and the unit tests.\n//  - toolCalls(steps): the AI Agent node's intermediate steps as [{tool, input, output}] (output parsed when JSON).\n//  - numbersIn(text): every reading of every number written in a text (see readings).\n//  - checkAnswer(answer, sources): every number of two digits or more in the answer must appear in one of the\n//    sources (the user's message, the tool results). Small numbers (result positions, counts up to 10) pass.\n//  - fallbackMask(text): e-mails and long digit runs masked, used only when the Text service did not answer.\n//  - plainText(answer): Markdown removed (bold, italics, headings, list markers, links), lines joined (D-085).\n//  - shorten(text, max): cut at the last sentence end that fits, else at a word, with an ellipsis (D-085).\n\nfunction toolCalls(steps) {\n  return (Array.isArray(steps) ? steps : []).map((s) => {\n    const a = s.action || {};\n    let out = s.observation;\n    if (typeof out === 'string') { try { out = JSON.parse(out); } catch (e) { /* keep the text */ } }\n    if (Array.isArray(out) && out.length === 1) out = out[0];          // a workflow tool answers with its items\n    let input = a.toolInput;\n    if (typeof input === 'string') { try { input = JSON.parse(input); } catch (e) { /* keep the text */ } }\n    return { tool: a.tool || null, input: input ?? null, output: out ?? null };\n  });\n}\n\n// Each number written in a text, with its possible readings: \"450.000\" is 450 (Tunisian dinars, three decimals) or\n// 450000 (dot as thousands separator); \"1.225.000\" is 1225000; \"450,5\" is 450.5.\nfunction readings(text) {\n  const out = [];\n  for (const m of String(text || '').matchAll(/\\d{1,3}(?:\\.\\d{3})+(?!\\d|,\\d)|\\d+(?:[.,]\\d+)?/g)) {\n    const raw = m[0];\n    const alts = new Set();\n    if (/^\\d{1,3}(?:\\.\\d{3})+$/.test(raw)) alts.add(Number(raw.replace(/\\./g, '')));\n    const v = Number(raw.replace(',', '.'));\n    if (Number.isFinite(v)) alts.add(v);\n    out.push([...alts]);\n  }\n  return out;\n}\n\nfunction numbersIn(text) {\n  return readings(text).flat();\n}\n\nfunction checkAnswer(answer, sources) {\n  const allowed = new Set();\n  for (const src of sources || []) {\n    const text = typeof src === 'string' ? src : JSON.stringify(src ?? '');\n    for (const n of numbersIn(text)) {\n      allowed.add(n);\n      allowed.add(Math.round(n));\n    }\n  }\n  const unsupported = [];\n  for (const alts of readings(answer)) {\n    if (alts.some((n) => Number.isInteger(n) && n <= 10)) continue;\n    if (alts.some((n) => allowed.has(n) || allowed.has(Math.round(n)))) continue;\n    unsupported.push(alts[alts.length - 1]);\n  }\n  return { ok: unsupported.length === 0, unsupported };\n}\n\nfunction fallbackMask(text) {\n  return String(text || '')\n    .replace(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g, '<EMAIL>')\n    // a date written 2026-12-01 is not a phone number (F-079)\n    .replace(/\\+?\\d[\\d .-]{6,}\\d/g, (m) => (/^\\d{4}-\\d{2}-\\d{2}$/.test(m) || m.replace(/\\D/g, '').length < 8 ? m : '<PHONE>'));\n}\n\nfunction plainText(answer) {\n  const lines = String(answer || '').replace(/\\r/g, '').split('\\n').map((l) => l\n    .replace(/^\\s{0,3}#{1,6}\\s+/, '')                      // headings\n    .replace(/^\\s*(?:[-*+\\u2022]|\\d+[.)])\\s+/, '')            // list markers (\"1.\" too: positions are said in words)\n    .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')                // links: keep the text\n    .replace(/(\\*\\*|__)(.+?)\\1/g, '$2')                       // bold\n    .replace(/(^|[^\\w*])[*_]([^*_\\n]+)[*_](?=[^\\w*]|$)/g, '$1$2') // italics\n    .replace(/`([^`]*)`/g, '$1')\n    .replace(/[*_]{2,}/g, '')\n    .trim()).filter(Boolean);\n  return lines.join(' ').replace(/\\s{2,}/g, ' ').trim();\n}\n\nfunction shorten(text, max) {\n  const t = String(text || '');\n  if (!max || Array.from(t).length <= max) return { text: t, cut: false };\n  const head = Array.from(t).slice(0, max).join('');\n  const ends = [...head.matchAll(/[.!?\\u061F\\u06D4](?=\\s|$)/g)].map((m) => m.index + 1);\n  if (ends.length && ends[ends.length - 1] >= max * 0.4) return { text: head.slice(0, ends[ends.length - 1]).trim(), cut: true };\n  const sp = head.lastIndexOf(' ');\n  return { text: (sp > max * 0.4 ? head.slice(0, sp) : head).trim() + '\\u2026', cut: true };\n}\n\nif (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask, plainText, shorten };\n\n// Document templates (platform P9, D-108): kb/templates/<CODE>/<kind>.json, built into the Code nodes. Plain code, no\n// model: which templates a country has, which slots are still empty, and the HTML the Media service turns into a PDF.\n// Only slot values are added to a template's text; every value is escaped; a value for an unknown slot is dropped.\n\nconst DOC_LANGS = ['fr', 'ar', 'en'];\nconst NOTICE = {\n  fr: \"Modèle généré par la plateforme. Ce n'est pas un conseil juridique : lisez les textes cités et, en cas de doute, demandez à un professionnel du droit.\",\n  ar: 'نموذج أنشأته المنصة. هذه ليست استشارة قانونية: اقرأ النصوص المذكورة واستشر مختصًا في القانون عند الشك.',\n  en: 'A model made by the platform. It is not legal advice: read the texts cited and, if in doubt, ask a legal professional.',\n};\nconst LABELS = {\n  fr: { country: 'Pays', template: 'Modèle', sources: 'Sources (lues le)', none: 'Aucune source : ce document ne contient pas de règle de droit.',\n        generated: 'Établi le', room: 'Pièce', item: 'Élément', condition: 'État', notes: 'Remarques', name: 'Nom', share: 'Part',\n        category: 'Sujet', text: 'Règle', topic: 'Sujet', agreement: 'Où en est-on', label: 'Poste', amount: 'Montant',\n        due_day: 'Jour du mois', title: 'Tâche', frequency: 'Fréquence', next: 'Prochaine fois',\n        daily: 'chaque jour', weekly: 'chaque semaine', biweekly: 'toutes les deux semaines', monthly: 'chaque mois' },\n  ar: { country: 'البلد', template: 'النموذج', sources: 'المصادر (تاريخ القراءة)', none: 'لا مصدر: هذه الوثيقة لا تتضمن قاعدة قانونية.',\n        generated: 'حُرّر بتاريخ', room: 'الغرفة', item: 'العنصر', condition: 'الحالة', notes: 'ملاحظات', name: 'الاسم', share: 'الحصة',\n        category: 'الموضوع', text: 'القاعدة', topic: 'الموضوع', agreement: 'أين وصلنا', label: 'البند', amount: 'المبلغ',\n        due_day: 'يوم الشهر', title: 'المهمة', frequency: 'التكرار', next: 'المرة القادمة',\n        daily: 'كل يوم', weekly: 'كل أسبوع', biweekly: 'كل أسبوعين', monthly: 'كل شهر' },\n  en: { country: 'Country', template: 'Template', sources: 'Sources (read on)', none: 'No source: this document states no rule of law.',\n        generated: 'Made on', room: 'Room', item: 'Item', condition: 'Condition', notes: 'Notes', name: 'Name', share: 'Share',\n        category: 'Topic', text: 'Rule', topic: 'Topic', agreement: 'Where we are', label: 'Item', amount: 'Amount',\n        due_day: 'Day of the month', title: 'Chore', frequency: 'How often', next: 'Next time',\n        daily: 'every day', weekly: 'every week', biweekly: 'every two weeks', monthly: 'every month' },\n};\nconst ITEM_COLUMNS = ['room', 'item', 'condition', 'notes'];\n\n// a value kept left to right inside Arabic text (dates, amounts, Latin names): without it \"2026-10-17\" shows as\n// \"17-10-2026\" and \"450.000 TND\" as \"TND 450.000\"\nconst AR = /[\\u0600-\\u06ff]/;\nconst iso = (v) => (AR.test(String(v)) ? `<span class=\"rtl\">${esc(v)}</span>` : `<span class=\"ltr\" dir=\"ltr\">${esc(v)}</span>`);\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\n/** Templates a country offers: its own, then GLOBAL ones for kinds it does not have. A legal template needs sources. */\nfunction templatesFor(all, jurisdiction) {\n  const own = all.filter((t) => t.jurisdiction === jurisdiction && (!t.legal || (t.sources || []).length > 0));\n  const kinds = new Set(own.map((t) => t.kind));\n  return [...own, ...all.filter((t) => t.jurisdiction === 'GLOBAL' && !kinds.has(t.kind))];\n}\n\n/** One slot value, checked and formatted for the text; undefined when empty or not valid. */\nfunction slotValue(slot, v, ctx) {\n  if (v === undefined || v === null || v === '') return undefined;\n  switch (slot.type) {\n    case 'money': {\n      const n = Number(v);\n      if (!Number.isSafeInteger(n) || n <= 0) return undefined;\n      const e = Number.isInteger(ctx.exponent) ? ctx.exponent : 2;\n      return `${(n / 10 ** e).toFixed(e)} ${ctx.currency || ''}`.trim();\n    }\n    case 'date':\n      return /^\\d{4}-\\d{2}-\\d{2}$/.test(String(v)) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) ? String(v) : undefined;\n    case 'period':\n      return /^\\d{4}-(0[1-9]|1[0-2])$/.test(String(v)) ? String(v) : undefined;\n    case 'integer': {\n      const n = Number(v);\n      if (!Number.isInteger(n) || (slot.min !== undefined && n < slot.min) || (slot.max !== undefined && n > slot.max)) return undefined;\n      return String(n);\n    }\n    case 'items': {\n      if (!Array.isArray(v) || v.length === 0) return undefined;\n      const cols = slot.columns || ITEM_COLUMNS;\n      const rows = v.slice(0, slot.max || 80).filter((r) => r && typeof r === 'object')\n        .map((r) => Object.fromEntries(cols.map((c) => [c, String(r[c] ?? '').trim().slice(0, 300)])))\n        .filter((r) => cols.some((c) => r[c]));\n      return rows.length ? { rows, cols } : undefined;\n    }\n    default: {\n      const s = String(v).replace(/\\s+/g, ' ').trim().slice(0, 600);\n      return s || undefined;\n    }\n  }\n}\n\n/** Values for a template: known slots only, checked; missing = required slots still empty. */\nfunction checkValues(tpl, values, ctx) {\n  const out = {};\n  const missing = [];\n  const dropped = Object.keys(values || {}).filter((k) => !(tpl.slots || []).some((s) => s.name === k));\n  for (const s of tpl.slots || []) {\n    const v = slotValue(s, (values || {})[s.name], ctx || {});\n    if (v === undefined) { if (s.required) missing.push(s.name); } else out[s.name] = v;\n  }\n  return { values: out, missing, dropped };\n}\n\nfunction table(v, lang) {\n  const L = LABELS[lang] || LABELS.en;\n  const head = v.cols.map((c) => `<th>${esc(L[c] || c)}</th>`).join('');\n  // a chore's frequency is a code in the data; the table says it in words (living plan, D-115)\n  const cell = (c, x) => (c === 'frequency' && L[x] ? L[x] : x);\n  const body = v.rows.map((r) => `<tr>${v.cols.map((c) => `<td>${esc(cell(c, r[c]))}</td>`).join('')}</tr>`).join('');\n  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;\n}\n\n/** The document HTML (self-contained: no link, image or font from elsewhere). meta: {country, generated_on, notice_version}. */\nfunction renderHtml(tpl, lang, checked, meta) {\n  const T = tpl.text[lang];\n  const L = LABELS[lang] || LABELS.en;\n  const fillText = (p) => esc(p).replace(/\\{\\{\\s*([a-z_]+)\\s*\\}\\}/g, (m, k) => {\n    const v = checked[k];\n    if (v === undefined) return '';\n    return typeof v === 'object' ? '' : (lang === 'ar' ? iso(v) : esc(v));\n  });\n  const lone = (p) => /^\\{\\{\\s*([a-z_]+)\\s*\\}\\}$/.exec(String(p || '').trim());\n  const paras = T.paragraphs.map((p, i) => {\n    // a heading line (no slot) just before a table that is empty is left out with it (living plan, D-115)\n    const nx = lone(T.paragraphs[i + 1]);\n    if (!/\\{\\{/.test(p) && nx && !(checked[nx[1]] && typeof checked[nx[1]] === 'object')) return '';\n    const only = lone(p);\n    if (only) {\n      const v = checked[only[1]];\n      return v && typeof v === 'object' ? table(v, lang) : '';\n    }\n    // a paragraph whose optional slot is empty is left out rather than printed with a gap\n    const slots = [...p.matchAll(/\\{\\{\\s*([a-z_]+)\\s*\\}\\}/g)].map((m) => m[1]);\n    if (slots.some((k) => checked[k] === undefined)) return '';\n    return `<p>${fillText(p)}</p>`;\n  }).filter(Boolean).join('\\n');\n  const sources = (tpl.sources || []).length\n    ? `<ol>${tpl.sources.map((s) => `<li dir=\"ltr\" class=\"src\">${esc(s.cite_as)}: ${esc(s.title)}. ${esc(s.publisher)}. <span dir=\"ltr\">${esc(s.url)}</span> (${esc(s.retrieved_at)})</li>`).join('')}</ol>`\n    : `<p>${esc(L.none)}</p>`;\n  const dir = lang === 'ar' ? 'rtl' : 'ltr';\n  return `<!doctype html><html lang=\"${lang}\" dir=\"${dir}\"><head><meta charset=\"utf-8\"><title>${esc(T.title)}</title><style>\n@page{size:A4;margin:18mm 16mm}body{font-family:\"DejaVu Sans\",sans-serif;font-size:10.5pt;line-height:1.45;color:#111}\nh1{font-size:17pt;margin:0 0 4mm}.meta{font-size:8.5pt;color:#444;margin-bottom:6mm}table{width:100%;border-collapse:collapse;margin:3mm 0}\nth,td{border:0.5pt solid #777;padding:1.5mm 2mm;text-align:start;vertical-align:top}th{background:#eee}\nh2{font-size:11pt;margin:8mm 0 2mm}.notice{font-size:8.5pt;color:#333;border-top:0.5pt solid #999;margin-top:8mm;padding-top:2mm}\nol{padding-inline-start:5mm;font-size:8.5pt}.ltr{direction:ltr;unicode-bidi:embed}.src{direction:ltr;text-align:left}</style></head><body>\n<h1>${esc(T.title)}</h1>\n<p class=\"meta\">${esc(L.country)}: ${lang === 'ar' ? iso(meta.country) : esc(meta.country)} · ${esc(L.template)}: ${lang === 'ar' ? iso(`${tpl.key} v${tpl.version}`) : `${esc(tpl.key)} v${esc(tpl.version)}`} · ${esc(L.generated)} ${lang === 'ar' ? iso(meta.generated_on) : esc(meta.generated_on)}</p>\n${paras}\n<h2>${esc(L.sources)}</h2>\n${sources}\n<p class=\"notice\">${esc(NOTICE[lang] || NOTICE.en)} ${lang === 'ar' ? iso(`(${meta.notice_version})`) : `(${esc(meta.notice_version)})`}</p>\n</body></html>`;\n}\n\nif (typeof module !== 'undefined') module.exports = { templatesFor, checkValues, renderHtml, slotValue, DOC_LANGS, NOTICE, esc };\n\nconst ALL = [{\"key\": \"gb.rent_receipt\", \"kind\": \"rent_receipt\", \"jurisdiction\": \"GB\", \"version\": 1, \"legal\": true, \"languages\": [\"en\"], \"slots\": [{\"name\": \"landlord\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"tenant\", \"type\": \"text\", \"from\": \"payment\", \"required\": true}, {\"name\": \"address\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"period\", \"type\": \"period\", \"from\": \"payment\", \"required\": true}, {\"name\": \"amount\", \"type\": \"money\", \"from\": \"payment\", \"required\": true}, {\"name\": \"paid_on\", \"type\": \"date\", \"from\": \"payment\", \"required\": true}, {\"name\": \"confirmed_on\", \"type\": \"date\", \"from\": \"payment\", \"required\": true}], \"sources\": [{\"cite_as\": \"Landlord and Tenant Act 1985, s.4\", \"title\": \"Landlord and Tenant Act 1985, section 4: Provision of rent books\", \"url\": \"https://www.legislation.gov.uk/ukpga/1985/70/section/4\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"legislation.gov.uk (The National Archives); revised version up to date with changes known to be in force on or before 12 October 2026\"}], \"text\": {\"en\": {\"title\": \"Rent receipt\", \"paragraphs\": [\"I, the undersigned {{landlord}}, landlord of the home at {{address}}, acknowledge receiving from {{tenant}} the sum of {{amount}} as rent for the period {{period}}, paid on {{paid_on}}.\", \"This receipt is made from the payment the landlord confirmed on the platform on {{confirmed_on}}. Where rent is payable weekly, the landlord must provide a rent book or other similar document (Landlord and Tenant Act 1985, s.4).\"]}}}, {\"key\": \"global.house_rules\", \"kind\": \"house_rules\", \"jurisdiction\": \"GLOBAL\", \"version\": 1, \"legal\": false, \"languages\": [\"fr\", \"ar\", \"en\"], \"slots\": [{\"name\": \"household\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"rules\", \"type\": \"items\", \"from\": \"household\", \"required\": true, \"max\": 30, \"columns\": [\"category\", \"text\"]}], \"sources\": [], \"text\": {\"fr\": {\"title\": \"Règles de la maison\", \"paragraphs\": [\"Règles convenues entre les membres du foyer {{household}} :\", \"{{rules}}\"]}, \"ar\": {\"title\": \"قواعد المنزل\", \"paragraphs\": [\"القواعد المتفق عليها بين أفراد المسكن {{household}}:\", \"{{rules}}\"]}, \"en\": {\"title\": \"House rules\", \"paragraphs\": [\"Rules agreed between the members of the household {{household}}:\", \"{{rules}}\"]}}}, {\"key\": \"global.living_plan\", \"kind\": \"living_plan\", \"jurisdiction\": \"GLOBAL\", \"version\": 1, \"legal\": false, \"languages\": [\"fr\", \"ar\", \"en\"], \"origin\": \"Yosr's living plan (branch roommate-matching, 2026-10-16), rebuilt from the household's own data (D-115)\", \"slots\": [{\"name\": \"household\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"start_date\", \"type\": \"date\", \"from\": \"user\", \"required\": false}, {\"name\": \"habits\", \"type\": \"items\", \"from\": \"household\", \"required\": true, \"max\": 6, \"columns\": [\"topic\", \"agreement\"]}, {\"name\": \"costs\", \"type\": \"items\", \"from\": \"household\", \"required\": false, \"max\": 20, \"columns\": [\"label\", \"amount\", \"due_day\", \"share\"]}, {\"name\": \"chores\", \"type\": \"items\", \"from\": \"household\", \"required\": false, \"max\": 30, \"columns\": [\"title\", \"frequency\", \"next\"]}, {\"name\": \"rules\", \"type\": \"items\", \"from\": \"household\", \"required\": false, \"max\": 30, \"columns\": [\"category\", \"text\"]}, {\"name\": \"notes\", \"type\": \"text\", \"from\": \"user\", \"required\": false}], \"sources\": [], \"text\": {\"fr\": {\"title\": \"Plan de vie commune\", \"paragraphs\": [\"Plan de vie commune du foyer {{household}}.\", \"Ce plan s'applique à partir du {{start_date}}.\", \"Habitudes de chacun : ce qui est déjà d'accord et ce qui reste à discuter (sans dire qui a répondu quoi).\", \"{{habits}}\", \"Loyer et factures, avec la part de chacun à parts égales sauf accord différent :\", \"{{costs}}\", \"Tâches et tours :\", \"{{chores}}\", \"Règles de la maison :\", \"{{rules}}\", \"Remarques : {{notes}}\"]}, \"ar\": {\"title\": \"خطة العيش المشترك\", \"paragraphs\": [\"خطة العيش المشترك لمسكن {{household}}.\", \"تُطبّق هذه الخطة ابتداء من {{start_date}}.\", \"عادات كل واحد: ما تم الاتفاق عليه وما يبقى للنقاش (دون ذكر من أجاب بماذا).\", \"{{habits}}\", \"الإيجار والفواتير، مع حصة كل واحد بالتساوي ما لم يُتفق على غير ذلك:\", \"{{costs}}\", \"المهام والأدوار:\", \"{{chores}}\", \"قواعد المنزل:\", \"{{rules}}\", \"ملاحظات: {{notes}}\"]}, \"en\": {\"title\": \"Living plan\", \"paragraphs\": [\"Living plan of the household {{household}}.\", \"This plan applies from {{start_date}}.\", \"How each person lives: what is already agreed and what is left to discuss (without saying who answered what).\", \"{{habits}}\", \"Rent and bills, with each person's share in equal parts unless agreed otherwise:\", \"{{costs}}\", \"Chores and turns:\", \"{{chores}}\", \"House rules:\", \"{{rules}}\", \"Notes: {{notes}}\"]}}}, {\"key\": \"tn.flatmate_agreement\", \"kind\": \"flatmate_agreement\", \"jurisdiction\": \"TN\", \"version\": 1, \"legal\": true, \"languages\": [\"fr\", \"ar\", \"en\"], \"slots\": [{\"name\": \"flatmates\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"address\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"start_date\", \"type\": \"date\", \"from\": \"user\", \"required\": true}, {\"name\": \"shares\", \"type\": \"items\", \"from\": \"user\", \"required\": true, \"max\": 12, \"columns\": [\"name\", \"share\"]}, {\"name\": \"notice_days\", \"type\": \"integer\", \"from\": \"user\", \"required\": true, \"min\": 0, \"max\": 365}, {\"name\": \"rules\", \"type\": \"text\", \"from\": \"household\", \"required\": false}], \"sources\": [{\"cite_as\": \"COC art. 772-774\", \"title\": \"Code des obligations et des contrats (COC), version française : sous-location et cession du bail\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}], \"text\": {\"fr\": {\"title\": \"Accord de colocation\", \"paragraphs\": [\"Entre les colocataires {{flatmates}}, pour le logement situé {{address}}, à partir du {{start_date}}.\", \"Chacun paie la part du loyer et des charges indiquée ci-dessous :\", \"{{shares}}\", \"Un colocataire qui part prévient les autres au moins {{notice_days}} jours à l'avance.\", \"Règles de la maison : {{rules}}\", \"À vérifier : le preneur peut sous-louer ou céder son bail, sauf si le bail l'interdit (COC art. 772). Le colocataire qui a signé le bail reste tenu envers le bailleur et garantit les autres occupants (COC art. 774). Cet accord lie les colocataires entre eux ; il ne change pas le bail signé avec le bailleur.\", \"Signatures des colocataires :\"]}, \"ar\": {\"title\": \"اتفاق السكن المشترك\", \"paragraphs\": [\"بين شركاء السكن {{flatmates}}، بخصوص المسكن الكائن بـ {{address}}، ابتداءً من {{start_date}}.\", \"يدفع كل واحد حصته من الكراء والأعباء كما هي مبيّنة أدناه:\", \"{{shares}}\", \"على من يغادر من الشركاء أن يُعلم الآخرين قبل {{notice_days}} يومًا على الأقل.\", \"قواعد المنزل: {{rules}}\", \"للتثبّت: يجوز للمكتري أن يُكري من الباطن أو أن يحيل الكراء ما لم يمنعه عقد الكراء (الفصل 772 من مجلة الالتزامات والعقود). ويبقى الشريك الذي أمضى عقد الكراء ملزمًا تجاه المكري وضامنًا لبقية الساكنين (الفصل 774). هذا الاتفاق يُلزم الشركاء فيما بينهم ولا يغيّر عقد الكراء المبرم مع المكري. النص الفرنسي للمجلة هو المرجع هنا.\", \"إمضاءات الشركاء:\"]}, \"en\": {\"title\": \"Flatmate agreement\", \"paragraphs\": [\"Between the flatmates {{flatmates}}, for the home at {{address}}, from {{start_date}}.\", \"Each pays the share of rent and charges shown below:\", \"{{shares}}\", \"A flatmate who leaves tells the others at least {{notice_days}} days in advance.\", \"House rules: {{rules}}\", \"To check: the tenant may sublet or assign the lease unless the lease forbids it (COC art. 772). The flatmate who signed the lease stays bound to the landlord and answers for the other occupants (COC art. 774). This agreement binds the flatmates to each other; it does not change the lease signed with the landlord.\", \"Signatures of the flatmates:\"]}}}, {\"key\": \"tn.inventory_entry\", \"kind\": \"inventory_entry\", \"jurisdiction\": \"TN\", \"version\": 1, \"legal\": true, \"languages\": [\"fr\", \"ar\", \"en\"], \"slots\": [{\"name\": \"occupants\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"landlord\", \"type\": \"text\", \"from\": \"household\", \"required\": false}, {\"name\": \"address\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"date\", \"type\": \"date\", \"from\": \"user\", \"required\": true}, {\"name\": \"items\", \"type\": \"items\", \"from\": \"user\", \"required\": true, \"max\": 80}], \"sources\": [{\"cite_as\": \"COC art. 780-783\", \"title\": \"Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}, {\"cite_as\": \"COC art. 742-744\", \"title\": \"Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}], \"text\": {\"fr\": {\"title\": \"État des lieux d'entrée\", \"paragraphs\": [\"Le {{date}}, les parties ont constaté ensemble l'état du logement situé {{address}} et de ses équipements, tel que décrit ci-dessous, à l'entrée de {{occupants}}.\", \"{{items}}\", \"Pourquoi ce document : quand un état des lieux a été fait, le preneur doit rendre la chose telle qu'il l'a reçue ; sans état des lieux, il est présumé l'avoir reçue en bon état (COC art. 780 et 781). Il ne répond pas des pertes dues à l'usage normal ou à la vétusté (COC art. 783).\", \"Signatures des parties :\"]}, \"ar\": {\"title\": \"محضر معاينة حالة المسكن عند الدخول\", \"paragraphs\": [\"بتاريخ {{date}}، عاين الطرفان معًا حالة المسكن الكائن بـ {{address}} وتجهيزاته كما هي مبيّنة أدناه، عند دخول {{occupants}}.\", \"{{items}}\", \"لماذا هذه الوثيقة: إذا حُرّر محضر لحالة المسكن، وجب على المكتري أن يردّ الشيء كما تسلّمه؛ وبدونه يُفترض أنه تسلّمه في حالة حسنة (الفصلان 780 و781 من مجلة الالتزامات والعقود). ولا يُسأل عن النقص الناتج عن الاستعمال العادي أو القِدَم (الفصل 783). النص الفرنسي للمجلة هو المرجع هنا.\", \"إمضاءات الطرفين:\"]}, \"en\": {\"title\": \"Entry inventory\", \"paragraphs\": [\"On {{date}}, the parties recorded together the condition of the home at {{address}} and its equipment, as described below, when {{occupants}} moved in.\", \"{{items}}\", \"Why this document: when an inventory was made, the tenant must return the thing as received; without one, the tenant is presumed to have received it in good condition (COC art. 780 and 781). The tenant is not liable for losses from normal use or age (COC art. 783).\", \"Signatures of the parties:\"]}}}, {\"key\": \"tn.inventory_exit\", \"kind\": \"inventory_exit\", \"jurisdiction\": \"TN\", \"version\": 1, \"legal\": true, \"languages\": [\"fr\", \"ar\", \"en\"], \"slots\": [{\"name\": \"occupants\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"landlord\", \"type\": \"text\", \"from\": \"household\", \"required\": false}, {\"name\": \"address\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"date\", \"type\": \"date\", \"from\": \"user\", \"required\": true}, {\"name\": \"items\", \"type\": \"items\", \"from\": \"user\", \"required\": true, \"max\": 80}], \"sources\": [{\"cite_as\": \"COC art. 780-783\", \"title\": \"Code des obligations et des contrats (COC), version française : restitution de la chose louée, état des lieux\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}, {\"cite_as\": \"COC art. 742-744\", \"title\": \"Code des obligations et des contrats (COC), version française : délivrance et entretien de la chose louée\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1117.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}], \"text\": {\"fr\": {\"title\": \"État des lieux de sortie\", \"paragraphs\": [\"Le {{date}}, les parties ont constaté ensemble l'état du logement situé {{address}} et de ses équipements, tel que décrit ci-dessous, au départ de {{occupants}}.\", \"{{items}}\", \"Pourquoi ce document : quand un état des lieux a été fait, le preneur doit rendre la chose telle qu'il l'a reçue ; sans état des lieux, il est présumé l'avoir reçue en bon état (COC art. 780 et 781). Il ne répond pas des pertes dues à l'usage normal ou à la vétusté (COC art. 783).\", \"Signatures des parties :\"]}, \"ar\": {\"title\": \"محضر معاينة حالة المسكن عند الخروج\", \"paragraphs\": [\"بتاريخ {{date}}، عاين الطرفان معًا حالة المسكن الكائن بـ {{address}} وتجهيزاته كما هي مبيّنة أدناه، عند خروج {{occupants}}.\", \"{{items}}\", \"لماذا هذه الوثيقة: إذا حُرّر محضر لحالة المسكن، وجب على المكتري أن يردّ الشيء كما تسلّمه؛ وبدونه يُفترض أنه تسلّمه في حالة حسنة (الفصلان 780 و781 من مجلة الالتزامات والعقود). ولا يُسأل عن النقص الناتج عن الاستعمال العادي أو القِدَم (الفصل 783). النص الفرنسي للمجلة هو المرجع هنا.\", \"إمضاءات الطرفين:\"]}, \"en\": {\"title\": \"Exit inventory\", \"paragraphs\": [\"On {{date}}, the parties recorded together the condition of the home at {{address}} and its equipment, as described below, when {{occupants}} moved out.\", \"{{items}}\", \"Why this document: when an inventory was made, the tenant must return the thing as received; without one, the tenant is presumed to have received it in good condition (COC art. 780 and 781). The tenant is not liable for losses from normal use or age (COC art. 783).\", \"Signatures of the parties:\"]}}}, {\"key\": \"tn.rent_receipt\", \"kind\": \"rent_receipt\", \"jurisdiction\": \"TN\", \"version\": 1, \"legal\": true, \"languages\": [\"fr\", \"ar\", \"en\"], \"slots\": [{\"name\": \"landlord\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"tenant\", \"type\": \"text\", \"from\": \"payment\", \"required\": true}, {\"name\": \"address\", \"type\": \"text\", \"from\": \"household\", \"required\": true}, {\"name\": \"period\", \"type\": \"period\", \"from\": \"payment\", \"required\": true}, {\"name\": \"amount\", \"type\": \"money\", \"from\": \"payment\", \"required\": true}, {\"name\": \"paid_on\", \"type\": \"date\", \"from\": \"payment\", \"required\": true}, {\"name\": \"confirmed_on\", \"type\": \"date\", \"from\": \"payment\", \"required\": true}], \"sources\": [{\"cite_as\": \"COC art. 768-770\", \"title\": \"Code des obligations et des contrats (COC), version française : obligations du preneur (paiement du loyer)\", \"url\": \"https://www.jurisitetunisie.com/tunisie/codes/coc/Coc1122.htm\", \"retrieved_at\": \"2026-10-17\", \"publisher\": \"Jurisite Tunisie (site privé qui reproduit le code ; le portail officiel legislation.tn refuse la lecture automatique)\"}], \"text\": {\"fr\": {\"title\": \"Quittance de loyer\", \"paragraphs\": [\"Je soussigné(e) {{landlord}}, bailleur du logement situé {{address}}, reconnais avoir reçu de {{tenant}} la somme de {{amount}} au titre du loyer de la période {{period}}, payée le {{paid_on}}.\", \"Cette quittance est établie à partir du paiement confirmé par le bailleur sur la plateforme le {{confirmed_on}}. Elle concerne un loyer échu ; une quittance de loyers non échus pour plus d'un an n'est opposable aux tiers qu'enregistrée (COC art. 769).\"]}, \"ar\": {\"title\": \"وصل خلاص الكراء\", \"paragraphs\": [\"أنا الممضي أسفله {{landlord}}، مكري المسكن الكائن بـ {{address}}، أشهد أنني تسلمت من {{tenant}} مبلغ {{amount}} بعنوان كراء الفترة {{period}}، دُفع بتاريخ {{paid_on}}.\", \"حُرّر هذا الوصل انطلاقًا من الدفع الذي أكّده المكري على المنصة بتاريخ {{confirmed_on}}. وهو يخص كراءً حلّ أجله؛ الوصل عن كراء لم يحلّ أجله لأكثر من سنة لا يُحتج به على الغير إلا إذا سُجّل (الفصل 769 من مجلة الالتزامات والعقود، النص الفرنسي هو المرجع هنا).\"]}, \"en\": {\"title\": \"Rent receipt\", \"paragraphs\": [\"I, the undersigned {{landlord}}, landlord of the home at {{address}}, acknowledge receiving from {{tenant}} the sum of {{amount}} as rent for the period {{period}}, paid on {{paid_on}}.\", \"This receipt is made from the payment the landlord confirmed on the platform on {{confirmed_on}}. It covers rent that was due; a receipt for rent not yet due for more than one year binds third parties only if it is registered (COC art. 769).\"]}}}];\nconst v = $('Validate').first().json;\nconst row = $input.first().json || {};\nconst fr = row.r || null;\nconst pr = row.p || null;\nconst cfg = row.cfg || {};\nconst gw = v.gw;\nif (!fr || fr.error) {\n  return [{ json: { ok: false, gw, status: fr ? fr.status : 500, error: fr ? { ...fr.error, details: fr.error.details || [] }\n    : { code: 'INTERNAL', message: 'Internal error', details: [] } } }];\n}\nconst H = fr.data;\nconst kinds = templatesFor(ALL, H.jurisdiction_code).map((t) => t.kind).filter((k) => k !== 'rent_receipt');\nconst base = { gw, household_id: H.household_id, user_id: gw.ctx.user_id, request_id: gw.request_id || gw.ctx.request_id || null,\n  t0: Date.now(), since: new Date().toISOString(), session_id: `docs:${gw.ctx.user_id}:${H.household_id}`,\n  model: (pr && pr.model) || cfg['llm.default_model'] || null, keep_alive: cfg['llm.keep_alive'] || '10m',\n  num_ctx: Number(cfg['documents.num_ctx'] || 8192), max_iterations: Number(cfg['documents.agent_max_iterations'] || 6),\n  memory_turns: Number(cfg['documents.agent_memory_turns'] || 4), prompt_version_id: pr ? pr.version_id : null };\nif (String(cfg['documents.agent_enabled'] ?? 'true') !== 'true') {\n  return [{ json: { ok: false, gw, status: 503, error: { code: 'UPSTREAM_UNAVAILABLE', message: 'The document assistant is off', details: [{ issue: 'agent_off' }] } } }];\n}\nconst m = pr && /##\\s*system\\s*\\n([\\s\\S]*?)\\n##\\s*user\\s*\\n([\\s\\S]*)$/i.exec(pr.template || '');\nif (!m) return [{ json: { ok: false, gw, status: 503, error: { code: 'UPSTREAM_UNAVAILABLE', message: 'The document assistant is unavailable', details: [{ issue: 'prompt_missing' }] } } }];\nconst text = fallbackMask(String((v.input.body || {}).text || '')).replace(/<\\/?message>/gi, (t) => t.replace('<', '‹').replace('>', '›'));\nconst lang = ((v.gw.ctx || {}).lang || 'fr').slice(0, 2);\nconst vars = { message: text, jurisdiction: H.jurisdiction_code, today: String(H.today), language: ['fr', 'ar', 'en'].includes(lang) ? lang : 'fr',\n  kinds: kinds.join(', ') };\nconst fill = (t) => t.replace(/\\{\\{\\s*([a-z_]+)\\s*\\}\\}/gi, (x, k) => (k in vars ? String(vars[k]) : x));\nreturn [{ json: { ...base, ok: true, language: vars.language, kinds, system: fill(m[1].trim()), prompt: fill(m[2].trim()),\n  num_predict: (pr.params || {}).num_predict || 400 } }];\n"
+      }
+    },
+    {
+      "id": "0531729c-4698-5572-9a49-0bc407410068",
+      "name": "Agent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ef907e0f-343e-5591-acde-f34f42d7d728",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "27f02fe9-f8f8-5350-887c-912dc6b3220d",
+      "name": "Document agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1980,
+        -300
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "={{ $json.system }}",
+          "maxIterations": "={{ $json.max_iterations }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e6fe1b16-ffb4-5d35-b067-e797f3fefe78",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        -60
+      ],
+      "parameters": {
+        "model": "={{ $('Agent input').first().json.model }}",
+        "options": {
+          "temperature": 0,
+          "think": false,
+          "keepAlive": "={{ $('Agent input').first().json.keep_alive }}",
+          "numCtx": "={{ $('Agent input').first().json.num_ctx }}",
+          "numPredict": "={{ $('Agent input').first().json.num_predict }}"
+        }
+      },
+      "credentials": {
+        "ollamaApi": {
+          "id": "fsCredOllama0001",
+          "name": "Ollama (local)"
+        }
+      }
+    },
+    {
+      "id": "a5b0fa5d-4670-51bf-8de9-51b9a6bf9be2",
+      "name": "Chat memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1980,
+        -60
+      ],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Agent input').first().json.session_id }}",
+        "tableName": "agent_memory.chat_histories",
+        "contextWindowLength": "={{ $('Agent input').first().json.memory_turns }}"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      }
+    },
+    {
+      "id": "12741390-ac39-5ec6-8cbd-6561be681183",
+      "name": "household_facts",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2120,
+        -60
+      ],
+      "parameters": {
+        "description": "What the platform knows about the home: country, flatmates, owner member, whether the address is known, house rules, document kinds offered. No input.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsPf5a3ea4753753",
+          "mode": "id",
+          "cachedResultName": "wf.documents.tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tool": "household_facts",
+            "kind": "",
+            "args": "",
+            "user_id": "={{ $('Agent input').first().json.user_id }}",
+            "household_id": "={{ $('Agent input').first().json.household_id }}",
+            "language": "={{ $('Agent input').first().json.language }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tool",
+              "displayName": "tool",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "args",
+              "displayName": "args",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "household_id",
+              "displayName": "household_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "ef9b6a05-0d30-59d9-ab4b-6defc3489cc1",
+      "name": "template_slots",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2260,
+        -60
+      ],
+      "parameters": {
+        "description": "For one document kind: the values the platform fills and the values to ask the person (to_ask), with their types. Input: kind.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsPf5a3ea4753753",
+          "mode": "id",
+          "cachedResultName": "wf.documents.tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tool": "template_slots",
+            "kind": "={{ $fromAI('kind', 'The document kind', 'string') }}",
+            "args": "",
+            "user_id": "={{ $('Agent input').first().json.user_id }}",
+            "household_id": "={{ $('Agent input').first().json.household_id }}",
+            "language": "={{ $('Agent input').first().json.language }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tool",
+              "displayName": "tool",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "args",
+              "displayName": "args",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "household_id",
+              "displayName": "household_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "9a98c7b8-249b-5ca0-a3bd-43ccc273802e",
+      "name": "propose_document",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        -60
+      ],
+      "parameters": {
+        "description": "Store a proposal the person will check and confirm. Input: kind, language (fr, ar or en) and values, a JSON object with only the values of to_ask the person gave. Returns what is still missing.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "fsPf5a3ea4753753",
+          "mode": "id",
+          "cachedResultName": "wf.documents.tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tool": "propose_document",
+            "kind": "={{ $fromAI('kind', 'The document kind', 'string') }}",
+            "args": "={{ JSON.stringify({ kind: $fromAI('kind', 'The document kind', 'string'), language: $fromAI('language', 'fr, ar or en', 'string'), values: $fromAI('values', 'JSON object with the values the person gave', 'string') }) }}",
+            "user_id": "={{ $('Agent input').first().json.user_id }}",
+            "household_id": "={{ $('Agent input').first().json.household_id }}",
+            "language": "={{ $('Agent input').first().json.language }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tool",
+              "displayName": "tool",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "args",
+              "displayName": "args",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "household_id",
+              "displayName": "household_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      }
+    },
+    {
+      "id": "cd80250e-8c1b-53ae-a0a8-a8b43f473a75",
+      "name": "Check answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.documents_assistant > \"Check answer\": the agent's sentence (plain text, shortened) and a trace step without\n// the person's text (D-062). The proposal shown comes from the database (\"Last draft\"), not from the model's text.\n// A3 Match agent checks (D-084), shared by the agent workflow and the unit tests.\n//  - toolCalls(steps): the AI Agent node's intermediate steps as [{tool, input, output}] (output parsed when JSON).\n//  - numbersIn(text): every reading of every number written in a text (see readings).\n//  - checkAnswer(answer, sources): every number of two digits or more in the answer must appear in one of the\n//    sources (the user's message, the tool results). Small numbers (result positions, counts up to 10) pass.\n//  - fallbackMask(text): e-mails and long digit runs masked, used only when the Text service did not answer.\n//  - plainText(answer): Markdown removed (bold, italics, headings, list markers, links), lines joined (D-085).\n//  - shorten(text, max): cut at the last sentence end that fits, else at a word, with an ellipsis (D-085).\n\nfunction toolCalls(steps) {\n  return (Array.isArray(steps) ? steps : []).map((s) => {\n    const a = s.action || {};\n    let out = s.observation;\n    if (typeof out === 'string') { try { out = JSON.parse(out); } catch (e) { /* keep the text */ } }\n    if (Array.isArray(out) && out.length === 1) out = out[0];          // a workflow tool answers with its items\n    let input = a.toolInput;\n    if (typeof input === 'string') { try { input = JSON.parse(input); } catch (e) { /* keep the text */ } }\n    return { tool: a.tool || null, input: input ?? null, output: out ?? null };\n  });\n}\n\n// Each number written in a text, with its possible readings: \"450.000\" is 450 (Tunisian dinars, three decimals) or\n// 450000 (dot as thousands separator); \"1.225.000\" is 1225000; \"450,5\" is 450.5.\nfunction readings(text) {\n  const out = [];\n  for (const m of String(text || '').matchAll(/\\d{1,3}(?:\\.\\d{3})+(?!\\d|,\\d)|\\d+(?:[.,]\\d+)?/g)) {\n    const raw = m[0];\n    const alts = new Set();\n    if (/^\\d{1,3}(?:\\.\\d{3})+$/.test(raw)) alts.add(Number(raw.replace(/\\./g, '')));\n    const v = Number(raw.replace(',', '.'));\n    if (Number.isFinite(v)) alts.add(v);\n    out.push([...alts]);\n  }\n  return out;\n}\n\nfunction numbersIn(text) {\n  return readings(text).flat();\n}\n\nfunction checkAnswer(answer, sources) {\n  const allowed = new Set();\n  for (const src of sources || []) {\n    const text = typeof src === 'string' ? src : JSON.stringify(src ?? '');\n    for (const n of numbersIn(text)) {\n      allowed.add(n);\n      allowed.add(Math.round(n));\n    }\n  }\n  const unsupported = [];\n  for (const alts of readings(answer)) {\n    if (alts.some((n) => Number.isInteger(n) && n <= 10)) continue;\n    if (alts.some((n) => allowed.has(n) || allowed.has(Math.round(n)))) continue;\n    unsupported.push(alts[alts.length - 1]);\n  }\n  return { ok: unsupported.length === 0, unsupported };\n}\n\nfunction fallbackMask(text) {\n  return String(text || '')\n    .replace(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g, '<EMAIL>')\n    // a date written 2026-12-01 is not a phone number (F-079)\n    .replace(/\\+?\\d[\\d .-]{6,}\\d/g, (m) => (/^\\d{4}-\\d{2}-\\d{2}$/.test(m) || m.replace(/\\D/g, '').length < 8 ? m : '<PHONE>'));\n}\n\nfunction plainText(answer) {\n  const lines = String(answer || '').replace(/\\r/g, '').split('\\n').map((l) => l\n    .replace(/^\\s{0,3}#{1,6}\\s+/, '')                      // headings\n    .replace(/^\\s*(?:[-*+\\u2022]|\\d+[.)])\\s+/, '')            // list markers (\"1.\" too: positions are said in words)\n    .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')                // links: keep the text\n    .replace(/(\\*\\*|__)(.+?)\\1/g, '$2')                       // bold\n    .replace(/(^|[^\\w*])[*_]([^*_\\n]+)[*_](?=[^\\w*]|$)/g, '$1$2') // italics\n    .replace(/`([^`]*)`/g, '$1')\n    .replace(/[*_]{2,}/g, '')\n    .trim()).filter(Boolean);\n  return lines.join(' ').replace(/\\s{2,}/g, ' ').trim();\n}\n\nfunction shorten(text, max) {\n  const t = String(text || '');\n  if (!max || Array.from(t).length <= max) return { text: t, cut: false };\n  const head = Array.from(t).slice(0, max).join('');\n  const ends = [...head.matchAll(/[.!?\\u061F\\u06D4](?=\\s|$)/g)].map((m) => m.index + 1);\n  if (ends.length && ends[ends.length - 1] >= max * 0.4) return { text: head.slice(0, ends[ends.length - 1]).trim(), cut: true };\n  const sp = head.lastIndexOf(' ');\n  return { text: (sp > max * 0.4 ? head.slice(0, sp) : head).trim() + '\\u2026', cut: true };\n}\n\nif (typeof module !== 'undefined') module.exports = { toolCalls, readings, numbersIn, checkAnswer, fallbackMask, plainText, shorten };\n\nconst a = $('Agent input').first().json;\nconst r = $('Document agent').first().json || {};\nconst raw = typeof r.output === 'string' ? r.output.trim() : '';\nconst err = r.error ? String(r.error.message || r.error).slice(0, 300) : null;\nconst calls = toolCalls(r.intermediateSteps);\nconst answer = raw ? shorten(plainText(raw), 500).text : null;\nconst step = { agent: 'A6_document_agent', prompt_version_id: a.prompt_version_id, model: a.model,\n  input: { kinds: a.kinds }, output: { answer_chars: answer ? Array.from(answer).length : 0, proposals: calls.filter((x) => x.tool === 'propose_document').length },\n  tool_calls: calls.map((x) => ({ tool: x.tool })), latency_ms: Date.now() - a.t0, tokens_in: null, tokens_out: null,\n  error: err || (raw ? null : 'no_answer') };\nreturn [{ json: { ok: !err && !!raw, answer, step, params: [a.user_id, JSON.stringify({ household_id: a.household_id, since: a.since })] } }];\n"
+      }
+    },
+    {
+      "id": "fa59b684-70f2-5ade-acc2-ae75bcd3e942",
+      "name": "Last draft",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2420,
+        -300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select api.document_draft_last($1::uuid, $2::jsonb) as r",
+        "options": {
+          "queryReplacement": "={{ $json.params }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "id": "a87cee37-688c-5346-aca4-8a0d0c4538f6",
+      "name": "Build result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// wf.api.documents_assistant > \"Build result\": the answer and the proposal stored in this request (if any). Making\n// the PDF is a separate call the person confirms: POST /v1/households/{id}/documents {draft_id}.\nconst a = $('Agent input').first().json;\nconst c = $('Check answer').first().json;\nconst d = ($input.first().json || {}).r || null;\nif (!c.ok) {\n  return [{ json: { ok: false, gw: a.gw, status: 503, steps: [c.step], error: { code: 'UPSTREAM_UNAVAILABLE',\n    message: 'The document assistant is unavailable', details: [{ issue: c.step.error || 'agent_failed' }] } } }];\n}\nreturn [{ json: { ok: true, gw: a.gw, status: 200, steps: [c.step], data: { answer: c.answer,\n  draft: d && d.data ? d.data.draft : null, language: a.language } } }];\n"
+      }
+    },
+    {
+      "id": "8e4663a4-7623-502d-b243-327d459e9b15",
+      "name": "Envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Shared by every API workflow > \"Envelope\"\n// Input: either a handler result {ok:true, status, data, gw} or a rejection\n// from the gateway or a handler {ok:false, status, error | replay+response}.\n// Output: {status, response, finish} where finish is the app.api_finish payload.\nconst x = $input.first().json;\nconst gw = x.gw || x;                       // handlers carry the gateway item in x.gw\nconst t0 = gw.t0 || Date.now();\nconst latency = Date.now() - t0;\nconst requestId = gw.request_id || (gw.ctx && gw.ctx.request_id) || null;\nlet status, response;\nif (x.replay) {\n  status = x.status;\n  response = x.response;                    // stored response, returned unchanged\n} else if (x.ok) {\n  status = x.status || 200;\n  response = { request_id: requestId, data: x.data ?? {}, meta: { latency_ms: latency, ...(x.meta || {}) } };\n} else {\n  status = x.status || 500;\n  const e = x.error || { code: 'INTERNAL', message: 'Internal error', details: [] };\n  response = { request_id: requestId, error: { code: e.code, message: e.message, details: e.details || [] } };\n}\nconst finish = {\n  request_id: requestId,\n  workflow: $workflow.name,\n  n8n_execution_id: String($execution.id),\n  user_id: (gw.ctx && gw.ctx.user_id) || '',\n  channel: 'api',\n  status_code: status,\n  latency_ms: latency,\n  error_code: response && response.error ? response.error.code : null,\n  idempotency: gw.idempotency || null,\n  idempotency_replay: !!x.replay,\n  response_body: response,\n  result_user_id: x.result_user_id || null,\n  // agent steps of the request (spec 8.3), written to ai.agent_steps with the execution\n  steps: Array.isArray(x.steps) ? x.steps : [],\n  // reason and detail go to ai.executions.error only, never to the client\n  error_detail: x.log ? [x.log.reason, x.log.detail].filter(Boolean).join(': ').slice(0, 500) : null,\n};\nconst headers = { 'X-Request-Id': requestId || '', 'Cache-Control': 'no-store' };\nif (status === 429) {\n  const d = (response.error && response.error.details || []).find((y) => y.retry_after_s);\n  if (d) headers['Retry-After'] = String(d.retry_after_s);\n}\nreturn [{ json: { status, response, finish, headers } }];\n"
+      }
+    },
+    {
+      "id": "b0e65565-f981-51f0-bc19-0f787d0a68bc",
+      "name": "Finish",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3080,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select app.api_finish($1::jsonb) as finished",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json.finish) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fsCredPgWorker01",
+          "name": "Flatshare DB (n8n_worker)"
+        }
+      },
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "4a851adc-bb6d-58c7-8d0f-a5d06ab692d7",
+      "name": "Rate limited?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3300,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "abfdc37f-1ccc-58a5-b600-27dc8e9f477e",
+              "leftValue": "={{ $('Envelope').first().json.status === 429 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "98046ea2-defb-5dd4-8c83-26d71dd4eb5d",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3520,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Envelope').first().json.response }}",
+        "options": {
+          "responseCode": "={{ $('Envelope').first().json.status }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "X-Request-Id",
+                "value": "={{ $('Envelope').first().json.headers['X-Request-Id'] }}"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "e1ac53e3-9b3d-5b3f-8fc5-2555701f027e",
+      "name": "Respond 429",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3520,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Envelope').first().json.response }}",
+        "options": {
+          "responseCode": "={{ $('Envelope').first().json.status }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "X-Request-Id",
+                "value": "={{ $('Envelope').first().json.headers['X-Request-Id'] }}"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              },
+              {
+                "name": "Retry-After",
+                "value": "={{ $('Envelope').first().json.headers['Retry-After'] || '60' }}"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gateway": {
+      "main": [
+        [
+          {
+            "node": "Gateway ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gateway ok?": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "household_facts": {
+      "ai_tool": [
+        [
+          {
+            "node": "Document agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "template_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "Document agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "propose_document": {
+      "ai_tool": [
+        [
+          {
+            "node": "Document agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envelope": {
+      "main": [
+        [
+          {
+            "node": "Finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finish": {
+      "main": [
+        [
+          {
+            "node": "Rate limited?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rate limited?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate limited?": {
+      "main": [
+        [
+          {
+            "node": "Respond 429",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context": {
+      "main": [
+        [
+          {
+            "node": "Agent input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent input": {
+      "main": [
+        [
+          {
+            "node": "Agent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent?": {
+      "main": [
+        [
+          {
+            "node": "Document agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document agent": {
+      "main": [
+        [
+          {
+            "node": "Check answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check answer": {
+      "main": [
+        [
+          {
+            "node": "Last draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last draft": {
+      "main": [
+        [
+          {
+            "node": "Build result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build result": {
+      "main": [
+        [
+          {
+            "node": "Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Document agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Document agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "fsOpsErrorHndl01",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "api"
+    },
+    {
+      "name": "v1"
+    },
+    {
+      "name": "platform"
+    }
+  ]
+}

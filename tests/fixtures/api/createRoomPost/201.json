@@ -1,0 +1,16 @@
+{
+  "request_id": "1a0dd46c-e501-4833-b584-eedf2c920b4c",
+  "data": {
+    "next": {
+      "edit": "/owner/listings/b94778dc-b0fc-4dc4-b4b3-f6b68fba7bbd",
+      "photos": "/v1/listings/b94778dc-b0fc-4dc4-b4b3-f6b68fba7bbd/media/presign",
+      "submit": "/v1/listings/b94778dc-b0fc-4dc4-b4b3-f6b68fba7bbd/submit"
+    },
+    "status": "draft",
+    "listing_id": "b94778dc-b0fc-4dc4-b4b3-f6b68fba7bbd",
+    "household_id": "c28278ee-24cb-4cc7-ab7d-0a706d17f024"
+  },
+  "meta": {
+    "latency_ms": 240
+  }
+}

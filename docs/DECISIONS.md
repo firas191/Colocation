@@ -924,6 +924,575 @@ Proposed and approved by the owner on 2026-10-16 ("lets start"). The plan is `do
   at run time compose still refuses to start without `BETTER_AUTH_SECRET`. Checked in the sandbox: 2 such lines
   without the change, 0 with it.
 
+### D-102 Platform P3: owners post, publish and manage their listings
+
+- **`POST /v1/listings/{id}/submit`** (new, additive). Only a draft is submitted. It needs a rent, a place found on
+  the map (the exact point the owner gave with PATCH, else the neighbourhood then the city through the gazetteer)
+  and at least one photo that was not rejected; what is missing comes back as 422 details
+  `{field: rent | place | photos, issue: required | place_not_found}`. An analysis job still queued or running gives
+  409 (`{field: analysis, issue: running}`), so the owner does not publish fields the analysis is about to rewrite.
+  A published listing submitted again answers 200 with the same data and writes nothing, so a retry without the
+  idempotency key is harmless. Any other status is 409 `status_not_allowed`; an archived listing goes back with
+  `PATCH {status: published}` as before (D-088). Publication sets the title (the first line of the text, as the
+  automatic publication of D-083 does), the exact point (never shown) from which the public point is fuzzed, an
+  `extraction.publication` record (`mode: owner`, `checked: false`, the analysis issues still open), an audit row
+  and the owner's notification `listing_published`. The listing is embedded in the same request; if the embedding
+  fails it stays published with the warning `embedding_pending`, the embed job fills it later. From P8 the trust job
+  takes the place of the direct publication (PLATFORM_SPEC 3.5); `listing.auto_publish` stays off for the website.
+- **Why a photo is required.** A listing without a photo is what the trust work of P8 flags first, and the done-when
+  of P3 has three photos. It is one rule in `app.listing_readiness`, easy to change.
+- **Analysis issues after corrections.** The issues of the analysis are kept as they were found. What the owner
+  still needs to look at is computed: an issue no longer applies once the owner set the field it is about
+  (rent: scope, assumed currency, unknown range; deposit; available date; furnished and amenities against the
+  photos), and the rent issues no longer apply once there is a rent. The others (for example a phone number in the
+  text) stay shown; they do not block publication.
+- **`GET /v1/me/listings`** (new). `app.owner_listings` is the owner assistant's numbered view, and it writes the
+  numbering into the assistant's session, so it is not reused as such. `app.me_listings` reads the same order
+  (newest first, rejected ones left out, first 10) and returns the same number, so "annonce 2" in the panel means the
+  second card of the list. Rent as `Money`, what each draft still needs, the last analysis job, and the actions that
+  apply (`edit`, `analyze`, `submit`, `archive`, `republish`, `view`) so the page shows buttons without knowing the
+  rules. Paging by `cursor` (`<created_at in µs>_<id>`) and `meta.next_cursor` (PLATFORM_SPEC 8); filters `status`
+  and `listing_id` (the posting page reads one listing this way).
+- **These functions are in schema `app`, not `api`.** `app.listings` is a table from before the platform, which
+  `n8n_worker` reads and the existing listing workflows write. The functions check the owner themselves and answer
+  404 for anyone else's listing (rule 2.5); pgTAP and contract tests check both directions. No new table in P3.
+- **D-077's open point closed.** `app.store_listing_extraction` no longer overwrites a column the owner changed
+  (from the diffs in `extraction.owner_changes`), and keeps `owner_changes` and `publication` when the new analysis
+  replaces the rest of `extraction`. It records which columns it kept in `kept_owner_fields`.
+- **Website.** `/owner/new` (text and country), `/owner/listings/[id]` (photos with the photo consent asked on the
+  spot when it was not given at sign-up, analysis with its progress, the fields to check with only the changed ones
+  sent to PATCH, publication, then archive and publish again), `/owner/listings` (tabs by status, the owner assistant
+  panel). The browser sends the photo bytes to the presigned URLs itself. The Playwright test runs with
+  `vision.enabled` off, like the P2 tests, and with a test place of its own in TN, because the gazetteer differs
+  between the PC and the sandbox.
+
+### D-103 Platform P4: messages, blocks, visits, applications, reports
+
+- **19 new operations, all additive** (openapi.yaml): `POST/GET /v1/conversations`, `GET/POST
+  /v1/conversations/{id}/messages`, `POST .../read`; `POST/GET /v1/me/blocks`, `DELETE /v1/me/blocks/{user_id}`;
+  `GET/PUT /v1/listings/{id}/visit-slots`; `POST /v1/visits`, `GET /v1/me/visits`, `POST /v1/visits/{id}/decision`;
+  `POST /v1/listings/{id}/applications`, `GET /v1/me/applications`, `GET /v1/owner/applications`,
+  `POST /v1/applications/{id}/decision`, `POST /v1/applications/{id}/withdraw`; `POST /v1/reports`. Each is one
+  `wf.api.*` workflow of the standard platform shape (validator, one `api.*` call).
+- **Row-level layer** (D-096) for the eight new tables of schema `social` (7.2): RLS enabled and forced; `n8n_worker`
+  has no privilege; the functions run as `app_rls` with the caller set. The policies are 7.3: a conversation and its
+  messages for its members (membership through the helper `social.my_conversations()`, owned by the migration's
+  superuser so a policy never queries its own table); visits and applications for their two parties; a block for
+  both people involved (the blocked side is told "blocked" anyway); visit slots readable by all (only the times, never
+  who booked). Counting a slot's bookings across seekers goes through `social.slot_taken()` for the same reason.
+- **Someone else's resource answers 404**, also for blocking or reporting a user the caller has no conversation,
+  visit or application with, so user ids cannot be probed. Wrong role answers 403 (the applicant accepting, the owner
+  withdrawing). A block answers 409 with `{issue: blocked}` (no new error code, PLATFORM_SPEC 8).
+- **Conversations are about a listing** in P4 (`kind: listing`); one per seeker and listing, reused when the seeker
+  writes again. The other kinds (application, household, direct) come with P5 and P7.
+- **Visits.** The owner gives slots (at most `visits.max_slots`, each up to 12 h, within 180 days; a booked slot is
+  kept when the list is replaced). A request takes a slot; the side that did not ask for the current time confirms or
+  declines; either side proposes another time (the slot is then released) or cancels; the owner marks a past
+  confirmed visit done or no-show. Each visit carries the actions the caller can take now, so the page shows buttons
+  without knowing the rules. One open visit per seeker and listing.
+- **Applications.** One open application per applicant and listing (unique partial index). With "share my profile",
+  the lifestyle fields of the applicant's profile are copied (preferences, languages, dates, budget), never free
+  text (rule 2.6). Accepting only records the decision; the household invite comes in P5. Decisions go to the audit
+  log.
+- **A block ends what is open between the two:** open visits are cancelled, an open application is withdrawn
+  (`decision_code: blocked`), and neither side can write, ask for a visit or apply.
+- **Spam limits** (PLATFORM_SPEC 8): `messages.per_minute` (20) and `reports.per_hour` (10), checked in the functions,
+  429 with `retry_after_s` like the gateway's limit. The numbers are a starting choice, not measured.
+- **Reports** are stored in `app.reports` with the new columns of 7.2 (target type, user, message, status `open`);
+  the moderation pages and triage come in P8. A reporter can only report what they can see.
+- **Notifications** to the other side at each step: `message_received`, `visit_requested`, `visit_confirmed`,
+  `visit_proposed`, `visit_declined`, `visit_cancelled`, `application_received`, `application_accepted`,
+  `application_declined`, `application_withdrawn`. The notifications page now fills their parameters and links to
+  the conversation, the visits or the applications.
+- **Erasure** (7.4): the user's messages are blanked (rows kept for reports), blocks removed, open visits cancelled,
+  applications withdrawn with their message and shared profile cleared, conversations left.
+- **Website.** On a published listing: write to the owner, ask for one of the visit times, apply, report. `/messages`
+  and `/messages/[id]` (read when opened, block, report the other's last message), `/visits`, `/applications`, and
+  the visit times on the owner's listing page.
+- **Tests and one address.** The two-browser test runs both people from one address, so it clears the per-address
+  counters of the API's limit before it starts and before the block step, as the contract tests do (F-045). People
+  behind one shared address in real use share that limit too; not measured (same risk as F-072).
+
+### D-104 Platform P5: households, money, rent and bills, announcements
+
+- **18 new operations** (openapi.yaml), all additive: households (create, mine, get, invite, accept, leave), expenses
+  (list, add with `preview`, delete), balances, settlements, recurring rent and bills (get, put), rent payments
+  (record, list, confirm by the owner member), announcements (list, post). One `api.*` function each, as in P4.
+- **Ten new tables in schema `home`** behind the row-level layer. The policies follow 7.3: every member (the owner
+  member included) sees the household, members, rent and bills, rent payments and announcements; only flatmates see
+  expenses, shares, balances and settlements. Membership helpers `home.my_households()` and
+  `home.my_flatmate_households()` are superuser-owned and only answer about the caller.
+- **Invites.** A code of 12 characters taken from a random UUID (122 random bits), shown once; only its SHA-256 is
+  stored. Valid `household.invite_days` (7) days, usable once. Redeeming a code is done by
+  `home.redeem_invite()`, superuser-owned because the person redeeming is not a member yet and so cannot see the
+  invite under RLS; it checks the code, the date, the use, and adds only the caller. An application the owner accepts
+  becomes a personal invite (no code) when the listing belongs to one of the owner's households.
+- **Money is in minor units** with the household's currency (from its country) and the exponent from
+  `app.currencies`; the website converts what people type. Nothing moves money (rule 2.8).
+- **Splits** (`api.split`, pure SQL): equal gives each the integer part and the leftover minor units one by one in
+  join order; shares divide by weights the same way (a zero weight gets nothing); exact amounts must sum to the
+  total. The shares are written with the expense in the same function, so the sum always equals the amount (pgTAP
+  checks 90 cases: 2 to 6 people, six awkward amounts, three modes).
+- **Balances**: paid minus owed, plus settlements paid, minus settlements received (positive: the others owe you).
+  **Suggested settlements** (`api.settle_plan`): the largest debtor pays the largest creditor until every balance is
+  zero, so at most n - 1 transfers. A deleted expense is kept (audit) and leaves the balances.
+- **Leaving** sets the membership to `left`: the person sees nothing of the household any more; what they paid or
+  shared stays, so the others' balances stay right.
+- **Reminders.** `wf.household.daily` runs at 05:00 UTC and calls `home.daily_reminders()`, which acts for nobody
+  (7.1), works in each household's own date (its timezone), reminds the flatmates `remind_days_before` days before
+  each due date, once per item and due date (`home.reminder_log`), and returns counts only. Tests pass a date, or set
+  `household.today_override` (tests only); the workflow itself only calls the function.
+- **Rent payments** are recorded by a flatmate and confirmed by the owner member (receipts in P9 only for confirmed
+  ones). Without an owner member nobody confirms.
+- **Website**: `/households`, `/join/[code]`, `/households/[id]` (members, invite code, balance, coming up,
+  announcements, leave), `/households/[id]/money` (expenses with a preview of the split, balances, settle-up),
+  `/households/[id]/bills` (recurring items, rent payments, confirmation).
+
+### D-105 Platform P6: chores, shopping list, house rules, calendar, repairs
+
+- **17 new operations** (openapi.yaml), additive: chores (list, add, change, mark a turn done), shopping list (list,
+  add, tick), house rules (get, put), calendar (get between two dates, add and delete an event), issues (list, report,
+  update, photo upload URLs, photo processing). Eight new tables in `home`, behind the row-level layer.
+- **Who sees what** (7.3): chores and the shopping list are the flatmates'; house rules, the calendar's own events and
+  repairs are every member's, the owner member included. The calendar of the owner member therefore has no chore
+  turns (the RLS of the chores decides it, not the calendar function).
+- **Chore rota.** A chore has a rotation (flatmates in turn order) and a next date. `home.daily_chores()`, run by
+  `wf.household.daily` after the reminders, gives every due date to the person after the last assignee among the
+  flatmates still living there, once per chore and date, and moves the next date on by the frequency (daily, weekly,
+  every two weeks, monthly). Someone who leaves is skipped from then on; their past turns stay.
+  `home.next_in_rotation()` is superuser-owned like the membership helpers, because the daily job acts for nobody.
+- **Calendar**: nothing is copied; the function merges the household's events with what it computes for the range
+  (rent and bill due dates, chore turns, members' move dates, the caller's own confirmed visits). At most 92 days at
+  once.
+- **Repairs**: reported by any member; the owner member is told first (`issue_reported_owner`). The owner member
+  moves an issue to acknowledged, in progress or resolved; flatmates comment, close it, or open it again; any other
+  change for the role is 403. Each change is kept in `issue_events` and notified to the other members.
+- **Issue photos** use the same Media service and storage rules as listing photos, not the listing intake workflow
+  (which is tied to listings): upload slots under `uploads/issues/`, presigned PUT URLs, then one call processes each
+  photo (type and size checked, EXIF read then removed, faces and readable text blurred) into `media/issues/`, and the
+  raw uploads are deleted. The list returns signed GET URLs of the processed copies only; at most `issues.max_photos`
+  (6) per issue.
+- **Website**: `/households/[id]/chores`, `/shopping`, `/rules`, `/calendar`, `/issues` (with photo upload), and a
+  section menu that hides what the owner member cannot open.
+
+### D-106 Platform P7: flatmate profiles, compatibility, rooms posted by a household, saved searches
+
+- **8 new operations** (openapi.yaml), additive: the caller's flatmate profile (get, put), browse flatmates (list, one),
+  saved searches (list, save, delete), and `POST /v1/households/{id}/room-posts`. Applications gain an optional
+  `compatibility` field on the owner side. Three new tables in `social` behind the row-level layer.
+- **Compatibility** is `social.compatibility(a, b)` in SQL. It reads an allowlist only: the lifestyle answers of the
+  search profile (`declared_preferences`: schedule, cleanliness, smoking, pets, guests, quiet hours), languages, the
+  budget range (same currency and period), the move-in date (30 days apart or less is a match, setting
+  `compat.move_in_days`) and the distance between the two anchors (setting `compat.distance_km`). A missing answer on
+  either side is "unknown": it is left out of the score, never counted as a mismatch, and shown as "not said". The score
+  is the weight of the matching factors over the weight of the known ones, 0 to 100; with nothing known it is null,
+  not 0. The bio and the headline are shown as written and never read by the function (rule 2.6); a pgTAP test changes
+  the name, e-mail, language, free text and bio and checks the result does not move.
+- **Weights** (`compat.weights`): schedule 15, cleanliness 15, smoking 15, pets 10, guests 10, quiet hours 10,
+  languages 10, budget 10, move-in 5, distance 0. A starting choice by hand, **not measured** against any outcome.
+  Distance is 0 until the website lets people set an area on their profile; a factor with weight 0 is not shown.
+- **With a household**, `social.compatibility_household` is the average over its active flatmates. The owner of a
+  listing linked to a household sees it on an application, only when the applicant shared their profile.
+- **Who appears**: visible profiles of the caller's country (or `jurisdiction=XX`), not the caller, nobody either side
+  blocked (policy on the table, so `GET /v1/flatmates/{id}` answers 404 the same way). The list is ordered by score,
+  then most recently updated; the cursor is an offset (meta.next_cursor). Computing the score for every visible profile
+  on each page is fine at the demo's size; **not measured** beyond it.
+- **No message button on a profile.** A conversation still needs a listing (`POST /v1/conversations`, D-103). Opening
+  conversations between two people without a listing would change that endpoint; left for a later version.
+- **A room posted by a household**: `home.room_post` (superuser-owned, like the membership helpers) checks the caller is
+  an active member, refuses a second open listing (409 `already_posted`), creates the draft with `app.listing_create`,
+  sets `current_flatmates` and links it to the household. The draft is then finished on the owner pages like any
+  other (photos, analysis, submit), so the trust checks of P8 apply to it too.
+- **Saved searches**: the website sends the `/v2/search` parameters it used; the workflow checks them with the same
+  code (`lib/search2_query.js`) and stores them with the function's parameters. No page, ids, map area or profile
+  defaults are saved (a profile can change; the alert must not). At most `saved_searches.max` (10) per user.
+- **Daily alert**: `social.daily_alerts()` runs in `wf.household.daily` after the chores. For each search with alert
+  daily, at most once in 20 hours, it runs `app.search_public_v2` again, keeps listings published after the last run
+  that were never sent for this search, records them in `saved_search_hits` (primary key search + listing) and sends
+  one notification `saved_search_match` with the count. A text query is matched by words only at alert time: the
+  alert does not call the embedding model. The function sets `search_path` to include `public`, because
+  `search_public_v2` names PostGIS and pgvector types without a schema (as earlier functions do, 0002, 0007).
+- Erasure deletes the flatmate profile and the saved searches (7.4).
+
+### D-107 Platform P8: trust check before publication, moderation, reports, message warnings, badges
+
+- **Submit runs the trust check.** `POST /v1/listings/{id}/submit` does the P3 checks, then (setting
+  `trust.enabled`, on by default) runs `wf.trust.assess`, stores a trust report, and applies it. ok: published as in
+  P3, now with `checked: true`. review: the listing waits in `pending_review` for a moderator. block: rejected. The
+  /v1 answer keeps its shapes: 200 with `status: published` (the schema's const), or the documented 409 with new
+  detail issues `{field: trust, issue: in_review | rejected, signals}`. A 202 or a new status in the 200 would have
+  broken /v1, so it was not done. The check is synchronous: on the PC the request lasts as long as the agent
+  (**not measured** yet; `trust_bench.py` reports it). `listing.auto_publish` still publishes without the check, as
+  its description says (testing only; RUNBOOK: off before real users).
+- **Where each signal comes from.** Database (SQL, `app.trust_facts`): photos also used by another owner
+  (`app.find_similar_media`, same owner ignored), price against the benchmark, owner history (new account with
+  several listings, earlier publications without reports), EXIF place far from the listing, photo contradictions
+  from the analysis, contact details in the text. Phrase rules (`kb/packs/<code>/scam_phrases.csv`, GLOBAL plus the
+  country, built into the Code nodes): payment before a visit, payment services, pressure, owner abroad,
+  discriminatory wording. Trust agent A4 (AI Agent node, prompt `P4_trust_assessor` v1, five read-only tools): the
+  wording, with a quote for each signal.
+- **The model cannot decide alone.** Code keeps an agent signal only if its quote is in the listing text, and a
+  payment signal only if the phrase rules found it too; otherwise it becomes `payment_claim_unconfirmed` (-15, never
+  hard). `app.trust_score` caps every signal at the points of `trust.points`, keeps the strongest line per kind,
+  starts at 100, and gives ok from 70, review from 40, block under 40 **only with a hard signal** (`trust.hard_signals`:
+  stolen photo, payment before a visit), else review. This is backend spec 12.2. The points are the spec's initial
+  points; `payment_claim_unconfirmed`, `too_good_price_claim` and `other` are mine. None is tuned yet.
+- **Price benchmark** (`app.price_benchmarks`, `wf.ops.benchmarks` daily at 04:30 UTC): median and quartiles of the
+  monthly rent per country, city and kind. "real" uses published non-synthetic listings; "seed" adds the synthetic
+  demo listings and is used only while real is too small, labelled so (12.3). Fewer than `trust.benchmark_min` (5)
+  comparable listings: `insufficient_data`, no signal. Under 0.6 of the median: -15; under 0.4: -25. Both ratios are
+  a choice, **not measured**.
+- **Phrase lists** are written by hand from the signal descriptions of 12.2; they are not taken from a source. A
+  match right after a negation ("rien n'est payé avant la visite", "لا شيء يدفع قبل الزيارة") does not count. "ma"
+  and "ما" are not negations here: in Tunisian "9bal ma tchouf" means "before you see". The discriminatory list only
+  flags for a moderator (0 points); whether such wording is unlawful depends on the country and is not decided here.
+- **Prompt injection.** The listing text sits alone between `<message>` tags (tags inside it are neutralised), the
+  prompt says it is data, and the rules and database checks do not read the model. A scam that tells the model to
+  pass it keeps its rule signals (contract test, and 6 items of the trust set).
+- **Moderation** (backend spec 12.5): `GET /v1/admin/moderation` and `POST /v1/admin/moderation/{id}/decision`,
+  moderator or admin only (gateway role check and again in SQL). Actions per item: approve, reject, dismiss for
+  listings; hide_message for a reported message; warn for a user. Every decision writes `app.audit_log` (actor,
+  decision, note, code, effect). `app.moderation_queue` gained `evidence`, `message_id`, `reports`, `decision`.
+- **Report triage**: a trigger on `app.reports` opens one item per target (listing, user, message) or raises the open
+  one: scam and discrimination start at priority 3 (others 5; 1 is the most urgent), each further person reporting
+  the same target moves it one step up. No model reads reports (PLATFORM_SPEC 4 allows an optional call; not built).
+- **Message warnings** (rule 2.7, no model): `wf.api.message_send` runs the phrase rules over the text; the codes
+  (payment before a visit, payment service, pressure) are stored in `social.messages.flags` and returned as
+  `warnings` to the receiver only. The message itself is not changed or blocked.
+- **Badges**: `app.user_badges` reads them from stored facts, so they are never stale: `email_confirmed` (an account
+  from the website, which only signs in with a confirmed address), `telegram_linked`, `photos_checked` (a published
+  listing whose last trust check passed and found no photo of another owner). No badge says "verified person".
+  `GET /v1/me` fills `badges` (the field exists since P1) with objects `{code}`, as its schema says.
+- **Trace**: one step `A4_trust_agent` per check, with no listing text (D-062): rule hits, kept and dropped agent
+  signals, tool names, state (answered, failed, no_answer, unparsed, or why the agent was skipped).
+- **Agent entry** in `docs/AI_AGENTS_EXPLAINED.md`: that file is Firas's; the entry for A4 is left to him.
+
+### D-108 Platform P9: documents from templates with primary sources, PDF rendering, Document agent, legal ask
+
+- **Templates** live in `kb/templates/<CODE>/<kind>.json` (README there): slots, the text in each language with
+  `{{slot}}` markers, and the sources with URL and the date they were read. `n8n/build_platform.py` builds them into
+  the Code nodes; nothing reads the files at run time, so there is no sync step on the PC. A legal type is offered for
+  a country only when its template has sources (PLATFORM_SPEC 3.7).
+- **What is offered, and why.** TN: rent receipt (COC art. 768-770), entry and exit inventory (COC art. 780-783,
+  742-744), flatmate agreement (COC art. 772-774), read on 2026-10-17 on jurisitetunisie.com, a private site that
+  reproduces the code, because legislation.tn refuses automated reading (robots.txt). Each PDF says so. GB: rent
+  receipt (Landlord and Tenant Act 1985 s.4, legislation.gov.uk, read 2026-10-17). FR: nothing legal yet: Légifrance
+  could not be read from here (the fetch failed twice), so FR is "not available" and the page says so. House rules are
+  offered everywhere: they state no rule of law, and their PDF says "no source".
+- **The text is the template's.** The paragraphs that mention the law say what the cited article says in plain words
+  (checked against the text read), nothing more. Only slot values are added; every value is escaped; a value for an
+  unknown slot is dropped and named in the answer (`dropped`); a required slot still empty refuses the document (422,
+  one detail per slot). Unit test: the PDF's text minus the template's pieces and the values is empty.
+- **Facts come from the database**: names (members in join order), the owner member, the address, the house rules,
+  and for a receipt the rent payment, which must have been confirmed by the owner member; only the owner member makes
+  receipts, only a flatmate makes the flatmate agreement. An empty household fact (no address) may be typed.
+- **Rendering**: WeasyPrint 66.0 in the Media service (`POST /v1/pdf/render`, keys under `documents/` only, no
+  resource from elsewhere is loaded). The 6.7 test: an Arabic, French and English page rendered in the sandbox and
+  checked by eye (letters joined, right to left) and by extracting the text back (pdfplumber, pdftotext). Arabic text
+  needed dates, amounts and Latin names kept left to right, or "2026-10-17" showed as "17-10-2026"; fixed with
+  isolated spans and checked by eye again. One small page renders in about 0.2 s here (measured once; PC not measured).
+  The Docker image gains Pango and the DejaVu fonts. Downloads are signed GET URLs (900 s) under `documents/`; the
+  proxy now lets signed GETs through for `documents/*` as it does for `media/*`.
+- **Synchronous**: `POST /v1/households/{id}/documents` renders in the request and answers 201, not 202 with a job as
+  the spec table said. A page renders in well under a second; a job would add a status poll for nothing. A failed
+  rendering is stored as failed and answered 503.
+- **No `home.inventory_items` table**: the inventory rows are the document's `inputs`. P10's exit comparison reads
+  them from the two documents.
+- **Document agent A6** (AI Agent node, `P9_document_agent` v1, Postgres chat memory per person and household, tools
+  `household_facts`, `template_slots`, `propose_document` in `wf.documents.tool`). It runs behind its own endpoint,
+  `POST /v1/households/{id}/documents/assistant`, on the documents page. It only proposes: the proposal is a stored
+  draft, checked against the template's slots in code (unknown slots dropped; values the database gives ignored), and
+  the person confirms with `POST .../documents {draft_id}` (a draft is used once). The answer shows the stored draft,
+  not the model's text. It does not make rent receipts (they need a confirmed payment, chosen on the page).
+- **Not done: routing the assistant's `generate_document` intent to A6.** `POST /v1/assistant/message` still answers
+  that intent with "not available yet". Routing it would change that answer, add a household choice to a channel that
+  has none (Telegram), and change the Telegram texts, which are Firas's file. Left for his decision.
+- **`POST /v1/legal/ask`**: straight to the Legal agent A5 with the same masking and checks as the assistant's legal
+  answers (D-087), without the router. The `/legal` page and the guides (`kb.guides`) are not built: the guides would be
+  legal text needing primary sources per country, the same blocker as above. The FR and GB knowledge packs are not
+  written for the same reason.
+- **Evaluation**: `eval/datasets/document_agent_v1.jsonl` (16 requests, labels written before any run) and
+  `scripts/document_bench.py` (`p4.ps1 -Step document-bench`), to run on the PC.
+
+### D-109 Platform P10: moving out, deposits, leaving with a balance, inventory comparison, account deletion, retention
+
+- **10 new operations**, additive: deposits (list, put), the move-out checklist (get, start, tick), the exit
+  inventory comparison, `DELETE /v1/me`. `POST /v1/households/{id}/leave` gains `acknowledge_balance`: a member whose
+  balance is not zero gets 409 `balance_not_settled` with the amount, unless they say they know (PLATFORM_SPEC 3.9).
+  The P5 contract test now sends it; the leave endpoint is part of the same, not yet committed, platform release.
+- **Checklist**: three items the person ticks (tell the flatmates, keys returned, bills moved to another name) and three
+  the API computes (balance settled, an exit inventory made, deposit returned or none recorded). The spec wanted
+  checklist items per country "each with its source": none is included, because no country's notice rules were read
+  from a primary source for this (same reason as FR in D-108). Starting a move-out sets the member to `leaving` and
+  tells the other members.
+- **Deposits** (`home.deposits`): recorded by the owner member, or by the flatmates when the household has no owner
+  member. Once the return is recorded, returned plus the deductions (reason and amount each) must equal the deposit
+  (422 `sum_mismatch`); the flatmate is notified. The owner member sees every deposit, a flatmate their own.
+- **Comparison**: rows of the exit inventory matched to the household's last entry inventory by room and item, case and
+  spaces ignored: same, changed, missing at exit, only at exit. The rows are the documents' stored inputs (no
+  `inventory_items` table, D-108).
+- **Account deletion**: `DELETE /v1/me?confirm=DELETE` (no consent needed: withdrawing consent must not block leaving)
+  runs `app.erase_user` (phase 1) and the platform's erasure triggers (P1 to P10): name, e-mail, sign-in and Telegram
+  ids, profiles, flatmate profile, saved searches, drafts, documents the person made, the Document agent's memory;
+  memberships set to left. Shared records stay without the name: expenses and shares keep the user id, so the other
+  members' balances still add up (pgTAP checks they sum to zero). Files are not deleted inside the request: their keys
+  go into `delete_media` jobs. The website then deletes its own sign-in record and sessions (Better Auth), so the
+  e-mail cannot sign in to the erased account.
+- **Retention** (`wf.ops.retention`, daily 03:30 UTC): `app.retention_run(date)` deletes unused document drafts after 7
+  days, read notifications after 180, saved-search alert records after 180, stored idempotent answers after 2 (settings
+  `retention.*`; all four ages are choices, not measured or taken from a rule). Then it takes the queued `delete_media`
+  jobs (also those `app.erase_user` has queued since phase 1, which nothing processed until now), sends each key list
+  to the Media service's delete and marks the job done, or back to the queue up to five attempts.
+- **Not checked here: the file deletion itself.** The contract test checks the job is queued with the PDF's key; the
+  retention workflow is a schedule and was not run in the sandbox. On the PC, run it once from n8n and check the PDF
+  is gone (RUNBOOK line added).
+
+### D-110 Platform P11: e-mail and Telegram delivery, Telegram linking by code, admin endpoints and pages
+
+- **Delivery** (`wf.notify.dispatch`, every minute): `app.deliveries_take` turns new notifications (less than
+  `notify.max_age_hours`, 24, old) into one delivery per channel the person allows: e-mail when they have an address
+  and e-mail is on, Telegram when a chat is linked and Telegram is on, nothing for the types they keep in the app
+  (`muted`). Each delivery is handed out once (`for update skip locked`), sent with the n8n Send Email node (SMTP
+  credential `Mail (SMTP)`, Mailpit in development) or the Telegram node, and `app.deliveries_done` marks it sent, or
+  queues it again after 1, 2, 4 and 8 minutes; the fifth failure is final with its reason. A delivery left "sending" by
+  a stopped run goes back to the queue after 10 minutes.
+- **The text** is the website's own sentence for the type (`web/messages/<locale>.json`, notifications.types, built
+  into the Code node and formatted by `lib/notify_text.js`, a small ICU subset), in the person's language, plus a link
+  to the page it is about. No other personal detail is added: details stay behind sign-in.
+- **Preferences**: e-mail and Telegram are on by default (a person who signed up gave their address for the account);
+  off is one click on `/account`. Erasure deletes preferences, deliveries and codes.
+- **Telegram linking**: `POST /v1/me/telegram-link` gives an 8-character code (only its SHA-256 is stored, 15 minutes,
+  once). The person sends `/lier CODE` to the bot. **The bot's workflow is Firas's file** (`wf.channel.telegram`), so it
+  is not changed here: `wf.telegram.link` (input `{code, chat_id}`, output `{ok, display_name}` or
+  `{ok: false, error_code}`) is ready for one Execute Workflow node in the bot. Until that node is added, linking works
+  only through `app.telegram_link_redeem` (the contract test does that). A chat already linked to another account is
+  moved to the new one (one account per chat).
+- **SMTP credential**: `scripts/n8n-setup.sh` creates `fsCredSmtp000001` from `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`,
+  `SMTP_USER`, `SMTP_PASSWORD` (compose passes them to `n8n-setup`; Mailpit by default). The sender address is the
+  setting `notify.mail_from`, because Code nodes cannot read the environment.
+- **Admin** (3.12): settings on an allowlist in SQL with a type per key (bool, integer range, URL); a key outside it or a
+  value of the wrong type is 422; each change is in the audit log with the old and new value. Roles: admins only, never
+  their own (so there is always an admin left), logged. Read-only lists for staff: prompts (activation stays a file
+  change, spec 9.5), evaluation runs, knowledge-base sources with their last ingestion step. Traces use the existing
+  admin endpoint. Website: `/admin` with a page for each; the header's staff link goes there.
+
+### D-111 Platform P12: isolation matrix, website safety checks, backup and restore, load script
+
+- **Isolation matrix** (`tests/contract/test_isolation_matrix.py`): one case per operation whose path names a
+  resource, called by a signed-in person with no link to it and a valid body; the answer must be 403 or 404 with the
+  error envelope. The list is checked against `docs/openapi.yaml`, so a new path without a case, or without a reason
+  in `NOT_CHECKED`, fails the test. Not checked, with the reason in the file: the public listing page and its free
+  slots, a visible flatmate profile, and the caller's own blocks and favourites. The test resets the outsider's rate
+  counters between calls; the limiter is not what it measures.
+- **Website safety checks** (`web/tests/safety.test.ts`, run with the other website tests): no raw HTML or `eval`, no
+  `javascript:` links; only `lib/server/api.ts` knows the API address and key; browser code imports no server code
+  and reads no secret environment; only the Better Auth handler accepts writes outside server actions; the origin
+  checks of Next.js and Better Auth are not switched off. No `allowedOrigins` is set: the website is served on one
+  host, and Next.js compares `Origin` with it.
+- **Server-side request forgery** (backend spec 15.4): knowledge-base ingestion is the only workflow that fetches a
+  URL taken from data. Before any request, `lib/url_guard.js` refuses addresses inside the stack or the local network
+  (rules in the file); the source then fails with `refused_address: <reason>` and so does the job. Hosts in the new
+  setting `kb.fetch_allow_hosts` (migration 0033, empty) pass: the KB contract tests put their fixtures server there
+  and empty it afterwards. A public name that resolves to a private address, and redirects, are not checked: that
+  needs a resolver step in front of the HTTP node, and the sources are a list the admin keeps, not user input.
+- **Backup**: `pg_dump` custom format per database (`flatshare`, `n8n`, `auth`), taken in one exported snapshot with
+  a fingerprint from the same snapshot (`scripts/db-fingerprint.sql`: rows per table, owners, grants, row-level
+  rules, functions, policies, triggers, extensions), so the restore can be checked exactly while the stack keeps
+  running. The fingerprint reads the catalog rather than comparing `pg_dump --schema-only` text, because PostgreSQL
+  prints some CHECK constraints of the n8n database differently after a restore (same meaning, different text).
+  Roles are listed without passwords: the passwords live in `.env` and db-bootstrap sets them. Garage is copied as its
+  two volumes with the service stopped for the copy (about a minute; uploads fail meanwhile); an S3-level copy was not
+  chosen because the volumes hold the bucket layout and keys too. `.env` and `secrets\` are not in the backup.
+- **Restore** drops each database and recreates it from its dump with owners and grants, then compares the
+  fingerprint. `RESTORE_CHECK=1` restores into scratch databases instead and drops them, which is what `p12.ps1 -Step
+  backup-check` runs, so the check never touches live data. Backend spec 15.1 asks that a restored database passes
+  the database tests: they run on the restored copy of `flatshare_test` (migrations only). On a copy of the live
+  database they cannot pass, because their fixtures collide with real rows, so there the fingerprint is the check.
+- **Load script** (`scripts/load_bench.py`): workers as separate users, signed like the website, through the proxy.
+  Gateway and message limits are raised for the run and restored in a `finally`. Numbers count only from the PC.
+- **Status** of every P12 item, including what is not done (ablation matrix, accessibility audit, clean-machine
+  README run): `docs/HARDENING.md`.
+
+### D-112 The trust check runs as a job: POST /v2/listings/{id}/submit
+
+- **Why.** On the PC (T-78) the v1 submit with the Trust agent outlasted the contract tests' 30 s client and the
+  website's publish button: the check is synchronous (D-107) and the local model takes tens of seconds. PLATFORM_SPEC
+  6.6 already said the trust check is a 202 job the page polls; D-107 did not follow it because a 202 on
+  `/v1/.../submit` would have changed a /v1 answer. So the job version is a new /v2 path, and /v1 stays as it is.
+- **`POST /v2/listings/{id}/submit`**: the v1 checks (`app.listing_submit_job` calls `app.listing_submit`), the same
+  404, 409 and 422. When the trust check is needed: a `listing_trust` job (one per listing at a time; asking again
+  returns the queued or running one) and 202 with `status_url`. Trust off, or already published: the v1 200.
+- **`wf.listing.trust`** (worker, started by the endpoint and, for a retry, by `wf.jobs.dispatch`): `app.job_start`,
+  `wf.trust.assess`, `app.listing_submit` with the report (published, in review or rejected exactly as in v1,
+  notifications included), the embedding, `app.job_finish`. The job output has `outcome` (published, in_review,
+  rejected, not_submitted) and `signals`. A check that stored no report is retried once (`max_attempts` 2), then the
+  job fails with `trust_check_failed` and the listing stays a draft. The Trust agent's steps go to the trace with the
+  job id as request id (`app.record_job_steps`), like the analysis job.
+- **Website**: the publish panel calls v2, says the listing is being checked, and asks `GET /v1/jobs/{id}` every 3 s.
+- **Tests that depended on the mock** (the Trust and Document agents' answers, `[mock:...]` markers) are now
+  `sandbox_only`, as the other agent tests already were; on the PC the benches measure those agents. The P3 owner
+  tests and the owner e2e run the trust check without the agent. New: a v2 test that runs on the PC with the real
+  model and checks only the job mechanics (202, same job twice, outcome matches the listing's status, A4 step in the
+  trace).
+
+### D-113 P4_trust_assessor v2 after the first full trust bench on the PC
+
+- **What T-79 showed.** With v1 the Trust agent hit its 6-iteration limit on every listing where the phrase lists
+  found something (35 of 100), so on exactly the listings that matter it added nothing, and it made the check 15 s
+  (p50) to 86 s (p95) slower. The rules and database checks alone met both backend spec 2.6 targets on `trust_v1`.
+- **v2** (active): the phrase-list findings go into the user message (`{{found}}`), the prompt no longer lists
+  `text_signals` and allows at most two other tool calls, never the same one twice. The tool stays in the workflow,
+  unused by v2, so v1 can still be run for comparison (`prompts.py activate P4_trust_assessor 1`).
+- **Not decided yet**, until v2 is measured: whether the agent stays on by default. If v2 still adds no verdict the
+  rules miss, turning `trust.agent_enabled` off is the honest default for this PC, and the agent stays for the
+  wording it can judge once a larger model is available. The two honest listings sent to review by a phrase match
+  (trust-067, trust-072) are not tuned away: that would be tuning on the test set.
+
+### D-114 Emna Safer's scam check brought into the trust check of P8
+
+- **Her work** (branch `feat/scam-check`, 5 commits of 2026-10-16, not merged): an A4 scam-check agent with three
+  tools, a single-call detector `P8_scam_detector` with quoted text signals and the amounts written in the text, a
+  50-listing labelled set `p8_scam_v1`, deterministic scoring and unit tests. Measured by her on the PC (detector v1,
+  run e624fa00): scam recall 0.92 (23/25), false alerts 0.12 (3/25), p95 36 s.
+- **Why not merged as a branch**: it is a second trust check next to P8's. Both write `listings.trust_score` and
+  `trust_verdict`, both are called A4, its migration number (0017) is taken, its block needs no hard signal (backend
+  spec 12.2 asks for one, D-107), and nothing calls it. Merging would leave two scores that overwrite each other.
+- **What came in** (migration 0035, `lib/trust_rules.js`, `wf.trust.assess`):
+  - `contact_reused` (database): a phone (last 8 digits) or e-mail of the listing also on another owner's listing that
+    was published or refused; -20, her weight on our scale. Evidence: counts only. `app.trust_facts` is the P8
+    function plus this signal (`app.trust_facts_base`, `app.trust_contact_reuse`).
+  - `price_mismatch`: a rent the detector reads in the text, really written there, 1.5 times or more away from the
+    stored rent (her `mismatchSignal`, ported as is); -20, a choice.
+  - `P8_scam_detector` v1, her prompt and schema unchanged, as `trust.model = detector`: one `wf.llm.call` instead of
+    the agent. Her five types map to ours (off_platform_payment -> untraceable_payment, advance_payment ->
+    payment_before_viewing, urgency -> urgency_pressure, external_contact -> contact_off_platform); its quotes go
+    through the same checks as the agent's, so a payment signal the phrase lists did not also find stays
+    `payment_claim_unconfirmed`. The agent stays the default until the PC comparison.
+  - The check's note (the agent's summary, or the detector's evidence lines) on the moderation item (`note`, an
+    added field) and page.
+  - `p8_scam_v1` and its guide, unchanged, as a second set for `trust_bench.py`; it was written apart from our phrase
+    lists, so it is not a set we tuned on. `p4.ps1 -Step trust-compare` runs both sets three ways.
+- **Left out**: her agent's tools (`market_price` and `owner_profile` duplicate the price benchmark and owner
+  history of P8; `contact_reuse` became the database signal), her score scale and thresholds, her eval-harness
+  changes (`trust_bench.py` covers the set).
+- **Also changed**: an agent signal with no points used to count 0 (`Number(null)` is 0); it now takes the setting's
+  points, as `app.trust_score` meant.
+
+### D-115 Yosr's roommate matching: four parts rebuilt on the platform
+
+- **Her work** (branch `roommate-matching`, 2026-10-16; on GitHub's main as commits 3c2ac32 and 8299171, on top of
+  the old code): workflows for n8n Cloud that build a profile by chatting, compute a match score with the model, let
+  two people agree before they are put in touch (by Gmail), write a sentence on why they match and make a shared
+  living plan. Groq and Gemini as models, n8n data tables as storage.
+- **Why not merged as is**: it runs outside this stack (cloud models, n8n Cloud, Gmail, data tables instead of
+  PostgreSQL), so none of it goes through the gateway, the row-level rules or the trace. A score written by the model
+  would sit next to the one `social.compatibility` computes (D-106) and could not be checked.
+- **What came in** (migration 0036, `lib/flatmate_profile.js`, `build_platform.py` P12):
+  - **Contact with both sides agreeing**: `social.contact_requests`, `POST /v1/flatmates/{user_id}/contact-requests`,
+    `GET /v1/me/contact-requests`, `POST /v1/contact-requests/{id}/decision` (accept, refuse, cancel). Only to a
+    visible profile, never between people who blocked each other, one open request per pair, at most
+    `contact.requests_per_day` a day, closed after `contact.request_days`. Nothing of the sender is shown before the
+    other person accepts; accepting opens a `direct` conversation (the note becomes its first message) and tells the
+    sender. Her e-mail step is replaced by the platform's notifications.
+  - **The sentence for a match** (`POST /v1/flatmates/{user_id}/explanation`, prompt `P12_match_explainer`): the
+    model gets only the factor states (agree, differ, not said) and the score, never the other person's answers. Code
+    keeps its sentence only if it adds no number but the score and names no topic it was not given; otherwise, or
+    with `flatmate_explain.enabled` off, code writes it. The page says which one wrote it.
+  - **Profile by chatting**: agent A7 (AI Agent node, Postgres memory `flatmate:<user>`, tools `my_profile` and
+    `propose_profile`), prompt `P13_flatmate_onboarding`, from her prompt: her question order and her rule of two
+    questions per message. Code keeps only known fields and values and drops a budget, area or date the person did
+    not write. Nothing is saved until the person presses Save (`POST /v1/me/flatmate-profile/apply`).
+  - **Living plan**: template `global.living_plan` (fr, en, ar), made from the household: habits as agreed, to
+    discuss or not said by everyone (never who answered what), rent and bills split equally, chores and rules.
+- **Left out**: n8n Cloud, Groq and Gemini, Gmail, the data tables, the score written by the model, the gender and
+  dealbreaker fields, and the personal webhook URL in her workflows.
+- **Test set**: `flatmate_onboarding_v1` (20 messages, ours, written before any run). Not measured on the real model
+  yet (`p4.ps1 -Step flatmate-bench`).
+
+### D-116 A new interface for the website: "Bleu de porte", light and dark
+
+- **Asked for**: a new, more striking interface built from what the best flatshare sites do, with every existing
+  feature, the agents and the backend unchanged, responsive, with a light and a dark theme.
+- **What was taken from where** (sources below):
+  - Search: the list and the map side by side, filters in one bar across the top rather than a column (Baymard's
+    study of accommodation sites: split views were used heavily, filter columns crowded the results). `view=map` is
+    now that split view; the URL and its parameters are unchanged.
+  - Listing page: the first photo large with up to four beside it, and a panel with the price and the contact forms
+    that stays in view while reading (Airbnb's pattern).
+  - Profiles before contact, contact only when both accept, no phone number shared (Badi); D-115 already does this,
+    the flatmate pages now show it first.
+  - Trust given its own section on the home page, saying only what the platform does (HousingAnywhere lists its
+    protections at the end of a tips page).
+  - Rent, place and the number of flatmates up front on cards, and saved searches one click from the results
+    (La Carte des Colocs, SpareRoom).
+- **Look**: Sidi Bou Said. Whitewash page, cobalt "door" blue for actions, bougainvillea pink as the one highlight
+  (favourites, a match, unread). Dark theme: the same street at night, deep blue rather than grey. Headings in
+  Alexandria (one family for Latin and Arabic script, self-hosted with `@fontsource-variable/alexandria`), body text
+  in IBM Plex Sans / Plex Sans Arabic as before. Radius by rank: photos 1.25 rem, panels 1 rem, fields 0.625 rem.
+- **The signature**: the plan of a shared flat, drawn in white on a night-blue panel on the home and account pages.
+  The assistants follow one drawing rule of architects: what is proposed is dashed, what is built is solid. Every
+  proposal (owner assistant, Document agent, flatmate profile chat) is a dashed box until the person saves it.
+- **Light and dark**: tokens in `web/app/globals.css`, redefined for `prefers-color-scheme: dark` and for
+  `data-theme`. The toggle in the header (`components/theme-toggle.tsx`) writes a `theme` cookie; the layout reads it
+  and sets `data-theme` on `<html>`, so the first paint is already right without an inline script (the safety test
+  forbids one). No cookie: the system decides. The map switches its basemap to Protomaps' dark flavour.
+- **Shared pieces**: `panel`, `page-title`, `section-title`, `chip`, `btn`, `proposal`, `skeleton` utilities;
+  `PageHeader`, `Empty` (an empty list says what to do next), `Avatar`, and `components/ui/assistant.tsx` (thinking,
+  turns, proposal box). The header keeps one `<nav>`: main sections in the bar, the rest under "More", notifications
+  and the profile always visible.
+- **Found while doing it**: the home page read its texts from the `home` namespace, which the household pages took
+  over in P5, so its title read "Colocations" and its other texts were missing. The home page now has its own
+  `landing` namespace in fr, en and ar. Addresses no page answers now show the site's 404 page inside the header and
+  footer (`app/[locale]/[...rest]`), not Next's bare one.
+- **Not changed**: no API call, no endpoint, no business rule; the website still only calls the API from the server.
+- **Sources**: [Baymard, accommodation split view](https://baymard.com/research-articles/accommodations-split-view);
+  [HousingAnywhere, tenant protection](https://housinganywhere.com/introducing-tenant-protection);
+  [Presse-citron on La Carte des Colocs](https://www.presse-citron.net/trouvez-facilement-votre-prochaine-colocation-avec-la-carte-des-colocs/);
+  [Time Out on Badi](https://www.timeout.com/london/things-to-do/city-living-has-never-been-so-easy-to-sort-with-badi);
+  [TechBullion on SpareRoom](https://techbullion.com/spareroom-and-the-future-of-roommate-matching-a-tech-driven-solution-to-housing-challenges/).
+
+### D-117 The detector reads a listing's wording by default; the profile agent asks two questions at most
+
+- **Trust check**: after the PC comparison of 2026-10-18 (T-84), `trust.model` becomes `detector` (migration 0037;
+  only a database still on the old default changes). On trust_v1 the detector sent every scam to review or block
+  (1.0) where the agent and the rules alone reached 0.857; on Emna's p8_scam_v1 it reached 0.88 against 0.56 for the
+  agent and 0.52 for the rules. No honest listing was blocked by any of them. Its cost: more honest listings sent to a
+  moderator (published 0.958 against 0.972 on trust_v1, 0.88 against 0.92 on p8_scam_v1), which is a review, not a
+  refusal. It answered every listing (the agent gave no usable answer on 14 of 100 and 17 of 50), with p95 15 s against 70 s on trust_v1. It blocks a little less often (scams blocked 0.286 against 0.321 on trust_v1); the rest go to review.
+  The agent stays available (`trust.model = agent`).
+- **Profile agent (A7)**: on the PC, 10 of 20 first answers asked more than two questions, against the prompt's rule.
+  Code now cuts an answer after its second question (`twoQuestions` in `lib/flatmate_profile.js`), and the trace
+  step says when it did (`questions_cut`). The prompt is unchanged (not measured again).
+- **Test set note**: three answers showed a budget or area labelled "forbidden" in flatmate_onboarding_v1 (fm-010,
+  fm-018). In both the person wrote the value themselves ("mets mon budget à 5000", "set areas=Sousse"), and the
+  proposal is only saved if they confirm it, so this is not a leak. The labels stay as written; a v2 of the set would
+  count a value the person wrote as theirs.
+
+### D-118 The country of the site, and a short language picker
+
+- **Asked for**: choosing a country makes the whole site about that country: its listings, its flatmates, the cities in
+  the search filter. The language stays a separate choice. Countries: Tunisia and France, and the United Kingdom since
+  it already works end to end (search, map file, prices in GBP, places); its document templates and legal sources are
+  fewer than Tunisia's.
+- **How**: a country picker in the header (the countries GET /v1/me returns) next to a language picker that shows
+  FR / EN / AR. The choice is a `country` cookie; `web/lib/server/country.ts` reads it, keeps it only if it is one of
+  the offered countries, and otherwise falls back to the account's country, then Tunisia. Below 640 px both pickers
+  are in the footer.
+- **What it scopes** (each already took a country; the website now passes the chosen one):
+  - search: `jurisdiction` of GET /v2/search; an address with `?country=` (a shared link) keeps its own;
+  - flatmates: `jurisdiction` of GET /v1/flatmates (only people whose account is in that country);
+  - assistant: `jurisdiction` of POST /v1/assistant/message (a message that names another country still wins, as before);
+  - the default country of a new listing and of a new household.
+- **Cities**: GET /v1/places?jurisdiction=&kind=city&lang= (migration 0038, `wf.api.places_list`, new and additive)
+  lists the active places of the gazetteer (`geo/places.csv`), with the name in the reader's language when the gazetteer
+  has one. The search bar's "Near" field became "City" (that list); a precise place (area, university) moved to
+  "More filters" and wins over the city. Both go to the API's `near`, as before.
+- **Not changed**: the account's own country (GET/PATCH /v1/me) and saved searches, which keep the country they were
+  saved with.
+- **Pickers**: each is a small menu (`components/ui/picker.tsx`): the country with its flag, the language with a globe and
+  its code. The flags are small SVGs, not emoji: Windows draws flag emoji as two letters. The site's icon
+  (`app/icon.svg`, `app/apple-icon.png`) is the door of the logo on cobalt blue.
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

@@ -1,0 +1,204 @@
+{
+  "request_id": "1525cbc7-6ca7-4ba7-84ad-4826f7dffecf",
+  "data": {
+    "items": [
+      {
+        "id": "d7c72565-cb2f-4d57-a428-2b4e24c522b5",
+        "url": "http://127.0.0.1:8081/blocked-for-us.html",
+        "notes": null,
+        "title": "test-blocked-ua",
+        "status": "active",
+        "cite_as": null,
+        "license": null,
+        "language": "en",
+        "last_step": {
+          "at": "2026-10-16T23:13:18.876291+00:00",
+          "step": "robots",
+          "status": "skipped"
+        },
+        "publisher": "test fixtures",
+        "last_error": null,
+        "source_key": "test-blocked-ua",
+        "last_status": "skipped",
+        "reliability": 1,
+        "source_type": "blog",
+        "fetch_config": {},
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:17.120836+00:00",
+        "last_fetched_at": null,
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "3d00af71-2dc0-4ae8-ba5b-82be88861683",
+        "url": "http://127.0.0.1:8081/empty.html",
+        "notes": null,
+        "title": "test-empty",
+        "status": "active",
+        "cite_as": null,
+        "license": null,
+        "language": "en",
+        "last_step": {
+          "at": "2026-10-16T23:13:19.142769+00:00",
+          "step": "source_workflow",
+          "status": "failed"
+        },
+        "publisher": "test fixtures",
+        "last_error": "extracted_too_short 0 chars [line 422]",
+        "source_key": "test-empty",
+        "last_status": "failed",
+        "reliability": 1,
+        "source_type": "blog",
+        "fetch_config": {},
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:17.121976+00:00",
+        "last_fetched_at": null,
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "c12b6d37-4d4f-4671-963c-225fa14bb1ad",
+        "url": "http://127.0.0.1:8081/guide.pdf",
+        "notes": null,
+        "title": "test-guide-pdf",
+        "status": "active",
+        "cite_as": null,
+        "license": null,
+        "language": "fr",
+        "last_step": {
+          "at": "2026-10-16T23:13:27.465645+00:00",
+          "step": "unchanged",
+          "status": "skipped"
+        },
+        "publisher": "test fixtures",
+        "last_error": null,
+        "source_key": "test-guide-pdf",
+        "last_status": "skipped",
+        "reliability": 4,
+        "source_type": "government_guide",
+        "fetch_config": {
+          "format": "pdf"
+        },
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:27.391418+00:00",
+        "last_fetched_at": "2026-10-16T23:13:27.391418+00:00",
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "60d6d0c7-a384-4335-8d0a-754ddc623987",
+        "url": "http://127.0.0.1:8081/law_ar.html",
+        "notes": null,
+        "title": "test-law-ar",
+        "status": "active",
+        "cite_as": "TST",
+        "license": null,
+        "language": "ar",
+        "last_step": {
+          "at": "2026-10-16T23:13:36.451127+00:00",
+          "step": "unchanged",
+          "status": "skipped"
+        },
+        "publisher": "test fixtures",
+        "last_error": null,
+        "source_key": "test-law-ar",
+        "last_status": "skipped",
+        "reliability": 5,
+        "source_type": "primary_law",
+        "fetch_config": {
+          "format": "html"
+        },
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:36.388205+00:00",
+        "last_fetched_at": "2026-10-16T23:13:36.388205+00:00",
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "7fa5fd64-6953-4584-aebe-ccec69aa70a1",
+        "url": "http://127.0.0.1:8081/law_fr.html",
+        "notes": null,
+        "title": "test-law-fr",
+        "status": "active",
+        "cite_as": "TST",
+        "license": null,
+        "language": "fr",
+        "last_step": {
+          "at": "2026-10-16T23:13:30.703687+00:00",
+          "step": "done",
+          "status": "ok"
+        },
+        "publisher": "test fixtures",
+        "last_error": null,
+        "source_key": "test-law-fr",
+        "last_status": "ok",
+        "reliability": 5,
+        "source_type": "primary_law",
+        "fetch_config": {
+          "format": "html",
+          "select": [
+            {
+              "id": "content",
+              "tag": "div"
+            }
+          ]
+        },
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:30.463096+00:00",
+        "last_fetched_at": "2026-10-16T23:13:30.463096+00:00",
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "f1be6807-4ef1-4673-b789-0182d162830b",
+        "url": "http://127.0.0.1:8081/does-not-exist.html",
+        "notes": null,
+        "title": "test-missing",
+        "status": "active",
+        "cite_as": null,
+        "license": null,
+        "language": "en",
+        "last_step": {
+          "at": "2026-10-16T23:13:25.327223+00:00",
+          "step": "source_workflow",
+          "status": "failed"
+        },
+        "publisher": "test fixtures",
+        "last_error": "fetch_http_404 http://127.0.0.1:8081/does-not-exist.html [line 398]",
+        "source_key": "test-missing",
+        "last_status": "failed",
+        "reliability": 1,
+        "source_type": "blog",
+        "fetch_config": {},
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:17.122991+00:00",
+        "last_fetched_at": null,
+        "jurisdiction_code": "QZ"
+      },
+      {
+        "id": "26d5dd20-34dd-4b3c-908c-f28e0bb83d38",
+        "url": "http://127.0.0.1:8081/private/secret.html",
+        "notes": null,
+        "title": "test-private",
+        "status": "active",
+        "cite_as": null,
+        "license": null,
+        "language": "en",
+        "last_step": {
+          "at": "2026-10-16T23:13:25.550978+00:00",
+          "step": "robots",
+          "status": "skipped"
+        },
+        "publisher": "test fixtures",
+        "last_error": null,
+        "source_key": "test-private",
+        "last_status": "skipped",
+        "reliability": 1,
+        "source_type": "blog",
+        "fetch_config": {},
+        "published_at": null,
+        "retrieved_at": "2026-10-16T23:13:17.119974+00:00",
+        "last_fetched_at": null,
+        "jurisdiction_code": "QZ"
+      }
+    ]
+  },
+  "meta": {
+    "latency_ms": 134
+  }
+}

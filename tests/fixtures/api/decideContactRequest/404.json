@@ -1,0 +1,8 @@
+{
+  "request_id": "ba2eeb23-cfb2-4cd7-b58d-55fb27ba8231",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Request not found",
+    "details": []
+  }
+}

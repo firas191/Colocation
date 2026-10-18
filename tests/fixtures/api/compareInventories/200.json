@@ -1,0 +1,29 @@
+{
+  "request_id": "7ab75d98-3e17-451d-9669-7488cc0c7188",
+  "data": {
+    "rows": [
+      {
+        "exit": "bon",
+        "item": "Lit",
+        "room": "Chambre",
+        "entry": "bon",
+        "state": "same",
+        "exit_notes": ""
+      },
+      {
+        "exit": "porte cassée",
+        "item": "Frigo",
+        "room": "Cuisine",
+        "entry": "neuf",
+        "state": "changed",
+        "exit_notes": ""
+      }
+    ],
+    "changed": 1,
+    "exit_document_id": "28227df0-c0a9-435b-84c7-57f9b9b28274",
+    "entry_document_id": "1247999e-beb3-437c-afff-98dc1ff5b5f0"
+  },
+  "meta": {
+    "latency_ms": 190
+  }
+}

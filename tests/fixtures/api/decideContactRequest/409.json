@@ -1,0 +1,13 @@
+{
+  "request_id": "e861a887-00d4-4bd0-aa22-5655b369bcec",
+  "error": {
+    "code": "CONFLICT",
+    "message": "The request is closed",
+    "details": [
+      {
+        "issue": "not_pending",
+        "status": "accepted"
+      }
+    ]
+  }
+}

@@ -84,6 +84,20 @@ def db():
         yield conn
 
 
+@pytest.fixture(scope="module", autouse=True)
+def _fresh_ip_bucket():
+    """Every request of the suite comes from one IP, so its per-IP rate counter fills over a long run; each module starts
+    with it empty (T-86: test_platform_owners got a 429 on its first call on the PC). Per-user counters are kept."""
+    dsn = os.environ.get("FS_TEST_DB_DSN")
+    if dsn:
+        try:
+            with psycopg.connect(dsn, autocommit=True) as conn:
+                conn.execute("delete from app.rate_counters where bucket like 'ip:%'")
+        except psycopg.Error:
+            pass                                             # database down (outage tests): nothing to clear
+    yield
+
+
 def pytest_collection_modifyitems(items):
     """Outage tests stop dependencies: run them after everything else."""
     items.sort(key=lambda it: 1 if any(w in it.name for w in ("down", "outage", "unreachable")) else 0)

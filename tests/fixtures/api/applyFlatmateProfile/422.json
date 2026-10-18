@@ -1,0 +1,13 @@
+{
+  "request_id": "30cf5cf0-9595-4642-abb1-89ba68c91f95",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "lifestyle.smoking",
+        "issue": "enum"
+      }
+    ]
+  }
+}

@@ -100,9 +100,10 @@
 		# Listing photos for browsers (platform P2, D-099): GET and HEAD only, only under media/ (the processed copies:
 		# EXIF removed, faces and text blurred) and only with a signature. The Media service signs them for a short
 		# time (media.photo_url_ttl_s); the storage checks signature and expiry. Raw uploads are never readable here.
+		# Generated documents (platform P9, D-108): the same rule under documents/ (PDFs signed for members only).
 		@photo_get {
 			method GET HEAD
-			path /{$S3_BUCKET:flatshare-media}/media/*
+			path /{$S3_BUCKET:flatshare-media}/media/* /{$S3_BUCKET:flatshare-media}/documents/*
 			query X-Amz-Signature=*
 		}
 		handle @photo_get {

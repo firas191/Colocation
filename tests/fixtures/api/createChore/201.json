@@ -1,0 +1,32 @@
+{
+  "request_id": "8145698a-3ff1-4afe-983e-d02cb9204c66",
+  "data": {
+    "title": "Vaisselle",
+    "active": true,
+    "chore_id": "72966beb-55b4-4a05-aeeb-8b0f554e5050",
+    "rotation": [
+      {
+        "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+        "display_name": null
+      },
+      {
+        "user_id": "660217f5-d19e-4ca0-98d8-1f2f34f35945",
+        "display_name": null
+      },
+      {
+        "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+        "display_name": null
+      }
+    ],
+    "frequency": "daily",
+    "assignments": [],
+    "next_due_on": "2027-03-01",
+    "next_person": {
+      "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+      "display_name": null
+    }
+  },
+  "meta": {
+    "latency_ms": 210
+  }
+}

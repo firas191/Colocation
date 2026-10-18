@@ -1,0 +1,113 @@
+{
+  "request_id": "684c5a41-96d1-458b-ae21-bd701f8fbf56",
+  "data": {
+    "title": "Vaisselle",
+    "active": true,
+    "chore_id": "72966beb-55b4-4a05-aeeb-8b0f554e5050",
+    "rotation": [
+      {
+        "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+        "display_name": null
+      },
+      {
+        "user_id": "660217f5-d19e-4ca0-98d8-1f2f34f35945",
+        "display_name": null
+      },
+      {
+        "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+        "display_name": null
+      }
+    ],
+    "frequency": "daily",
+    "assignments": [
+      {
+        "done": true,
+        "mine": false,
+        "user": {
+          "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+          "display_name": null
+        },
+        "due_on": "2027-03-07",
+        "done_by": {
+          "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+          "display_name": null
+        },
+        "assignment_id": "d9513bf7-6f63-4589-9bbb-9f19f7b376ef"
+      },
+      {
+        "done": false,
+        "mine": true,
+        "user": {
+          "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+          "display_name": null
+        },
+        "due_on": "2027-03-06",
+        "done_by": null,
+        "assignment_id": "b0ae0e57-ac27-4ef8-98ce-f5d1a7d53399"
+      },
+      {
+        "done": false,
+        "mine": false,
+        "user": {
+          "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+          "display_name": null
+        },
+        "due_on": "2027-03-05",
+        "done_by": null,
+        "assignment_id": "9f6a95fb-cde8-4ced-828d-5476a9fc5271"
+      },
+      {
+        "done": false,
+        "mine": true,
+        "user": {
+          "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+          "display_name": null
+        },
+        "due_on": "2027-03-04",
+        "done_by": null,
+        "assignment_id": "978ffbf0-ba64-4a88-afca-76277e0026f8"
+      },
+      {
+        "done": false,
+        "mine": false,
+        "user": {
+          "user_id": "d358eac3-81aa-45a2-b947-bccd736d3351",
+          "display_name": null
+        },
+        "due_on": "2027-03-03",
+        "done_by": null,
+        "assignment_id": "21e7ac00-34a3-433a-92d2-d3e375546d55"
+      },
+      {
+        "done": false,
+        "mine": false,
+        "user": {
+          "user_id": "660217f5-d19e-4ca0-98d8-1f2f34f35945",
+          "display_name": null
+        },
+        "due_on": "2027-03-02",
+        "done_by": null,
+        "assignment_id": "f8a9c3a8-02de-4bda-887c-d1f2975e292a"
+      },
+      {
+        "done": false,
+        "mine": true,
+        "user": {
+          "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+          "display_name": null
+        },
+        "due_on": "2027-03-01",
+        "done_by": null,
+        "assignment_id": "c5f9f27a-6ab8-4d1c-ae06-305f02cc9fe4"
+      }
+    ],
+    "next_due_on": "2027-03-08",
+    "next_person": {
+      "user_id": "f36cc8cd-b43d-4be8-b4dc-550cd7ef13f2",
+      "display_name": null
+    }
+  },
+  "meta": {
+    "latency_ms": 197
+  }
+}

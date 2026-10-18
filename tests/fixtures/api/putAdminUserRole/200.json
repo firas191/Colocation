@@ -1,0 +1,11 @@
+{
+  "request_id": "7b2480da-422b-405c-ac2c-316c7d2f2c4c",
+  "data": {
+    "role": "moderator",
+    "user_id": "3e4c6304-11f5-4ac6-8699-278bcf55618e",
+    "previous": "user"
+  },
+  "meta": {
+    "latency_ms": 344
+  }
+}

@@ -53,7 +53,11 @@ for (const locale of ["fr", "en", "ar"] as const) {
     await page.getByRole("button", { name: x.save }).click();
     await expect(page.getByText(x.saved)).toBeVisible();
 
+    // log out is in the header's menu (D-116), the menu that holds the log-out button (not the country or language one)
+    await page.locator("header details", { has: page.locator("button", { hasText: x.logout }) }).locator("summary").click();
     await page.getByRole("button", { name: x.logout }).click();
+    // wait for the log-out to land on the home page: going to /login before it raced with its redirect (T-84)
+    await page.waitForURL((u) => /^\/(fr|en|ar)\/?$/.test(u.pathname));
     await page.goto(`/${locale}/login`);
     await page.locator("#email").fill(email);
     await page.locator("#password").fill(password);

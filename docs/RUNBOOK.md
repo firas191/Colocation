@@ -168,6 +168,7 @@ Every message goes through the same API as a website would, so its trace is in `
 | Task | Command |
 |---|---|
 | Open the website | http://localhost:3000 (French; /en, /ar for English and Arabic) |
+| Light or dark theme (D-116) | the moon or sun button in the header; the choice is kept in the `theme` cookie of that browser, and without it the system setting decides |
 | Read the mails it sends (sign-up and reset links) | http://localhost:8025 (Mailpit) |
 | New settings after updating (AUTH_DB_PASSWORD, BETTER_AUTH_SECRET, WEB_ORIGIN, SMTP_*) | `powershell -ExecutionPolicy Bypass -File scripts\windows\setup.ps1 -AddMissing` (verify.ps1 does it) |
 | Rebuild and restart after a change in `web/` | `docker compose build web; docker compose up -d web` |
@@ -179,6 +180,16 @@ Every message goes through the same API as a website would, so its trace is in `
 | Make an account an admin | `docker exec -u postgres fs-postgres psql -d flatshare -c "update app.users set role = 'admin' where email = '<address>';"` |
 | Make the map of a country (once; about one file per country, size written in the log) | `powershell -ExecutionPolicy Bypass -File scripts\windows\map.ps1` (Tunisia; `-Country FR` or `GB`, `-MaxZoom 15` for full detail), then open http://localhost:3000/fr/search?view=map |
 | Search latency of `/v2/search` next to `/v1/search` (200 requests each) | `powershell -ExecutionPolicy Bypass -File scripts\windows\p3.ps1 -Step bench-v2` (results in `reports\eval\search-bench-v2-*.json`) |
+| Store the new prompt versions (P4 Trust agent, P9 Document agent) after updating | `docker compose --profile test run --rm --no-deps -v "${PWD}:/flatshare" tests python scripts/prompts.py sync` |
+| Trust check and Document agent benchmarks (real model) | `powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step trust-bench` and `-Step document-bench` |
+| Turn the trust check off (submit publishes directly, as in P3) | `update app.settings set value = 'false' where key = 'trust.enabled';` |
+| Choose what reads the wording in the trust check (D-114, D-117) | the detector is the default; for the Trust agent: `update app.settings set value = '"agent"' where key = 'trust.model';` (back: `'"detector"'`); rules only: `trust.agent_enabled` false |
+| Flatmate profile agent and match sentence (D-115) | after updating: `prompts.py sync` (as above) stores `P12_match_explainer` and `P13_flatmate_onboarding`; benchmark: `powershell -ExecutionPolicy Bypass -File scripts\windows\p4.ps1 -Step flatmate-bench` |
+| Turn the profile chat or the model's match sentence off (D-115) | `update app.settings set value = 'false' where key = 'flatmate_agent.enabled';` (the chat answers 503, the form still works); `... where key = 'flatmate_explain.enabled';` (code writes the sentence) |
+| Contact request limits (D-115) | `contact.requests_per_day` (10) and `contact.request_days` (14, then a request closes as expired) in `app.settings` |
+| Run the retention and file deletions now (normally 03:30 UTC) | n8n, workflow `wf.ops.retention`, "Execute workflow"; then `select status, count(*) from app.jobs where type = 'delete_media' group by 1;` |
+| Let the bot link accounts with "/lier CODE" (P11) | in `wf.channel.telegram`, for a message starting with `/lier`, add an Execute Workflow node calling `wf.telegram.link` with `{code, chat_id}`; it answers `{ok, display_name}` or `{ok: false, error_code}` (D-110) |
+| Notification e-mails | sent by `wf.notify.dispatch` through the `SMTP_*` account of `.env` (Mailpit at http://localhost:8025 by default); sender address: setting `notify.mail_from` |
 | Send real e-mail | set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` in `.env`, then `docker compose up -d web` |
 
 What the website server needs (spec 17.1 "browser boundary"): `FLATSHARE_API_BASE`, `FLATSHARE_WEBSITE_KEY_ID`,
@@ -189,6 +200,18 @@ None of them reaches the browser: the API client is a `server-only` module, and 
 Uploads from a browser go straight to the signed URL on the proxy; the proxy accepts them only from `WEB_ORIGIN`
 (CORS). If the website is served under another address, change `WEB_ORIGIN` and recreate `proxy` and `web`.
 
+## Backup and restore (platform P12, D-111)
+
+- Backup, stack running: `powershell -ExecutionPolicy Bypass -File scripts\windows\backup.ps1` writes
+  `backups\<timestamp>\` (the three databases, each with a fingerprint: row counts, owners, grants, row-level rules; roles without passwords; `garage.tgz`). Garage is
+  stopped for about a minute during the copy. `-NoMedia` skips the photos and leaves Garage running.
+- Check a backup without touching live data: `powershell -ExecutionPolicy Bypass -File scripts\windows\p12.ps1 -Step backup-check`.
+- Restore (replaces the databases and photos): `powershell -ExecutionPolicy Bypass -File scripts\windows\restore.ps1 -From backups\<timestamp>`.
+  It stops n8n, the website and the Telegram relay, restores, compares each database with its fingerprint and starts them again.
+- `.env` and `secrets\` are not in the backup. Keep a copy apart: the n8n credentials in the dump need the same
+  `N8N_ENCRYPTION_KEY`. On a new machine: copy both back, `docker compose up -d postgres garage`,
+  `docker compose run --rm db-bootstrap`, then `restore.ps1`.
+
 ## Settings without restart
 
 Non-secret runtime settings are rows in `app.settings` (rate limits, timestamp window, Ollama URL, model name).
@@ -198,7 +221,6 @@ Example: `update app.settings set value = '120' where key = 'gateway.rate_limit_
 
 - During a full PostgreSQL outage requests are answered with 503 but not logged (FAILURES F-010).
 - `app.idempotency_keys` and `app.rate_counters` grow until the retention workflow exists (phase 7).
-- No backup or restore procedure yet (phase 9).
 - A job whose n8n process crashes stays `running` until the job reaper exists (phase 4, DECISIONS D-041).
 - TEI is not in `GET /v1/health` (D-046).
 - No exchange rate for the Tunisian dinar: a TN search with a budget in another currency is not filtered by budget (`fx_rate_unavailable`, D-057).

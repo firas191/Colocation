@@ -26,8 +26,8 @@ export function SignUpForm({ locale }: { locale: string }) {
         <Input id="password" name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password"
           aria-describedby="password-hint" />
       </Field>
-      <Button type="submit" disabled={pending}>{t("submit")}</Button>
-      <p className="text-ink-soft">{t("haveAccount")} <Link href="/login">{t("signIn")}</Link></p>
+      <Button type="submit" disabled={pending} className="w-full">{t("submit")}</Button>
+      <p className="text-ink-soft">{t("haveAccount")} <Link href="/login" className="font-semibold">{t("signIn")}</Link></p>
     </form>
   );
 }
@@ -44,10 +44,10 @@ export function LoginForm({ locale }: { locale: string }) {
       <Field id="password" label={s("password")}>
         <Input id="password" name="password" type="password" required autoComplete="current-password" />
       </Field>
-      <Button type="submit" disabled={pending}>{t("submit")}</Button>
+      <Button type="submit" disabled={pending} className="w-full">{t("submit")}</Button>
       <div className="flex flex-wrap justify-between gap-3 text-ink-soft">
-        <span>{t("noAccount")} <Link href="/signup">{t("signUp")}</Link></span>
-        <Link href="/reset">{t("forgot")}</Link>
+        <span>{t("noAccount")} <Link href="/signup" className="font-semibold">{t("signUp")}</Link></span>
+        <Link href="/reset" className="link-action">{t("forgot")}</Link>
       </div>
     </form>
   );
@@ -67,7 +67,7 @@ export function ResendForm({ locale, email }: { locale: string; email: string })
       )}
       <div className="flex flex-wrap items-center gap-5">
         <Button type="submit" variant="secondary" disabled={pending}>{t("resend")}</Button>
-        <Link href="/login">{t("back")}</Link>
+        <Link href="/login" className="link-back">{t("back")}</Link>
       </div>
     </form>
   );
@@ -83,7 +83,7 @@ export function ResetRequestForm({ locale }: { locale: string }) {
       {state.done && <Notice tone="ok">{t("sent")}</Notice>}
       {state.error && <Notice tone="error">{err(state.error)}</Notice>}
       <Field id="email" label={s("email")}><Input id="email" name="email" type="email" required autoComplete="email" dir="ltr" /></Field>
-      <Button type="submit" disabled={pending}>{t("submit")}</Button>
+      <Button type="submit" disabled={pending} className="w-full">{t("submit")}</Button>
     </form>
   );
 }

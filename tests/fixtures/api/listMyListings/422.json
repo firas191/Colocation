@@ -1,0 +1,39 @@
+{
+  "request_id": "466a69d9-be30-451b-a3f9-78f1153593e0",
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request is invalid",
+    "details": [
+      {
+        "field": "foo",
+        "issue": "unknown_parameter"
+      },
+      {
+        "field": "limit",
+        "issue": "out_of_range",
+        "min": 1,
+        "max": 50
+      },
+      {
+        "field": "cursor",
+        "issue": "invalid_format"
+      },
+      {
+        "field": "status",
+        "issue": "not_allowed",
+        "allowed": [
+          "draft",
+          "processing",
+          "pending_review",
+          "published",
+          "rejected",
+          "archived"
+        ]
+      },
+      {
+        "field": "listing_id",
+        "issue": "invalid_format"
+      }
+    ]
+  }
+}

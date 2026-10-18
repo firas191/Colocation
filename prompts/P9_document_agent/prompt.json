@@ -1,0 +1,15 @@
+{
+  "name": "P9_document_agent",
+  "agent": "A6 document",
+  "role": "System message of the Document agent (n8n AI Agent node): help a household member prepare a document from the platform's templates (flatmate agreement, entry or exit inventory, house rules), ask for the values the template needs, and propose them with the propose_document tool. It never writes document text: the template's text is fixed and the person confirms the proposal before the PDF is made (D-108).",
+  "schema": "schemas/P9_document_agent.schema.json",
+  "variables": [
+    "message",
+    "jurisdiction",
+    "today",
+    "language",
+    "kinds"
+  ],
+  "golden_set": "document_agent_v1",
+  "active_version": 1
+}

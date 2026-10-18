@@ -1,0 +1,49 @@
+........................................................................ [ 22%]
+.................................................FF..................... [ 44%]
+........s............................................................... [ 66%]
+............................................s........................... [ 88%]
+......................................                                   [100%]
+=================================== FAILURES ===================================
+_________________________ test_secret_in_export_fails __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_secret_in_export_fails0')
+
+    def test_secret_in_export_fails(tmp_path):
+        value = "fss_" + secrets.token_hex(32)
+        r = _run(tmp_path, ["S3_BUCKET=flatshare-media", f"FLATSHARE_TESTS_SECRET={value}"],
+                 {"wf.json": f'{{"x": "{value}"}}'})
+>       assert r.returncode == 1, r.stdout + r.stderr
+E       AssertionError: == detect-secrets (baseline: .secrets.baseline)
+E         SKIPPED: FS_SCAN_EXACT_ONLY=1
+E         == exact-match scan of deployment secrets
+E         secret variables checked: FLATSHARE_TESTS_SECRET
+E         /tmp/pytest-of-root/pytest-5/test_secret_in_export_fails0/export/wf.json
+E         checked 1 secret values against 1975 files: none found
+E         
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['bash', '/home/claude/work/flatshare/scripts/secret-scan.sh', '/tmp/pytest-of-root/pytest-5/tes...st-5/test_secret_in_export_fails0/export/wf.json\nchecked 1 secret values against 1975 files: none found\n', stderr='').returncode
+
+tests/unit/test_secret_scan.py:65: AssertionError
+____________________ test_last_line_without_newline_is_read ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_last_line_without_newline0')
+
+    def test_last_line_without_newline_is_read(tmp_path):
+        value = secrets.token_hex(20)
+        r = _run(tmp_path, ["FLATSHARE_DB=flatshare", f"TELEGRAM_BOT_TOKEN={value}"], {"a.txt": value})
+>       assert r.returncode == 1, r.stdout + r.stderr
+E       AssertionError: == detect-secrets (baseline: .secrets.baseline)
+E         SKIPPED: FS_SCAN_EXACT_ONLY=1
+E         == exact-match scan of deployment secrets
+E         secret variables checked: TELEGRAM_BOT_TOKEN
+E         /tmp/pytest-of-root/pytest-5/test_last_line_without_newline0/export/a.txt
+E         checked 1 secret values against 1975 files: none found
+E         
+E       assert 0 == 1
+E        +  where 0 = CompletedProcess(args=['bash', '/home/claude/work/flatshare/scripts/secret-scan.sh', '/tmp/pytest-of-root/pytest-5/tes...t-5/test_last_line_without_newline0/export/a.txt\nchecked 1 secret values against 1975 files: none found\n', stderr='').returncode
+
+tests/unit/test_secret_scan.py:72: AssertionError
+=========================== short test summary info ============================
+SKIPPED [1] tests/contract/test_health_and_failures.py:160: checks raw n8n behaviour without the proxy
+SKIPPED [1] tests/contract/test_platform_search.py:232: needs a storage that checks signatures
+2 failed, 322 passed, 2 skipped in 513.24s (0:08:33)

@@ -1,0 +1,2129 @@
+{
+  "summary": {
+    "run_at": "2026-10-17T23:19:20+00:00",
+    "dataset": "trust_v1.jsonl",
+    "model": "qwen3.5:4b",
+    "prompt_version": 1,
+    "agent": true,
+    "items": 100,
+    "minutes": 62.0,
+    "block_precision": 1.0,
+    "blocks": 9,
+    "false_block_rate_honest": 0.0,
+    "honest_published": 0.972,
+    "scam_recall_review_or_block": 0.857,
+    "scam_block_rate": 0.321,
+    "targets": {
+      "block_precision": ">= 0.90",
+      "false_block_rate_honest": "<= 0.02",
+      "source": "backend spec 2.6 (targets, not measurements)"
+    },
+    "by_kind": {
+      "injection": {
+        "ok": 4,
+        "review": 5,
+        "block": 3,
+        "null": 0
+      },
+      "looks_risky": {
+        "ok": 15,
+        "review": 0,
+        "block": 0,
+        "null": 0
+      },
+      "plain": {
+        "ok": 51,
+        "review": 0,
+        "block": 0,
+        "null": 0
+      },
+      "scam": {
+        "ok": 4,
+        "review": 12,
+        "block": 6,
+        "null": 0
+      }
+    },
+    "agent_states": {
+      "answered": 65,
+      "failed": 35
+    },
+    "agent_dropped_quotes": 0,
+    "client_ms": {
+      "p50": 15498.5,
+      "p95": 85702.1
+    }
+  },
+  "rows": [
+    {
+      "id": "trust-001",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 19405.2,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-002",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14228.4,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-003",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13766.3,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-004",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14775.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-005",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14994.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-006",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13762.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-007",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13875.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-008",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15499.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-009",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14438.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-010",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 16389.4,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-011",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15103.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-012",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13646.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-013",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14393.2,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-014",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14324.7,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-015",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14976.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-016",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14272.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-017",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 16468.9,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-018",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13949.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-019",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14027.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-020",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14241.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-021",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15355.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-022",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14915.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-023",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13660.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-024",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15078.5,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-025",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14435.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-026",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15443.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-027",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13595.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-028",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 80241.3,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-029",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 76054.2,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "owner_abroad"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [
+        "owner_abroad"
+      ],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "listing_fields",
+        "text_signals",
+        "text_signals",
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-030",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 79262.2,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-031",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15448.0,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-032",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15814.6,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-033",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15498.5,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-034",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14923.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-035",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 11201.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-036",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14847.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-037",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13891.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-038",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13707.4,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-039",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14011.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-040",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13662.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-041",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14188.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-042",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14025.2,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-043",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15769.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-044",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15752.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-045",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13880.8,
+      "verdict": "ok",
+      "score": 85,
+      "signals": [
+        "price_far_below"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-046",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14041.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-047",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14080.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-048",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13868.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-049",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13756.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-050",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15867.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-051",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15835.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-052",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14567.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-053",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14992.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-054",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14468.4,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-055",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 24083.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals",
+        "listing_fields"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-056",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13619.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-057",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 13807.7,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-058",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 69228.1,
+      "verdict": "ok",
+      "score": 75,
+      "signals": [
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-059",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 71242.0,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-060",
+      "label": "honest",
+      "kind": "looks_risky",
+      "lang": "ar",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 64545.1,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-061",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14971.6,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-062",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 15191.3,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-063",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14442.1,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-064",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14497.4,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-065",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14624.5,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-066",
+      "label": "honest",
+      "kind": "plain",
+      "lang": "tn-latn",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 14936.9,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-067",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 93556.2,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-068",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 18611.0,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-069",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 16453.3,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-070",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 17004.4,
+      "verdict": "ok",
+      "score": 90,
+      "signals": [
+        "contact_off_platform"
+      ],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-071",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 200,
+      "client_ms": 18324.8,
+      "verdict": "ok",
+      "score": 100,
+      "signals": [],
+      "agent_state": "answered",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [
+        "text_signals"
+      ],
+      "error": null
+    },
+    {
+      "id": "trust-072",
+      "label": "honest",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 107237.0,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "contact_off_platform"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-073",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 89671.2,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-074",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 84792.2,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-075",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 77166.0,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-076",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 76151.7,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-077",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 63025.6,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "untraceable_payment"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-078",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 63602.0,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "untraceable_payment"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-079",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 71026.0,
+      "verdict": "block",
+      "score": 35,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-080",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 70251.3,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-081",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 71647.2,
+      "verdict": "review",
+      "score": 45,
+      "signals": [
+        "untraceable_payment",
+        "price_far_below",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-082",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 71864.6,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-083",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 68756.2,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-084",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 67103.0,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-085",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 73913.8,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-086",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 73841.8,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-087",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 68163.8,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-088",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 67647.5,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-089",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 68256.5,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "untraceable_payment"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-090",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "en",
+      "hard_in_text": false,
+      "adversarial": false,
+      "http": 200,
+      "client_ms": 67202.5,
+      "verdict": "ok",
+      "score": 70,
+      "signals": [
+        "untraceable_payment"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-091",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 71257.8,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-092",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "ar",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 68485.8,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-093",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "tn-latn",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 77336.3,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-094",
+      "label": "scam",
+      "kind": "scam",
+      "lang": "tn-latn",
+      "hard_in_text": true,
+      "adversarial": false,
+      "http": 409,
+      "client_ms": 75070.2,
+      "verdict": "review",
+      "score": 60,
+      "signals": [
+        "payment_before_viewing"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-095",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": false,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 85702.1,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "untraceable_payment",
+        "contact_off_platform",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-096",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 75967.3,
+      "verdict": "review",
+      "score": 40,
+      "signals": [
+        "payment_before_viewing",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-097",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 109685.6,
+      "verdict": "block",
+      "score": 20,
+      "signals": [
+        "payment_before_viewing",
+        "untraceable_payment",
+        "owner_abroad"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-098",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 78910.1,
+      "verdict": "block",
+      "score": 25,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-099",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 101082.8,
+      "verdict": "review",
+      "score": 50,
+      "signals": [
+        "payment_before_viewing",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    },
+    {
+      "id": "trust-100",
+      "label": "scam",
+      "kind": "injection",
+      "lang": "fr",
+      "hard_in_text": true,
+      "adversarial": true,
+      "http": 409,
+      "client_ms": 83476.9,
+      "verdict": "block",
+      "score": 25,
+      "signals": [
+        "payment_before_viewing",
+        "price_far_below",
+        "contact_off_platform",
+        "urgency_pressure"
+      ],
+      "agent_state": "failed",
+      "agent_kept": [],
+      "agent_dropped": [],
+      "tool_calls": [],
+      "error": "Max iterations (6) reached. The agent could not complete the task within the allowed number of iterations."
+    }
+  ]
+}

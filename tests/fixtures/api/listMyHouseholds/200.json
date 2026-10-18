@@ -1,0 +1,18 @@
+{
+  "request_id": "32acfa66-22e8-44b0-9f6a-59e32c6c0e91",
+  "data": {
+    "items": [
+      {
+        "name": "Rue de Marseille",
+        "status": "active",
+        "members": 3,
+        "my_role": "flatmate",
+        "household_id": "715e2044-ef01-4301-9e09-60cb4589b896"
+      }
+    ],
+    "invites": []
+  },
+  "meta": {
+    "latency_ms": 158
+  }
+}
