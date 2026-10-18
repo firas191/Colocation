@@ -403,7 +403,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// wf.orchestrator > \"Agent answer\": the Match agent's checked answer and the cards of its search.\nconst v = $('Validate body').first().json;\nconst d = $('Decide route').first().json;\nconst a = $input.first().json;\nconst o = d.router || {};\nreturn [{ json: { ok: true, gw: v.gw, status: 200, steps: [...d.steps, ...a.steps],\n  data: { intent: 'search_listings', language: o.language || d.detected_language || null, status: a.status, answer: a.answer,\n          profile: a.profile, anchor: a.anchor, results: a.results, count: a.count,\n          warnings: [...(d.followup ? ['followup'] : []), ...(a.warnings || [])],\n          agent: a.agent, data_attribution: ['openstreetmap'] } } }];\n"
+        "jsCode": "// wf.orchestrator > \"Agent answer\": the Match agent's checked answer and the cards of its search.\nconst v = $('Validate body').first().json;\nconst d = $('Decide route').first().json;\nconst a = $input.first().json;\nconst o = d.router || {};\nreturn [{ json: { ok: true, gw: v.gw, status: 200, steps: [...d.steps, ...a.steps],\n  data: { intent: 'search_listings', language: o.language || d.detected_language || null, status: a.status, answer: a.answer,\n          profile: a.profile, anchor: a.anchor, results: a.results, count: a.count,\n          // the country searched, so a client can fetch the result cards (D-120)\n          jurisdiction: (d.extract && d.extract.jurisdiction) || v.jurisdiction || null,\n          warnings: [...(d.followup ? ['followup'] : []), ...(a.warnings || [])],\n          agent: a.agent, data_attribution: ['openstreetmap'] } } }];\n"
       }
     },
     {

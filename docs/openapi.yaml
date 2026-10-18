@@ -5060,7 +5060,7 @@ components:
                   chunk_id: { type: [string, "null"], format: uuid }
             missing_information: { type: [string, "null"], description: "Legal question, not_found: what the model said is missing." }
             notice_version: { type: [string, "null"], description: "Version of the notice the channel shows with a legal answer (setting legal.notice_version)." }
-            jurisdiction: { type: [string, "null"], description: "Legal question: the country whose sources were searched (plus global sources)." }
+            jurisdiction: { type: [string, "null"], description: "Legal question: the country whose sources were searched (plus global sources). Search answered by the Match agent: the country searched (D-120)." }
             proposal:
               type: [object, "null"]
               description: >-

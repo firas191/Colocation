@@ -6,5 +6,7 @@ const o = d.router || {};
 return [{ json: { ok: true, gw: v.gw, status: 200, steps: [...d.steps, ...a.steps],
   data: { intent: 'search_listings', language: o.language || d.detected_language || null, status: a.status, answer: a.answer,
           profile: a.profile, anchor: a.anchor, results: a.results, count: a.count,
+          // the country searched, so a client can fetch the result cards (D-120)
+          jurisdiction: (d.extract && d.extract.jurisdiction) || v.jurisdiction || null,
           warnings: [...(d.followup ? ['followup'] : []), ...(a.warnings || [])],
           agent: a.agent, data_attribution: ['openstreetmap'] } } }];

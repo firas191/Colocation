@@ -47,6 +47,7 @@ def test_agent_answers_a_search_from_the_tool_result(client, db, user):
     d = j["data"]
     assert d["intent"] == "search_listings" and d["status"] == "results", d
     assert [x["id"] for x in d["results"]] == [L_CHEAP] and d["count"] == 1
+    assert d["jurisdiction"] == "QX"                                          # the country searched (D-120)
     assert d["answer"] == "J'ai trouvé 1 annonces. La 1 est à 400 TND."      # the mock's sentence, numbers from the tool
     assert d["agent"]["tool_calls"] == ["search_listings"] and d["agent"]["memory_messages"] == 0
     assert d["profile"]["budget_max_minor"] == 450000 and d["anchor"]["status"] == "found"

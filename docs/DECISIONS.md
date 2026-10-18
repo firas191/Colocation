@@ -1506,6 +1506,18 @@ Proposed and approved by the owner on 2026-10-16 ("lets start"). The plan is `do
 - **Not changed**: each pin is still a link to the listing (`a.map-pin[data-listing]`), so a click with the mouse still
   opens it directly, as before.
 
+### D-120 The Match agent's answer says which country it searched
+
+- **Problem**: an answer of the Match agent (D-084) to `POST /v1/assistant/message` had `results` but no country. The
+  website fetches the result cards with `GET /v2/search?ids=…&jurisdiction=…` and skipped it when it had no country,
+  so the agent's answers showed no cards (seen on the PC while taking the screenshots, TN, FR and GB). The fixed search
+  path (`wf.match.search`) was not affected: it returns `applied.jurisdiction`.
+- **API (additive)**: `wf.orchestrator` > "Agent answer" (`orch_agent_result.js`) now adds `data.jurisdiction`, the
+  country the agent searched: the one read from the message, else the one sent in the body, else the account's. The
+  field already existed for legal answers; its description in `openapi.yaml` now covers both. Nothing removed.
+- **Website**: `lib/actions/assistant.ts` takes `applied.jurisdiction`, then `jurisdiction`, and, when there are results
+  but neither (an API that predates this change), the site's country from the header (D-118).
+
 ## Spec observations scheduled for later phases
 
 - **Rent period.** Done in phase 3 (D-056).

@@ -2113,6 +2113,18 @@ Changes after this run, checked in the sandbox (the agent's behaviour needs the 
 | axe on the open card, light and dark | no violations |
 | Note | the sandbox has no real map file; these runs used a small test file with land only (sandbox only, not shipped). The card on the real tiles is checked by the next `verify.ps1` on the PC |
 
+## T-89 Sandbox, 2026-10-18: the country on the Match agent's answer (D-120)
+
+| Check | Result |
+|---|---|
+| `tests/contract/test_match_agent.py` (sandbox only, mock model), `test_agent_answers_a_search_from_the_tool_result` now also checks `data.jurisdiction == "QX"` | 10 of 10 PASS |
+| `tests/contract/test_legal_agent.py` (the other agent answer with `jurisdiction`) | 12 of 12 PASS |
+| n8n code node tests | 253 of 253 PASS |
+| `n8n/build.py`: only `wf.orchestrator.json` changed | PASS |
+| Website type check, unit tests, build | PASS (23 tests) |
+| `e2e/search.spec.ts` (desktop and phone) | 10 of 10 PASS |
+| Not covered here | the cards under an agent answer in the browser: the sandbox's mock model reads the e2e's Arabic message as small talk, so no search runs. Checked on the PC with screen 13 of the capture (TN, FR, GB) |
+
 ## Not run
 
 | Item | Why | How it will be run |

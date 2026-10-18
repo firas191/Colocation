@@ -159,7 +159,8 @@ flowchart LR
 
 The agent decides when to search, rewrites follow-ups into a full request and writes a short answer. The search
 itself is the fixed path (P2 with its checks, then `app.search_public`); the cards shown to the user come from the
-database, not from the model's text, and an answer with a number that no tool gave is dropped.
+database, not from the model's text, and an answer with a number that no tool gave is dropped. The answer carries
+`jurisdiction`, the country searched, which the website needs to fetch the cards (D-120).
 
 ### Legal agent (D-087)
 

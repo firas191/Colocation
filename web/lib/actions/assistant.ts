@@ -40,7 +40,8 @@ export async function sendMessageAction(locale: string, text: string): Promise<R
   const d = r.data;
   let results: ListingCard[] | undefined;
   const ids = (d.results || []).map((x) => x.id).slice(0, 50);
-  const jur = d.applied?.jurisdiction || d.jurisdiction || null;
+  // an answer without its country (the Match agent before D-120) is read as one for the site's country
+  const jur = d.applied?.jurisdiction || d.jurisdiction || (ids.length ? await siteCountry() : null);
   if (ids.length && jur) {
     const cards = await api<{ results: ListingCard[] }>("GET", "/v2/search", { userId: v.userId, clientIp: ip, lang: locale,
       query: { jurisdiction: jur, ids: ids.join(","), limit: "50" } });
